@@ -1,13 +1,13 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---								University of Hawaii at Manoa						         --
---						Instrumentation Development Lab / GARY S. VARNER				--
---   								Watanabe Hall Room 214								      --
---  								  2505 Correa Road										   --
---  								 Honolulu, HI 96822											--
---  								Lab: (808) 956-2920											--
---	 								Fax: (808) 956-2930										   --
---  						E-mail: idlab@phys.hawaii.edu									   --
+--University of Hawaii at Manoa						         --
+--Instrumentation Development Lab / GARY S. VARNER				--
+--Watanabe Hall Room 214								      --
+--2505 Correa Road										   --
+--Honolulu, HI 96822											--
+--Lab: (808) 956-2920											--
+--Fax: (808) 956-2930										   --
+--E-mail: idlab@phys.hawaii.edu									   --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------	
 -- Design by: Larry L. Ruckman Jr.															--
