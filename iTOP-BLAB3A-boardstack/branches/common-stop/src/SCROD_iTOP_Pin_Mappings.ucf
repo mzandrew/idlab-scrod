@@ -51,9 +51,9 @@ NET ASIC_WR_ADDR<6>   LOC = "U24";  #Column Select 2  U24
 NET ASIC_WR_ADDR<5>   LOC = "W26";  #Column Select 1  W26
 NET ASIC_WR_ADDR<4>   LOC = "Y26";  #Column Select 0  Y26
 NET ASIC_WR_ADDR<3>   LOC = "V15";  #Row Select 3     V15
-NET ASIC_WR_ADDR<2>   LOC = "AB15"; #Row Select 2     AB15
+NET ASIC_WR_ADDR<0>   LOC = "AB15"; #Row Select 2     AB15  #Swapped w/ 0 in UCF to reflect this as the ACTUAL least significant bit in the ASIC
 NET ASIC_WR_ADDR<1>   LOC = "P17";  #Row Select 1     P17
-NET ASIC_WR_ADDR<0>   LOC = "W14";  #Row Select 0     W14
+NET ASIC_WR_ADDR<2>   LOC = "W14";  #Row Select 0     W14   #Swapped w/ 2 in UCF to reflcet this as NOT the least significant bit in the ASIC
 NET ASIC_TRIGGER<7>   LOC = "G1";
 NET ASIC_TRIGGER<6>   LOC = "Y12";
 NET ASIC_TRIGGER<5>   LOC = "AA11";
@@ -142,9 +142,8 @@ NET RDY1       	LOC = "h12"  | IOSTANDARD = LVCMOS33;
 NET WAKEUP     	LOC = "f11"  | IOSTANDARD = LVCMOS33;
 
 #Timing constraints
-NET "internal_CLOCK_150MHz" TNM_NET = Txinternal_CLOCK_150MHz;
-TIMESPEC TSxinternal_CLOCK_150MHz = PERIOD "Txinternal_CLOCK_150MHz" 6.667 ns HIGH 50%;
-NET "internal_CLOCK_75MHz" TNM_NET = Txinternal_CLOCK_75MHz;
-TIMESPEC TSxinternal_CLOCK_75MHz = PERIOD "Txinternal_CLOCK_75MHz" 13.333 ns HIGH 50%;
-NET "internal_CLOCK_75MHz_180deg" TNM_NET = Txinternal_CLOCK_75MHz_180deg;
-TIMESPEC TSxinternal_CLOCK_75MHz_180deg = PERIOD "Txinternal_CLOCK_75MHz_180deg" 13.333 ns HIGH 50%;
+#NET "internal_CLOCK_62p5MHz" TNM_NET = Txinternal_CLOCK_62p5MHz;
+#TIMESPEC TSxinternal_CLOCK_62p5MHz = PERIOD "Txinternal_CLOCK_62p5MHz" 16.000 ns HIGH 50%;
+
+NET "internal_CLOCK_4NS" TNM_NET = "internal_CLOCK_4NS";
+TIMESPEC "TS_internal_CLOCK_4NS" = PERIOD "internal_CLOCK_4NS" 4.0 ns HIGH 50% INPUT_JITTER 20.0ps;
