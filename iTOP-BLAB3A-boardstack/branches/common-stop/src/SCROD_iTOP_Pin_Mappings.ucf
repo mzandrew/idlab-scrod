@@ -17,9 +17,9 @@ NET ASIC_RD_ADDR<6> 	 LOC = "AE26";  #Column Select 2  AE26
 NET ASIC_RD_ADDR<5> 	 LOC = "AA26";  #Column Select 1  AA26
 NET ASIC_RD_ADDR<4> 	 LOC = "AC25";  #Column Select 0  AC25
 NET ASIC_RD_ADDR<3> 	 LOC = "AA17";  #Row Select 3     AA17
-NET ASIC_RD_ADDR<2> 	 LOC = "V16";   #Row Select 2     V16
+NET ASIC_RD_ADDR<0> 	 LOC = "V16";   #Row Select 2     V16  #Swapped w/ 0 in UCF to reflect this as the ACTUAL least significant bit in the ASIC
 NET ASIC_RD_ADDR<1> 	 LOC = "AB19";  #Row Select 1     AB19
-NET ASIC_RD_ADDR<0> 	 LOC = "Y16";   #Row Select 0     Y16
+NET ASIC_RD_ADDR<2> 	 LOC = "Y16";   #Row Select 0     Y16  #Swapped w/ 2 in UCF to reflcet this as NOT the least significant bit in the ASIC
 NET ASIC_SMPL_SEL<5>	 LOC = "V26";
 NET ASIC_SMPL_SEL<4>	 LOC = "U23";
 NET ASIC_SMPL_SEL<3>	 LOC = "R25";
@@ -142,8 +142,8 @@ NET RDY1       	LOC = "h12"  | IOSTANDARD = LVCMOS33;
 NET WAKEUP     	LOC = "f11"  | IOSTANDARD = LVCMOS33;
 
 #Timing constraints
-#NET "internal_CLOCK_62p5MHz" TNM_NET = Txinternal_CLOCK_62p5MHz;
-#TIMESPEC TSxinternal_CLOCK_62p5MHz = PERIOD "Txinternal_CLOCK_62p5MHz" 16.000 ns HIGH 50%;
+
+#NET "single_ASIC_control/internal_TRIGGER" CLOCK_DEDICATED_ROUTE = FALSE;
 
 NET "internal_CLOCK_4NS" TNM_NET = "internal_CLOCK_4NS";
 TIMESPEC "TS_internal_CLOCK_4NS" = PERIOD "internal_CLOCK_4NS" 4.0 ns HIGH 50% INPUT_JITTER 20.0ps;
