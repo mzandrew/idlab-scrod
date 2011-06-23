@@ -49,15 +49,18 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 --------------------------------------------------------------------------------
 --   								signals		     		   						         --
 --------------------------------------------------------------------------------
-	type STATE_TYPE is ( NOMINAL_SAMPLING );
+	type STATE_TYPE is ( NOMINAL_SAMPLING,
+								ARM_WILKINSON,PERFORM_WILKINSON,
+								ARM_READING,READ_TO_RAM,WAIT_FOR_READ_SETTLING,
+								READOUT_BY_USB);
 	
 	signal internal_STATE          : STATE_TYPE;
 
---	signal xRAM_OUTPUT_DATA        : std_logic_vector(15 downto 0);
---	signal xRAM_READ_ENABLE        : std_logic;
---	signal xRAM_WRITE_ADDRESS      : std_logic_vector(9 downto 0);
---	signal xRAM_INPUT_DATA         : std_logic_vector(15 downto 0);
---	signal xRAM_WRITE_ENABLE       : std_logic;
+	signal internal_RAM_OUTPUT_DATA        : std_logic_vector(15 downto 0);
+	signal internal_RAM_READ_ENABLE        : std_logic;
+	signal internal_RAM_WRITE_ADDRESS      : std_logic_vector(9 downto 0);
+	signal internal_RAM_INPUT_DATA         : std_logic_vector(15 downto 0);
+	signal internal_RAM_WRITE_ENABLE       : std_logic;
 	
 	signal internal_ASIC_CH_SEL	 	 : std_logic_vector(2 downto 0);
 	signal internal_ASIC_RD_ADDR	 	 : std_logic_vector(9 downto 0) := (others => '0');
@@ -82,37 +85,38 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 	signal internal_CLK_STATE_MACHINE_DIV_BY_2 : std_logic;
 
 -------------------------------------------------------------------------------
---	component RAM_BLOCK
---   port ( xRADDR 	: in    std_logic_vector(9 downto 0);
---			 xREAD  	: out   std_logic_vector(15 downto 0);
---          xRCLK 	: in    std_logic; 
---          xR_EN  	: in    std_logic; 
---          xWADDR 	: in    std_logic_vector(9 downto 0); 
---          xWRITE 	: in    std_logic_vector(15 downto 0); 
---          xWCLK 	: in    std_logic; 
---          xW_EN  	: in    std_logic);
---   end component;
+	component RAM_BLOCK
+   port ( xRADDR 	: in    std_logic_vector(9 downto 0);
+			 xREAD  	: out   std_logic_vector(15 downto 0);
+          xRCLK 	: in    std_logic; 
+          xR_EN  	: in    std_logic; 
+          xWADDR 	: in    std_logic_vector(9 downto 0); 
+          xWRITE 	: in    std_logic_vector(15 downto 0); 
+          xWCLK 	: in    std_logic; 
+          xW_EN  	: in    std_logic);
+   end component;
 ----------------------------------------------------------------------------------
 begin
 ----------------------------------------------------------------------------------			
---	xRAM_BLOCK : RAM_BLOCK 
---	port map (
---		xRADDR  	=> RAM_READ_ADDRESS,
---		xREAD 	=> DATA_TO_USB,
---		xRCLK  	=> CLK_75MHz,--xSLWR
---		xR_EN  	=> '1',
---		xWADDR	=> xRAM_WRITE_ADDRESS,
---		xWRITE  	=> xRAM_INPUT_DATA,
---		xWCLK  	=> notCLK_75MHz,
---		xW_EN  	=> xRAM_WRITE_ENABLE);
+	xRAM_BLOCK : RAM_BLOCK 
+	port map (
+		xRADDR  	=> RAM_READ_ADDRESS,
+		xREAD 	=> DATA_TO_USB,
+		xRCLK  	=> CLK_WRITE_STROBE,--xSLWR
+		xR_EN  	=> '1',
+		xWADDR	=> internal_RAM_WRITE_ADDRESS,
+		xWRITE  	=> internal_RAM_INPUT_DATA,
+		xWCLK  	=> not(CLK_WRITE_STROBE),
+		xW_EN  	=> internal_RAM_WRITE_ENABLE);
 ------------------------------------------------------------------------------	
---xRAM_INPUT_DATA(15 downto 12) <= (others => '0');
---xRAM_INPUT_DATA(11 downto 0) <= internal_ASIC_DAT;
+internal_RAM_INPUT_DATA(15 downto 12) <= (others => '0');
+internal_RAM_INPUT_DATA(11 downto 0) <= internal_ASIC_DAT;
 MON_HDR(0) <= internal_ASIC_SSP_IN;
 MON_HDR(1) <= internal_ASIC_SST_IN;
 MON_HDR(2) <= internal_ASIC_WR_STRB;
 MON_HDR(3) <= internal_ASIC_WR_ADDR(0);
-MON_HDR(14 downto 4) <= (others => '0');
+MON_HDR(13 downto 4) <= (others => '0');
+MON_HDR(14) <= internal_ASIC_WR_ADDR(9);
 MON_HDR(15) <= internal_CLK_STATE_MACHINE_DIV_BY_2;
 
 ASIC_CH_SEL   <= internal_ASIC_CH_SEL;
@@ -140,10 +144,14 @@ internal_ASIC_WR_STRB <= CLK_WRITE_STROBE;
 internal_ASIC_SSP_IN <= CLK_SSP;
 internal_ASIC_SST_IN <= CLK_SST;
 internal_ASIC_WR_ADDR(0) <= CLK_SST;
----------------------------------------
+---------------------------------------	
 
 --------------------------------------------------------------------------------
-process(CLK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER)
+process(CLK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER, internal_BUSY)
+	variable delay_counter : integer range 0 to 1023;
+	constant time_to_arm_wilkinson : integer := 3; -- A guess... should just buy some extra time for logic to settle
+	constant time_to_wilkinson : integer := 97; -- 6.2 us @ 15.625 MHz
+	constant read_to_ram_settling_time : integer := 1; --In principle we should only need 1 clock cycle here.
 begin
 ------------Asynchronous reset state------------------------
 	if (CLR_ALL = '1' or DONE_USB_XFER = '1') then
@@ -160,6 +168,8 @@ begin
 		internal_ASIC_WR_ADDR(8 downto 1) <= (others => '0');
 		internal_BUSY <= '0';
 --------Check for the trigger here-----------------------
+	elsif (internal_TRIGGER = '1' and internal_BUSY = '0') then
+		internal_BUSY <= '1';
 --------The rest of the state machine here---------------
 	elsif falling_edge(CLK_SST) then
 		internal_CLK_STATE_MACHINE_DIV_BY_2 <= not(internal_CLK_STATE_MACHINE_DIV_BY_2);
@@ -168,6 +178,83 @@ begin
 			when NOMINAL_SAMPLING =>
 				internal_ASIC_WR_ADDR(9) <= '1';
 				internal_ASIC_WR_ADDR(8 downto 1) <= std_logic_vector( unsigned(internal_ASIC_WR_ADDR(8 downto 1)) + 1 );
+				if (internal_BUSY = '1') then
+					--Switches from writing to reading mode... we could consider
+					--toggling these on and off as we read, but this seems far less
+					--complicated.
+					internal_ASIC_WR_ADDR(9) <= '0';
+					internal_ASIC_RD_ADDR(9) <= '1';					
+					internal_ASIC_RD_ENA <= '1';
+					--Move to the state where we start digitizing
+					internal_STATE <= ARM_WILKINSON;
+					delay_counter := 0;
+				end if;
+--------------------
+			when ARM_WILKINSON =>
+				internal_ASIC_TDC_CLR <= '0';
+				--In this version the soft read address is a fixed address in the 
+				--storage array.
+				internal_ASIC_RD_ADDR(8 downto 0) <= SOFT_READ_ADDR;
+				--In this version the soft read address 
+				--defines how many windows we look back from the last written address.
+				--internal_ASIC_RD_ADDR(8 downto 0) <= std_logic_vector((unsigned(internal_ASIC_WR_ADDR(8 downto 1) & '0') - 1) - unsigned(SOFT_READ_ADDR));
+				if (delay_counter >= time_to_arm_wilkinson) then
+					delay_counter := 0;
+					internal_STATE <= PERFORM_WILKINSON;
+				else
+					delay_counter := delay_counter + 1;
+				end if;
+--------------------
+			when PERFORM_WILKINSON =>
+				internal_ASIC_TDC_CLR <= '0';
+				internal_ASIC_TDC_START <= '1';
+				internal_ASIC_RAMP <= '1';
+				if (delay_counter >= time_to_wilkinson) then
+					delay_counter := 0;					
+					internal_ASIC_TDC_START <= '0';
+					internal_ASIC_RAMP <= '0';
+					internal_STATE <= ARM_READING;
+				else
+					delay_counter := delay_counter + 1;
+				end if;
+--------------------
+			when ARM_READING =>
+				internal_ASIC_SMPL_SEL_ALL <= '1';
+				internal_RAM_WRITE_ADDRESS(9 downto 0) <= (others => '0');
+				internal_STATE <= READ_TO_RAM;
+--------------------
+			when READ_TO_RAM =>	
+				internal_RAM_WRITE_ENABLE <= '0';
+				if ( unsigned(internal_RAM_WRITE_ADDRESS) > 511) then
+					internal_ASIC_SMPL_SEL_ALL <= '0';
+					internal_STATE <= READOUT_BY_USB;
+				else
+					delay_counter := 0;
+					internal_STATE <= WAIT_FOR_READ_SETTLING;
+				end if;
+--------------------
+			when WAIT_FOR_READ_SETTLING =>
+				internal_RAM_WRITE_ENABLE <= '1';
+				if (delay_counter >= read_to_ram_settling_time) then					
+					internal_RAM_WRITE_ADDRESS <= std_logic_vector(unsigned(internal_RAM_WRITE_ADDRESS) + 1);
+					if ( unsigned(internal_ASIC_SMPL_SEL) = 63) then
+						internal_ASIC_SMPL_SEL(5 downto 0) <= (others => '0');
+						if ( unsigned(internal_ASIC_CH_SEL) = 7) then
+							internal_ASIC_CH_SEL(2 downto 0) <= (others => '0');
+						else
+							internal_ASIC_CH_SEL <= std_logic_vector(unsigned(internal_ASIC_CH_SEL) + 1);
+						end if;
+					else
+						internal_ASIC_SMPL_SEL <= std_logic_vector(unsigned(internal_ASIC_SMPL_SEL) + 1);
+					end if;
+					internal_STATE <= READ_TO_RAM;
+					delay_counter := 0;
+				else
+					delay_counter := delay_counter + 1;
+				end if;
+--------------------
+			when READOUT_BY_USB =>
+				START_USB_XFER <= '1';
 --------------------
 			when others => --Catch for undefined state
 --------------------
