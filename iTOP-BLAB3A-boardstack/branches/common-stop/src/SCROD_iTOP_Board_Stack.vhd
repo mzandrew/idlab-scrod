@@ -125,7 +125,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 		ASIC_SSP_IN	     : out std_logic;
 		ASIC_SST_IN	     : out std_logic;
 		ASIC_SSP_OUT	  : in std_logic;
---		ASIC_TRIGGER     : in std_logic_vector(7 downto 0);
+		ASIC_TRIGGER_BITS   : in std_logic_vector(7 downto 0);
 		SOFT_WRITE_ADDR     : in std_logic_vector(8 downto 0);
 		SOFT_READ_ADDR     : in std_logic_vector(8 downto 0);
 --		ASIC_trigger_sign : out std_logic;
@@ -253,7 +253,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_SOFT_WRITE_ADDR	 : std_logic_vector(8 downto 0);
 	signal internal_SOFT_READ_ADDR 	 : std_logic_vector(8 downto 0);	
 	signal internal_ASIC_DATA_TO_USB  : std_logic_vector(15 downto 0);	
-	signal internal_ASIC_TRIGGER      : std_logic_vector(7 downto 0);
+	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
 	signal internal_ASIC_trigger_sign : std_logic;
 
 	signal internal_CAL_ENABLE			 : std_logic;
@@ -446,7 +446,7 @@ begin
 			ASIC_SSP_IN	      => internal_ASIC_SSP_IN,
 			ASIC_SST_IN	      => internal_ASIC_SST_IN,
 			ASIC_SSP_OUT		=> internal_ASIC_SSP_OUT,
---			ASIC_TRIGGER		=> internal_ASIC_TRIGGER,
+			ASIC_TRIGGER_BITS => internal_ASIC_TRIGGER_BITS,
 			SOFT_WRITE_ADDR   => internal_SOFT_WRITE_ADDR,
 			SOFT_READ_ADDR    => internal_SOFT_READ_ADDR,
 			-- User I/O
@@ -581,6 +581,7 @@ begin
 	ASIC_RAMP	 	 	<= internal_ASIC_RAMP;
 	internal_ASIC_DAT <= ASIC_DAT;
 	internal_ASIC_SSP_OUT <= ASIC_SSP_OUT;
+	internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER;
 	ASIC_TDC_START    <= internal_ASIC_TDC_START;
 	ASIC_TDC_CLR	   <= internal_ASIC_TDC_CLR;
 --	ASIC_WR_STRB	   <= internal_ASIC_WR_STRB;
@@ -588,7 +589,7 @@ begin
 --	ASIC_SST_IN	      <= internal_ASIC_SST_IN;
 --	ASIC_WR_ADDR(0)   <= internal_ASIC_WR_ADDR(0);
 	ASIC_WR_ADDR(9 downto 1) <= internal_ASIC_WR_ADDR(9 downto 1);
-	internal_ASIC_TRIGGER <= ASIC_TRIGGER;
+	internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER;
 	ASIC_DC1_DISABLE  <= '0';
 	ASIC_trigger_sign <= internal_ASIC_trigger_sign;
 	
