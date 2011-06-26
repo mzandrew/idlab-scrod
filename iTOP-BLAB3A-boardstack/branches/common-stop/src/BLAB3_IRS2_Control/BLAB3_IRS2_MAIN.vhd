@@ -28,6 +28,7 @@ entity BLAB3_IRS2_MAIN is
 		ASIC_SSP_IN	      : out std_logic;
 		ASIC_SST_IN	      : out std_logic;		
 		ASIC_SSP_OUT	   : in  std_logic;
+		ASIC_TRIGGER_BITS : in  std_logic_vector(7 downto 0);
 		SOFT_WRITE_ADDR   : in  std_logic_vector(8 downto 0);
 		SOFT_READ_ADDR    : in  std_logic_vector(8 downto 0);		
 		-- User I/O
@@ -76,6 +77,7 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 	signal internal_ASIC_SSP_IN	    : std_logic;
 	signal internal_ASIC_SST_IN	    : std_logic;		
 	signal internal_ASIC_SSP_OUT	    : std_logic;
+	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
 	signal internal_SOFT_WRITE_ADDR   : std_logic_vector(8 downto 0);
 	signal internal_SOFT_READ_ADDR    : std_logic_vector(8 downto 0);		
 	
@@ -115,7 +117,12 @@ MON_HDR(0) <= internal_ASIC_SSP_IN;
 MON_HDR(1) <= internal_ASIC_SST_IN;
 MON_HDR(2) <= internal_ASIC_WR_STRB;
 MON_HDR(3) <= internal_ASIC_WR_ADDR(0);
-MON_HDR(13 downto 4) <= (others => '0');
+MON_HDR(4) <= internal_ASIC_SSP_OUT;
+--MON_HDR(12 downto 5) <= internal_ASIC_TRIGGER_BITS;
+MON_HDR(5) <= internal_ASIC_TDC_CLR;
+MON_HDR(6) <= internal_ASIC_TDC_START;
+MON_HDR(7) <= internal_ASIC_RAMP;
+MON_HDR(13 downto 8) <= (others => '0');
 MON_HDR(14) <= internal_ASIC_WR_ADDR(9);
 MON_HDR(15) <= internal_CLK_STATE_MACHINE_DIV_BY_2;
 
@@ -136,6 +143,7 @@ internal_ASIC_DAT <= ASIC_DAT;
 internal_ASIC_SSP_OUT <= ASIC_SSP_OUT;
 internal_SOFT_WRITE_ADDR <= SOFT_WRITE_ADDR;
 internal_SOFT_READ_ADDR <= SOFT_READ_ADDR;		
+internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER_BITS;
 
 internal_TRIGGER <= TRIGGER;
 
@@ -206,7 +214,6 @@ begin
 				end if;
 --------------------
 			when PERFORM_WILKINSON =>
-				internal_ASIC_TDC_CLR <= '0';
 				internal_ASIC_TDC_START <= '1';
 				internal_ASIC_RAMP <= '1';
 				if (delay_counter >= time_to_wilkinson) then
