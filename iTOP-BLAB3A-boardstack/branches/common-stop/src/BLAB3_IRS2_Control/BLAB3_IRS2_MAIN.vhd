@@ -2,9 +2,10 @@
 -- Design by: Kurtis Nishimura
 -- Last updated: 2011-06-12
 -- Notes: This firmware is to operate IRS2 or BLAB3 in 
---        "one-shot" mode, where the sample signal is 
---        given only when a software trigger is received.
---        It is primarily for simple evaluation.
+--        "common-stop" mode, where sampling and writing
+--        occurs continuously.  When a trigger is 
+--        received, writing stops and data in a selected
+--        window is digitized and read out.
 --------------------------------------------------------
 
 library IEEE;
