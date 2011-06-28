@@ -139,7 +139,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 		MON_HDR		 	  : out std_logic_vector(15 downto 0); 
 		CLR_ALL		 	  : in  std_logic;
 		TRIGGER			  : in  std_logic;
-		RAM_READ_ADDRESS : in std_logic_vector(9 downto 0);
+		RAM_READ_ADDRESS : in std_logic_vector(11 downto 0);
 		DATA_TO_USB      : out std_logic_vector(15 downto 0));
 	end component;
 	---------------------------------------------------------
@@ -177,7 +177,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 		xPED_SCAN	: out std_logic_vector(11 downto 0);
 		xPED_ADDR	: out std_logic_vector(14 downto 0);
 		xDEBUG     	: out std_logic_vector(15 downto 0); 
-      xRADDR     	: out std_logic_vector(9 downto 0); 
+      xRADDR     	: out std_logic_vector(11 downto 0); 
 		xSLWR      	: out std_logic; 
       xSOFT_TRIG  : out std_logic;
 		xVCAL			: out std_logic;
@@ -258,7 +258,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 
 	signal internal_CAL_ENABLE			 : std_logic;
 	
-	signal internal_RAM_READ_ADDR     : std_logic_vector(9 downto 0);
+	signal internal_RAM_READ_ADDR     : std_logic_vector(11 downto 0);
 	signal internal_USB_START			 : std_logic;
 	signal internal_USB_DONE          : std_logic;
 	signal internal_USB_SLWR          : std_logic;

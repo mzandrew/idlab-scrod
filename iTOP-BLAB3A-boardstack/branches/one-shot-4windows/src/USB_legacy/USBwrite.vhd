@@ -155,7 +155,7 @@ begin
 					end if;
 --------------------------------------------------------------------------------
 				when STATE3 =>									  	
-					if column = 524 then -- 524
+					if column = 2060 then -- 524 for old version
 						column 	<= (others=>'0');
 						LRAD	 	<= (others=>'0');
 						DONE 		<= '1';
