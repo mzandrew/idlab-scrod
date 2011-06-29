@@ -82,15 +82,9 @@
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="Implementation"/>
     </file>
-    <file xil_pn:name="ipcore_dir/DCM_Core_A.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/Chipscope_Core.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/Chipscope_VIO.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation"/>
-    </file>
+    <file xil_pn:name="ipcore_dir/DCM_Core_A.xise" xil_pn:type="FILE_ISE"/>
+    <file xil_pn:name="ipcore_dir/Chipscope_Core.xise" xil_pn:type="FILE_ISE"/>
+    <file xil_pn:name="ipcore_dir/Chipscope_VIO.xise" xil_pn:type="FILE_ISE"/>
   </files>
 
   <properties>
