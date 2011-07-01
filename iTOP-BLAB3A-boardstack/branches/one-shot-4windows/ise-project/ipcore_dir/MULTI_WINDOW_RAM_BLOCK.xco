@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 12.2
-# Date: Mon Jun 27 20:01:52 2011
+# Date: Thu Jun 30 20:55:41 2011
 #
 ##############################################################
 #
@@ -17,10 +17,10 @@ SET addpads = false
 SET asysymbol = true
 SET busformat = BusFormatAngleBracketNotRipped
 SET createndf = false
-SET designentry = Advanced
+SET designentry = VHDL
 SET device = xc6slx150t
 SET devicefamily = spartan6
-SET flowvendor = Other
+SET flowvendor = Foundation_ISE
 SET formalverification = false
 SET foundationsym = false
 SET implementationfiletype = Ngc
@@ -85,9 +85,9 @@ CSET use_regcea_pin=false
 CSET use_regceb_pin=false
 CSET use_rsta_pin=false
 CSET use_rstb_pin=false
-CSET write_depth_a=2048
+CSET write_depth_a=4096
 CSET write_width_a=16
 CSET write_width_b=16
 # END Parameters
 GENERATE
-# CRC:  e655b1d
+# CRC: a5a095b9
