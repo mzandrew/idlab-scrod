@@ -32,48 +32,53 @@ use IEEE.NUMERIC_STD.ALL;
 entity data_generator is
     Port ( 	ENABLE 						: in  STD_LOGIC;
 				TX_DST_RDY_N 				: in  STD_LOGIC;
-				FIFO_DATA_COUNT 			: in  STD_LOGIC_VECTOR (9 downto 0);
 				FIFO_EMPTY					: in	STD_LOGIC;
+				FIFO_DATA_VALID			: in	STD_LOGIC;				
 				USER_CLK						: in 	STD_LOGIC;			  
 				DATA_TO_FIFO 				: out STD_LOGIC_VECTOR (31 downto 0);
-				WRITE_DATA_TO_FIFO_CLK 	: out STD_LOGIC;
+				WRITE_DATA_TO_FIFO_ENABLE 	: out STD_LOGIC;
 				TX_SRC_RDY_N 				: out STD_LOGIC;
 				READ_FROM_FIFO_ENABLE	: out STD_LOGIC;
-				DATA_GENERATOR_STATE		: out STD_LOGIC_VECTOR(2 downto 0));
+				DATA_GENERATOR_STATE		: out STD_LOGIC_VECTOR(2 downto 0);
+				VARIABLE_DELAY_BETWEEN_EVENTS	: in STD_LOGIC_VECTOR(31 downto 0));
 end data_generator;
 
 architecture Behavioral of data_generator is
 
-	type STATE_TYPE is ( IDLE, MAKE_DATA_READY_FOR_FIFO, CLOCK_DATA_INTO_FIFO, SEND_DATA);
+	type STATE_TYPE is ( IDLE, MAKE_DATA_READY_FOR_FIFO, CLOCK_DATA_INTO_FIFO, SEND_DATA, DELAY_BETWEEN_EVENTS);
 
 	signal internal_STATE 						: STATE_TYPE;
 	signal internal_ENABLE 						: std_logic;
 	signal internal_TX_DST_RDY_N 				: std_logic;
-	signal internal_FIFO_DATA_COUNT			: std_logic_vector(9 downto 0);
-	signal internal_DATA_TO_FIFO				: std_logic_vector(31 downto 0);
-	signal internal_WRITE_DATA_TO_FIFO_CLK	: std_logic;
-	signal internal_TX_SRC_RDY_N				: std_logic;
-	signal internal_CHECKSUM					: std_logic_vector(31 downto 0);
-	signal internal_READ_FROM_FIFO_ENABLE	: std_logic;
-	signal internal_DATA_GENERATOR_STATE	: std_logic_vector(2 downto 0);
+	signal internal_DATA_TO_FIFO				: std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_WRITE_DATA_TO_FIFO_ENABLE	: std_logic := '0';
+	signal internal_TX_SRC_RDY_N				: std_logic := '0';
+	signal internal_CHECKSUM					: std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_READ_FROM_FIFO_ENABLE	: std_logic := '0';
+	signal internal_DATA_GENERATOR_STATE	: std_logic_vector(2 downto 0) := "000";
 	signal internal_FIFO_EMPTY					: std_logic;
+	signal internal_FIFO_DATA_VALID 			: std_logic;
+	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
 
 begin
 
 	internal_ENABLE 				<= ENABLE;
 	internal_TX_DST_RDY_N 		<= TX_DST_RDY_N;
-	internal_FIFO_DATA_COUNT 	<= FIFO_DATA_COUNT;
 	DATA_TO_FIFO 					<= internal_DATA_TO_FIFO;
-	WRITE_DATA_TO_FIFO_CLK 		<= internal_WRITE_DATA_TO_FIFO_CLK;
+	WRITE_DATA_TO_FIFO_ENABLE	<= internal_WRITE_DATA_TO_FIFO_ENABLE;
 	TX_SRC_RDY_N 					<= internal_TX_SRC_RDY_N;
 	READ_FROM_FIFO_ENABLE		<= internal_READ_FROM_FIFO_ENABLE;
 	DATA_GENERATOR_STATE			<= internal_DATA_GENERATOR_STATE;
 	internal_FIFO_EMPTY			<= FIFO_EMPTY;
+	internal_FIFO_DATA_VALID	<= FIFO_DATA_VALID;
+	internal_VARIABLE_DELAY_BETWEEN_EVENTS <= VARIABLE_DELAY_BETWEEN_EVENTS;
 
 	process(USER_CLK) 
-		variable word_number : integer range 0 to 139 := 0;
+		variable word_number 	: integer range 0 to 139 := 0;
+		variable packet_number 	: integer range 0 to 129 := 0;
+		variable delay_counter 	: unsigned(31 downto 0) := (others => '0');
 	begin
-		if (rising_edge(USER_CLK)) then
+		if (falling_edge(USER_CLK)) then
 			case internal_STATE is
 				when IDLE =>
 					internal_DATA_GENERATOR_STATE <= "000";
@@ -86,7 +91,7 @@ begin
 					end if;
 				when MAKE_DATA_READY_FOR_FIFO =>
 					internal_DATA_GENERATOR_STATE <= "001";				
-					internal_WRITE_DATA_TO_FIFO_CLK <= '0';				
+					internal_WRITE_DATA_TO_FIFO_ENABLE <= '0';				
 					internal_STATE <= CLOCK_DATA_INTO_FIFO;					
 					if (word_number = 0) then
 						internal_DATA_TO_FIFO <= x"00BE11E2";
@@ -97,7 +102,7 @@ begin
 					elsif (word_number = 3) then
 						internal_DATA_TO_FIFO <= x"20110629";
 					elsif (word_number >= 4 and word_number <= 137) then
-						internal_DATA_TO_FIFO <= x"DEADBEEF";
+						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(word_number,16)) & x"BEEF";
 					elsif (word_number = 138) then
 						internal_DATA_TO_FIFO <= std_logic_vector(unsigned(internal_CHECKSUM) + x"62504944");
 					elsif (word_number = 139) then
@@ -105,7 +110,7 @@ begin
 					end if;
 				when CLOCK_DATA_INTO_FIFO => 
 					internal_DATA_GENERATOR_STATE <= "010";				
-					internal_WRITE_DATA_TO_FIFO_CLK <= '1';
+					internal_WRITE_DATA_TO_FIFO_ENABLE <= '1';
 					internal_CHECKSUM <= std_logic_vector(unsigned(internal_CHECKSUM) + unsigned(internal_DATA_TO_FIFO));
 					if (word_number = 139) then
 						internal_STATE <= SEND_DATA;
@@ -115,13 +120,32 @@ begin
 					end if;
 				when SEND_DATA =>
 					internal_DATA_GENERATOR_STATE <= "011";				
-					internal_TX_SRC_RDY_N <= '0';
-					internal_READ_FROM_FIFO_ENABLE <= '1';
+					internal_WRITE_DATA_TO_FIFO_ENABLE <= '0';
+--					internal_READ_FROM_FIFO_ENABLE <= internal_FIFO_DATA_VALID and not(internal_TX_DST_RDY_N);
+--					internal_TX_SRC_RDY_N <= not(internal_FIFO_DATA_VALID and not(internal_TX_DST_RDY_N));
+					internal_READ_FROM_FIFO_ENABLE <= not(internal_TX_DST_RDY_N);
+					internal_TX_SRC_RDY_N <= internal_TX_DST_RDY_N;
 					if (internal_FIFO_EMPTY = '1') then
+						if (packet_number = 129) then
+							internal_STATE <= DELAY_BETWEEN_EVENTS;
+						else
+							packet_number := packet_number + 1;
+							internal_STATE <= IDLE;							
+						end if;
+					end if;								
+				when DELAY_BETWEEN_EVENTS =>
+					internal_DATA_GENERATOR_STATE <= "100";
+					internal_TX_SRC_RDY_N <= '1';				
+					internal_READ_FROM_FIFO_ENABLE <= '0';
+					if (delay_counter < unsigned(internal_VARIABLE_DELAY_BETWEEN_EVENTS)) then
+						delay_counter := delay_counter + 1;
+					else
+						delay_counter := (others => '0');
+						packet_number := 0;
 						internal_STATE <= IDLE;
 					end if;
 				when others =>
-					internal_DATA_GENERATOR_STATE <= "100";				
+					internal_DATA_GENERATOR_STATE <= "111";				
 					internal_STATE <= IDLE;
 			end case;
 		end if;
