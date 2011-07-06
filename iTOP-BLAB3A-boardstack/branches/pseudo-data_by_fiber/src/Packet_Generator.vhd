@@ -40,7 +40,11 @@ entity Packet_Generator is
 				TX_SRC_RDY_N 	: out  STD_LOGIC;
 				TX_D 				: out  STD_LOGIC_VECTOR (31 downto 0);
 				
-				DATA_GENERATOR_STATE	:	out  STD_LOGIC_VECTOR(2 downto 0)
+				DATA_GENERATOR_STATE	:	out  STD_LOGIC_VECTOR(2 downto 0);
+				
+				FIFO_EMPTY		: out	STD_LOGIC;
+				
+				VARIABLE_DELAY_BETWEEN_EVENTS	:	in STD_LOGIC_VECTOR(31 downto 0)
 			);
 end Packet_Generator;
 
@@ -51,14 +55,15 @@ architecture Behavioral of Packet_Generator is
 		port (
 			ENABLE						: IN STD_LOGIC;
 			TX_DST_RDY_N				: IN STD_LOGIC;
-			FIFO_DATA_COUNT			: IN STD_LOGIC_VECTOR(9 downto 0);
 			USER_CLK						: IN STD_LOGIC;
 			DATA_TO_FIFO				: OUT STD_LOGIC_VECTOR(31 downto 0);
-			WRITE_DATA_TO_FIFO_CLK	: OUT STD_LOGIC;
+			WRITE_DATA_TO_FIFO_ENABLE	: OUT STD_LOGIC;
 			TX_SRC_RDY_N				: OUT STD_LOGIC;
 			READ_FROM_FIFO_ENABLE	: OUT STD_LOGIC;
 			DATA_GENERATOR_STATE		: out STD_LOGIC_VECTOR(2 downto 0);
-			FIFO_EMPTY					: out STD_LOGIC
+			FIFO_EMPTY					: IN STD_LOGIC;
+			FIFO_DATA_VALID			: IN STD_LOGIC;
+			VARIABLE_DELAY_BETWEEN_EVENTS	: in STD_LOGIC_VECTOR(31 downto 0)			
 		);
 	end component;
 	----------------------------------------------
@@ -86,13 +91,13 @@ architecture Behavioral of Packet_Generator is
 	signal internal_ENABLED 		: std_logic;
 	
 	signal internal_WORD_TO_WRITE_TO_FIFO	: std_logic_vector(31 downto 0);
-	signal internal_FIFO_DATA_OUT_VALID		: std_logic;
-	signal internal_FIFO_DATA_COUNT 			: std_logic_vector(9 downto 0);
-	signal internal_WRITE_DATA_TO_FIFO_CLK : std_logic;
+	signal internal_FIFO_DATA_VALID			: std_logic;
+	signal internal_WRITE_DATA_TO_FIFO_ENABLE		: std_logic;
 	signal internal_READ_FROM_FIFO_ENABLE	: std_logic;
 	signal internal_FIFO_FULL					: std_logic;
 	signal internal_FIFO_EMPTY					: std_logic;
 	signal internal_DATA_GENERATOR_STATE	: std_logic_vector(2 downto 0);
+	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
 
 begin
 	------------------------------------------
@@ -100,28 +105,29 @@ begin
 		port map (
 			ENABLE						=> internal_ENABLED,
 			TX_DST_RDY_N				=> internal_TX_DST_RDY_N,
-			FIFO_DATA_COUNT			=> internal_FIFO_DATA_COUNT,
 			USER_CLK						=> USER_CLK,
 			DATA_TO_FIFO				=> internal_WORD_TO_WRITE_TO_FIFO,
-			WRITE_DATA_TO_FIFO_CLK	=> internal_WRITE_DATA_TO_FIFO_CLK,
+			WRITE_DATA_TO_FIFO_ENABLE	=> internal_WRITE_DATA_TO_FIFO_ENABLE,
 			TX_SRC_RDY_N				=> internal_TX_SRC_RDY_N,
 			READ_FROM_FIFO_ENABLE	=> internal_READ_FROM_FIFO_ENABLE,
 			DATA_GENERATOR_STATE		=> internal_DATA_GENERATOR_STATE,
-			FIFO_EMPTY					=> internal_FIFO_EMPTY);
+			FIFO_EMPTY					=> internal_FIFO_EMPTY,
+			FIFO_DATA_VALID			=> internal_FIFO_DATA_VALID,
+			VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS);
 	------------------------------------------
 	packet_cache_A : packet_fifo
 		port map (
 			rst 				=> internal_RESET,
-			wr_clk 			=> internal_WRITE_DATA_TO_FIFO_CLK,
+			wr_clk 			=> USER_CLK,
 			rd_clk 			=> USER_CLK,
 			din 				=> internal_WORD_TO_WRITE_TO_FIFO,
-			wr_en 			=> '1',
+			wr_en 			=> internal_WRITE_DATA_TO_FIFO_ENABLE,
 			rd_en 			=> internal_READ_FROM_FIFO_ENABLE,
 			dout 				=> internal_TX_D,
 			full 				=> internal_FIFO_FULL,
 			empty 			=> internal_FIFO_EMPTY,
-			valid 			=> internal_FIFO_DATA_OUT_VALID,
-			wr_data_count 	=> internal_FIFO_DATA_COUNT);			
+			valid 			=> internal_FIFO_DATA_VALID,
+			wr_data_count 	=> open);			
 	------------------------------------------
 	internal_CHANNEL_UP <= CHANNEL_UP;
 	internal_RESET <= RESET;
@@ -130,7 +136,10 @@ begin
 	TX_D <= internal_TX_D;
 	internal_ENABLE <= ENABLE;
 	internal_ENABLED <= internal_ENABLE(0) and internal_ENABLE(1);
+	internal_VARIABLE_DELAY_BETWEEN_EVENTS <= VARIABLE_DELAY_BETWEEN_EVENTS;
 	
 	DATA_GENERATOR_STATE <= internal_DATA_GENERATOR_STATE;
+
+	FIFO_EMPTY <= internal_FIFO_EMPTY;
 
 end Behavioral;

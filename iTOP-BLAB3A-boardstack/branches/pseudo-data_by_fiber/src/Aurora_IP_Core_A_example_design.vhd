@@ -99,6 +99,7 @@ entity Aurora_IP_Core_A_example_design is
 				BOARD_CLOCKP		: in std_logic;
 				BOARD_CLOCKN		: in std_logic;				
 				LEDS					: out std_logic_vector(15 downto 0);
+				MONITOR_HEADER		: out std_logic_vector(15 downto 0);
 				
 				--Transceiver pins
 				TX_FAULT0			: in std_logic;
@@ -180,7 +181,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 -- VIO Signals
    signal icon_to_vio_i       : std_logic_vector (35 downto 0);
    signal sync_in_i           : std_logic_vector (63 downto 0);
-   signal sync_out_i          : std_logic_vector (15 downto 0);
+   signal sync_out_i          : std_logic_vector (63 downto 0);
 
 
    signal lane_up_i_i  	      : std_logic;
@@ -201,6 +202,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal tx_pe_data_i : std_logic_vector(31 downto 0);
 	signal internal_PACKET_GENERATOR_ENABLE : std_logic_vector(1 downto 0);
 	signal internal_DATA_GENERATOR_STATE : std_logic_vector(2 downto 0);
+	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
    -----------------------------------
 
 	-- Component Declarations --
@@ -383,7 +385,9 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 		TX_SRC_RDY_N 	: out  STD_LOGIC;
 		TX_D 				: out  STD_LOGIC_VECTOR (31 downto 0);
 		
-		DATA_GENERATOR_STATE : out STD_LOGIC_VECTOR(2 downto 0)
+		DATA_GENERATOR_STATE : out STD_LOGIC_VECTOR(2 downto 0);
+
+		VARIABLE_DELAY_BETWEEN_EVENTS : in STD_LOGIC_VECTOR(31 downto 0)
 	);
 	end component;	
  
@@ -424,7 +428,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
       control     : in    std_logic_vector(35 downto 0);
       clk         : in    std_logic;
       sync_in     : in    std_logic_vector(63 downto 0);
-      sync_out    : out   std_logic_vector(15 downto 0)
+      sync_out    : out   std_logic_vector(63 downto 0)
     );
   end component;
                                                                                 
@@ -452,6 +456,9 @@ begin
 	 LEDS(7) <= pll_not_locked_i;
 --	 LEDS(7) <= internal_COUNTER(26);
 	 LEDS(15 downto 8) <= ERR_COUNT_Buffer;
+
+	MONITOR_HEADER(0) <= tx_src_rdy_n_i;
+	MONITOR_HEADER(15 downto 1) <= (others => '0');
 ------------------------------------------
 	process(internal_BOARD_CLOCK) begin
 	if rising_edge(internal_BOARD_CLOCK) then
@@ -564,7 +571,9 @@ begin
 		TX_SRC_RDY_N 	=> tx_src_rdy_n_i,
 		TX_D 				=> tx_d_i,
 		
-		DATA_GENERATOR_STATE => internal_DATA_GENERATOR_STATE
+		DATA_GENERATOR_STATE => internal_DATA_GENERATOR_STATE,
+		
+		VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS
 	);
 
     -- Module Instantiations --
@@ -716,6 +725,7 @@ chipscope2 : if USE_CHIPSCOPE = 1 generate
  -- Shared VIO Outputs
     reset_i <= system_reset_i or sync_out_i(0);	 
 	 internal_PACKET_GENERATOR_ENABLE <= sync_out_i(2 downto 1);
+	 internal_VARIABLE_DELAY_BETWEEN_EVENTS <= sync_out_i(34 downto 3);
 end generate chipscope2;
 
 no_chipscope2 : if USE_CHIPSCOPE = 0 generate
