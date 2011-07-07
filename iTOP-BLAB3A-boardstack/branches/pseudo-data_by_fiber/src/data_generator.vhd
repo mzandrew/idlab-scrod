@@ -94,19 +94,19 @@ begin
 					internal_WRITE_DATA_TO_FIFO_ENABLE <= '0';				
 					internal_STATE <= CLOCK_DATA_INTO_FIFO;					
 					if (word_number = 0) then
-						internal_DATA_TO_FIFO <= x"00BE11E2";
+						internal_DATA_TO_FIFO <= x"00BE11E2"; -- header (similar to "Belle2" in hexadecimal)
 					elsif (word_number = 1) then
-						internal_DATA_TO_FIFO <= x"0000008C";
+						internal_DATA_TO_FIFO <= x"0000008C"; -- packet size in words
 					elsif (word_number = 2) then
-						internal_DATA_TO_FIFO <= x"00C0FFEE";
+						internal_DATA_TO_FIFO <= x"00C0FFEE"; -- packet type (similar to "coffee" in hexadecimal)
 					elsif (word_number = 3) then
-						internal_DATA_TO_FIFO <= x"20110629";
+						internal_DATA_TO_FIFO <= x"20110629"; -- protocol freeze date (YYYYMMDD in hexadecimal)
 					elsif (word_number >= 4 and word_number <= 137) then
-						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(word_number,16)) & x"BEEF";
+						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(word_number,16)) & x"BEEF"; -- pseudo-data
 					elsif (word_number = 138) then
-						internal_DATA_TO_FIFO <= std_logic_vector(unsigned(internal_CHECKSUM) + x"62504944");
+						internal_DATA_TO_FIFO <= std_logic_vector(unsigned(internal_CHECKSUM) + x"62504944"); -- 32 bit checksum, including header+footer, but not self
 					elsif (word_number = 139) then
-						internal_DATA_TO_FIFO <= x"62504944";					
+						internal_DATA_TO_FIFO <= x"62504944"; -- footer ("bPID" in ASCII)
 					end if;
 				when CLOCK_DATA_INTO_FIFO => 
 					internal_DATA_GENERATOR_STATE <= "010";				

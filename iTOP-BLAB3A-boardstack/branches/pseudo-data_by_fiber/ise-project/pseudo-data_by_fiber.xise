@@ -110,18 +110,6 @@
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="Implementation"/>
     </file>
-    <file xil_pn:name="ipcore_dir/s6_vio.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation"/>
-      <association xil_pn:name="Implementation"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/s6_icon.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation"/>
-      <association xil_pn:name="Implementation"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/packet_fifo.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation"/>
-      <association xil_pn:name="Implementation"/>
-    </file>
     <file xil_pn:name="../src/Data_Generator_Testbench.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="PostMapSimulation"/>
@@ -138,13 +126,25 @@
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="Implementation"/>
     </file>
-    <file xil_pn:name="ipcore_dir/s6_vio.xise" xil_pn:type="FILE_COREGENISE">
+    <file xil_pn:name="ipcore_dir/packet_fifo.xco" xil_pn:type="FILE_COREGEN">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="ipcore_dir/s6_icon.xco" xil_pn:type="FILE_COREGEN">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="ipcore_dir/s6_vio.xco" xil_pn:type="FILE_COREGEN">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="ipcore_dir/packet_fifo.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation"/>
     </file>
     <file xil_pn:name="ipcore_dir/s6_icon.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation"/>
     </file>
-    <file xil_pn:name="ipcore_dir/packet_fifo.xise" xil_pn:type="FILE_COREGENISE">
+    <file xil_pn:name="ipcore_dir/s6_vio.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation"/>
     </file>
   </files>
@@ -451,6 +451,7 @@
     <property xil_pn:name="Watchdog Timer Value spartan6" xil_pn:value="0xFFFF" xil_pn:valueState="default"/>
     <property xil_pn:name="Working Directory" xil_pn:value="." xil_pn:valueState="non-default"/>
     <property xil_pn:name="Write Timing Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="iMPACT Project File" xil_pn:value="aurora_ip_core_a_example_design.ipf" xil_pn:valueState="non-default"/>
     <!--                                                                                  -->
     <!-- The following properties are for internal use only. These should not be modified.-->
     <!--                                                                                  -->
