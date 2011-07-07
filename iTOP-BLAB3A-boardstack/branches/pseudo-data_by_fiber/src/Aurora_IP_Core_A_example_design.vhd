@@ -392,22 +392,29 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	end component;	
  
  
-    component Aurora_IP_Core_A_FRAME_CHECK
-    port
-    (
-        -- User Interface
-        RX_D            : in  std_logic_vector(0 to 31); 
-        RX_SRC_RDY_N    : in  std_logic; 
-
-
-        -- System Interface
-        USER_CLK        : in  std_logic;   
-        RESET           : in  std_logic;
-        CHANNEL_UP      : in  std_logic;
-        ERR_COUNT       : out std_logic_vector(0 to 7)
-  
-    );
-    end component;
+--	component Aurora_IP_Core_A_FRAME_CHECK
+	component Packet_Receiver
+	port (
+		-- User Interface
+		RX_D            : in    std_logic_vector(0 to 31); 
+		RX_SRC_RDY_N    : in    std_logic; 
+		-- System Interface
+		USER_CLK        : in    std_logic;   
+		RESET           : in    std_logic;
+		CHANNEL_UP      : in    std_logic;
+		WRONG_PACKET_SIZE_COUNTER          :   out std_logic_vector(31 downto 0);
+		WRONG_PACKET_TYPE_COUNTER          :   out std_logic_vector(31 downto 0);
+		WRONG_PROTOCOL_FREEZE_DATE_COUNTER :   out std_logic_vector(31 downto 0);
+		WRONG_CHECKSUM_COUNTER             :   out std_logic_vector(31 downto 0);
+		WRONG_FOOTER_COUNTER               :   out std_logic_vector(31 downto 0);
+		UNKNOWN_ERROR_COUNTER              :   out std_logic_vector(31 downto 0);
+		MISSING_ACKNOWLEDGEMENT_COUNTER    :   out std_logic_vector(31 downto 0);
+		resynchronizing_with_header        :   out std_logic;
+		start_event_transfer               :   out std_logic;
+		acknowledge_start_event_transfer   : in    std_logic;
+		ERR_COUNT       :   out std_logic_vector(0 to 7)
+	);
+	end component;
 
   -------------------------------------------------------------------
   --  ICON core component declaration
@@ -432,7 +439,19 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
     );
   end component;
                                                                                 
+	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
+	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
+	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
+	signal internal_WRONG_CHECKSUM_COUNTER             : std_logic_vector(31 downto 0);
+	signal internal_WRONG_FOOTER_COUNTER               : std_logic_vector(31 downto 0);
+	signal internal_UNKNOWN_ERROR_COUNTER              : std_logic_vector(31 downto 0);
+	signal internal_MISSING_ACKNOWLEDGEMENT_COUNTER    : std_logic_vector(31 downto 0);
+	signal internal_resynchronizing_with_header        : std_logic;
+	signal internal_start_event_transfer               : std_logic;
+	signal internal_acknowledge_start_event_transfer   : std_logic;
 begin
+--	internal_acknowledge_start_event_transfer <= '0';
+
     lane_up_reduce_i    <=  lane_up_i;
 
     HARD_ERR  <= HARD_ERR_Buffer;
@@ -527,20 +546,28 @@ begin
     -- _______________________________ Module Instantiations ________________________--
 
     --Connect a frame checker to the user interface
-    frame_check_i : Aurora_IP_Core_A_FRAME_CHECK
-    port map
-    (
-        -- User Interface
-        RX_D            =>  rx_d_i, 
-        RX_SRC_RDY_N    =>  rx_src_rdy_n_i,  
-
-        -- System Interface
-        USER_CLK        =>  user_clk_i,   
-        RESET           =>  reset_i,
-        CHANNEL_UP      =>  channel_up_i,
-        ERR_COUNT       =>  err_count_i
-  
-    );
+--	frame_check_i : Aurora_IP_Core_A_FRAME_CHECK
+	frame_check_i : Packet_Receiver
+	port map (
+		-- User Interface
+		RX_D            =>  rx_d_i, 
+		RX_SRC_RDY_N    =>  rx_src_rdy_n_i,  
+		-- System Interface
+		USER_CLK        =>  user_clk_i,   
+		RESET           =>  reset_i,
+		CHANNEL_UP      =>  channel_up_i,
+		WRONG_PACKET_SIZE_COUNTER => internal_WRONG_PACKET_SIZE_COUNTER,
+		WRONG_PACKET_TYPE_COUNTER => internal_WRONG_PACKET_TYPE_COUNTER,
+		WRONG_PROTOCOL_FREEZE_DATE_COUNTER => internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER,
+		WRONG_CHECKSUM_COUNTER => internal_WRONG_CHECKSUM_COUNTER,
+		WRONG_FOOTER_COUNTER => internal_WRONG_FOOTER_COUNTER,
+		UNKNOWN_ERROR_COUNTER => internal_UNKNOWN_ERROR_COUNTER,
+		MISSING_ACKNOWLEDGEMENT_COUNTER => internal_MISSING_ACKNOWLEDGEMENT_COUNTER,
+		resynchronizing_with_header => internal_resynchronizing_with_header,
+		start_event_transfer => internal_start_event_transfer,
+		acknowledge_start_event_transfer => internal_acknowledge_start_event_transfer,
+		ERR_COUNT       =>  err_count_i
+	);
 
 
 --    --Connect a frame generator to the user interface
@@ -675,23 +702,47 @@ begin
    tx_lock_i_i    <= '1'  and tx_lock_i;
 
   --Shared VIO Inputs
-   sync_in_i(31 downto 0) <= tx_d_i(0 to 31);
---	  sync_in_i(31 downto 0) <= tx_pe_data_i(31 downto 0);
---   sync_in_i(31 downto 0) <= rx_d_i(0 to 31);
-   sync_in_i(39 downto 32) <= err_count_i;
-	sync_in_i(42 downto 40) <= internal_DATA_GENERATOR_STATE;
-	sync_in_i(43)		  <= '0';
-	sync_in_i(44)       <= reset_i;
-	sync_in_i(45)       <= reset_lanes_i;
-	sync_in_i(52 downto 46) <= lane_init_state_i;
-	sync_in_i(56 downto 53) <= rx_char_is_comma_i;
-	sync_in_i(57)       <= tx_src_rdy_n_i;
-   sync_in_i(58)       <= soft_err_i;
-   sync_in_i(59)       <= hard_err_i;
-   sync_in_i(60)       <= tx_lock_i_i;
-   sync_in_i(61)       <= pll_not_locked_i;
-   sync_in_i(62)       <= lane_up_i_i;
-   sync_in_i(63)       <= channel_up_i;
+--	sync_in_i(31 downto 0) <= tx_d_i(0 to 31);
+--	sync_in_i(31 downto 0) <= tx_pe_data_i(31 downto 0);
+--	sync_in_i(31 downto 0) <= rx_d_i(0 to 31);
+--	sync_in_i(39 downto 32) <= err_count_i;
+--	sync_in_i(42 downto 40) <= internal_DATA_GENERATOR_STATE;
+--	sync_in_i(43)		  <= '0';
+--	sync_in_i(44)       <= reset_i;
+--	sync_in_i(45)       <= reset_lanes_i;
+--	sync_in_i(52 downto 46) <= lane_init_state_i;
+--	sync_in_i(56 downto 53) <= rx_char_is_comma_i;
+--	sync_in_i(57)       <= tx_src_rdy_n_i;
+--	sync_in_i(58)       <= soft_err_i;
+--	sync_in_i(59)       <= hard_err_i;
+--	sync_in_i(60)       <= tx_lock_i_i;
+--	sync_in_i(61)       <= pll_not_locked_i;
+--	sync_in_i(62)       <= lane_up_i_i;
+--	sync_in_i(63)       <= channel_up_i;
+
+	-- aurora status:
+	sync_in_i(6 downto 0) <= lane_init_state_i;
+	sync_in_i(7)          <= lane_up_i_i;
+	sync_in_i(8)          <= channel_up_i;
+	sync_in_i(9)          <= pll_not_locked_i;
+	sync_in_i(15 downto 10) <= "000000";
+	-- data generator status:
+	sync_in_i(18 downto 16) <= internal_DATA_GENERATOR_STATE;
+	-- data receiver status:
+	sync_in_i(19)           <= tx_src_rdy_n_i;
+	sync_in_i(20)           <= internal_resynchronizing_with_header;
+	sync_in_i(21)           <= internal_start_event_transfer;
+--	sync_in_i(22)           <= internal_acknowledge_start_event_transfer;
+	sync_in_i(23 downto 22) <= "00";
+	sync_in_i(31 downto 24) <= internal_WRONG_PACKET_SIZE_COUNTER(7 downto 0);
+	sync_in_i(39 downto 32) <= internal_WRONG_PACKET_TYPE_COUNTER(7 downto 0);
+	sync_in_i(47 downto 40) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(7 downto 0);
+	sync_in_i(55 downto 48) <= internal_WRONG_CHECKSUM_COUNTER(7 downto 0);
+	sync_in_i(63 downto 56) <= internal_WRONG_FOOTER_COUNTER(7 downto 0);
+--	sync_in_i(112 downto 65) <= internal_UNKNOWN_ERROR_COUNTER(7 downto 0);
+--	sync_in_i(120 downto 113) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(7 downto 0);
+
+	internal_acknowledge_start_event_transfer <= sync_out_i(35);
 
   -------------------------------------------------------------------
   --  ICON core instance
