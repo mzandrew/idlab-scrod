@@ -107,7 +107,8 @@ begin
 				when ADC =>	
 					FPGA_DATA <= x"0" & xADC;
 					RADDR <= RADDR + 1;
-					if RADDR = 2047 then
+					if RADDR = 4095 then --8 windows
+--					if RADDR = 3071 then --6 windows
 						RADDR <= (others=>'0');
 						STATE <= PRCO_INT;	
 					end if;
