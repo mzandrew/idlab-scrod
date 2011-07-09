@@ -18,8 +18,9 @@ NET ASIC_RD_ADDR<5> 	 LOC = "AA26";  #Column Select 1  AA26
 NET ASIC_RD_ADDR<4> 	 LOC = "AC25";  #Column Select 0  AC25
 NET ASIC_RD_ADDR<3> 	 LOC = "AA17";  #Row Select 3     AA17
 NET ASIC_RD_ADDR<0> 	 LOC = "V16";   #Row Select 2     V16  #Swapped w/ 0 in UCF to reflect this as the ACTUAL least significant bit in the ASIC
-NET ASIC_RD_ADDR<2> 	 LOC = "AB19"; #swapped #Row Select 1     AB19
-NET ASIC_RD_ADDR<1> 	 LOC = "Y16";  #swapped #Row Select 0     Y16  #Swapped w/ 2 in UCF to reflcet this as NOT the least significant bit in the ASIC
+NET ASIC_RD_ADDR<1> 	 LOC = "AB19";  #Row Select 1     AB19
+NET ASIC_RD_ADDR<2> 	 LOC = "Y16";   #Row Select 0     Y16  #Swapped w/ 2 in UCF to reflcet this as NOT the least significant bit in the ASIC
+
 NET ASIC_SMPL_SEL<5>	 LOC = "V26";
 NET ASIC_SMPL_SEL<4>	 LOC = "U23";
 NET ASIC_SMPL_SEL<3>	 LOC = "R25";
@@ -52,8 +53,9 @@ NET ASIC_WR_ADDR<5>   LOC = "W26";  #Column Select 1  W26
 NET ASIC_WR_ADDR<4>   LOC = "Y26";  #Column Select 0  Y26
 NET ASIC_WR_ADDR<3>   LOC = "V15";  #Row Select 3     V15
 NET ASIC_WR_ADDR<0>   LOC = "AB15"; #Row Select 2     AB15  #Swapped w/ 0 in UCF to reflect this as the ACTUAL least significant bit in the ASIC
-NET ASIC_WR_ADDR<2>   LOC = "P17";  #swapped #Row Select 1     P17
-NET ASIC_WR_ADDR<1>   LOC = "W14";  #swapped #Row Select 0     W14   #Swapped w/ 2 in UCF to reflcet this as NOT the least significant bit in the ASIC
+NET ASIC_WR_ADDR<1>   LOC = "P17";  #Row Select 1     P17
+NET ASIC_WR_ADDR<2>   LOC = "W14";  #Row Select 0     W14   #Swapped w/ 2 in UCF to reflcet this as NOT the least significant bit in the ASIC
+
 NET ASIC_TRIGGER<7>   LOC = "G1";
 NET ASIC_TRIGGER<6>   LOC = "Y12";
 NET ASIC_TRIGGER<5>   LOC = "AA11";

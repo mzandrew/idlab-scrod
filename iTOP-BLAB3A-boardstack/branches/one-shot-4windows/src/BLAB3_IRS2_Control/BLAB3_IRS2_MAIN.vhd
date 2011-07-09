@@ -87,32 +87,32 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 
 	signal internal_CLK_STATE_MACHINE_DIV_BY_2 : std_logic;
 
--------------------------------------------------------------------------------
+-------------------------------------------------------------------------
 	component MULTI_WINDOW_RAM_BLOCK
 	port (
 		clka: IN std_logic;
 		ena: IN std_logic;
 		wea: IN std_logic_VECTOR(0 downto 0);
-		addra: IN std_logic_VECTOR(10 downto 0);
+		addra: IN std_logic_VECTOR(11 downto 0);
 		dina: IN std_logic_VECTOR(15 downto 0);
 		clkb: IN std_logic;
-		addrb: IN std_logic_VECTOR(10 downto 0);
+		addrb: IN std_logic_VECTOR(11 downto 0);
 		doutb: OUT std_logic_VECTOR(15 downto 0));
 	end component;
-----------------------------------------------------------------------------------
+-------------------------------------------------------------------------
 begin
-----------------------------------------------------------------------------------			
+-------------------------------------------------------------------------			
 	READOUT_RAM_BLOCK : MULTI_WINDOW_RAM_BLOCK
 	port map (
 		clka => CLK_WRITE_STROBE,
 		ena => '1',
 		wea => internal_RAM_WRITE_ENABLE_VEC,
-		addra => internal_RAM_WRITE_ADDRESS(10 downto 0),
+		addra => internal_RAM_WRITE_ADDRESS,
 		dina => internal_RAM_INPUT_DATA,
 		clkb => not(CLK_WRITE_STROBE),
-		addrb => RAM_READ_ADDRESS(10 downto 0),
+		addrb => RAM_READ_ADDRESS,
 		doutb => DATA_TO_USB);		
-------------------------------------------------------------------------------	
+-------------------------------------------------------------------------
 internal_RAM_INPUT_DATA(15 downto 12) <= (others => '0');
 internal_RAM_INPUT_DATA(11 downto 0) <= internal_ASIC_DAT;
 MON_HDR(0) <= internal_ASIC_SSP_IN;
@@ -167,12 +167,13 @@ process(CLK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER, internal_BUSY)
 	variable windows_sampled_after_trigger : integer range 0 to 1023 := 0;
 	variable windows_read_out : integer range 0 to 1023 := 0;
 	variable samples_read_out_this_window : integer range 0 to 1023;
-	constant windows_to_sample : integer := 4;
+	constant windows_to_sample : integer := 8;
 	constant trigger_arming_time : integer := 1;
 begin
 ------------Asynchronous reset state------------------------
 	if (CLR_ALL = '1' or DONE_USB_XFER = '1') then
 		internal_STATE <= WAITING;
+		internal_CLK_STATE_MACHINE_DIV_BY_2 <= not(internal_CLK_STATE_MACHINE_DIV_BY_2);
 		internal_ASIC_CH_SEL(2 downto 0) <= (others => '0');
 		internal_ASIC_RD_ADDR(9) <= '0';
 		internal_ASIC_RD_ADDR(8 downto 0) <= internal_SOFT_READ_ADDR;
@@ -185,10 +186,9 @@ begin
 		internal_ASIC_WR_ADDR(9) <= '0';
 		internal_ASIC_WR_ADDR(8 downto 1) <= internal_SOFT_WRITE_ADDR(8 downto 1);
 		internal_BUSY <= '0';
-		delay_counter := 0;
+		delay_counter := 0;		
 --------The rest of the state machine here---------------
 	elsif falling_edge(CLK_SST) then
-		internal_CLK_STATE_MACHINE_DIV_BY_2 <= not(internal_CLK_STATE_MACHINE_DIV_BY_2);
 		case internal_STATE is
 --------------------
 			when WAITING =>
@@ -197,7 +197,7 @@ begin
 					internal_ASIC_WR_ADDR(9) <= '1';
 					if (delay_counter < trigger_arming_time) then
 						internal_STATE <= NOMINAL_SAMPLING;
-						windows_sampled_after_trigger := 0;
+						windows_sampled_after_trigger := 2;
 						delay_counter := 0;
 					else
 						delay_counter := delay_counter + 1;
@@ -206,20 +206,21 @@ begin
 --------------------
 			when NOMINAL_SAMPLING =>
 				internal_ASIC_WR_ADDR(8 downto 1) <= std_logic_vector( unsigned(internal_ASIC_WR_ADDR(8 downto 1)) + 1 );
-				windows_sampled_after_trigger := windows_sampled_after_trigger + 2;
 				if (windows_sampled_after_trigger >= windows_to_sample) then
 					--Switches from writing to reading mode.
 					internal_ASIC_WR_ADDR(9) <= '0';
-					internal_ASIC_RD_ADDR(9) <= '1';					
+					internal_ASIC_RD_ADDR(9) <= '1';
 					internal_ASIC_RD_ENA <= '1';
 					--We should look back to where we started the writing in the first place.
 					internal_ASIC_RD_ADDR(8 downto 0) <= internal_SOFT_READ_ADDR(8 downto 0);
 					--Set the RAM address to be 0
-					internal_RAM_WRITE_ADDRESS(11 downto 0) <= (others => '0');					
+					internal_RAM_WRITE_ADDRESS(11 downto 0) <= (others => '0');
 					--Move to the state where we start digitizing
 					internal_STATE <= ARM_WILKINSON;
 					delay_counter := 0;
 					windows_read_out := 0;
+				else
+					windows_sampled_after_trigger := windows_sampled_after_trigger + 2;
 				end if;
 --------------------
 			when ARM_WILKINSON =>

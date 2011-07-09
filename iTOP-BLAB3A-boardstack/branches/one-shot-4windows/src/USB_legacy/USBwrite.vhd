@@ -155,7 +155,9 @@ begin
 					end if;
 --------------------------------------------------------------------------------
 				when STATE3 =>									  	
-					if column = 2060 then -- 524 for old version
+					if column = 4108 then -- 524 for old version -- 8 windows				
+--					if column = 3084 then -- 524 for old version -- 6 windows
+--					if column = 2060 then -- 524 for old version -- 4 windows
 						column 	<= (others=>'0');
 						LRAD	 	<= (others=>'0');
 						DONE 		<= '1';

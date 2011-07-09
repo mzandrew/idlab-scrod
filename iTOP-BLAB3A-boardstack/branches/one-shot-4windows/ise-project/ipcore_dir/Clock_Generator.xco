@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 12.2
-# Date: Mon Jun 27 20:24:00 2011
+# Date: Sat Jul 09 05:29:09 2011
 #
 ##############################################################
 #
@@ -47,17 +47,17 @@ CSET clkin1_jitter_ps=20.0
 CSET clkin2_jitter_ps=100.0
 CSET clkout1_drives=BUFG
 CSET clkout1_requested_duty_cycle=50.000
-CSET clkout1_requested_out_freq=15.625
+CSET clkout1_requested_out_freq=7.8125
 CSET clkout1_requested_phase=0.000
 CSET clkout2_drives=BUFG
 CSET clkout2_requested_duty_cycle=50.000
-CSET clkout2_requested_out_freq=15.625
-CSET clkout2_requested_phase=90.000
+CSET clkout2_requested_out_freq=7.8125
+CSET clkout2_requested_phase=20.000
 CSET clkout2_used=true
 CSET clkout3_drives=BUFG
-CSET clkout3_requested_duty_cycle=50.000
-CSET clkout3_requested_out_freq=31.25
-CSET clkout3_requested_phase=270
+CSET clkout3_requested_duty_cycle=25.000
+CSET clkout3_requested_out_freq=15.625
+CSET clkout3_requested_phase=140.0
 CSET clkout3_used=true
 CSET clkout4_drives=BUFG
 CSET clkout4_requested_duty_cycle=50.000
@@ -163,18 +163,18 @@ CSET override_pll=false
 CSET platform=nt64
 CSET pll_bandwidth=HIGH
 CSET pll_clk_feedback=CLKFBOUT
-CSET pll_clkfbout_mult=33
+CSET pll_clkfbout_mult=4
 CSET pll_clkfbout_phase=0.000
 CSET pll_clkin_period=4.000
-CSET pll_clkout0_divide=66
+CSET pll_clkout0_divide=128
 CSET pll_clkout0_duty_cycle=0.500
 CSET pll_clkout0_phase=0.000
-CSET pll_clkout1_divide=66
+CSET pll_clkout1_divide=128
 CSET pll_clkout1_duty_cycle=0.500
-CSET pll_clkout1_phase=90.000
-CSET pll_clkout2_divide=33
-CSET pll_clkout2_duty_cycle=0.500
-CSET pll_clkout2_phase=270.000
+CSET pll_clkout1_phase=20.039
+CSET pll_clkout2_divide=64
+CSET pll_clkout2_duty_cycle=0.250
+CSET pll_clkout2_phase=139.922
 CSET pll_clkout3_divide=1
 CSET pll_clkout3_duty_cycle=0.500
 CSET pll_clkout3_phase=0.000
@@ -185,7 +185,7 @@ CSET pll_clkout5_divide=1
 CSET pll_clkout5_duty_cycle=0.500
 CSET pll_clkout5_phase=0.000
 CSET pll_compensation=SYSTEM_SYNCHRONOUS
-CSET pll_divclk_divide=8
+CSET pll_divclk_divide=1
 CSET pll_notes=None
 CSET pll_ref_jitter=0.005
 CSET prim_in_freq=250.000
@@ -215,4 +215,4 @@ CSET use_spread_spectrum=false
 CSET use_status=false
 # END Parameters
 GENERATE
-# CRC: 3839ebdf
+# CRC: fee19b19
