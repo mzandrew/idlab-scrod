@@ -26,8 +26,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+library UNISIM;
+use UNISIM.VComponents.all;
 
 use work.Board_Stack_Definitions.ALL;
 
@@ -81,13 +81,6 @@ end SCROD_iTOP_Board_Stack;
 architecture Behavioral of SCROD_iTOP_Board_Stack is
 	attribute BOX_TYPE 	: string;
 	---------------------------------------------------------
-	component IBUFGDS
-		port (O  : out STD_ULOGIC;
-				I  : in STD_ULOGIC;
-				IB : in STD_ULOGIC);
-	end component; 
-	attribute BOX_TYPE of IBUFGDS : component is "BLACK_BOX";
-   ---------------------------------------------------------
 	component iTOP_Board_Stack_DAC_Control is
 		Port ( INTENDED_DAC_VALUES : in Daughter_Card_Voltages;
 				 CURRENT_DAC_VALUES  : out Daughter_Card_Voltages; 
@@ -127,25 +120,26 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 		ASIC_TDC_CLR	     : out std_logic; 
 		ASIC_WR_STRB	     : out std_logic; 
 		ASIC_WR_ADDR	     : out std_logic_vector(9 downto 0);
-		sample_strobe_width_vector : in std_logic_vector(7 downto 0);
-		autotrigger_enabled : in std_logic;
+--		sample_strobe_width_vector : in std_logic_vector(7 downto 0);
+--		autotrigger_enabled : in std_logic;
 		ASIC_SSP_IN	     : out std_logic;
 		ASIC_SST_IN	     : out std_logic;
 		ASIC_SSP_OUT	  : in std_logic;
-		ASIC_TRIGGER     : in std_logic_vector(7 downto 0);
+		ASIC_TRIGGER_BITS   : in std_logic_vector(7 downto 0);
 		SOFT_WRITE_ADDR     : in std_logic_vector(8 downto 0);
 		SOFT_READ_ADDR     : in std_logic_vector(8 downto 0);
 --		ASIC_trigger_sign : out std_logic;
 		-- User I/O
-		CLK			     : in  std_logic;--150 MHz CLK
-		CLK_75MHz		  : in  std_logic;   --75  MHz CLK
-		notCLK_75MHz		  : in  std_logic;--75  MHz CLK		
+		CLK_SSP          : in  std_logic;--Sampling rate / 128 (0 deg)
+		CLK_SST          : in  std_logic;--Sampling rate / 128 (90 deg)
+		CLK_WRITE_STROBE : in  std_logic;--Sampling rate / 64  (270 deg)
+		--------
 		START_USB_XFER	  : out std_logic;--Signal to start sending data to USB
 		DONE_USB_XFER 	  : in  std_logic;
 		MON_HDR		 	  : out std_logic_vector(15 downto 0); 
 		CLR_ALL		 	  : in  std_logic;
 		TRIGGER			  : in  std_logic;
-		RAM_READ_ADDRESS : in std_logic_vector(9 downto 0);
+		RAM_READ_ADDRESS : in std_logic_vector(11 downto 0);
 		DATA_TO_USB      : out std_logic_vector(15 downto 0));
 	end component;
 	---------------------------------------------------------
@@ -183,7 +177,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 		xPED_SCAN	: out std_logic_vector(11 downto 0);
 		xPED_ADDR	: out std_logic_vector(14 downto 0);
 		xDEBUG     	: out std_logic_vector(15 downto 0); 
-      xRADDR     	: out std_logic_vector(9 downto 0); 
+      xRADDR     	: out std_logic_vector(11 downto 0); 
 		xSLWR      	: out std_logic; 
       xSOFT_TRIG  : out std_logic;
 		xVCAL			: out std_logic;
@@ -198,20 +192,33 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 		SOFT_TIABIAS : out std_logic_vector(11 downto 0));
 	end component;	
 	---------------------------------------------------------
-	component DCM_Core_A
+	------------------------------------------------------------------------------
+	-- Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
+	-- Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
+	------------------------------------------------------------------------------
+	-- CLK_OUT1    15.625      0.000    50.000      268.639    192.926
+	-- CLK_OUT2    15.625     90.000    50.000      268.639    192.926
+	-- CLK_OUT3    31.250    270.000    50.000      237.651    192.926
+	--
+	------------------------------------------------------------------------------
+	-- Input Clock   Input Freq (MHz)   Input Jitter (UI)
+	------------------------------------------------------------------------------
+	-- primary         250.000            0.005
+	component Clock_Generator
 	port
-		(-- Clock in ports
-			CLK_IN1           : in     std_logic;
-		 -- Clock out ports
-			CLK_OUT1          : out    std_logic;
-			CLK_OUT2          : out    std_logic;
-			CLK_OUT3          : out    std_logic;
-		 -- Status and control signals
-			RESET             : in     std_logic;
-			LOCKED            : out    std_logic);
+	 (-- Clock in ports
+	  CLK_IN1         : in     std_logic;
+	  -- Clock out ports
+	  CLK_OUT1          : out    std_logic;
+	  CLK_OUT2          : out    std_logic;
+	  CLK_OUT3          : out    std_logic;
+	  -- Status and control signals
+	  RESET             : in     std_logic;
+	  LOCKED            : out    std_logic
+	 );
 	end component;
 	--------SIGNAL DEFINITIONS-------------------------------
-	signal internal_CLOCK_4NS   : std_logic := '0';
+	signal internal_CLOCK_4NS   : std_logic;
 	signal internal_LEDS        : std_logic_vector(15 downto 0);
 	signal internal_MONITOR     : std_logic_vector(15 downto 0);
 	signal internal_SCL_DC1     : std_logic;
@@ -246,12 +253,12 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_SOFT_WRITE_ADDR	 : std_logic_vector(8 downto 0);
 	signal internal_SOFT_READ_ADDR 	 : std_logic_vector(8 downto 0);	
 	signal internal_ASIC_DATA_TO_USB  : std_logic_vector(15 downto 0);	
-	signal internal_ASIC_TRIGGER      : std_logic_vector(7 downto 0);
+	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
 	signal internal_ASIC_trigger_sign : std_logic;
 
 	signal internal_CAL_ENABLE			 : std_logic;
 	
-	signal internal_RAM_READ_ADDR     : std_logic_vector(9 downto 0);
+	signal internal_RAM_READ_ADDR     : std_logic_vector(11 downto 0);
 	signal internal_USB_START			 : std_logic;
 	signal internal_USB_DONE          : std_logic;
 	signal internal_USB_SLWR          : std_logic;
@@ -259,10 +266,10 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_SOFT_TRIG			 : std_logic;
 
 	signal internal_COUNTER : std_logic_vector(31 downto 0) := x"00000000";
-	signal internal_CLOCK_150MHz : std_logic;
-	signal internal_CLOCK_75MHz : std_logic;	
-	signal internal_CLOCK_75MHz_180deg : std_logic;	
 	signal internal_DCM_LOCKED : std_logic;
+	signal internal_CLOCK_SSP : std_logic;
+	signal internal_CLOCK_SST : std_logic;	
+	signal internal_CLOCK_WRITE_STROBE : std_logic;	
    ---------------------------------------------------------	
 begin
    ---------------------------------------------------------
@@ -271,18 +278,146 @@ begin
                 I  => CLOCK_4NS_P,
                 IB => CLOCK_4NS_N); 
 	---------------------------------------------------------
-	DCM_150_and_75_from_250: DCM_Core_A
-	port map
+	CLOCK_GEN : Clock_Generator
+	  port map
 		(-- Clock in ports
-		 CLK_IN1            => internal_CLOCK_4NS,
+		 CLK_IN1          => internal_CLOCK_4NS,
 		 -- Clock out ports
-		 CLK_OUT1           => internal_CLOCK_150MHz,
-		 CLK_OUT2           => internal_CLOCK_75MHz,
-		 CLK_OUT3           => internal_CLOCK_75MHz_180deg,
+		 CLK_OUT1           => internal_CLOCK_SSP,
+		 CLK_OUT2           => internal_CLOCK_SST,
+		 CLK_OUT3           => internal_CLOCK_WRITE_STROBE,
 		 -- Status and control signals
 		 RESET              => '0',
 		 LOCKED             => internal_DCM_LOCKED);
 	---------------------------------------------------------
+	ODDR2_SSP_IN : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => ASIC_SSP_IN, -- 1-bit output data
+			C0 => internal_ASIC_SSP_IN, -- 1-bit clock input
+			C1 => not(internal_ASIC_SSP_IN), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------
+	ODDR2_SST_IN : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => ASIC_SST_IN, -- 1-bit output data
+			C0 => internal_ASIC_SST_IN, -- 1-bit clock input
+			C1 => not(internal_ASIC_SST_IN), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------
+	ODDR2_WR_STRB : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => ASIC_WR_STRB, -- 1-bit output data
+			C0 => internal_ASIC_WR_STRB, -- 1-bit clock input
+			C1 => not(internal_ASIC_WR_STRB), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------
+	ODDR2_WR_ADDR0 : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => ASIC_WR_ADDR(0), -- 1-bit output data
+			C0 => internal_ASIC_WR_ADDR(0), -- 1-bit clock input
+			C1 => not(internal_ASIC_WR_ADDR(0)), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------
+	ODDR2_MON0 : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => MONITOR(0), -- 1-bit output data
+			C0 => internal_MONITOR(0), -- 1-bit clock input
+			C1 => not(internal_MONITOR(0)), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------
+	ODDR2_MON1 : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => MONITOR(1), -- 1-bit output data
+			C0 => internal_MONITOR(1), -- 1-bit clock input
+			C1 => not(internal_MONITOR(1)), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------
+	ODDR2_MON2 : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => MONITOR(2), -- 1-bit output data
+			C0 => internal_MONITOR(2), -- 1-bit clock input
+			C1 => not(internal_MONITOR(2)), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------	
+	ODDR2_MON3 : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q => MONITOR(3), -- 1-bit output data
+			C0 => internal_MONITOR(3), -- 1-bit clock input
+			C1 => not(internal_MONITOR(3)), -- 1-bit clock input
+			CE => '1', -- 1-bit clock enable input
+			D0 => '1', -- 1-bit data input (associated with C0)
+			D1 => '0', -- 1-bit data input (associated with C1)
+			R => '0', -- 1-bit reset input
+			S => '0' -- 1-bit set input
+	);
+	---------------------------------------------------------	
 	DAC_CONTROL : iTOP_Board_Stack_DAC_Control
 		port map (	INTENDED_DAC_VALUES	=>	internal_INTENDED_DAC_VALUES_DC1,
 						CURRENT_DAC_VALUES => internal_CURRENT_DAC_VALUES_DC1,
@@ -305,26 +440,27 @@ begin
 			ASIC_TDC_CLR	   => internal_ASIC_TDC_CLR,
 			ASIC_WR_STRB	   => internal_ASIC_WR_STRB,
 			ASIC_WR_ADDR	   => internal_ASIC_WR_ADDR,
-			sample_strobe_width_vector => internal_sample_strobe_width_vector,
-			autotrigger_enabled => internal_autotrigger_enabled,
+--			sample_strobe_width_vector => internal_sample_strobe_width_vector,
+--			autotrigger_enabled => internal_autotrigger_enabled,
 --			ASIC_trigger_sign => internal_ASIC_trigger_sign,
 			ASIC_SSP_IN	      => internal_ASIC_SSP_IN,
 			ASIC_SST_IN	      => internal_ASIC_SST_IN,
 			ASIC_SSP_OUT		=> internal_ASIC_SSP_OUT,
-			ASIC_TRIGGER		=> internal_ASIC_TRIGGER,
+			ASIC_TRIGGER_BITS => internal_ASIC_TRIGGER_BITS,
 			SOFT_WRITE_ADDR   => internal_SOFT_WRITE_ADDR,
 			SOFT_READ_ADDR    => internal_SOFT_READ_ADDR,
 			-- User I/O
-			CLK			     => internal_CLOCK_150MHz,
-			CLK_75MHz		  => internal_CLOCK_75MHz,
-			notCLK_75MHz	  => internal_CLOCK_75MHz_180deg,
-			START_USB_XFER	  => internal_USB_START,
-			DONE_USB_XFER 	  => internal_USB_DONE,
-			MON_HDR		 	  => internal_MONITOR,
-			CLR_ALL		 	  => internal_USB_CLR_ALL,
-			TRIGGER			  => internal_SOFT_TRIG,
-			RAM_READ_ADDRESS => internal_RAM_READ_ADDR,
-			DATA_TO_USB      => internal_ASIC_DATA_TO_USB);
+			CLK_SSP => internal_CLOCK_SSP,
+			CLK_SST => internal_CLOCK_SST,			
+			CLK_WRITE_STROBE => internal_CLOCK_WRITE_STROBE,			
+			--
+			START_USB_XFER	   => internal_USB_START,
+			DONE_USB_XFER 	   => internal_USB_DONE,
+			MON_HDR		 	   => internal_MONITOR,
+			CLR_ALL		 	   => internal_USB_CLR_ALL,
+			TRIGGER			   => internal_SOFT_TRIG,
+			RAM_READ_ADDRESS  => internal_RAM_READ_ADDR,
+			DATA_TO_USB       => internal_ASIC_DATA_TO_USB);
    ---------------------------------------------------------
 	xUSB_MAIN : USB_MAIN 
 	port map (
@@ -385,7 +521,7 @@ begin
 			SYNC_OUT => internal_CHIPSCOPE_VIO_OUT);	
 	---------------------------------------------------------
 	LEDS <= internal_LEDS;
-	MONITOR <= internal_MONITOR;
+	MONITOR(15 downto 4) <= internal_MONITOR(15 downto 4);
 	internal_LEDS(0) <= internal_DCM_LOCKED;
 	internal_LEDS(15 downto 1) <= (others => '0');
 	--   internal_MONITOR(15 downto 0) <= (others => '0');
@@ -445,13 +581,15 @@ begin
 	ASIC_RAMP	 	 	<= internal_ASIC_RAMP;
 	internal_ASIC_DAT <= ASIC_DAT;
 	internal_ASIC_SSP_OUT <= ASIC_SSP_OUT;
+	internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER;
 	ASIC_TDC_START    <= internal_ASIC_TDC_START;
 	ASIC_TDC_CLR	   <= internal_ASIC_TDC_CLR;
-	ASIC_WR_STRB	   <= internal_ASIC_WR_STRB;
-	ASIC_WR_ADDR	   <= internal_ASIC_WR_ADDR;
-	ASIC_SSP_IN	      <= internal_ASIC_SSP_IN;
-	ASIC_SST_IN	      <= internal_ASIC_SST_IN;
-	internal_ASIC_TRIGGER <= ASIC_TRIGGER;
+--	ASIC_WR_STRB	   <= internal_ASIC_WR_STRB;
+--	ASIC_SSP_IN	      <= internal_ASIC_SSP_IN;
+--	ASIC_SST_IN	      <= internal_ASIC_SST_IN;
+--	ASIC_WR_ADDR(0)   <= internal_ASIC_WR_ADDR(0);
+	ASIC_WR_ADDR(9 downto 1) <= internal_ASIC_WR_ADDR(9 downto 1);
+	internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER;
 	ASIC_DC1_DISABLE  <= '0';
 	ASIC_trigger_sign <= internal_ASIC_trigger_sign;
 	
@@ -464,4 +602,3 @@ begin
 	end process;
 	
 end Behavioral;
-

@@ -1,17 +1,6 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---								University of Hawaii at Manoa						         --
---						Instrumentation Development Lab / GARY S. VARNER				--
---   								Watanabe Hall Room 214								      --
---  								  2505 Correa Road										   --
---  								 Honolulu, HI 96822											--
---  								Lab: (808) 956-2920											--
---	 								Fax: (808) 956-2930										   --
---  						E-mail: idlab@phys.hawaii.edu									   --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------	
+--------------------------------------------------------	
 -- Design by: Kurtis Nishimura
--- Last updated: 2011-06-05
+-- Last updated: 2011-06-12
 -- Notes: This firmware is to operate IRS2 or BLAB3 in 
 --        "one-shot" mode, where the sample signal is 
 --        given only when a software trigger is received.
@@ -20,43 +9,40 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
---use IEEE.numeric_std.all;
+use IEEE.NUMERIC_STD.ALL;
 
 entity BLAB3_IRS2_MAIN is
     port (
 		-- IRS ASIC I/Os
-		ASIC_CH_SEL	 	  : out std_logic_vector(2 downto 0);
-		ASIC_RD_ADDR	 	  : out std_logic_vector(9 downto 0);
-		ASIC_SMPL_SEL 	  : out std_logic_vector(5 downto 0);
+		ASIC_CH_SEL	 	   : out std_logic_vector(2 downto 0);
+		ASIC_RD_ADDR	 	: out std_logic_vector(9 downto 0);
+		ASIC_SMPL_SEL 	   : out std_logic_vector(5 downto 0);
 		ASIC_SMPL_SEL_ALL : out std_logic; 
-		ASIC_RD_ENA	 	  : out std_logic; 
-		ASIC_RAMP	 	 	  : out std_logic; 
-		ASIC_DAT		     : in  std_logic_vector(11 downto 0);
+		ASIC_RD_ENA	 	   : out std_logic; 
+		ASIC_RAMP	 	 	: out std_logic; 
+		ASIC_DAT		      : in  std_logic_vector(11 downto 0);
 		ASIC_TDC_START    : out std_logic; 
-		ASIC_TDC_CLR	     : out std_logic; 
-		ASIC_WR_STRB	     : out std_logic; 
-		ASIC_WR_ADDR	     : out std_logic_vector(9 downto 0);
-		sample_strobe_width_vector : in std_logic_vector(7 downto 0);
-		autotrigger_enabled : in std_logic;
-		ASIC_SSP_IN	     : out std_logic;
-		ASIC_SST_IN	     : out std_logic;		
-		ASIC_SSP_OUT	  : in std_logic;
-		ASIC_TRIGGER     : in std_logic_vector(7 downto 0);
-		SOFT_WRITE_ADDR     : in std_logic_vector(8 downto 0);
-		SOFT_READ_ADDR     : in std_logic_vector(8 downto 0);		
+		ASIC_TDC_CLR	   : out std_logic; 
+		ASIC_WR_STRB	   : out std_logic; 
+		ASIC_WR_ADDR	   : out std_logic_vector(9 downto 0);
+		ASIC_SSP_IN	      : out std_logic;
+		ASIC_SST_IN	      : out std_logic;		
+		ASIC_SSP_OUT	   : in  std_logic;
+		ASIC_TRIGGER_BITS : in  std_logic_vector(7 downto 0);
+		SOFT_WRITE_ADDR   : in  std_logic_vector(8 downto 0);
+		SOFT_READ_ADDR    : in  std_logic_vector(8 downto 0);		
 		-- User I/O
-		CLK			     : in  std_logic;--150 MHz CLK
-		CLK_75MHz		  : in  std_logic;   --75  MHz CLK
-		notCLK_75MHz		  : in  std_logic;--75  MHz CLK		
-		START_USB_XFER	  : out std_logic;--Signal to start sending data to USB
-		DONE_USB_XFER 	  : in  std_logic;
-		MON_HDR		 	  : out std_logic_vector(15 downto 0); 
-		CLR_ALL		 	  : in  std_logic;
-		TRIGGER			  : in  std_logic;
-		RAM_READ_ADDRESS : in std_logic_vector(9 downto 0);
-		DATA_TO_USB      : out std_logic_vector(15 downto 0));
+		CLK_SSP          : in  std_logic;--Sampling rate / 128 (0 deg)
+		CLK_SST          : in  std_logic;--Sampling rate / 128 (90 deg)
+		CLK_WRITE_STROBE : in  std_logic;--Sampling rate / 64  (270 deg)
+
+		START_USB_XFER	   : out std_logic;--Signal to start sending data to USB
+		DONE_USB_XFER 	   : in  std_logic;
+		MON_HDR		 	   : out std_logic_vector(15 downto 0); 
+		CLR_ALL		 	   : in  std_logic;
+		TRIGGER			   : in  std_logic;
+		RAM_READ_ADDRESS  : in std_logic_vector(11 downto 0);
+		DATA_TO_USB       : out std_logic_vector(15 downto 0));
 end BLAB3_IRS2_MAIN;
 
 architecture Behavioral of BLAB3_IRS2_MAIN is
@@ -64,443 +50,250 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 --------------------------------------------------------------------------------
 --   								signals		     		   						         --
 --------------------------------------------------------------------------------
-	type STATE_TYPE is ( IDLE,
-								START_SAMPLING,
-								WAIT_FOR_SAMPLING,
-								ADDRESS_TO_STORAGE1,
-								WRITE_TO_STORAGE1,
-								ADDRESS_TO_STORAGE2,
-								WRITE_TO_STORAGE2,
-								ARM_WILKINSON,
-								PERFORM_WILKINSON,
-								STORE_TO_RAM,
-								ARM_READING,
-								READ_TO_RAM,
-								WAIT_FOR_READ_SETTLING,
-								READOUT_BY_USB );
-	signal xSTATE                  : STATE_TYPE;
-	signal xCHIPSCOPE_MONITOR_BITS : std_logic_vector(31 downto 0);
-	signal xRAM_OUTPUT_DATA        : std_logic_vector(15 downto 0);
-	signal xRAM_READ_ENABLE        : std_logic;
-	signal xRAM_WRITE_ADDRESS      : std_logic_vector(9 downto 0);
-	signal xRAM_INPUT_DATA         : std_logic_vector(15 downto 0);
-	signal xRAM_WRITE_ENABLE       : std_logic;
-	signal xASIC_CH_SEL				 : std_logic_vector(2 downto 0);
-	signal xASIC_SMPL_SEL				 : std_logic_vector(5 downto 0);
+	type STATE_TYPE is ( WAITING, NOMINAL_SAMPLING,
+								ARM_WILKINSON,PERFORM_WILKINSON,
+								ARM_READING,READ_TO_RAM,WAIT_FOR_READ_SETTLING,
+								READOUT_BY_USB);
 	
-	signal csASIC_SSP_IN       : std_logic;
-	signal csASIC_SST_IN       : std_logic;
-   signal csASIC_WR_STRB      : std_logic;
-   signal csASIC_RD_ENA       : std_logic;
-	signal csASIC_TDC_CLR      : std_logic; 
-	signal csASIC_TDC_START    : std_logic;
-	signal csASIC_RAMP         : std_logic;
-	signal csASIC_SMPL_SEL_ALL : std_logic;
-	signal csSTART_USB_XFER   : std_logic;
-	signal csDONE_USB_XFER    : std_logic;
-	signal csCLR_ALL          : std_logic;
-	signal csTRIGGER          : std_logic;
-	signal csASIC_DAT          : std_logic_vector(11 downto 0);
-	signal csRAM_READ_ADDR    : std_logic_vector(9 downto 0);
-	
-	signal internal_CLOCK_MONITOR : std_logic;
-	signal this_trigger_was_an_autotrigger : std_logic;
+	signal internal_STATE          : STATE_TYPE;
 
---	signal xASIC_RD_ADDR       : std_logic_vector(8 downto 0);
---	signal xASIC_WR_ADDR       : std_logic_vector(8 downto 0);
--------------------------------------------------------------------------------
-	component RAM_BLOCK
-   port ( xRADDR 	: in    std_logic_vector(9 downto 0);
-			 xREAD  	: out   std_logic_vector(15 downto 0);
-          xRCLK 	: in    std_logic; 
-          xR_EN  	: in    std_logic; 
-          xWADDR 	: in    std_logic_vector(9 downto 0); 
-          xWRITE 	: in    std_logic_vector(15 downto 0); 
-          xWCLK 	: in    std_logic; 
-          xW_EN  	: in    std_logic);
-   end component;
---------------------------------------------------------------------------------
-   component BUF
-      port ( I  : in    std_logic;  
-             O  : out   std_logic);
-   end component;
-   attribute BOX_TYPE of BUF : component is "BLACK_BOX";
---------------------------------------------------------------------------------
-   component BUF_BUS
-	generic(bus_width : integer := 16);
-	PORT( 
-		I : IN  STD_LOGIC_VECTOR((bus_width-1) DOWNTO 0); 
-      O : OUT STD_LOGIC_VECTOR((bus_width-1) DOWNTO 0));
-   end component;
---------------------------------------------------------------------------------
---	component CHIPSCOPE_MON
---	generic(
---		xUSE_CHIPSCOPE	: integer := 1);  -- Set to 1 to use Chipscope 
---	port ( 
---		xMON	: in  std_logic_vector(31 downto 0);
---		xCLK	: in  std_logic);	
---   end component;
---------------------------------------------------------------------------------
---	signal sample_strobe_width_vector : std_logic_vector(7 downto 0) := x"08";
+	signal internal_RAM_OUTPUT_DATA        : std_logic_vector(15 downto 0);
+	signal internal_RAM_READ_ENABLE        : std_logic;
+	signal internal_RAM_WRITE_ADDRESS      : std_logic_vector(11 downto 0);
+	signal internal_RAM_INPUT_DATA         : std_logic_vector(15 downto 0);
+	signal internal_RAM_WRITE_ENABLE       : std_logic;
+	signal internal_RAM_WRITE_ENABLE_VEC   : std_logic_vector(0 downto 0);
+	
+	signal internal_ASIC_CH_SEL	 	 : std_logic_vector(2 downto 0);
+	signal internal_ASIC_RD_ADDR	 	 : std_logic_vector(9 downto 0) := (others => '0');
+	signal internal_ASIC_SMPL_SEL 	 : std_logic_vector(5 downto 0);
+	signal internal_ASIC_SMPL_SEL_ALL : std_logic; 
+	signal internal_ASIC_RD_ENA	 	 : std_logic; 
+	signal internal_ASIC_RAMP	 	 	 : std_logic; 
+	signal internal_ASIC_DAT		    : std_logic_vector(11 downto 0);
+	signal internal_ASIC_TDC_START    : std_logic; 
+	signal internal_ASIC_TDC_CLR	    : std_logic; 
+	signal internal_ASIC_WR_STRB	    : std_logic; 
+	signal internal_ASIC_WR_ADDR	    : std_logic_vector(9 downto 0) := (others => '0');
+	signal internal_ASIC_SSP_IN	    : std_logic;
+	signal internal_ASIC_SST_IN	    : std_logic;		
+	signal internal_ASIC_SSP_OUT	    : std_logic;
+	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
+	signal internal_SOFT_WRITE_ADDR   : std_logic_vector(8 downto 0);
+	signal internal_SOFT_READ_ADDR    : std_logic_vector(8 downto 0);		
+	
+	signal internal_TRIGGER           : std_logic;
+	signal internal_BUSY              : std_logic;
+
+	signal internal_CLK_STATE_MACHINE_DIV_BY_2 : std_logic;
+
+-------------------------------------------------------------------------
+	component MULTI_WINDOW_RAM_BLOCK
+	port (
+		clka: IN std_logic;
+		ena: IN std_logic;
+		wea: IN std_logic_VECTOR(0 downto 0);
+		addra: IN std_logic_VECTOR(11 downto 0);
+		dina: IN std_logic_VECTOR(15 downto 0);
+		clkb: IN std_logic;
+		addrb: IN std_logic_VECTOR(11 downto 0);
+		doutb: OUT std_logic_VECTOR(15 downto 0));
+	end component;
+-------------------------------------------------------------------------
 begin
---------------------------------------------------------------------------------	
---	xBUF_CH_SEL : BUF_BUS
---	generic map(bus_width => 3)
---	port map (
---		I => xRAM_WRITE_ADDRESS(8 downto 6),
---		O => ASIC_CH_SEL);
---------------------------------------------------------------------------------	
---	xBUF_SMPL_SEL : BUF_BUS
---	generic map(bus_width => 6)
---	port map (
---		I => xRAM_WRITE_ADDRESS(5 downto 0),
---		O => ASIC_SMPL_SEL);
---------------------------------------------------------------------------------	
-	xBUF_CH_SEL : BUF_BUS
-	generic map(bus_width => 3)
+-------------------------------------------------------------------------			
+	READOUT_RAM_BLOCK : MULTI_WINDOW_RAM_BLOCK
 	port map (
-		I => xASIC_CH_SEL,
-		O => ASIC_CH_SEL);
--------------------------------------------------------------------------------	
-	xBUF_SMPL_SEL : BUF_BUS
-	generic map(bus_width => 6)
-	port map (
-		I => xASIC_SMPL_SEL,
-		O => ASIC_SMPL_SEL);
---------------------------------------------------------------------------------	
-csTRIGGER <= TRIGGER;
-csRAM_READ_ADDR <= RAM_READ_ADDRESS;
-csCLR_ALL <= CLR_ALL;
-csDONE_USB_XFER <= DONE_USB_XFER;
-csASIC_DAT <= ASIC_DAT;
+		clka => CLK_WRITE_STROBE,
+		ena => '1',
+		wea => internal_RAM_WRITE_ENABLE_VEC,
+		addra => internal_RAM_WRITE_ADDRESS,
+		dina => internal_RAM_INPUT_DATA,
+		clkb => not(CLK_WRITE_STROBE),
+		addrb => RAM_READ_ADDRESS,
+		doutb => DATA_TO_USB);		
+-------------------------------------------------------------------------
+internal_RAM_INPUT_DATA(15 downto 12) <= (others => '0');
+internal_RAM_INPUT_DATA(11 downto 0) <= internal_ASIC_DAT;
+MON_HDR(0) <= internal_ASIC_SSP_IN;
+MON_HDR(1) <= internal_ASIC_SST_IN;
+MON_HDR(2) <= internal_ASIC_WR_STRB;
+MON_HDR(3) <= internal_ASIC_WR_ADDR(0);
+MON_HDR(4) <= internal_ASIC_SSP_OUT;
+--MON_HDR(12 downto 5) <= internal_ASIC_TRIGGER_BITS;
+MON_HDR(5) <= internal_ASIC_TDC_CLR;
+MON_HDR(6) <= internal_ASIC_TDC_START;
+MON_HDR(7) <= internal_ASIC_RAMP;
+MON_HDR(13 downto 8) <= (others => '0');
+MON_HDR(14) <= internal_ASIC_WR_ADDR(9);
+MON_HDR(15) <= internal_CLK_STATE_MACHINE_DIV_BY_2;
+
+ASIC_CH_SEL   <= internal_ASIC_CH_SEL;
+ASIC_RD_ADDR  <= internal_ASIC_RD_ADDR;
+ASIC_SMPL_SEL <= internal_ASIC_SMPL_SEL;
+ASIC_SMPL_SEL_ALL <= internal_ASIC_SMPL_SEL_ALL; 
+ASIC_RD_ENA <= internal_ASIC_RD_ENA; 
+ASIC_RAMP <= internal_ASIC_RAMP; 
+ASIC_TDC_START <= internal_ASIC_TDC_START; 
+ASIC_TDC_CLR <= internal_ASIC_TDC_CLR; 
+ASIC_WR_ADDR <= internal_ASIC_WR_ADDR;
+ASIC_WR_STRB <= internal_ASIC_WR_STRB;
+ASIC_SSP_IN <= internal_ASIC_SSP_IN;
+ASIC_SST_IN <= internal_ASIC_SST_IN;
+
+internal_ASIC_DAT <= ASIC_DAT;
+internal_ASIC_SSP_OUT <= ASIC_SSP_OUT;
+internal_SOFT_WRITE_ADDR <= SOFT_WRITE_ADDR;
+internal_SOFT_READ_ADDR <= SOFT_READ_ADDR;		
+internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER_BITS;
+
+internal_TRIGGER <= TRIGGER;
+
+internal_RAM_WRITE_ENABLE_VEC(0) <= internal_RAM_WRITE_ENABLE;
+
+-------LOGIC TO RUN ASIC SAMPLING------
+internal_ASIC_WR_STRB <= CLK_WRITE_STROBE;
+internal_ASIC_SSP_IN <= CLK_SSP;
+internal_ASIC_SST_IN <= CLK_SST;
+internal_ASIC_WR_ADDR(0) <= CLK_SST;
+---------------------------------------	
+
 --------------------------------------------------------------------------------
-xCHIPSCOPE_MONITOR_BITS(0)  <= csASIC_SSP_IN;    --
-xCHIPSCOPE_MONITOR_BITS(1)  <= csASIC_SST_IN;   --
-xCHIPSCOPE_MONITOR_BITS(2)  <= csASIC_WR_STRB;    --
-xCHIPSCOPE_MONITOR_BITS(3)  <= csASIC_TDC_CLR;   --
-xCHIPSCOPE_MONITOR_BITS(4)  <= csASIC_TDC_START; --
---xCHIPSCOPE_MONITOR_BITS(5)  <= csASIC_RAMP;      --
-xCHIPSCOPE_MONITOR_BITS(5)  <= csASIC_SMPL_SEL_ALL; --
-xCHIPSCOPE_MONITOR_BITS(6)  <= csSTART_USB_XFER; --
-xCHIPSCOPE_MONITOR_BITS(7)  <= csDONE_USB_XFER; --
-xCHIPSCOPE_MONITOR_BITS(8)  <= csCLR_ALL;       --
-xCHIPSCOPE_MONITOR_BITS(9) <= csTRIGGER;       --
---xCHIPSCOPE_MONITOR_BITS(19 downto 10) <= csRAM_READ_ADDR; --
-xCHIPSCOPE_MONITOR_BITS(19 downto 10) <= xRAM_WRITE_ADDRESS; --
-xCHIPSCOPE_MONITOR_BITS(31 downto 20) <= csASIC_DAT;  --
-
-	MON_HDR(0) <= csASIC_SSP_IN;
-	MON_HDR(1) <= csASIC_SST_IN;
-	MON_HDR(2) <= ASIC_SSP_OUT;
-	MON_HDR(3) <= csASIC_WR_STRB;
-	MON_HDR(4) <= csASIC_TDC_CLR;
-	MON_HDR(5) <= csASIC_TDC_START;
-	MON_HDR(6) <= csASIC_SMPL_SEL_ALL;
-	MON_HDR(7) <= csSTART_USB_XFER;
-	MON_HDR(15 downto 8) <= ASIC_TRIGGER(7 downto 0);
---------------------------------------------------------------------------------	
---	xCHIPSCOPE_MON : CHIPSCOPE_MON
---	generic map(
---		xUSE_CHIPSCOPE => 1)
---	port map (
---		xCLK => CLK_75MHz,
---		xMON => xCHIPSCOPE_MONITOR_BITS);
---------------------------------------------------------------------------------			
-	xRAM_BLOCK : RAM_BLOCK 
-	port map (
-		xRADDR  	=> RAM_READ_ADDRESS,
-		xREAD 	=> DATA_TO_USB,
-		xRCLK  	=> CLK_75MHz,--xSLWR
-		xR_EN  	=> '1',
-		xWADDR	=> xRAM_WRITE_ADDRESS,
-		xWRITE  	=> xRAM_INPUT_DATA,
-		xWCLK  	=> notCLK_75MHz,
-		xW_EN  	=> xRAM_WRITE_ENABLE);
---------------------------------------------------------------------------------	
-xRAM_INPUT_DATA(15 downto 12) <= (others => '0');
-xRAM_INPUT_DATA(11 downto 0) <= ASIC_DAT;
-
-ASIC_WR_ADDR(8 downto 0) <= SOFT_WRITE_ADDR;
-ASIC_RD_ADDR(8 downto 0) <= SOFT_READ_ADDR;
---------------------------------------------------------------------------------
-process(CLK,CLR_ALL,TRIGGER,DONE_USB_XFER,xSTATE) --xCLK = 150 MHz, CLK_75MHz
-	variable cnt : integer range 0 to 10000 := 0;
-	--The following worked when CLK_75MHz was actually a 10MHz clock.
---	variable sample_strobe_width : integer := 2; --20.000 ns @ 150 MHz (probably 16 ns is okay...)
---	variable time_to_sample : integer := 5;     --66.667 ns @ 150 MHz (actually 250 ps x 128 samples = 32 ns)
---	variable write_strobe_width : integer := 3;  --32 ns @ 150 MHz (will need to squeeze this down later)
---	variable wilkinson_arming_time  : integer := 3;  --32 ns @ 150 MHz (guess to start)
---	variable time_to_wilkinson  : integer := 465;  --6.2 us @ 150 MHz (taken from Larry's existing code)
---	variable read_to_ram_settling_time : integer := 3; --Rough guess?
-
---Appropriate (or minimally working, at least...) values for 75 MHz clock
---   variable idle_count : integer range 0 to 1000000 := 0;		
---	variable sample_strobe_width : integer := 1; --20.000 ns @ 150 MHz (probably 16 ns is okay...)
---	variable time_to_sample : integer := 10;     --66.667 ns @ 150 MHz (actually 250 ps x 128 samples = 32 ns)
---	variable write_strobe_width : integer := 3;  --32 ns @ 150 MHz (will need to squeeze this down later)
---	variable wilkinson_arming_time  : integer := 3;  --32 ns @ 150 MHz (guess to start)
---	variable time_to_wilkinson  : integer := 465;  --6.2 us @ 150 MHz (taken from Larry's existing code)
---	variable read_to_ram_settling_time : integer := 3; --Rough guess?
-
-   variable idle_count : integer range 0 to 1000000 := 0;		
---	constant sample_strobe_width : integer := 4;
---	constant sample_strobe_width : integer := 40;
-	variable sample_strobe_width : integer := 13;
---	constant time_to_sample : integer := 20;     
-	constant time_to_sample : integer := 40;
-	constant write_strobe_width : integer := 6;  --6 was okay on IRS2/BLAB3A eval boards
-	constant wilkinson_arming_time  : integer := 6;
-	constant time_to_wilkinson  : integer := 930;
-	constant read_to_ram_settling_time : integer := 6;
-	constant autotrigger_number_of_cycles_for_timeout : integer range 0 to 250000000 := 37500000;
-	variable autotrigger_cycles_remaining_before_autotriggering : integer range 0 to 250000000 := autotrigger_number_of_cycles_for_timeout;
-
+process(CLK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER, internal_BUSY)
+	variable delay_counter : integer range 0 to 1023 := 0;
+	constant time_to_arm_wilkinson : integer := 3; -- A guess... should just buy some extra time for logic to settle
+	constant time_to_wilkinson : integer := 97; -- 6.2 us @ 15.625 MHz
+	constant read_to_ram_settling_time : integer := 1; --In principle we should only need 1 clock cycle here.
+	variable windows_sampled_after_trigger : integer range 0 to 1023 := 0;
+	variable windows_read_out : integer range 0 to 1023 := 0;
+	variable samples_read_out_this_window : integer range 0 to 1023;
+	constant windows_to_sample : integer := 8;
+	constant trigger_arming_time : integer := 1;
 begin
 ------------Asynchronous reset state------------------------
-	if (CLR_ALL = '1' or DONE_USB_XFER = '1' or cnt > 2000) then
-		xSTATE <= IDLE;
-		ASIC_SMPL_SEL_ALL <= '0'; csASIC_SMPL_SEL_ALL <= '0';		
-		ASIC_RD_ENA <= '0'; csASIC_RD_ENA <= '0';
---		ASIC_RD_ADDR(9 downto 0) <= (others => '0');
-		ASIC_RD_ADDR(9) <= '0';
-		ASIC_RAMP <= '0'; csASIC_RAMP <= '0';
-		ASIC_TDC_START <= '0'; csASIC_TDC_START <= '0';
-		ASIC_TDC_CLR <= '1'; csASIC_TDC_CLR <= '1';		
-		ASIC_WR_STRB <= '0'; csASIC_WR_STRB <= '0';		
-		ASIC_WR_ADDR(9) <= '0';
---		sample_strobe_width_vector <= x"08";
---		sample_strobe_width_vector <= internal_sample_strobe_width_vector;
-		ASIC_SSP_IN <= '0'; csASIC_SSP_IN <= '0';
-		ASIC_SST_IN <= '0'; csASIC_SST_IN <= '0';
-		START_USB_XFER <= '0'; csSTART_USB_XFER <= '0';		
-		xRAM_WRITE_ENABLE <= '0';
-		xRAM_READ_ENABLE <= '0';
-		xRAM_WRITE_ADDRESS(9 downto 0) <= (others => '0');
-		xASIC_CH_SEL <= "000";
-		xASIC_SMPL_SEL(5 downto 0) <= (others => '0');
-		cnt := 0;
---------Asynchronous start, from external trigger------------
---	elsif (TRIGGER = '1' and xSTATE = IDLE) then
---		xSTATE <= START_SAMPLING; --Normal operating mode
+	if (CLR_ALL = '1' or DONE_USB_XFER = '1') then
+		internal_STATE <= WAITING;
+		internal_CLK_STATE_MACHINE_DIV_BY_2 <= not(internal_CLK_STATE_MACHINE_DIV_BY_2);
+		internal_ASIC_CH_SEL(2 downto 0) <= (others => '0');
+		internal_ASIC_RD_ADDR(9) <= '0';
+		internal_ASIC_RD_ADDR(8 downto 0) <= internal_SOFT_READ_ADDR;
+		internal_ASIC_SMPL_SEL(5 downto 0) <= (others => '0');
+		internal_ASIC_SMPL_SEL_ALL <= '0'; 
+		internal_ASIC_RD_ENA <= '0'; 
+		internal_ASIC_RAMP <= '0'; 
+		internal_ASIC_TDC_START <= '0'; 
+		internal_ASIC_TDC_CLR <= '1'; 
+		internal_ASIC_WR_ADDR(9) <= '0';
+		internal_ASIC_WR_ADDR(8 downto 1) <= internal_SOFT_WRITE_ADDR(8 downto 1);
+		internal_BUSY <= '0';
+		delay_counter := 0;		
 --------The rest of the state machine here---------------
-	elsif rising_edge(CLK) then
-		case xSTATE is
+	elsif falling_edge(CLK_SST) then
+		case internal_STATE is
 --------------------
-			when IDLE => 
-				xSTATE <= IDLE;
-				ASIC_SMPL_SEL_ALL <= '0';
-				csASIC_SMPL_SEL_ALL <= '0';				
-				ASIC_RD_ENA <= '0';
-				csASIC_RD_ENA <= '0';
---				ASIC_RD_ADDR(9 downto 0) <= (others => '0');
-				ASIC_RD_ADDR(9) <= '0';
-				ASIC_RAMP <= '0'; csASIC_RAMP <= '0';
-				ASIC_TDC_START <= '0'; csASIC_TDC_START <= '0';
-				ASIC_TDC_CLR <= '1'; csASIC_TDC_CLR <= '1';				
-				ASIC_WR_STRB <= '0'; csASIC_WR_STRB <= '0';
-				ASIC_WR_ADDR(9) <= '0';
---				sample_strobe_width := to_unsigned( to_integer( sample_strobe_width_vector ) );
---				sample_strobe_width := conv_std_logic_vector( sample_strobe_width_vector );
-				if (sample_strobe_width_vector = 1) then
-					sample_strobe_width := 1;
-				elsif (sample_strobe_width_vector = 2) then
-					sample_strobe_width := 2;
-				elsif (sample_strobe_width_vector = 3) then
-					sample_strobe_width := 3;
-				elsif (sample_strobe_width_vector = 4) then
-					sample_strobe_width := 4;
-				elsif (sample_strobe_width_vector = 5) then
-					sample_strobe_width := 5;
-				elsif (sample_strobe_width_vector = 6) then
-					sample_strobe_width := 6;
-				elsif (sample_strobe_width_vector = 7) then
-					sample_strobe_width := 7;
-				elsif (sample_strobe_width_vector = 8) then
-					sample_strobe_width := 8;
-				elsif (sample_strobe_width_vector = 9) then
-					sample_strobe_width := 9;
-				else
-					sample_strobe_width := 10;
-				end if;
---				ASIC_SSP_IN <= '1'; csASIC_SSP_IN <= '1';    
-				ASIC_SSP_IN <= '0'; csASIC_SSP_IN <= '0';
-				ASIC_SST_IN <= '0'; csASIC_SST_IN <= '0';				
-				START_USB_XFER <= '0'; csSTART_USB_XFER <= '0';	
-				xRAM_WRITE_ENABLE <= '0';
-				xRAM_READ_ENABLE <= '0';
-				xRAM_WRITE_ADDRESS(9 downto 0) <= (others => '0');
-				xASIC_CH_SEL <= "000";
-				xASIC_SMPL_SEL(5 downto 0) <= (others => '0');
-				cnt := 0;
-				if (TRIGGER = '1') then
-					autotrigger_cycles_remaining_before_autotriggering := autotrigger_number_of_cycles_for_timeout;
-					this_trigger_was_an_autotrigger <= '0';
-					xSTATE <= START_SAMPLING; -- trigger here
-				end if;
-				if (autotrigger_enabled = '1') then
-					if (autotrigger_cycles_remaining_before_autotriggering > 0) then
-						autotrigger_cycles_remaining_before_autotriggering := autotrigger_cycles_remaining_before_autotriggering - 1;
+			when WAITING =>
+				if (internal_TRIGGER <= '1') then
+				   internal_BUSY <= '1';
+					internal_ASIC_WR_ADDR(9) <= '1';
+					if (delay_counter < trigger_arming_time) then
+						internal_STATE <= NOMINAL_SAMPLING;
+						windows_sampled_after_trigger := 2;
+						delay_counter := 0;
 					else
-						autotrigger_cycles_remaining_before_autotriggering := autotrigger_number_of_cycles_for_timeout;
-						this_trigger_was_an_autotrigger <= '1';
-						xSTATE <= START_SAMPLING; -- autotrigger here
+						delay_counter := delay_counter + 1;
 					end if;
-				else
-					autotrigger_cycles_remaining_before_autotriggering := autotrigger_number_of_cycles_for_timeout;
-				end if;
---				if (idle_count > 75000) then
---				   idle_count := 0;
---					xSTATE <= START_SAMPLING;
---				else
---					idle_count := idle_count + 1;
---				end if;
---------------------
-			when START_SAMPLING =>
-				-- this rising edge propagating through the sampling array puts it in TRACK mode:
-				ASIC_SSP_IN <= '1'; csASIC_SSP_IN <= '1';
-				if (cnt < sample_strobe_width) then
-					cnt := cnt + 1;
-				else
-					-- this rising edge propagating through the sampling array puts it in HOLD mode:
-					ASIC_SST_IN <= '1'; csASIC_SST_IN <= '1';
-					xSTATE <= WAIT_FOR_SAMPLING;
-					cnt := 0;
 				end if;
 --------------------
-			when WAIT_FOR_SAMPLING =>
---				ASIC_SSP_IN <= '0'; csASIC_SSP_IN <= '0';
-				if (cnt < time_to_sample + sample_strobe_width) then
-					cnt := cnt + 1;
+			when NOMINAL_SAMPLING =>
+				internal_ASIC_WR_ADDR(8 downto 1) <= std_logic_vector( unsigned(internal_ASIC_WR_ADDR(8 downto 1)) + 1 );
+				if (windows_sampled_after_trigger >= windows_to_sample) then
+					--Switches from writing to reading mode.
+					internal_ASIC_WR_ADDR(9) <= '0';
+					internal_ASIC_RD_ADDR(9) <= '1';
+					internal_ASIC_RD_ENA <= '1';
+					--We should look back to where we started the writing in the first place.
+					internal_ASIC_RD_ADDR(8 downto 0) <= internal_SOFT_READ_ADDR(8 downto 0);
+					--Set the RAM address to be 0
+					internal_RAM_WRITE_ADDRESS(11 downto 0) <= (others => '0');
+					--Move to the state where we start digitizing
+					internal_STATE <= ARM_WILKINSON;
+					delay_counter := 0;
+					windows_read_out := 0;
 				else
-					ASIC_SSP_IN <= '0'; csASIC_SSP_IN <= '0';
-					ASIC_SST_IN <= '0'; csASIC_SST_IN <= '0';
-					xSTATE <= ADDRESS_TO_STORAGE1;
-					cnt := 0;
+					windows_sampled_after_trigger := windows_sampled_after_trigger + 2;
 				end if;
---------------------
-			when ADDRESS_TO_STORAGE1 =>
-				ASIC_WR_ADDR(9) <= '1';
---				ASIC_WR_ADDR(8 downto 0) <= SOFT_WRITE_ADDR;
-				xSTATE <= WRITE_TO_STORAGE1;
---------------------
-			when WRITE_TO_STORAGE1 =>
-				ASIC_WR_STRB <= '1';
-				csASIC_WR_STRB <= '1';
-				if (cnt >= write_strobe_width) then
-					ASIC_WR_STRB <= '0';
-					csASIC_WR_STRB <= '0';
---					xSTATE <= ADDRESS_TO_STORAGE2;  --This was the normal operating condition
-					xSTATE <= ARM_WILKINSON;  --This is for testing one set of 64 samples at a time
-					cnt := 0;
-				else
-					cnt := cnt + 1;
-				end if;
---------------------
-			when ADDRESS_TO_STORAGE2 =>
-				ASIC_WR_ADDR(9) <= '1';
---				ASIC_WR_ADDR(8 downto 0) <= SOFT_WRITE_ADDR; --This is wrong... fix me
-				xSTATE <= WRITE_TO_STORAGE2;
---------------------
-			when WRITE_TO_STORAGE2 =>
-				ASIC_WR_STRB <= '1';
-				csASIC_WR_STRB <= '1';
-				if (cnt >= write_strobe_width) then
-					ASIC_WR_STRB <= '0';
-					csASIC_WR_STRB <= '0';
-					xSTATE <= ARM_WILKINSON;
-					cnt := 0;
-				else
-					cnt := cnt + 1;
-				end if;				
 --------------------
 			when ARM_WILKINSON =>
-				ASIC_WR_ADDR(9) <= '0';
-				ASIC_TDC_CLR <= '0';
-				csASIC_TDC_CLR <= '0';
-				ASIC_RD_ADDR(9) <= '1';
-				--ASIC_RD_ADDR(8 downto 0) <= (others => '0');
---				ASIC_RD_ADDR(8 downto 1) <= (others => '0');
---				ASIC_RD_ADDR(0) <= '1';
---				ASIC_RD_ADDR(8 downto 0) <= SOFT_READ_ADDR;
-				ASIC_RD_ENA <= '1';
-				csASIC_RD_ENA <= '1';
-				if (cnt >= wilkinson_arming_time) then
-					cnt := 0;
-					xSTATE <= PERFORM_WILKINSON;
+				internal_ASIC_TDC_CLR <= '0';
+				if (delay_counter >= time_to_arm_wilkinson) then
+					delay_counter := 0;
+					internal_STATE <= PERFORM_WILKINSON;
 				else
-					cnt := cnt + 1;
+					delay_counter := delay_counter + 1;
 				end if;
 --------------------
 			when PERFORM_WILKINSON =>
-				ASIC_TDC_START <= '1';
-				csASIC_TDC_START <= '1';
-				ASIC_RAMP <= '1';
-				csASIC_RAMP <= '1';
-				if (cnt >= time_to_wilkinson) then
-					cnt := 0;
-					ASIC_TDC_START <= '0';
-					csASIC_TDC_START <= '0';
-					ASIC_RAMP <= '0';
-					csASIC_RAMP <= '0';
-					ASIC_RD_ADDR(9) <= '0';
-					ASIC_RD_ENA <= '0';
-					csASIC_RD_ENA <= '0';
-					xSTATE <= ARM_READING;
+				internal_ASIC_TDC_START <= '1';
+				internal_ASIC_RAMP <= '1';
+				if (delay_counter >= time_to_wilkinson) then
+					delay_counter := 0;			
+					samples_read_out_this_window := 0;
+					internal_ASIC_TDC_START <= '0';
+					internal_ASIC_RAMP <= '0';
+					internal_STATE <= ARM_READING;
 				else
-					cnt := cnt + 1;
+					delay_counter := delay_counter + 1;
 				end if;
 --------------------
 			when ARM_READING =>
-				ASIC_SMPL_SEL_ALL <= '1';
-				csASIC_SMPL_SEL_ALL <= '1';
-				xRAM_WRITE_ADDRESS(9 downto 0) <= (others => '0');
-				xSTATE <= READ_TO_RAM;
+				internal_ASIC_SMPL_SEL_ALL <= '1';
+				internal_STATE <= READ_TO_RAM;
 --------------------
 			when READ_TO_RAM =>	
-				xRAM_WRITE_ENABLE <= '0';
-				if (xRAM_WRITE_ADDRESS > 511) then
-					ASIC_SMPL_SEL_ALL <= '0';
-					csASIC_SMPL_SEL_ALL <= '0';
-					xSTATE <= READOUT_BY_USB;
+				internal_RAM_WRITE_ENABLE <= '0';
+				if ( samples_read_out_this_window > 511 ) then
+					windows_read_out := windows_read_out + 1;
+					internal_ASIC_SMPL_SEL_ALL <= '0';
+					if (windows_read_out >= windows_to_sample) then
+						internal_STATE <= READOUT_BY_USB;
+					else
+						internal_ASIC_RD_ADDR(8 downto 0) <= std_logic_vector( unsigned(internal_ASIC_RD_ADDR(8 downto 0)) + 1);
+						delay_counter := 0;
+						internal_ASIC_TDC_CLR <= '1';
+						internal_STATE <= ARM_WILKINSON;
+					end if;
 				else
-					xSTATE <= WAIT_FOR_READ_SETTLING;
+					delay_counter := 0;
+					internal_STATE <= WAIT_FOR_READ_SETTLING;
 				end if;
 --------------------
 			when WAIT_FOR_READ_SETTLING =>
-				xRAM_WRITE_ENABLE <= '1';
-				if (cnt >= read_to_ram_settling_time) then					
-					xRAM_WRITE_ADDRESS <= xRAM_WRITE_ADDRESS + 1;
-					if (xASIC_SMPL_SEL = 63) then
-						xASIC_SMPL_SEL(5 downto 0) <= (others => '0');
-						if (xASIC_CH_SEL = 7) then
-							xASIC_CH_SEL(2 downto 0) <= (others => '0');
+				internal_RAM_WRITE_ENABLE <= '1';
+				if (delay_counter >= read_to_ram_settling_time) then					
+					internal_RAM_WRITE_ADDRESS <= std_logic_vector(unsigned(internal_RAM_WRITE_ADDRESS) + 1);
+					samples_read_out_this_window := samples_read_out_this_window + 1;
+					if ( unsigned(internal_ASIC_SMPL_SEL) = 63) then
+						internal_ASIC_SMPL_SEL(5 downto 0) <= (others => '0');
+						if ( unsigned(internal_ASIC_CH_SEL) = 7) then
+							internal_ASIC_CH_SEL(2 downto 0) <= (others => '0');
 						else
-							xASIC_CH_SEL <= xASIC_CH_SEL + 1;
+							internal_ASIC_CH_SEL <= std_logic_vector(unsigned(internal_ASIC_CH_SEL) + 1);
 						end if;
 					else
-						xASIC_SMPL_SEL <= xASIC_SMPL_SEL + 1;
+						internal_ASIC_SMPL_SEL <= std_logic_vector(unsigned(internal_ASIC_SMPL_SEL) + 1);
 					end if;
-					xSTATE <= READ_TO_RAM;
-					cnt := 0;
+					delay_counter := 0;					
+					internal_STATE <= READ_TO_RAM;
 				else
-					cnt := cnt + 1;
+					delay_counter := delay_counter + 1;
 				end if;
 --------------------
 			when READOUT_BY_USB =>
-				if (this_trigger_was_an_autotrigger = '0') then
-					START_USB_XFER <= '1';
-					csSTART_USB_XFER <= '1';
-				end if;
+				START_USB_XFER <= '1';
 --------------------
 			when others => --Catch for undefined state
-				xSTATE <= IDLE;
+--------------------
 		end case;
-	end if;
-end process;
---------------------------------------------------------------------------------
-process (CLK) begin
-	if (rising_edge(CLK)) then
-		internal_CLOCK_MONITOR <= not(internal_CLOCK_MONITOR);
 	end if;
 end process;
 --------------------------------------------------------------------------------
