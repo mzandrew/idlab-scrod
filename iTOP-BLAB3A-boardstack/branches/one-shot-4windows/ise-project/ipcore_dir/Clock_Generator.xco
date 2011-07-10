@@ -1,40 +1,16 @@
 ##############################################################
-#
-# Xilinx Core Generator version 12.2
-# Date: Sat Jul 09 05:29:09 2011
-#
 ##############################################################
-#
-#  This file contains the customisation parameters for a
-#  Xilinx CORE Generator IP GUI. It is strongly recommended
-#  that you do not manually alter this file as it may cause
-#  unexpected and unsupported behavior.
-#
 ##############################################################
-#
-# BEGIN Project Options
-SET addpads = false
-SET asysymbol = true
-SET busformat = BusFormatAngleBracketNotRipped
-SET createndf = false
 SET designentry = VHDL
-SET device = xc6slx150t
+SET BusFormat = BusFormatAngleBracketNotRipped
 SET devicefamily = spartan6
-SET flowvendor = Foundation_ISE
-SET formalverification = false
-SET foundationsym = false
-SET implementationfiletype = Ngc
+SET device = xc6slx150t
 SET package = fgg676
-SET removerpms = false
-SET simulationfiles = Behavioral
 SET speedgrade = -3
-SET verilogsim = true
-SET vhdlsim = true
-# END Project Options
-# BEGIN Select
+SET FlowVendor = Foundation_ISE
+SET VerilogSim = True
+SET VHDLSim = True
 SELECT Clocking_Wizard family Xilinx,_Inc. 1.6
-# END Select
-# BEGIN Parameters
 CSET clk_out1_use_fine_ps_gui=false
 CSET clk_out2_use_fine_ps_gui=false
 CSET clk_out3_use_fine_ps_gui=false
@@ -46,18 +22,18 @@ CSET clkfb_in_signaling=SINGLE
 CSET clkin1_jitter_ps=20.0
 CSET clkin2_jitter_ps=100.0
 CSET clkout1_drives=BUFG
-CSET clkout1_requested_duty_cycle=50.000
-CSET clkout1_requested_out_freq=7.8125
+CSET clkout1_requested_duty_cycle=60.000
+CSET clkout1_requested_out_freq=15.625
 CSET clkout1_requested_phase=0.000
 CSET clkout2_drives=BUFG
-CSET clkout2_requested_duty_cycle=50.000
-CSET clkout2_requested_out_freq=7.8125
-CSET clkout2_requested_phase=20.000
+CSET clkout2_requested_duty_cycle=60.000
+CSET clkout2_requested_out_freq=15.625
+CSET clkout2_requested_phase=30.000
 CSET clkout2_used=true
 CSET clkout3_drives=BUFG
-CSET clkout3_requested_duty_cycle=25.000
-CSET clkout3_requested_out_freq=15.625
-CSET clkout3_requested_phase=140.0
+CSET clkout3_requested_duty_cycle=40.000
+CSET clkout3_requested_out_freq=31.25
+CSET clkout3_requested_phase=120.0
 CSET clkout3_used=true
 CSET clkout4_drives=BUFG
 CSET clkout4_requested_duty_cycle=50.000
@@ -163,18 +139,18 @@ CSET override_pll=false
 CSET platform=nt64
 CSET pll_bandwidth=HIGH
 CSET pll_clk_feedback=CLKFBOUT
-CSET pll_clkfbout_mult=4
+CSET pll_clkfbout_mult=15
 CSET pll_clkfbout_phase=0.000
 CSET pll_clkin_period=4.000
-CSET pll_clkout0_divide=128
-CSET pll_clkout0_duty_cycle=0.500
+CSET pll_clkout0_divide=60
+CSET pll_clkout0_duty_cycle=0.600
 CSET pll_clkout0_phase=0.000
-CSET pll_clkout1_divide=128
-CSET pll_clkout1_duty_cycle=0.500
-CSET pll_clkout1_phase=20.039
-CSET pll_clkout2_divide=64
-CSET pll_clkout2_duty_cycle=0.250
-CSET pll_clkout2_phase=139.922
+CSET pll_clkout1_divide=60
+CSET pll_clkout1_duty_cycle=0.600
+CSET pll_clkout1_phase=30.000
+CSET pll_clkout2_divide=30
+CSET pll_clkout2_duty_cycle=0.400
+CSET pll_clkout2_phase=120.000
 CSET pll_clkout3_divide=1
 CSET pll_clkout3_duty_cycle=0.500
 CSET pll_clkout3_phase=0.000
@@ -185,7 +161,7 @@ CSET pll_clkout5_divide=1
 CSET pll_clkout5_duty_cycle=0.500
 CSET pll_clkout5_phase=0.000
 CSET pll_compensation=SYSTEM_SYNCHRONOUS
-CSET pll_divclk_divide=1
+CSET pll_divclk_divide=4
 CSET pll_notes=None
 CSET pll_ref_jitter=0.005
 CSET prim_in_freq=250.000
@@ -213,6 +189,3 @@ CSET use_power_down=false
 CSET use_reset=true
 CSET use_spread_spectrum=false
 CSET use_status=false
-# END Parameters
-GENERATE
-# CRC: fee19b19
