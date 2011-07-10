@@ -59,7 +59,7 @@ entity USB_MAIN is
 		xPED_SCAN	: out std_logic_vector(11 downto 0);
 		xPED_ADDR	: out std_logic_vector(14 downto 0);
 		xDEBUG     	: out std_logic_vector(15 downto 0); 
-      xRADDR     	: out std_logic_vector(9 downto 0); 
+      xRADDR     	: out std_logic_vector(11 downto 0); 
 		xSLWR      	: out std_logic; 
       xSOFT_TRIG  : out std_logic;
 		xVCAL			: out std_logic;
@@ -122,7 +122,7 @@ architecture BEHAVIORAL of USB_MAIN is
 		xPED_ADDR  	: in  std_logic_vector(14 downto 0);
 		xDEBUG 	  	: in  std_logic_vector(15 downto 0);
 		xFPGA_DATA  : out std_logic_vector(15 downto 0); 
-      xRADDR      : out std_logic_vector(9 downto 0));
+      xRADDR      : out std_logic_vector(11 downto 0));
    end component;
 --------------------------------------------------------------------------------
 	component USBread

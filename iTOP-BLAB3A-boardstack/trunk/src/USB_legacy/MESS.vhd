@@ -42,7 +42,7 @@ entity MESS is
 		xPED_ADDR  	: in  std_logic_vector(14 downto 0);
 		xDEBUG 	  	: in  std_logic_vector(15 downto 0);
 		xFPGA_DATA  : out std_logic_vector(15 downto 0); 
-      xRADDR      : out std_logic_vector(9 downto 0));
+      xRADDR      : out std_logic_vector(11 downto 0));
 end MESS; 
 
 architecture Behavioral of MESS is
@@ -57,7 +57,7 @@ architecture Behavioral of MESS is
 								PED_SCAN,	PED_ADDR,	DEBUG,
 								HDR_END,		GND_STATE);
 	signal STATE 			: STATE_TYPE;
-	signal RADDR			: std_logic_vector(9 downto 0);
+	signal RADDR			: std_logic_vector(11 downto 0);
 	signal FPGA_DATA		: std_logic_vector(15 downto 0);
 --------------------------------------------------------------------------------
 --   								components     		   						         --
@@ -84,7 +84,7 @@ begin
 		O => xFPGA_DATA);
 --------------------------------------------------------------------------------
 	xBUF_RADDR : BUF_BUS
-	generic map(bus_width => 10)
+	generic map(bus_width => 12)
 	port map (
 		I => RADDR,
 		O => xRADDR);
@@ -107,7 +107,8 @@ begin
 				when ADC =>	
 					FPGA_DATA <= x"0" & xADC;
 					RADDR <= RADDR + 1;
-					if RADDR = 511 then
+					if RADDR = 4095 then --8 windows
+--					if RADDR = 3071 then --6 windows
 						RADDR <= (others=>'0');
 						STATE <= PRCO_INT;	
 					end if;
