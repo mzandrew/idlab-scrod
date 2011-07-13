@@ -1,0 +1,32 @@
+#summary Items to bring to various integration tests
+
+= Packing Lists =
+
+The following are a list of items to bring for the following tests:
+
+== August 2011 - First Nagoya Integration Trip ==
+
+  * Mixed signal oscilloscope and probes(?)
+  * Minimum of the following boards, debugged for shorts and opens:
+    * 2x SCROD 
+    * 2x Interconnect
+    * 2x Daughter Card Level 0 (silkscreen not labeled with a number)
+    * 4x IRS2 Daughter cards (with or without all amplifiers TBD)
+    * 1x IRS2 on BLAB3A daughter card ("golden child")
+    * 2x Front-front boards
+    * 2x Front-back boards
+    * 2x HV boards
+    * 1x Front-middle
+    * 2x CLK_FIN (FIN_CLK)?
+    * 1x cPCI_FIN
+    * 1x FIN_USB
+  * 2x mini-USB cables
+  * 2x Xilinx programmers
+  * Power supplies??
+  * 1x cPCI crate
+  * 2x DSP_cPCI
+  * 1x cPCI CPU and hard drive cards
+
+== September 2011 - Second Nagoya Integration Trip (Cosmic?)  ==
+
+== ??? - Beam Test at ??? ==
