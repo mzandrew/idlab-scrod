@@ -25,10 +25,11 @@ The following are a list of items to bring for the following tests:
     * 1x FIN_USB
   * 2x mini-USB cables
   * 2x Xilinx programmers
-  * Power supplies??
   * 1x cPCI crate
   * 2x DSP_cPCI
   * 1x cPCI CPU and hard drive cards
+  * Power supplies??
+  * High voltage supplies??
 
 == September 2011 - Second Nagoya Integration Trip (Cosmic?)  ==
 
