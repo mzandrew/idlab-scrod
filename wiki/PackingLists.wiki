@@ -10,7 +10,10 @@ The following are a list of items to bring for the following tests:
   * Minimum of the following boards, debugged for shorts and opens:
     * 2x SCROD 
     * 2x Interconnect
-    * 2x Daughter Card Level 0 (silkscreen not labeled with a number)
+    * 2x Daughter card level 0 (silkscreen not labeled with a number)
+    * 2x Daughter card level 1 (silkscreen labeled "1")
+    * 2x Daughter card level 2 (silkscreen labeled "2")
+    * 2x Daughter card level 3 (silkscreen labeled "4")
     * 4x IRS2 Daughter cards (with or without all amplifiers TBD)
     * 1x IRS2 on BLAB3A daughter card ("golden child")
     * 2x Front-front boards
