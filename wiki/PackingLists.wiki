@@ -25,11 +25,16 @@ The following are a list of items to bring for the following tests:
     * 1x FIN_USB
   * 2x mini-USB cables
   * 2x Xilinx programmers
+  * JTAG programmer with flying leads
   * 1x cPCI crate
   * 2x DSP_cPCI
   * 4x short fiberoptic cables
   * 2x long fiberoptic cables
   * 1x cPCI CPU and hard drive cards
+  * RJ-45 related:
+    * Crimper
+    * Cable (CAT-5 or CAT-6)
+  * Wiener CAMAC controller
   * Power supplies??
   * High voltage supplies??
 
