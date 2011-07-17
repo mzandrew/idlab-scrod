@@ -98,11 +98,13 @@ begin
 					elsif (word_number = 1) then
 						internal_DATA_TO_FIFO <= x"0000008C"; -- packet size in words
 					elsif (word_number = 2) then
-						internal_DATA_TO_FIFO <= x"00C0FFEE"; -- packet type (similar to "coffee" in hexadecimal)
+						internal_DATA_TO_FIFO <= x"20110708"; -- protocol freeze date (YYYYMMDD in BCD)
 					elsif (word_number = 3) then
-						internal_DATA_TO_FIFO <= x"20110629"; -- protocol freeze date (YYYYMMDD in hexadecimal)
-					elsif (word_number >= 4 and word_number <= 137) then
+						internal_DATA_TO_FIFO <= x"00C0FFEE"; -- packet type (similar to "coffee" in hexadecimal)
+					elsif (word_number >= 4 and word_number <= 136) then
 						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(word_number,16)) & x"BEEF"; -- pseudo-data
+					elsif (word_number = 137) then
+						internal_DATA_TO_FIFO <= x"0001" & x"0000"; -- SCROD revision and ID (0 means all SCRODs)
 					elsif (word_number = 138) then
 						internal_DATA_TO_FIFO <= std_logic_vector(unsigned(internal_CHECKSUM) + x"62504944"); -- 32 bit checksum, including header+footer, but not self
 					elsif (word_number = 139) then
