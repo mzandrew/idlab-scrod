@@ -94,13 +94,15 @@ begin
 			internal_resynchronizing_with_header   <= '0';
 			internal_WRONG_PACKET_TYPE_COUNTER     <= (others => '0');
 			internal_WRONG_PACKET_SIZE_COUNTER     <= (others => '0');
-			internal_UNKNOWN_ERROR_COUNTER         <= (others => '0');
+			internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= (others => '0');
 			internal_WRONG_SCROD_ADDRESSED_COUNTER <= (others => '0');
 			internal_WRONG_CHECKSUM_COUNTER        <= (others => '0');
 			internal_WRONG_FOOTER_COUNTER          <= (others => '0');
+			internal_UNKNOWN_ERROR_COUNTER         <= (others => '0');
 			internal_start_event_transfer          <= '0';
 			internal_number_of_sent_events         <= (others => '0');
 			internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= (others => '0');
+			internal_MISSING_ACKNOWLEDGEMENT_COUNTER <= (others => '0');
 		elsif (rising_edge(USER_CLK) and internal_RX_SRC_RDY_N = '0') then
 			internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= std_logic_vector(unsigned(internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR) + 1);
 			case RECEIVE_STATE is
@@ -148,7 +150,7 @@ begin
 					checksum := checksum + value;
 					remaining_words_in_packet := remaining_words_in_packet - 1;
 					-- ignore stream of values other than to perform checksum
-					if (remaining_words_in_packet = 2) then -- 1 each for checksum and footer
+					if (remaining_words_in_packet = 3) then -- 1 each for SCROD rev/id, checksum and footer
 						RECEIVE_STATE <= READING_SCROD_REV_AND_ID;
 					end if;
 				when READING_SCROD_REV_AND_ID =>
@@ -156,7 +158,7 @@ begin
 					revision := revision_and_id(31 downto 16);
 					id := revision_and_id(15 downto 0);
 					checksum := checksum + revision_and_id;
-					remaining_words_in_packet := remaining_words_in_packet - 1;
+					remaining_words_in_packet := remaining_words_in_packet - 1; -- should be two after this
 					if (id = 0 or id = SCROD_ID) then
 					else
 						internal_WRONG_SCROD_ADDRESSED_COUNTER <= std_logic_vector(unsigned(internal_WRONG_SCROD_ADDRESSED_COUNTER) + 1);
@@ -171,12 +173,12 @@ begin
 				when READING_CHECKSUM =>
 					-- this state does not change the running checksum "checksum" like all other states do
 					checksum_from_packet := unsigned(internal_RX_D);
-					remaining_words_in_packet := remaining_words_in_packet - 1;
+					remaining_words_in_packet := remaining_words_in_packet - 1; -- should be one after this
 					RECEIVE_STATE <= READING_FOOTER;
 				when READING_FOOTER =>
 					footer := unsigned(internal_RX_D);
 					checksum := checksum + footer;
-					remaining_words_in_packet := remaining_words_in_packet - 1;
+					remaining_words_in_packet := remaining_words_in_packet - 1; -- should be zero after this
 --					if (remaining_words_in_packet = '0') then
 --							internal_WRONG__COUNTER <= std_logic_vector(unsigned(internal_WRONG__COUNTER) + 1);
 --					end if;
