@@ -1,5 +1,5 @@
 #ChipScope Pro Analyzer Project File, Version 3.0
-#Sat Jul 16 23:23:11 HST 2011
+#Sun Jul 17 00:20:04 HST 2011
 deviceChain.deviceName0=XC6SLX150T
 deviceChain.deviceName1=XCF16P
 deviceChain.iRLength0=6
@@ -806,7 +806,7 @@ unit.0.0.port.2.s.0.display=5
 unit.0.0.port.2.s.0.name=chipscope_aurora_reset
 unit.0.0.port.2.s.0.orderindex=-1
 unit.0.0.port.2.s.0.persistence=0
-unit.0.0.port.2.s.0.value=0000000000000000
+unit.0.0.port.2.s.0.value=0100000000000000
 unit.0.0.port.2.s.0.visible=1
 unit.0.0.port.2.s.1.alias=
 unit.0.0.port.2.s.1.color=java.awt.Color[r\=0,g\=0,b\=124]
@@ -1034,11 +1034,11 @@ unit.0.0.port.2.s.34.value=0
 unit.0.0.port.2.s.34.visible=0
 unit.0.0.port.2.s.35.alias=
 unit.0.0.port.2.s.35.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.0.0.port.2.s.35.display=0
+unit.0.0.port.2.s.35.display=3
 unit.0.0.port.2.s.35.name=internal_acknowledge_start_event_transfer
 unit.0.0.port.2.s.35.orderindex=-1
 unit.0.0.port.2.s.35.persistence=0
-unit.0.0.port.2.s.35.value=0
+unit.0.0.port.2.s.35.value=1
 unit.0.0.port.2.s.35.visible=1
 unit.0.0.port.2.s.36.alias=
 unit.0.0.port.2.s.36.color=java.awt.Color[r\=0,g\=0,b\=124]
