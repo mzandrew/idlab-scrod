@@ -405,10 +405,12 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 		WRONG_PACKET_SIZE_COUNTER          :   out std_logic_vector(31 downto 0);
 		WRONG_PACKET_TYPE_COUNTER          :   out std_logic_vector(31 downto 0);
 		WRONG_PROTOCOL_FREEZE_DATE_COUNTER :   out std_logic_vector(31 downto 0);
+		WRONG_SCROD_ADDRESSED_COUNTER      :   out std_logic_vector(31 downto 0);
 		WRONG_CHECKSUM_COUNTER             :   out std_logic_vector(31 downto 0);
 		WRONG_FOOTER_COUNTER               :   out std_logic_vector(31 downto 0);
 		UNKNOWN_ERROR_COUNTER              :   out std_logic_vector(31 downto 0);
 		MISSING_ACKNOWLEDGEMENT_COUNTER    :   out std_logic_vector(31 downto 0);
+		number_of_sent_events              :   out std_logic_vector(31 downto 0);
 		resynchronizing_with_header        :   out std_logic;
 		start_event_transfer               :   out std_logic;
 		acknowledge_start_event_transfer   : in    std_logic;
@@ -442,13 +444,16 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
+	signal internal_WRONG_SCROD_ADDRESSED_COUNTER      : std_logic_vector(31 downto 0);
 	signal internal_WRONG_CHECKSUM_COUNTER             : std_logic_vector(31 downto 0);
 	signal internal_WRONG_FOOTER_COUNTER               : std_logic_vector(31 downto 0);
 	signal internal_UNKNOWN_ERROR_COUNTER              : std_logic_vector(31 downto 0);
 	signal internal_MISSING_ACKNOWLEDGEMENT_COUNTER    : std_logic_vector(31 downto 0);
+	signal internal_number_of_sent_events              : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
+	signal chipscope_aurora_reset : std_logic;
 begin
 --	internal_acknowledge_start_event_transfer <= '0';
 
@@ -559,10 +564,12 @@ begin
 		WRONG_PACKET_SIZE_COUNTER => internal_WRONG_PACKET_SIZE_COUNTER,
 		WRONG_PACKET_TYPE_COUNTER => internal_WRONG_PACKET_TYPE_COUNTER,
 		WRONG_PROTOCOL_FREEZE_DATE_COUNTER => internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER,
+		WRONG_SCROD_ADDRESSED_COUNTER => internal_WRONG_SCROD_ADDRESSED_COUNTER,
 		WRONG_CHECKSUM_COUNTER => internal_WRONG_CHECKSUM_COUNTER,
 		WRONG_FOOTER_COUNTER => internal_WRONG_FOOTER_COUNTER,
 		UNKNOWN_ERROR_COUNTER => internal_UNKNOWN_ERROR_COUNTER,
 		MISSING_ACKNOWLEDGEMENT_COUNTER => internal_MISSING_ACKNOWLEDGEMENT_COUNTER,
+		number_of_sent_events => internal_number_of_sent_events,
 		resynchronizing_with_header => internal_resynchronizing_with_header,
 		start_event_transfer => internal_start_event_transfer,
 		acknowledge_start_event_transfer => internal_acknowledge_start_event_transfer,
@@ -734,13 +741,16 @@ begin
 	sync_in_i(21)           <= internal_start_event_transfer;
 --	sync_in_i(22)           <= internal_acknowledge_start_event_transfer;
 	sync_in_i(23 downto 22) <= "00";
-	sync_in_i(31 downto 24) <= internal_WRONG_PACKET_SIZE_COUNTER(7 downto 0);
-	sync_in_i(39 downto 32) <= internal_WRONG_PACKET_TYPE_COUNTER(7 downto 0);
-	sync_in_i(47 downto 40) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(7 downto 0);
-	sync_in_i(55 downto 48) <= internal_WRONG_CHECKSUM_COUNTER(7 downto 0);
-	sync_in_i(63 downto 56) <= internal_WRONG_FOOTER_COUNTER(7 downto 0);
---	sync_in_i(112 downto 65) <= internal_UNKNOWN_ERROR_COUNTER(7 downto 0);
---	sync_in_i(120 downto 113) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(7 downto 0);
+	sync_in_i(27 downto 24) <= internal_WRONG_PACKET_SIZE_COUNTER(3 downto 0);
+	sync_in_i(31 downto 28) <= internal_WRONG_PACKET_TYPE_COUNTER(3 downto 0);
+	sync_in_i(35 downto 32) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(3 downto 0);
+	sync_in_i(39 downto 36) <= internal_WRONG_SCROD_ADDRESSED_COUNTER(3 downto 0);
+	sync_in_i(43 downto 40) <= internal_WRONG_CHECKSUM_COUNTER(3 downto 0);
+	sync_in_i(47 downto 44) <= internal_WRONG_FOOTER_COUNTER(3 downto 0);
+	sync_in_i(51 downto 48) <= internal_UNKNOWN_ERROR_COUNTER(3 downto 0);
+	sync_in_i(55 downto 52) <= internal_number_of_sent_events(3 downto 0);
+	sync_in_i(59 downto 56) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(3 downto 0);
+	sync_in_i(63 downto 60) <= (others => '0');
 
 	internal_acknowledge_start_event_transfer <= sync_out_i(35);
 
@@ -772,9 +782,11 @@ no_chipscope1 : if USE_CHIPSCOPE = 0 generate
    sync_in_i  <= (others=>'0');
 end generate no_chipscope1;
 
+chipscope_aurora_reset <= sync_out_i(0);
+
 chipscope2 : if USE_CHIPSCOPE = 1 generate
  -- Shared VIO Outputs
-    reset_i <= system_reset_i or sync_out_i(0);	 
+    reset_i <= system_reset_i or chipscope_aurora_reset;
 	 internal_PACKET_GENERATOR_ENABLE <= sync_out_i(2 downto 1);
 	 internal_VARIABLE_DELAY_BETWEEN_EVENTS <= sync_out_i(34 downto 3);
 end generate chipscope2;

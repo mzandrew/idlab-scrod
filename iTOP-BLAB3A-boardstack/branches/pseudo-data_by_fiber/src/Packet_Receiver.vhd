@@ -14,23 +14,27 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity Packet_Receiver is
 	generic (
-		EXPECTED_PACKET_SIZE : unsigned := x"8c"
+		EXPECTED_PACKET_SIZE : unsigned := x"8c";
+		SCROD_REVISION       : unsigned := x"0001";
+		SCROD_ID             : unsigned := x"0002"
 	);
 	port (
 		-- User Interface
-		RX_D            : in  std_logic_vector(31 downto 0); 
+		RX_D            : in  std_logic_vector(31 downto 0);
 		RX_SRC_RDY_N    : in  std_logic;
 		-- System Interface
-		USER_CLK        : in  std_logic;   
+		USER_CLK        : in  std_logic;
 		RESET           : in  std_logic;
 		CHANNEL_UP      : in  std_logic;
 		WRONG_PACKET_SIZE_COUNTER          :   out std_logic_vector(31 downto 0);
 		WRONG_PACKET_TYPE_COUNTER          :   out std_logic_vector(31 downto 0);
 		WRONG_PROTOCOL_FREEZE_DATE_COUNTER :   out std_logic_vector(31 downto 0);
+		WRONG_SCROD_ADDRESSED_COUNTER      :   out std_logic_vector(31 downto 0);
 		WRONG_CHECKSUM_COUNTER             :   out std_logic_vector(31 downto 0);
 		WRONG_FOOTER_COUNTER               :   out std_logic_vector(31 downto 0);
 		UNKNOWN_ERROR_COUNTER              :   out std_logic_vector(31 downto 0);
 		MISSING_ACKNOWLEDGEMENT_COUNTER    :   out std_logic_vector(31 downto 0);
+		number_of_sent_events              :   out std_logic_vector(31 downto 0);
 		resynchronizing_with_header        :   out std_logic;
 		start_event_transfer               :   out std_logic;
 		acknowledge_start_event_transfer   : in    std_logic;
@@ -39,15 +43,17 @@ entity Packet_Receiver is
 end Packet_Receiver;
 
 architecture Behavioral of Packet_Receiver is
-	type RECEIVE_STATE_TYPE is (WAITING_FOR_HEADER, READING_PACKET_SIZE, READING_PACKET_TYPE, READING_PROTOCOL_DATE, READING_VALUES, READING_CHECKSUM, READING_FOOTER, SET_SEND_EVENT_FLAG, WAITING_FOR_ACKNOWLEDGE);
+	type RECEIVE_STATE_TYPE is (WAITING_FOR_HEADER, READING_PACKET_SIZE, READING_PROTOCOL_DATE, READING_PACKET_TYPE, READING_VALUES, READING_SCROD_REV_AND_ID, READING_CHECKSUM, READING_FOOTER, SET_SEND_EVENT_FLAG, WAITING_FOR_ACKNOWLEDGE);
 	signal internal_RX_D : std_logic_vector(31 downto 0);
 	signal internal_RX_SRC_RDY_N : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
-	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
+	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
+	signal internal_WRONG_SCROD_ADDRESSED_COUNTER      : std_logic_vector(31 downto 0);
 	signal internal_WRONG_CHECKSUM_COUNTER             : std_logic_vector(31 downto 0);
 	signal internal_WRONG_FOOTER_COUNTER               : std_logic_vector(31 downto 0);
 	signal internal_UNKNOWN_ERROR_COUNTER              : std_logic_vector(31 downto 0);
+	signal internal_number_of_sent_events              : std_logic_vector(31 downto 0);
 	signal internal_MISSING_ACKNOWLEDGEMENT_COUNTER    : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header : std_logic;
 	signal internal_start_event_transfer : std_logic;
@@ -58,9 +64,11 @@ begin
 	WRONG_PACKET_TYPE_COUNTER          <= internal_WRONG_PACKET_TYPE_COUNTER;
 	WRONG_PACKET_SIZE_COUNTER          <= internal_WRONG_PACKET_SIZE_COUNTER;
 	WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER;
+	WRONG_SCROD_ADDRESSED_COUNTER      <= internal_WRONG_SCROD_ADDRESSED_COUNTER;
 	WRONG_CHECKSUM_COUNTER             <= internal_WRONG_CHECKSUM_COUNTER;
 	WRONG_FOOTER_COUNTER               <= internal_WRONG_FOOTER_COUNTER;
 	UNKNOWN_ERROR_COUNTER              <= internal_UNKNOWN_ERROR_COUNTER;
+	number_of_sent_events              <= internal_number_of_sent_events;
 	MISSING_ACKNOWLEDGEMENT_COUNTER <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER;
 	resynchronizing_with_header <= internal_resynchronizing_with_header;
 	start_event_transfer <= internal_start_event_transfer;
@@ -70,6 +78,9 @@ begin
 		variable protocol_date             : unsigned(31 downto 0);
 --		variable values_read               : integer range 0 to 255 := 0; ???
 		variable value                     : unsigned(31 downto 0);
+		variable revision_and_id           : unsigned(31 downto 0);
+		variable revision                  : unsigned(15 downto 0);
+		variable id                        : unsigned(15 downto 0);
 		variable checksum                  : unsigned(31 downto 0);
 		variable checksum_from_packet      : unsigned(31 downto 0);
 		variable footer                    : unsigned(31 downto 0);
@@ -77,13 +88,15 @@ begin
 		constant NUMBER_OF_CYCLES_TO_WAIT_FOR_ACKNOWLEDGE : unsigned(31 downto 0) := x"00000100";
 	begin
 		if (RESET = '1' or CHANNEL_UP = '0') then
-			internal_resynchronizing_with_header <= '0';
-			internal_WRONG_PACKET_TYPE_COUNTER   <= (others => '0');
-			internal_WRONG_PACKET_SIZE_COUNTER   <= (others => '0');
-			internal_UNKNOWN_ERROR_COUNTER       <= (others => '0');
-			internal_WRONG_CHECKSUM_COUNTER      <= (others => '0');
-			internal_WRONG_FOOTER_COUNTER        <= (others => '0');
-			internal_start_event_transfer        <= '0';
+			internal_resynchronizing_with_header   <= '0';
+			internal_WRONG_PACKET_TYPE_COUNTER     <= (others => '0');
+			internal_WRONG_PACKET_SIZE_COUNTER     <= (others => '0');
+			internal_UNKNOWN_ERROR_COUNTER         <= (others => '0');
+			internal_WRONG_SCROD_ADDRESSED_COUNTER <= (others => '0');
+			internal_WRONG_CHECKSUM_COUNTER        <= (others => '0');
+			internal_WRONG_FOOTER_COUNTER          <= (others => '0');
+			internal_start_event_transfer          <= '0';
+			internal_number_of_sent_events         <= (others => '0');
 		elsif (rising_edge(USER_CLK) and internal_RX_SRC_RDY_N = '0') then
 			case RECEIVE_STATE is
 				when WAITING_FOR_HEADER =>
@@ -103,24 +116,24 @@ begin
 						internal_WRONG_PACKET_SIZE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PACKET_SIZE_COUNTER) + 1);
 						RECEIVE_STATE <= WAITING_FOR_HEADER;
 					end if;
-					RECEIVE_STATE <= READING_PACKET_TYPE;
-				when READING_PACKET_TYPE =>
-					checksum := checksum + unsigned(internal_RX_D);
-					remaining_words_in_packet := remaining_words_in_packet - 1;
-					if (internal_RX_D = x"B01DFACE") then -- command packet
-						RECEIVE_STATE <= READING_PROTOCOL_DATE;
-					else
-						internal_WRONG_PACKET_TYPE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PACKET_TYPE_COUNTER) + 1);
-						RECEIVE_STATE <= WAITING_FOR_HEADER;
-					end if;
+					RECEIVE_STATE <= READING_PROTOCOL_DATE;
 				when READING_PROTOCOL_DATE =>
 					protocol_date := unsigned(internal_RX_D);
 					checksum := checksum + protocol_date;
 					remaining_words_in_packet := remaining_words_in_packet - 1;
-					if (protocol_date = x"20110629") then
-						RECEIVE_STATE <= READING_VALUES;
+					if (protocol_date = x"20110708") then
+						RECEIVE_STATE <= READING_PACKET_TYPE;
 					else
 						internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER) + 1);
+						RECEIVE_STATE <= WAITING_FOR_HEADER;
+					end if;
+				when READING_PACKET_TYPE =>
+					checksum := checksum + unsigned(internal_RX_D);
+					remaining_words_in_packet := remaining_words_in_packet - 1;
+					if (internal_RX_D = x"B01DFACE") then -- command packet
+						RECEIVE_STATE <= READING_VALUES;
+					else
+						internal_WRONG_PACKET_TYPE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PACKET_TYPE_COUNTER) + 1);
 						RECEIVE_STATE <= WAITING_FOR_HEADER;
 					end if;
 				when READING_VALUES =>
@@ -129,8 +142,25 @@ begin
 					remaining_words_in_packet := remaining_words_in_packet - 1;
 					-- ignore stream of values other than to perform checksum
 					if (remaining_words_in_packet = 2) then -- 1 each for checksum and footer
-						RECEIVE_STATE <= READING_CHECKSUM;
+						RECEIVE_STATE <= READING_SCROD_REV_AND_ID;
 					end if;
+				when READING_SCROD_REV_AND_ID =>
+					revision_and_id := unsigned(internal_RX_D);
+					revision := revision_and_id(31 downto 16);
+					id := revision_and_id(15 downto 0);
+					checksum := checksum + revision_and_id;
+					remaining_words_in_packet := remaining_words_in_packet - 1;
+					if (id = 0 or id = SCROD_ID) then
+					else
+						internal_WRONG_SCROD_ADDRESSED_COUNTER <= std_logic_vector(unsigned(internal_WRONG_SCROD_ADDRESSED_COUNTER) + 1);
+						RECEIVE_STATE <= WAITING_FOR_HEADER;
+					end if;
+					if (revision = 0 or revision = SCROD_REVISION) then
+					else
+						internal_WRONG_SCROD_ADDRESSED_COUNTER <= std_logic_vector(unsigned(internal_WRONG_SCROD_ADDRESSED_COUNTER) + 1);
+						RECEIVE_STATE <= WAITING_FOR_HEADER;
+					end if;
+					RECEIVE_STATE <= READING_CHECKSUM;
 				when READING_CHECKSUM =>
 					-- this state does not change the running checksum "checksum" like all other states do
 					checksum_from_packet := unsigned(internal_RX_D);
@@ -155,6 +185,7 @@ begin
 						RECEIVE_STATE <= WAITING_FOR_HEADER;
 					end if;
 				when SET_SEND_EVENT_FLAG =>
+					internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
 					internal_start_event_transfer <= '1';
 					timeout_waiting_for_acknowledge_counter := NUMBER_OF_CYCLES_TO_WAIT_FOR_ACKNOWLEDGE;
 					RECEIVE_STATE <= WAITING_FOR_ACKNOWLEDGE;
