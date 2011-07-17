@@ -35,6 +35,7 @@ entity Packet_Receiver is
 		UNKNOWN_ERROR_COUNTER              :   out std_logic_vector(31 downto 0);
 		MISSING_ACKNOWLEDGEMENT_COUNTER    :   out std_logic_vector(31 downto 0);
 		number_of_sent_events              :   out std_logic_vector(31 downto 0);
+		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR :   out std_logic_vector(31 downto 0);
 		resynchronizing_with_header        :   out std_logic;
 		start_event_transfer               :   out std_logic;
 		acknowledge_start_event_transfer   : in    std_logic;
@@ -57,6 +58,7 @@ architecture Behavioral of Packet_Receiver is
 	signal internal_MISSING_ACKNOWLEDGEMENT_COUNTER    : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header : std_logic;
 	signal internal_start_event_transfer : std_logic;
+	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
 	signal RECEIVE_STATE : RECEIVE_STATE_TYPE := WAITING_FOR_HEADER;
 begin
 	internal_RX_D         <= RX_D;
@@ -69,6 +71,7 @@ begin
 	WRONG_FOOTER_COUNTER               <= internal_WRONG_FOOTER_COUNTER;
 	UNKNOWN_ERROR_COUNTER              <= internal_UNKNOWN_ERROR_COUNTER;
 	number_of_sent_events              <= internal_number_of_sent_events;
+	NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR;
 	MISSING_ACKNOWLEDGEMENT_COUNTER <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER;
 	resynchronizing_with_header <= internal_resynchronizing_with_header;
 	start_event_transfer <= internal_start_event_transfer;
@@ -97,12 +100,15 @@ begin
 			internal_WRONG_FOOTER_COUNTER          <= (others => '0');
 			internal_start_event_transfer          <= '0';
 			internal_number_of_sent_events         <= (others => '0');
+			internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= (others => '0');
 		elsif (rising_edge(USER_CLK) and internal_RX_SRC_RDY_N = '0') then
+			internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= std_logic_vector(unsigned(internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR) + 1);
 			case RECEIVE_STATE is
 				when WAITING_FOR_HEADER =>
 --					values_read := 0;
 					if (internal_RX_D = x"00BE11E2") then
 						checksum := x"00BE11E2";
+						internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= x"00000001";
 						RECEIVE_STATE <= READING_PACKET_SIZE;
 						internal_resynchronizing_with_header <= '0';
 					else
@@ -112,11 +118,12 @@ begin
 					packet_size := unsigned(internal_RX_D(15 downto 0));
 					checksum := checksum + packet_size;
 					remaining_words_in_packet := packet_size - 2; -- 1 each for header & packet size
-					if (packet_size < EXPECTED_PACKET_SIZE) then
+					if (packet_size = EXPECTED_PACKET_SIZE) then
+						RECEIVE_STATE <= READING_PROTOCOL_DATE;
+					else
 						internal_WRONG_PACKET_SIZE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PACKET_SIZE_COUNTER) + 1);
 						RECEIVE_STATE <= WAITING_FOR_HEADER;
 					end if;
-					RECEIVE_STATE <= READING_PROTOCOL_DATE;
 				when READING_PROTOCOL_DATE =>
 					protocol_date := unsigned(internal_RX_D);
 					checksum := checksum + protocol_date;

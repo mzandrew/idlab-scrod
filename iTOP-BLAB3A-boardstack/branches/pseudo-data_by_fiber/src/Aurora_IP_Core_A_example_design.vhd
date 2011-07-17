@@ -411,6 +411,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 		UNKNOWN_ERROR_COUNTER              :   out std_logic_vector(31 downto 0);
 		MISSING_ACKNOWLEDGEMENT_COUNTER    :   out std_logic_vector(31 downto 0);
 		number_of_sent_events              :   out std_logic_vector(31 downto 0);
+		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR :   out std_logic_vector(31 downto 0);
 		resynchronizing_with_header        :   out std_logic;
 		start_event_transfer               :   out std_logic;
 		acknowledge_start_event_transfer   : in    std_logic;
@@ -450,6 +451,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_UNKNOWN_ERROR_COUNTER              : std_logic_vector(31 downto 0);
 	signal internal_MISSING_ACKNOWLEDGEMENT_COUNTER    : std_logic_vector(31 downto 0);
 	signal internal_number_of_sent_events              : std_logic_vector(31 downto 0);
+	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
@@ -570,6 +572,7 @@ begin
 		UNKNOWN_ERROR_COUNTER => internal_UNKNOWN_ERROR_COUNTER,
 		MISSING_ACKNOWLEDGEMENT_COUNTER => internal_MISSING_ACKNOWLEDGEMENT_COUNTER,
 		number_of_sent_events => internal_number_of_sent_events,
+		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR => internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR,
 		resynchronizing_with_header => internal_resynchronizing_with_header,
 		start_event_transfer => internal_start_event_transfer,
 		acknowledge_start_event_transfer => internal_acknowledge_start_event_transfer,
@@ -731,16 +734,15 @@ begin
 	sync_in_i(6 downto 0) <= lane_init_state_i;
 	sync_in_i(7)          <= lane_up_i_i;
 	sync_in_i(8)          <= channel_up_i;
-	sync_in_i(9)          <= pll_not_locked_i;
-	sync_in_i(15 downto 10) <= "000000";
+--	sync_in_i(9)          <= pll_not_locked_i;
 	-- data generator status:
-	sync_in_i(18 downto 16) <= internal_DATA_GENERATOR_STATE;
+	sync_in_i(11 downto 9) <= internal_DATA_GENERATOR_STATE;
 	-- data receiver status:
-	sync_in_i(19)           <= tx_src_rdy_n_i;
+	sync_in_i(19 downto 12) <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR(7 downto 0);
 	sync_in_i(20)           <= internal_resynchronizing_with_header;
 	sync_in_i(21)           <= internal_start_event_transfer;
---	sync_in_i(22)           <= internal_acknowledge_start_event_transfer;
-	sync_in_i(23 downto 22) <= "00";
+	sync_in_i(22)           <= tx_src_rdy_n_i;
+	sync_in_i(23)           <= '0';
 	sync_in_i(27 downto 24) <= internal_WRONG_PACKET_SIZE_COUNTER(3 downto 0);
 	sync_in_i(31 downto 28) <= internal_WRONG_PACKET_TYPE_COUNTER(3 downto 0);
 	sync_in_i(35 downto 32) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(3 downto 0);
