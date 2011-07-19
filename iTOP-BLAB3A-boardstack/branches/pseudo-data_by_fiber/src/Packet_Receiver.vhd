@@ -1,4 +1,5 @@
-	-- 2011-06-07 kurtis, modified by mza
+-- 2011-06-07 kurtis, modified by mza
+-- 2011-07 under heavy development by mza
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -14,9 +15,10 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity Packet_Receiver is
 	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE : unsigned := x"20110718";
 		EXPECTED_PACKET_SIZE : unsigned := x"8c";
-		SCROD_REVISION       : unsigned := x"0001";
-		SCROD_ID             : unsigned := x"0002"
+		SCROD_REVISION       : unsigned := x"000a";
+		SCROD_ID             : unsigned := x"0001"
 	);
 	port (
 		-- User Interface
@@ -140,7 +142,7 @@ begin
 						protocol_date := unsigned(internal_RX_D);
 						checksum := checksum + protocol_date;
 						remaining_words_in_packet := remaining_words_in_packet - 1;
-						if (protocol_date = x"20110708") then
+						if (protocol_date = CURRENT_PROTOCOL_FREEZE_DATE) then
 							PACKET_RECEIVER_STATE <= READING_PACKET_TYPE;
 						else
 							internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER) + 1);
