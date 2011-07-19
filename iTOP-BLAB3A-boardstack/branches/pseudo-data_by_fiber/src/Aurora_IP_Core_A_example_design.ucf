@@ -1,56 +1,10 @@
-  
-##################################################################################
-## (c) Copyright 2008 Xilinx, Inc. All rights reserved.
-##
-## This file contains confidential and proprietary information
-## of Xilinx, Inc. and is protected under U.S. and
-## international copyright and other intellectual property
-## laws.
-##
-## DISCLAIMER
-## This disclaimer is not a license and does not grant any
-## rights to the materials distributed herewith. Except as
-## otherwise provided in a valid license issued to you by
-## Xilinx, and to the maximum extent permitted by applicable
-## law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
-## WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
-## AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
-## BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
-## INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
-## (2) Xilinx shall not be liable (whether in contract or tort,
-## including negligence, or under any other theory of
-## liability) for any loss or damage of any kind or nature
-## related to, arising under or in connection with these
-## materials, including for any direct, or any indirect,
-## special, incidental, or consequential loss or damage
-## (including loss of data, profits, goodwill, or any type of
-## loss or damage suffered as a result of any action brought
-## by a third party) even if such damage or loss was
-## reasonably foreseeable or Xilinx had been advised of the
-## possibility of the same.
-##
-## CRITICAL APPLICATIONS
-## Xilinx products are not designed or intended to be fail-
-## safe, or for use in any application requiring fail-safe
-## performance, such as life-support or safety devices or
-## systems, Class III medical devices, nuclear facilities,
-## applications related to the deployment of airbags, or any
-## other applications that could lead to death, personal
-## injury, or severe property or environmental damage
-## (individually and collectively, "Critical
-## Applications"). Customer assumes the sole risk and
-## liability of any use of Xilinx products in Critical
-## Applications, subject only to applicable laws and
-## regulations governing limitations on product liability.
-##
-## THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
-## PART OF THIS FILE AT ALL TIMES.
-## 
-## 
+# UCF generated for xc6slx150t-fgg676-3 device by some stupid Xilinx tool that thinks this kind of shit is copyrightable
+# modified 2011-06 by kurtis
+# modified 2011-07 by mza
 #################################################################################
-## UCF generated for xc6slx150t-fgg676-3 device
-# 156.25MHz GTP Reference clock contraint 
-NET "GTPD2_left_i" TNM_NET = GT_REFCLK; 
+
+# 156.25MHz GTP Reference clock contraint
+NET "GTPD2_left_i" TNM_NET = GT_REFCLK;
 TIMESPEC TS_GTPD2_LEFT_I = PERIOD "GT_REFCLK" 156.25 MHz HIGH 50%;
 
 # User Clock Contraint: Value is selected based on the line rate (3.125 Gbps) and lane width (4-Byte)
@@ -65,13 +19,8 @@ TIMESPEC TS_SYNC_CLK_I = PERIOD "SYNC_CLK" 3.2 ns HIGH 50%;
 NET GTPD2_P  LOC=B10; 
 NET GTPD2_N  LOC=A10; 
 
-NET RXP	LOC=D7;
-NET RXN	LOC=C7;
-NET TXP	LOC=B6;
-NET TXN	LOC=A6;
-NET TX_DISCONNECT1 LOC=B14  | IOSTANDARD = LVCMOS33;
-NET BOARD_CLOCKP	LOC=U25;
-NET BOARD_CLOCKN	LOC=U26;
+NET board_clock_250MHz_P	LOC=U25;
+NET board_clock_250MHz_N	LOC=U26;
 NET LEDS<0>		LOC = "f18"  | IOSTANDARD = LVCMOS33;
 NET LEDS<1>		LOC = "e18"  | IOSTANDARD = LVCMOS33;
 NET LEDS<2>		LOC = "g16"  | IOSTANDARD = LVCMOS33;
@@ -106,10 +55,17 @@ NET MONITOR_HEADER<13>	LOC = "B25" | IOSTANDARD = LVCMOS25;
 NET MONITOR_HEADER<14>	LOC = "B26" | IOSTANDARD = LVCMOS25;
 NET MONITOR_HEADER<15>	LOC = "A25" | IOSTANDARD = LVCMOS25;
 
+# fiber optic transceiver 0
+NET FIBER_TRANSCEIVER_0_DISABLE_MODULE LOC = "E14"  | IOSTANDARD = LVCMOS33;
+NET FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER LOC = "g13" | IOSTANDARD = LVCMOS33;
+NET FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER LOC = "b5" | IOSTANDARD = LVCMOS33;
+NET RXP	LOC=D7;
+NET RXN	LOC=C7;
+NET TXP	LOC=B6;
+NET TXN	LOC=A6;
 
-NET TX_DISCONNECT0 LOC = "E14"  | IOSTANDARD = LVCMOS33;
-NET TX_FAULT0 LOC = "g13" | IOSTANDARD = LVCMOS33;
-NET RX_LOS0 LOC = "b5" | IOSTANDARD = LVCMOS33;
+# fiber optic transceiver 1
+NET FIBER_TRANSCEIVER_1_DISABLE_MODULE LOC=B14  | IOSTANDARD = LVCMOS33;
 
 #The following line should be removed once the core is working.
 #user_clk toggling means that the transceiver initialized correctly.
