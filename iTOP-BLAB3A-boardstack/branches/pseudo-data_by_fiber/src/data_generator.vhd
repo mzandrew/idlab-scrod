@@ -1,21 +1,5 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    18:37:33 06/29/2011 
--- Design Name: 
--- Module Name:    data_generator - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+-- 2011-06-29 kurtis
+-- 2011-07-18 modified by mza
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -30,6 +14,9 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity data_generator is
+	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110718"
+	);
     Port ( 	ENABLE 						: in  STD_LOGIC;
 				TX_DST_RDY_N 				: in  STD_LOGIC;
 				FIFO_EMPTY					: in	STD_LOGIC;
@@ -98,7 +85,7 @@ begin
 					elsif (word_number = 1) then
 						internal_DATA_TO_FIFO <= x"0000008C"; -- packet size in words
 					elsif (word_number = 2) then
-						internal_DATA_TO_FIFO <= x"20110708"; -- protocol freeze date (YYYYMMDD in BCD)
+						internal_DATA_TO_FIFO <= CURRENT_PROTOCOL_FREEZE_DATE; -- protocol freeze date (YYYYMMDD in BCD)
 					elsif (word_number = 3) then
 						internal_DATA_TO_FIFO <= x"00C0FFEE"; -- packet type (similar to "coffee" in hexadecimal)
 					elsif (word_number >= 4 and word_number <= 136) then
