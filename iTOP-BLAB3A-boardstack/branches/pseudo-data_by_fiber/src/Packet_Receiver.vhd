@@ -45,7 +45,7 @@ end Packet_Receiver;
 
 architecture Behavioral of Packet_Receiver is
 	type PACKET_RECEIVER_STATE_TYPE is (WAITING_FOR_HEADER, READING_PACKET_SIZE, READING_PROTOCOL_DATE, READING_PACKET_TYPE, READING_VALUES, READING_SCROD_REV_AND_ID, READING_CHECKSUM, READING_FOOTER);
-	type COMMAND_PROCESSING_STATE_TYPE is (WAITING_TO_PROCESS_COMMAND, SET_SEND_EVENT_FLAG, WAITING_FOR_ACKNOWLEDGE);
+	type COMMAND_PROCESSING_STATE_TYPE is (WAITING_TO_PROCESS_COMMAND, PROCESS_COMMAND, SET_SEND_EVENT_FLAG, WAITING_FOR_ACKNOWLEDGE);
 	signal internal_RX_D : std_logic_vector(31 downto 0);
 	signal internal_RX_SRC_RDY_N : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
@@ -78,11 +78,15 @@ begin
 	resynchronizing_with_header <= internal_resynchronizing_with_header;
 	start_event_transfer <= internal_start_event_transfer;
 	process (USER_CLK, RX_SRC_RDY_N)
+		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 8 := 8;
 		variable packet_size               : unsigned(15 downto 0);
 		variable remaining_words_in_packet : unsigned(15 downto 0);
 		variable protocol_date             : unsigned(31 downto 0);
 --		variable values_read               : integer range 0 to 255 := 0; ???
 		variable value                     : unsigned(31 downto 0);
+		type command_word_type is array(NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY-1 downto 0) of unsigned(31 downto 0);
+		variable command_word              : command_word_type;
+		variable command_word_counter      : integer range 0 to to_integer(EXPECTED_PACKET_SIZE);
 		variable revision_and_id           : unsigned(31 downto 0);
 		variable revision                  : unsigned(15 downto 0);
 		variable id                        : unsigned(15 downto 0);
@@ -92,7 +96,7 @@ begin
 		variable timeout_waiting_for_acknowledge_counter  : unsigned(31 downto 0);
 		constant NUMBER_OF_CYCLES_TO_WAIT_FOR_ACKNOWLEDGE : unsigned(31 downto 0) := x"00000100";
 	begin
-		if (RESET = '1' or CHANNEL_UP = '0') then
+		if (RESET = '1') then
 			internal_resynchronizing_with_header   <= '0';
 			internal_WRONG_PACKET_TYPE_COUNTER     <= (others => '0');
 			internal_WRONG_PACKET_SIZE_COUNTER     <= (others => '0');
@@ -105,6 +109,7 @@ begin
 			internal_number_of_sent_events         <= (others => '0');
 			internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= (others => '0');
 			internal_MISSING_ACKNOWLEDGEMENT_COUNTER <= (others => '0');
+--		elsif (CHANNEL_UP = '0') then
 		elsif (rising_edge(USER_CLK)) then
 			-- this only receives packets when internal_RX_SRC_RDY_N = '0'
 			-- and it only processes commands when internal_RX_SRC_RDY_N = '1'
@@ -145,6 +150,7 @@ begin
 						checksum := checksum + unsigned(internal_RX_D);
 						remaining_words_in_packet := remaining_words_in_packet - 1;
 						if (internal_RX_D = x"B01DFACE") then -- command packet
+							command_word_counter := 0;
 							PACKET_RECEIVER_STATE <= READING_VALUES;
 						else
 							internal_WRONG_PACKET_TYPE_COUNTER <= std_logic_vector(unsigned(internal_WRONG_PACKET_TYPE_COUNTER) + 1);
@@ -152,8 +158,12 @@ begin
 						end if;
 					when READING_VALUES =>
 						value := unsigned(internal_RX_D);
+						if (command_word_counter < NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY) then
+							command_word(command_word_counter) := value;
+						end if;
 						checksum := checksum + value;
 						remaining_words_in_packet := remaining_words_in_packet - 1;
+						command_word_counter := command_word_counter + 1;
 						-- ignore stream of values other than to perform checksum
 						if (remaining_words_in_packet = 3) then -- 1 each for SCROD rev/id, checksum and footer
 							PACKET_RECEIVER_STATE <= READING_SCROD_REV_AND_ID;
@@ -189,7 +199,7 @@ begin
 --						end if;
 						if (footer = x"62504944") then
 							if (checksum = checksum_from_packet) then
-								COMMAND_PROCESSING_STATE <= SET_SEND_EVENT_FLAG;
+								COMMAND_PROCESSING_STATE <= PROCESS_COMMAND;
 								PACKET_RECEIVER_STATE <= WAITING_FOR_HEADER;
 							else
 								internal_WRONG_CHECKSUM_COUNTER <= std_logic_vector(unsigned(internal_WRONG_CHECKSUM_COUNTER) + 1);
@@ -206,6 +216,13 @@ begin
 			else
 				case COMMAND_PROCESSING_STATE is
 					when WAITING_TO_PROCESS_COMMAND =>
+					when PROCESS_COMMAND =>
+						if (command_word(0) = x"b01dface") then
+							COMMAND_PROCESSING_STATE <= SET_SEND_EVENT_FLAG;
+--						elsif () then
+						else
+							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
+						end if;
 					when SET_SEND_EVENT_FLAG =>
 						internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
 						internal_start_event_transfer <= '1';
