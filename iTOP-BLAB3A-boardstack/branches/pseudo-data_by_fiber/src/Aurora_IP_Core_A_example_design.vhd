@@ -8,8 +8,9 @@
 ---------------------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
-use IEEE.STD_LOGIC_MISC.all;
-use IEEE.STD_LOGIC_unsigned.all;
+--use IEEE.STD_LOGIC_MISC.all;
+--use IEEE.STD_LOGIC_unsigned.all;
+use ieee.numeric_std.all;
 use WORK.AURORA_PKG.all;
 
 -- synthesis translate_off
@@ -112,11 +113,11 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	attribute ASYNC_REG        : string;
 	attribute ASYNC_REG of tx_lock_i  : signal is "TRUE";
 -------Kurtis additions------------
-	signal internal_250MHz : std_logic;
+	signal internal_clock_250MHz : std_logic;
 	signal internal_COUNTER : std_logic_vector(31 downto 0);
 	signal INIT_CLK : std_logic;
-	signal RESET : std_logic := '1';
-	signal GT_RESET_IN : std_logic := '1';
+	signal AURORA_RESET_IN : std_logic := '1';
+	signal GT_RESET_IN     : std_logic := '1';
 	signal rx_char_is_comma_i : std_logic_vector(3 downto 0);
 	signal lane_init_state_i  : std_logic_vector(6 downto 0);
 	signal reset_lanes_i : std_logic;
@@ -333,6 +334,11 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
 	signal chipscope_aurora_reset : std_logic;
+	signal spill_active    : std_logic;
+	signal recharge_active : std_logic;
+--	signal stupid_counter : std_logic_vector(31 downto 0);
+	signal transmit_always : std_logic;
+	signal should_transmit : std_logic;
 begin
 --	internal_acknowledge_start_event_transfer <= '0';
 	lane_up_reduce_i    <=  lane_up_i;
@@ -370,20 +376,80 @@ begin
 	MONITOR_HEADER(0) <= tx_src_rdy_n_i;
 	MONITOR_HEADER(15 downto 1) <= (others => '0');
 ------------------------------------------
-	process(internal_250MHz) begin
-	if rising_edge(internal_250MHz) then
-		internal_COUNTER <= internal_COUNTER + 1;
-	end if;
+	process(internal_clock_250MHz, reset_i)
+		variable counter_250_MHz  : integer range 0 to  250 := 0;
+		variable counter_1_MHz    : integer range 0 to 1000 := 0;
+		variable counter_1_kHz    : integer range 0 to 1000 := 0;
+		variable counter_1_Hz     : integer range 0 to 3600 := 0;
+		variable spill_counter            : integer range 0 to 60 := 0;
+		constant spill_counter_maximum    : integer range 0 to 60 := 9;
+		variable recharge_counter         : integer range 0 to 60 := 0;
+		constant recharge_counter_maximum : integer range 0 to 60 := 40;
+	begin
+		if (reset_i = '1') then
+			spill_active    <= '1';
+			recharge_active <= '0';
+			counter_250_MHz  := 0;
+			counter_1_MHz    := 0;
+			counter_1_kHz    := 0;
+			counter_1_Hz     := 0;
+			spill_counter    := 0;
+			recharge_counter := 0;
+		elsif rising_edge(internal_clock_250MHz) then
+			counter_250_MHz := counter_250_MHz + 1;
+			if (counter_250_MHz > 249) then
+				counter_250_MHz := 0;
+				counter_1_MHz := counter_1_MHz + 1;
+			end if;
+			if (counter_1_MHz > 999) then
+				counter_1_MHz := 0;
+				counter_1_kHz := counter_1_kHz + 1;
+			end if;
+			if (counter_1_kHz > 999) then
+				counter_1_kHz := 0;
+				counter_1_Hz := counter_1_Hz + 1;
+--				stupid_counter <= std_logic_vector(unsigned(stupid_counter) + 1);
+				if (spill_counter < spill_counter_maximum) then
+					spill_counter := spill_counter + 1;
+				else
+					spill_active    <= '0';
+					recharge_active <= '1';
+					if (recharge_counter < recharge_counter_maximum) then
+						recharge_counter := recharge_counter + 1;
+					else
+						spill_active    <= '1';
+						recharge_active <= '0';
+						spill_counter    := 0;
+						recharge_counter := 0;
+					end if;
+				end if;
+			end if;
+		end if;
 	end process;
-	process(internal_COUNTER(27)) begin
-	if rising_edge(internal_COUNTER(27)) then
-		RESET <= '0';
-		GT_RESET_IN <= '0';
-	end if;
+	process(internal_clock_250MHz)
+		variable internal_COUNTER  : integer range 0 to 250000000 := 0;
+	begin
+--		AURORA_RESET_IN <= '1'; -- aurora
+--		GT_RESET_IN     <= '1'; -- aurora
+		if (rising_edge(internal_clock_250MHz)) then
+			internal_COUNTER := internal_COUNTER + 1;
+			if (internal_COUNTER > 200000000) then
+				AURORA_RESET_IN <= '0'; -- aurora
+				GT_RESET_IN     <= '0'; -- aurora
+			end if;
+		end if;
 	end process;
+--	process(internal_COUNTER(27)) begin
+--		if rising_edge(internal_COUNTER(27)) then
+--			RESET <= '0';
+--			GT_RESET_IN <= '0';
+--		end if;
+--	end process;
 ---------------------------------------
+	should_transmit <= spill_active or transmit_always;
+	internal_PACKET_GENERATOR_ENABLE(1) <= should_transmit;
 
-	IBUFGDS_i :  IBUFGDS port map (I  => board_clock_250MHz_P, IB => board_clock_250MHz_N, O  => internal_250MHz);
+	IBUFGDS_i :  IBUFGDS port map (I  => board_clock_250MHz_P, IB => board_clock_250MHz_N, O  => internal_clock_250MHz);
 	IBUFDS_i  :  IBUFDS  port map (I  => GTPD2_P, IB => GTPD2_N, O  => GTPD2_left_i);
 
 	BUFIO2_i : BUFIO2 generic map (
@@ -539,7 +605,7 @@ begin
 
 	reset_logic_i : Aurora_IP_Core_A_RESET_LOGIC
 	port map (
-		RESET            => RESET,
+		RESET            => AURORA_RESET_IN,
 		USER_CLK         => user_clk_i,
 		INIT_CLK         => INIT_CLK,
 		GT_RESET_IN      => GT_RESET_IN,
@@ -564,7 +630,7 @@ begin
 		sync_in_i(20)           <= internal_resynchronizing_with_header;
 		sync_in_i(21)           <= internal_start_event_transfer;
 		sync_in_i(22)           <= tx_src_rdy_n_i;
-		sync_in_i(23)           <= '0';
+		sync_in_i(23)           <= reset_i;
 		sync_in_i(27 downto 24) <= internal_WRONG_PACKET_SIZE_COUNTER(3 downto 0);
 		sync_in_i(31 downto 28) <= internal_WRONG_PACKET_TYPE_COUNTER(3 downto 0);
 		sync_in_i(35 downto 32) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(3 downto 0);
@@ -574,7 +640,10 @@ begin
 		sync_in_i(51 downto 48) <= internal_UNKNOWN_ERROR_COUNTER(3 downto 0);
 		sync_in_i(55 downto 52) <= internal_number_of_sent_events(3 downto 0);
 		sync_in_i(59 downto 56) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(3 downto 0);
-		sync_in_i(63 downto 60) <= (others => '0');
+		sync_in_i(60)           <= spill_active;
+		sync_in_i(61)           <= recharge_active;
+--		sync_in_i(63 downto 62) <= stupid_counter(1 downto 0);
+		sync_in_i(63 downto 62) <= (others => '0');
 		
 		internal_acknowledge_start_event_transfer <= sync_out_i(35);
 
@@ -602,12 +671,12 @@ begin
 		sync_in_i  <= (others=>'0');
 	end generate no_chipscope1;
 
-	chipscope_aurora_reset <= sync_out_i(0);
-
 	chipscope2 : if USE_CHIPSCOPE = 1 generate
 		-- Shared VIO Outputs
 		reset_i <= system_reset_i or chipscope_aurora_reset;
-		internal_PACKET_GENERATOR_ENABLE <= sync_out_i(2 downto 1);
+		chipscope_aurora_reset                 <= sync_out_i(0);
+		transmit_always                        <= sync_out_i(1);
+		internal_PACKET_GENERATOR_ENABLE(0)    <= sync_out_i(2);
 		internal_VARIABLE_DELAY_BETWEEN_EVENTS <= sync_out_i(34 downto 3);
 	end generate chipscope2;
 
