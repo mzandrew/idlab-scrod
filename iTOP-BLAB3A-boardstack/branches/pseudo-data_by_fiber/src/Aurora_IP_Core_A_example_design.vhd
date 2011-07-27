@@ -616,34 +616,34 @@ begin
 	);
 
 	chipscope1 : if USE_CHIPSCOPE = 1 generate
-		lane_up_i_i    <=  lane_up_i;
-		tx_lock_i_i    <= '1'  and tx_lock_i;
+		lane_up_i_i    <= lane_up_i;
+		tx_lock_i_i    <= tx_lock_i;
 		-- aurora status:
 		sync_in_i(6 downto 0) <= lane_init_state_i;
 		sync_in_i(7)          <= lane_up_i_i;
 		sync_in_i(8)          <= channel_up_i;
 --		sync_in_i(9)          <= pll_not_locked_i;
 		-- data generator status:
-		sync_in_i(11 downto 9) <= internal_DATA_GENERATOR_STATE;
+--		sync_in_i(11 downto 9) <= internal_DATA_GENERATOR_STATE;
 		-- data receiver status:
-		sync_in_i(19 downto 12) <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR(7 downto 0);
-		sync_in_i(20)           <= internal_resynchronizing_with_header;
-		sync_in_i(21)           <= internal_start_event_transfer;
-		sync_in_i(22)           <= tx_src_rdy_n_i;
-		sync_in_i(23)           <= reset_i;
-		sync_in_i(27 downto 24) <= internal_WRONG_PACKET_SIZE_COUNTER(3 downto 0);
-		sync_in_i(31 downto 28) <= internal_WRONG_PACKET_TYPE_COUNTER(3 downto 0);
-		sync_in_i(35 downto 32) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(3 downto 0);
-		sync_in_i(39 downto 36) <= internal_WRONG_SCROD_ADDRESSED_COUNTER(3 downto 0);
-		sync_in_i(43 downto 40) <= internal_WRONG_CHECKSUM_COUNTER(3 downto 0);
-		sync_in_i(47 downto 44) <= internal_WRONG_FOOTER_COUNTER(3 downto 0);
-		sync_in_i(51 downto 48) <= internal_UNKNOWN_ERROR_COUNTER(3 downto 0);
-		sync_in_i(55 downto 52) <= internal_number_of_sent_events(3 downto 0);
-		sync_in_i(59 downto 56) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(3 downto 0);
-		sync_in_i(60)           <= spill_active;
-		sync_in_i(61)           <= recharge_active;
+--		sync_in_i(19 downto 12) <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR(7 downto 0);
+--		sync_in_i(20)           <= internal_resynchronizing_with_header;
+--		sync_in_i(22)           <= tx_src_rdy_n_i;
+		sync_in_i(9)            <= internal_start_event_transfer;
+--		sync_in_i(10)           <= reset_i;
+		sync_in_i(10)           <= spill_active;
+--		sync_in_i(61)           <= recharge_active;
+		sync_in_i(13 downto 11) <= internal_WRONG_PACKET_SIZE_COUNTER(2 downto 0);
+		sync_in_i(16 downto 14) <= internal_WRONG_PACKET_TYPE_COUNTER(2 downto 0);
+		sync_in_i(19 downto 17) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(2 downto 0);
+		sync_in_i(22 downto 20) <= internal_WRONG_SCROD_ADDRESSED_COUNTER(2 downto 0);
+		sync_in_i(25 downto 23) <= internal_WRONG_CHECKSUM_COUNTER(2 downto 0);
+		sync_in_i(28 downto 26) <= internal_WRONG_FOOTER_COUNTER(2 downto 0);
+		sync_in_i(31 downto 29) <= internal_UNKNOWN_ERROR_COUNTER(2 downto 0);
+		sync_in_i(63 downto 32) <= internal_number_of_sent_events(31 downto 0);
+--		sync_in_i(59 downto 56) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(3 downto 0);
 --		sync_in_i(63 downto 62) <= stupid_counter(1 downto 0);
-		sync_in_i(63 downto 62) <= (others => '0');
+--		sync_in_i(63 downto 62) <= (others => '0');
 		
 		internal_acknowledge_start_event_transfer <= sync_out_i(35);
 
