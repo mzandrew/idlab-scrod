@@ -32,7 +32,7 @@ end data_generator;
 
 architecture Behavioral of data_generator is
 
-	type STATE_TYPE is ( IDLE, MAKE_DATA_READY_FOR_FIFO, CLOCK_DATA_INTO_FIFO, SEND_DATA, DELAY_BETWEEN_EVENTS);
+	type STATE_TYPE is ( IDLE, MAKE_DATA_READY_FOR_FIFO, CLOCK_DATA_INTO_FIFO, PAUSE_BEFORE_SENDING, SEND_DATA, DELAY_BETWEEN_EVENTS);
 
 	signal internal_STATE 						: STATE_TYPE;
 	signal internal_ENABLE 						: std_logic;
@@ -96,25 +96,31 @@ begin
 						internal_DATA_TO_FIFO <= std_logic_vector(unsigned(internal_CHECKSUM) + x"62504944"); -- 32 bit checksum, including header+footer, but not self
 					elsif (word_number = 139) then
 						internal_DATA_TO_FIFO <= x"62504944"; -- footer ("bPID" in ASCII)
+					else
+						internal_DATA_TO_FIFO <= x"45534446";
 					end if;
 				when CLOCK_DATA_INTO_FIFO => 
 					internal_DATA_GENERATOR_STATE <= "010";				
 					internal_WRITE_DATA_TO_FIFO_ENABLE <= '1';
 					internal_CHECKSUM <= std_logic_vector(unsigned(internal_CHECKSUM) + unsigned(internal_DATA_TO_FIFO));
 					if (word_number = 139) then
-						internal_STATE <= SEND_DATA;
+						internal_STATE <= PAUSE_BEFORE_SENDING;
 					else
 						word_number := word_number + 1;
 						internal_STATE <= MAKE_DATA_READY_FOR_FIFO;
 					end if;
-				when SEND_DATA =>
-					internal_DATA_GENERATOR_STATE <= "011";				
+				when PAUSE_BEFORE_SENDING => 
+					internal_DATA_GENERATOR_STATE <= "011";
 					internal_WRITE_DATA_TO_FIFO_ENABLE <= '0';
+					internal_STATE <= SEND_DATA;
+				when SEND_DATA =>
+					internal_DATA_GENERATOR_STATE <= "100";
 --					internal_READ_FROM_FIFO_ENABLE <= internal_FIFO_DATA_VALID and not(internal_TX_DST_RDY_N);
 --					internal_TX_SRC_RDY_N <= not(internal_FIFO_DATA_VALID and not(internal_TX_DST_RDY_N));
-					internal_READ_FROM_FIFO_ENABLE <= not(internal_TX_DST_RDY_N);
-					internal_TX_SRC_RDY_N <= internal_TX_DST_RDY_N;
+					internal_READ_FROM_FIFO_ENABLE <= not(internal_TX_DST_RDY_N); -- tell the fifo whether Aurora is accepting data
+					internal_TX_SRC_RDY_N <= internal_TX_DST_RDY_N; -- no sense in trying to send if the other side is not listening
 					if (internal_FIFO_EMPTY = '1') then
+						internal_TX_SRC_RDY_N <= '1';
 						if (packet_number = 129) then
 							internal_STATE <= DELAY_BETWEEN_EVENTS;
 						else
@@ -123,8 +129,7 @@ begin
 						end if;
 					end if;								
 				when DELAY_BETWEEN_EVENTS =>
-					internal_DATA_GENERATOR_STATE <= "100";
-					internal_TX_SRC_RDY_N <= '1';				
+					internal_DATA_GENERATOR_STATE <= "101";
 					internal_READ_FROM_FIFO_ENABLE <= '0';
 					if (delay_counter < unsigned(internal_VARIABLE_DELAY_BETWEEN_EVENTS)) then
 						delay_counter := delay_counter + 1;
@@ -134,7 +139,7 @@ begin
 						internal_STATE <= IDLE;
 					end if;
 				when others =>
-					internal_DATA_GENERATOR_STATE <= "111";				
+					internal_DATA_GENERATOR_STATE <= "110";				
 					internal_STATE <= IDLE;
 			end case;
 		end if;
