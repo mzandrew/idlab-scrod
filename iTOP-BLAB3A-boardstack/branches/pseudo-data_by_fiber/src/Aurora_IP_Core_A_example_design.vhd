@@ -358,20 +358,23 @@ begin
 ------------------------------------------
 	LEDS(0) <= LANE_UP_Buffer;
 	LEDS(1) <= CHANNEL_UP_Buffer;
-	LEDS(2) <= HARD_ERR_Buffer;
-	LEDS(3) <= SOFT_ERR_Buffer;
+	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(0);
+	LEDS(3) <= spill_active;
 
-	LEDS(4) <= FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER;
-	LEDS(5) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
-	LEDS(6) <= tx_lock_i;
-	LEDS(7) <= pll_not_locked_i;
+	LEDS(4) <= recharge_active;
+	LEDS(5) <= FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER;
+	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
+	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
+
+	LEDS(15 downto 8) <= internal_number_of_sent_events(7 downto 0);
+
+--	LEDS(6) <= tx_lock_i;
+--	LEDS(7) <= pll_not_locked_i;
 --	LEDS(7) <= internal_COUNTER(26);
-
-	LEDS(8) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
-	LEDS(11 downto 9) <= internal_DATA_GENERATOR_STATE;
-
-	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
 --	LEDS(15 downto 12) <= ERR_COUNT_Buffer(0 downto 3);
+--	LEDS(11 downto 9) <= internal_DATA_GENERATOR_STATE;
+--	LEDS(2) <= HARD_ERR_Buffer;
+--	LEDS() <= SOFT_ERR_Buffer;
 
 	MONITOR_HEADER(0) <= tx_src_rdy_n_i;
 	MONITOR_HEADER(15 downto 1) <= (others => '0');
