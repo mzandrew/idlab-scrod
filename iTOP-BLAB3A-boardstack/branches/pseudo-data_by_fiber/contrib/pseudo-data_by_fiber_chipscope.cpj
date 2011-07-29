@@ -1,5 +1,5 @@
 #ChipScope Pro Analyzer Project File, Version 3.0
-#Tue Jul 26 22:55:55 HST 2011
+#Wed Jul 27 20:07:32 HST 2011
 deviceChain.deviceName0=XC6SLX150T
 deviceChain.deviceName1=XCF16P
 deviceChain.iRLength0=6
@@ -734,7 +734,7 @@ unit.0.0.port.2.s.1.display=3
 unit.0.0.port.2.s.1.name=transmit_always
 unit.0.0.port.2.s.1.orderindex=-1
 unit.0.0.port.2.s.1.persistence=0
-unit.0.0.port.2.s.1.value=0
+unit.0.0.port.2.s.1.value=1
 unit.0.0.port.2.s.1.visible=1
 unit.0.0.port.2.s.10.alias=
 unit.0.0.port.2.s.10.color=java.awt.Color[r\=0,g\=0,b\=124]
