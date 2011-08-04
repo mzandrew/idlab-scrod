@@ -342,9 +342,12 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal external_trigger_1_from_monitor_header : std_logic;
 	signal external_trigger_2_from_LVDS           : std_logic;
 	signal raw_500Hz_fake_trigger : std_logic := '0';
+	signal raw_100Hz_fake_trigger : std_logic := '0';
+--	signal raw_25Hz_fake_trigger : std_logic := '0';
 	signal external_triggers_ORed_together : std_logic;
-	signal gated_external_triggers_ORed_together : std_logic;
+	signal gated_trigger : std_logic;
 	signal external_trigger_enable : std_logic;
+	signal internal_trigger : std_logic;
 	signal spill_active : std_logic;
 	signal fill_active  : std_logic;
 	signal fake_spill_structure_enable : std_logic;
@@ -369,10 +372,18 @@ begin
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
 	
 ------------------------------------------
+	internal_trigger <= raw_100Hz_fake_trigger;
 	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
-	gated_external_triggers_ORed_together <= external_trigger_enable and external_triggers_ORed_together;
+	process(external_trigger_enable)
+	begin
+		if (external_trigger_enable = '1') then
+			gated_trigger <= external_triggers_ORed_together;
+		else
+			gated_trigger <= internal_trigger;
+		end if;
+	end process;
 	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
-	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_external_triggers_ORed_together;
+	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_trigger;
 	internal_PACKET_GENERATOR_ENABLE(1) <= trigger_a_digitization_and_readout_event or transmit_always;
 	internal_PACKET_GENERATOR_ENABLE(0) <= transmit_enable;
 --	trigger_a_digitization_and_readout_event
@@ -380,7 +391,7 @@ begin
 ------------------------------------------
 	LEDS(0) <= LANE_UP_Buffer;
 	LEDS(1) <= CHANNEL_UP_Buffer;
-	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(0);
+	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(1) and internal_PACKET_GENERATOR_ENABLE(0);
 	LEDS(3) <= spill_active;
 
 	LEDS(4) <= fill_active;
@@ -391,7 +402,7 @@ begin
 	LEDS(8)  <= raw_500Hz_fake_trigger;
 	LEDS(9)  <= external_trigger_1_from_monitor_header;
 	LEDS(10) <= external_triggers_ORed_together;
-	LEDS(11) <= gated_external_triggers_ORed_together;
+	LEDS(11) <= gated_trigger;
 	
 	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
 
@@ -427,8 +438,13 @@ begin
 		end if;
 	end process;
 	process(clock_1MHz, reset_i)
-		variable counter_1_MHz    : integer range 0 to 1000 := 0;
-		variable counter_1_kHz    : integer range 0 to 1000 := 0;
+		variable counter_1_MHz    : integer range 0 to 10 := 0;
+		variable counter_100_kHz  : integer range 0 to 10 := 0;
+		variable counter_10_kHz   : integer range 0 to 10 := 0;
+		variable counter_1_kHz    : integer range 0 to 10 := 0;
+		variable counter_200_Hz   : integer range 0 to  2 := 0;
+		variable counter_100_Hz   : integer range 0 to 10 := 0;
+		variable counter_10_Hz    : integer range 0 to 10 := 0;
 		variable counter_1_Hz     : integer range 0 to 3600 := 0;
 		variable spill_counter         : integer range 0 to 60 := 0;
 		constant spill_counter_maximum : integer range 0 to 60 := 2;
@@ -439,19 +455,47 @@ begin
 			spill_active <= '1';
 			fill_active  <= '0';
 			counter_1_MHz   := 0;
+			counter_100_kHz := 0;
+			counter_10_kHz  := 0;
 			counter_1_kHz   := 0;
+			counter_200_Hz  := 0;
+			counter_100_Hz  := 0;
+			counter_10_Hz   := 0;
 			counter_1_Hz    := 0;
 			spill_counter   := 0;
 			fill_counter    := 0;
 		elsif rising_edge(clock_1MHz) then
 			counter_1_MHz := counter_1_MHz + 1;
-			if (counter_1_MHz > 999) then
+			if (counter_1_MHz > 9) then
 				counter_1_MHz := 0;
+				counter_100_kHz := counter_100_kHz + 1;
+			end if;
+			if (counter_100_kHz > 9) then
+				counter_100_kHz := 0;
+				counter_10_kHz := counter_10_kHz + 1;
+			end if;
+			if (counter_10_kHz > 9) then
+				counter_10_kHz := 0;
 				counter_1_kHz := counter_1_kHz + 1;
 				raw_500Hz_fake_trigger <= not raw_500Hz_fake_trigger;
 			end if;
-			if (counter_1_kHz > 999) then
+--			if (counter_1_kHz > 9) then
+			if (counter_1_kHz > 4) then
 				counter_1_kHz := 0;
+				counter_200_Hz := counter_200_Hz + 1;
+				raw_100Hz_fake_trigger <= not raw_100Hz_fake_trigger;
+			end if;
+			if (counter_200_Hz > 1) then
+				counter_200_Hz := 0;
+				counter_100_Hz := counter_100_Hz + 1;
+			end if;
+			if (counter_100_Hz > 9) then
+				counter_100_Hz := 0;
+				counter_10_Hz := counter_10_Hz + 1;
+			end if;
+--				raw_25Hz_fake_trigger <= not raw_25Hz_fake_trigger;
+			if (counter_10_Hz > 9) then
+				counter_10_Hz := 0;
 				counter_1_Hz := counter_1_Hz + 1;
 --				stupid_counter <= std_logic_vector(unsigned(stupid_counter) + 1);
 				if (spill_counter < spill_counter_maximum) then
