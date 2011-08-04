@@ -334,8 +334,8 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
 	signal chipscope_aurora_reset : std_logic;
-	signal spill_active    : std_logic;
-	signal recharge_active : std_logic;
+	signal spill_active : std_logic;
+	signal fill_active  : std_logic;
 --	signal stupid_counter : std_logic_vector(31 downto 0);
 	signal transmit_always : std_logic;
 	signal should_transmit : std_logic;
@@ -361,7 +361,7 @@ begin
 	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(0);
 	LEDS(3) <= spill_active;
 
-	LEDS(4) <= recharge_active;
+	LEDS(4) <= fill_active;
 	LEDS(5) <= FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER;
 	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
 	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
@@ -384,20 +384,20 @@ begin
 		variable counter_1_MHz    : integer range 0 to 1000 := 0;
 		variable counter_1_kHz    : integer range 0 to 1000 := 0;
 		variable counter_1_Hz     : integer range 0 to 3600 := 0;
-		variable spill_counter            : integer range 0 to 60 := 0;
-		constant spill_counter_maximum    : integer range 0 to 60 := 9;
-		variable recharge_counter         : integer range 0 to 60 := 0;
-		constant recharge_counter_maximum : integer range 0 to 60 := 40;
+		variable spill_counter         : integer range 0 to 60 := 0;
+		constant spill_counter_maximum : integer range 0 to 60 := 2;
+		variable fill_counter          : integer range 0 to 60 := 0;
+		constant fill_counter_maximum  : integer range 0 to 60 := 4;
 	begin
 		if (reset_i = '1') then
-			spill_active    <= '1';
-			recharge_active <= '0';
-			counter_250_MHz  := 0;
-			counter_1_MHz    := 0;
-			counter_1_kHz    := 0;
-			counter_1_Hz     := 0;
-			spill_counter    := 0;
-			recharge_counter := 0;
+			spill_active <= '1';
+			fill_active  <= '0';
+			counter_250_MHz := 0;
+			counter_1_MHz   := 0;
+			counter_1_kHz   := 0;
+			counter_1_Hz    := 0;
+			spill_counter   := 0;
+			fill_counter    := 0;
 		elsif rising_edge(internal_clock_250MHz) then
 			counter_250_MHz := counter_250_MHz + 1;
 			if (counter_250_MHz > 249) then
@@ -415,15 +415,15 @@ begin
 				if (spill_counter < spill_counter_maximum) then
 					spill_counter := spill_counter + 1;
 				else
-					spill_active    <= '0';
-					recharge_active <= '1';
-					if (recharge_counter < recharge_counter_maximum) then
-						recharge_counter := recharge_counter + 1;
+					spill_active <= '0';
+					fill_active  <= '1';
+					if (fill_counter < fill_counter_maximum) then
+						fill_counter := fill_counter + 1;
 					else
-						spill_active    <= '1';
-						recharge_active <= '0';
-						spill_counter    := 0;
-						recharge_counter := 0;
+						spill_active <= '1';
+						fill_active  <= '0';
+						spill_counter := 0;
+						fill_counter  := 0;
 					end if;
 				end if;
 			end if;
@@ -635,7 +635,7 @@ begin
 		sync_in_i(9)            <= internal_start_event_transfer;
 --		sync_in_i(10)           <= reset_i;
 		sync_in_i(10)           <= spill_active;
---		sync_in_i(61)           <= recharge_active;
+--		sync_in_i(61)           <= fill_active;
 		sync_in_i(13 downto 11) <= internal_WRONG_PACKET_SIZE_COUNTER(2 downto 0);
 		sync_in_i(16 downto 14) <= internal_WRONG_PACKET_TYPE_COUNTER(2 downto 0);
 		sync_in_i(19 downto 17) <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER(2 downto 0);
