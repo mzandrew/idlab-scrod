@@ -261,14 +261,17 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
  
 	component Packet_Generator is
 	port ( 
-		TX_DST_RDY_N 	: in  STD_LOGIC;
-		USER_CLK 		: in  STD_LOGIC;
-		RESET 			: in  STD_LOGIC;
-		CHANNEL_UP 		: in  STD_LOGIC;
-		ENABLE 			: in  STD_LOGIC_VECTOR(1 downto 0);
-		TX_SRC_RDY_N 	: out  STD_LOGIC;
-		TX_D 				: out  STD_LOGIC_VECTOR (31 downto 0);
+		TX_DST_RDY_N 	: in    STD_LOGIC;
+		USER_CLK 		: in    STD_LOGIC;
+		RESET 			: in    STD_LOGIC;
+		CHANNEL_UP 		: in    STD_LOGIC;
+		ENABLE 			: in    STD_LOGIC_VECTOR(1 downto 0);
+		TRIGGER        : in    STD_LOGIC;
+		TRIGGER_ACK    :   out STD_LOGIC;
+		TX_SRC_RDY_N 	:   out STD_LOGIC;
+		TX_D 				:   out STD_LOGIC_VECTOR (31 downto 0);
 		DATA_GENERATOR_STATE : out STD_LOGIC_VECTOR(2 downto 0);
+		FIFO_EMPTY     :   out STD_LOGIC;
 		VARIABLE_DELAY_BETWEEN_EVENTS : in STD_LOGIC_VECTOR(31 downto 0)
 	);
 	end component;	
@@ -355,6 +358,8 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal transmit_enable : std_logic;
 	signal transmit_always : std_logic;
 	signal trigger_a_digitization_and_readout_event : std_logic;
+	signal pulsed_trigger : std_logic := '0';
+	signal trigger_acknowledge : std_logic;
 begin
 --	internal_acknowledge_start_event_transfer <= '0';
 	lane_up_reduce_i    <=  lane_up_i;
@@ -384,9 +389,21 @@ begin
 	end process;
 	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
 	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_trigger;
-	internal_PACKET_GENERATOR_ENABLE(1) <= trigger_a_digitization_and_readout_event or transmit_always;
+	internal_PACKET_GENERATOR_ENABLE(1) <= '1';--trigger_a_digitization_and_readout_event or transmit_always;
 	internal_PACKET_GENERATOR_ENABLE(0) <= transmit_enable;
 --	trigger_a_digitization_and_readout_event
+
+--	pulsed_trigger <= trigger_a_digitization_and_readout_event or transmit_always;
+	process (trigger_a_digitization_and_readout_event, transmit_always, trigger_acknowledge)
+	begin
+		if (trigger_acknowledge = '1') then
+			pulsed_trigger <= '0';
+		elsif (transmit_always = '1') then
+			pulsed_trigger <= '1';
+		elsif rising_edge(trigger_a_digitization_and_readout_event) then
+			pulsed_trigger <= '1';
+		end if;
+	end process;
 
 ------------------------------------------
 	LEDS(0) <= LANE_UP_Buffer;
@@ -401,7 +418,8 @@ begin
 
 	LEDS(8)  <= raw_500Hz_fake_trigger;
 	LEDS(9)  <= external_trigger_1_from_monitor_header;
-	LEDS(10) <= external_triggers_ORed_together;
+--	LEDS(10) <= external_triggers_ORed_together;
+	LEDS(10) <= pulsed_trigger;
 	LEDS(11) <= gated_trigger;
 	
 	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
@@ -415,9 +433,10 @@ begin
 --	LEDS() <= SOFT_ERR_Buffer;
 
 	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
---	MONITOR_HEADER(15 downto 1) <= (others => '0');
-	MONITOR_HEADER_OUTPUT(13 downto 1) <= (others => '0');
---	MONITOR_HEADER(13) <= ;
+	MONITOR_HEADER_OUTPUT(11 downto 1) <= (others => '0');
+
+	MONITOR_HEADER_OUTPUT(12) <= pulsed_trigger;
+	MONITOR_HEADER_OUTPUT(13) <= raw_100Hz_fake_trigger;
 	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
 	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
 ------------------------------------------
@@ -627,6 +646,8 @@ begin
 		RESET 			=> reset_i,
 		CHANNEL_UP 		=> channel_up_i,
 		ENABLE 			=> internal_PACKET_GENERATOR_ENABLE,
+		TRIGGER        => pulsed_trigger,
+		TRIGGER_ACK    => trigger_acknowledge,
 		TX_SRC_RDY_N 	=> tx_src_rdy_n_i,
 		TX_D 				=> tx_d_i,
 		DATA_GENERATOR_STATE => internal_DATA_GENERATOR_STATE,

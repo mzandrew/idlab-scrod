@@ -1,21 +1,5 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    10:58:00 06/29/2011 
--- Design Name: 
--- Module Name:    Packet_Generator - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+-- 2011-06-29 kurtis
+-- 2011-08-04 modified by mza
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -30,43 +14,40 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity Packet_Generator is
-    Port ( 
-				TX_DST_RDY_N 	: in  STD_LOGIC;
-				USER_CLK 		: in  STD_LOGIC;
-				RESET 			: in  STD_LOGIC;
-				CHANNEL_UP 		: in  STD_LOGIC;
-				ENABLE 			: in  STD_LOGIC_VECTOR(1 downto 0);
-
-				TX_SRC_RDY_N 	: out  STD_LOGIC;
-				TX_D 				: out  STD_LOGIC_VECTOR (31 downto 0);
-				
-				DATA_GENERATOR_STATE	:	out  STD_LOGIC_VECTOR(2 downto 0);
-				
-				FIFO_EMPTY		: out	STD_LOGIC;
-				
-				VARIABLE_DELAY_BETWEEN_EVENTS	:	in STD_LOGIC_VECTOR(31 downto 0)
-			);
+	port ( 
+		TX_DST_RDY_N 	: in    STD_LOGIC;
+		USER_CLK 		: in    STD_LOGIC;
+		RESET 			: in    STD_LOGIC;
+		CHANNEL_UP 		: in    STD_LOGIC;
+		ENABLE 			: in    STD_LOGIC_VECTOR(1 downto 0);
+		TRIGGER        : in    STD_LOGIC;
+		TRIGGER_ACK    :   out STD_LOGIC;
+		TX_SRC_RDY_N 	:   out STD_LOGIC;
+		TX_D 				:   out STD_LOGIC_VECTOR (31 downto 0);
+		DATA_GENERATOR_STATE : out STD_LOGIC_VECTOR(2 downto 0);
+		FIFO_EMPTY     :   out STD_LOGIC;
+		VARIABLE_DELAY_BETWEEN_EVENTS : in STD_LOGIC_VECTOR(31 downto 0)
+	);
 end Packet_Generator;
 
 architecture Behavioral of Packet_Generator is
-
-	----------------------------------------------
 	component data_generator
 		port (
-			ENABLE						: IN STD_LOGIC;
-			TX_DST_RDY_N				: IN STD_LOGIC;
-			USER_CLK						: IN STD_LOGIC;
-			DATA_TO_FIFO				: OUT STD_LOGIC_VECTOR(31 downto 0);
-			WRITE_DATA_TO_FIFO_ENABLE	: OUT STD_LOGIC;
-			TX_SRC_RDY_N				: OUT STD_LOGIC;
-			READ_FROM_FIFO_ENABLE	: OUT STD_LOGIC;
-			DATA_GENERATOR_STATE		: out STD_LOGIC_VECTOR(2 downto 0);
-			FIFO_EMPTY					: IN STD_LOGIC;
-			FIFO_DATA_VALID			: IN STD_LOGIC;
-			VARIABLE_DELAY_BETWEEN_EVENTS	: in STD_LOGIC_VECTOR(31 downto 0)			
+			ENABLE                        : in    STD_LOGIC;
+			TRIGGER                       : in    STD_LOGIC;
+			TRIGGER_ACK                   :   out STD_LOGIC;
+			TX_DST_RDY_N                  : in    STD_LOGIC;
+			FIFO_EMPTY                    : in    STD_LOGIC;
+			FIFO_DATA_VALID               : in    STD_LOGIC;
+			USER_CLK                      : in    STD_LOGIC;
+			DATA_TO_FIFO                  :   out STD_LOGIC_VECTOR (31 downto 0);
+			WRITE_DATA_TO_FIFO_ENABLE     :   out STD_LOGIC;
+			TX_SRC_RDY_N                  :   out STD_LOGIC;
+			READ_FROM_FIFO_ENABLE         :   out STD_LOGIC;
+			DATA_GENERATOR_STATE          :   out STD_LOGIC_VECTOR(2 downto 0);
+			VARIABLE_DELAY_BETWEEN_EVENTS : in    STD_LOGIC_VECTOR(31 downto 0)
 		);
 	end component;
-	----------------------------------------------
 	component packet_fifo
 		port (
 			rst				: IN std_logic;
@@ -89,7 +70,9 @@ architecture Behavioral of Packet_Generator is
 	signal internal_CHANNEL_UP 	: std_logic;
 	signal internal_ENABLE 			: std_logic_vector(1 downto 0);
 	signal internal_ENABLED 		: std_logic;
-	
+	signal internal_TRIGGER       : std_logic;
+	signal internal_TRIGGER_ACK   : std_logic;
+	----------------------------------------------
 	signal internal_WORD_TO_WRITE_TO_FIFO	: std_logic_vector(31 downto 0);
 	signal internal_FIFO_DATA_VALID			: std_logic;
 	signal internal_WRITE_DATA_TO_FIFO_ENABLE		: std_logic;
@@ -98,12 +81,13 @@ architecture Behavioral of Packet_Generator is
 	signal internal_FIFO_EMPTY					: std_logic;
 	signal internal_DATA_GENERATOR_STATE	: std_logic_vector(2 downto 0);
 	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
-
 begin
 	------------------------------------------
 	data_generator_A : DATA_GENERATOR
 		port map (
 			ENABLE						=> internal_ENABLED,
+			TRIGGER                 => internal_TRIGGER,
+			TRIGGER_ACK             => internal_TRIGGER_ACK,
 			TX_DST_RDY_N				=> internal_TX_DST_RDY_N,
 			USER_CLK						=> USER_CLK,
 			DATA_TO_FIFO				=> internal_WORD_TO_WRITE_TO_FIFO,
@@ -113,8 +97,8 @@ begin
 			DATA_GENERATOR_STATE		=> internal_DATA_GENERATOR_STATE,
 			FIFO_EMPTY					=> internal_FIFO_EMPTY,
 			FIFO_DATA_VALID			=> internal_FIFO_DATA_VALID,
-			VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS);
-	------------------------------------------
+			VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS
+		);
 	packet_cache_A : packet_fifo
 		port map (
 			rst 				=> internal_RESET,
@@ -127,19 +111,18 @@ begin
 			full 				=> internal_FIFO_FULL,
 			empty 			=> internal_FIFO_EMPTY,
 			valid 			=> internal_FIFO_DATA_VALID,
-			wr_data_count 	=> open);			
-	------------------------------------------
+			wr_data_count 	=> open
+		);
 	internal_CHANNEL_UP <= CHANNEL_UP;
 	internal_RESET <= RESET;
 	internal_TX_DST_RDY_N <= TX_DST_RDY_N;
 	TX_SRC_RDY_N <= internal_TX_SRC_RDY_N;
 	TX_D <= internal_TX_D;
+	internal_TRIGGER <= TRIGGER;
+	TRIGGER_ACK <= internal_TRIGGER_ACK;
 	internal_ENABLE <= ENABLE;
 	internal_ENABLED <= internal_ENABLE(0) and internal_ENABLE(1);
 	internal_VARIABLE_DELAY_BETWEEN_EVENTS <= VARIABLE_DELAY_BETWEEN_EVENTS;
-	
 	DATA_GENERATOR_STATE <= internal_DATA_GENERATOR_STATE;
-
 	FIFO_EMPTY <= internal_FIFO_EMPTY;
-
 end Behavioral;
