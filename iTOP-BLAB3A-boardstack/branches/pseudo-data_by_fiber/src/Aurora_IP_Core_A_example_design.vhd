@@ -52,7 +52,8 @@ entity Aurora_IP_Core_A_example_design is
 		board_clock_250MHz_P	: in    std_logic;
 		board_clock_250MHz_N	: in    std_logic;
 		LEDS                 :   out std_logic_vector(15 downto 0);
-		MONITOR_HEADER       :   out std_logic_vector(15 downto 0)
+		MONITOR_HEADER_OUTPUT :   out std_logic_vector(14 downto 0);
+		MONITOR_HEADER_INPUT  : in    std_logic_vector(15 downto 15)
 	);
 end Aurora_IP_Core_A_example_design;
 
@@ -320,6 +321,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	);
 	end component;
                                                                                 
+	signal clock_1MHz : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
@@ -334,15 +336,26 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
 	signal chipscope_aurora_reset : std_logic;
+--	signal stupid_counter : std_logic_vector(31 downto 0);
+------------------------------------------
+-- trigger signals:
+	signal external_trigger_1_from_monitor_header : std_logic;
+	signal external_trigger_2_from_LVDS           : std_logic;
+	signal raw_500Hz_fake_trigger : std_logic := '0';
+	signal external_triggers_ORed_together : std_logic;
+	signal gated_external_triggers_ORed_together : std_logic;
+	signal external_trigger_enable : std_logic;
 	signal spill_active : std_logic;
 	signal fill_active  : std_logic;
---	signal stupid_counter : std_logic_vector(31 downto 0);
+	signal fake_spill_structure_enable : std_logic;
+	signal gated_spill_active : std_logic;
+	signal transmit_enable : std_logic;
 	signal transmit_always : std_logic;
-	signal should_transmit : std_logic;
+	signal trigger_a_digitization_and_readout_event : std_logic;
 begin
 --	internal_acknowledge_start_event_transfer <= '0';
 	lane_up_reduce_i    <=  lane_up_i;
-
+	
 	HARD_ERR    <= HARD_ERR_Buffer;
 	SOFT_ERR    <= SOFT_ERR_Buffer;
 	ERR_COUNT   <= ERR_COUNT_Buffer;
@@ -354,6 +367,15 @@ begin
 	INIT_CLK <= internal_COUNTER(2);
 	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= reset_i;	
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
+	
+------------------------------------------
+	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
+	gated_external_triggers_ORed_together <= external_trigger_enable and external_triggers_ORed_together;
+	gated_spill_active <= fake_spill_structure_enable and spill_active;
+	trigger_a_digitization_and_readout_event <= gated_external_triggers_ORed_together or gated_spill_active or transmit_always;
+	internal_PACKET_GENERATOR_ENABLE(1) <= trigger_a_digitization_and_readout_event;
+	internal_PACKET_GENERATOR_ENABLE(0) <= transmit_enable;
+--	trigger_a_digitization_and_readout_event
 
 ------------------------------------------
 	LEDS(0) <= LANE_UP_Buffer;
@@ -366,7 +388,12 @@ begin
 	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
 	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
 
-	LEDS(15 downto 8) <= internal_number_of_sent_events(7 downto 0);
+	LEDS(8)  <= raw_500Hz_fake_trigger;
+	LEDS(9)  <= external_trigger_1_from_monitor_header;
+	LEDS(10) <= external_triggers_ORed_together;
+	LEDS(11) <= gated_external_triggers_ORed_together;
+	
+	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
 
 --	LEDS(6) <= tx_lock_i;
 --	LEDS(7) <= pll_not_locked_i;
@@ -376,11 +403,30 @@ begin
 --	LEDS(2) <= HARD_ERR_Buffer;
 --	LEDS() <= SOFT_ERR_Buffer;
 
-	MONITOR_HEADER(0) <= tx_src_rdy_n_i;
-	MONITOR_HEADER(15 downto 1) <= (others => '0');
+	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
+--	MONITOR_HEADER(15 downto 1) <= (others => '0');
+	MONITOR_HEADER_OUTPUT(13 downto 1) <= (others => '0');
+--	MONITOR_HEADER(13) <= ;
+	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
+	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
 ------------------------------------------
 	process(internal_clock_250MHz, reset_i)
-		variable counter_250_MHz  : integer range 0 to  250 := 0;
+		variable counter_250_MHz  : integer range 0 to 250 := 0;
+	begin
+		if (reset_i = '1') then
+			counter_250_MHz := 0;
+		elsif rising_edge(internal_clock_250MHz) then
+			counter_250_MHz := counter_250_MHz + 1;
+			clock_1MHz <= '0';
+			if (counter_250_MHz > 124) then
+				clock_1MHz <= '1';
+			end if;
+			if (counter_250_MHz > 249) then -- is 1 to 250 at this part of the loop
+				counter_250_MHz := 0;
+			end if;
+		end if;
+	end process;
+	process(clock_1MHz, reset_i)
 		variable counter_1_MHz    : integer range 0 to 1000 := 0;
 		variable counter_1_kHz    : integer range 0 to 1000 := 0;
 		variable counter_1_Hz     : integer range 0 to 3600 := 0;
@@ -392,21 +438,17 @@ begin
 		if (reset_i = '1') then
 			spill_active <= '1';
 			fill_active  <= '0';
-			counter_250_MHz := 0;
 			counter_1_MHz   := 0;
 			counter_1_kHz   := 0;
 			counter_1_Hz    := 0;
 			spill_counter   := 0;
 			fill_counter    := 0;
-		elsif rising_edge(internal_clock_250MHz) then
-			counter_250_MHz := counter_250_MHz + 1;
-			if (counter_250_MHz > 249) then
-				counter_250_MHz := 0;
-				counter_1_MHz := counter_1_MHz + 1;
-			end if;
+		elsif rising_edge(clock_1MHz) then
+			counter_1_MHz := counter_1_MHz + 1;
 			if (counter_1_MHz > 999) then
 				counter_1_MHz := 0;
 				counter_1_kHz := counter_1_kHz + 1;
+				raw_500Hz_fake_trigger <= not raw_500Hz_fake_trigger;
 			end if;
 			if (counter_1_kHz > 999) then
 				counter_1_kHz := 0;
@@ -449,9 +491,6 @@ begin
 --		end if;
 --	end process;
 ---------------------------------------
-	should_transmit <= spill_active or transmit_always;
-	internal_PACKET_GENERATOR_ENABLE(1) <= should_transmit;
-
 	IBUFGDS_i :  IBUFGDS port map (I  => board_clock_250MHz_P, IB => board_clock_250MHz_N, O  => internal_clock_250MHz);
 	IBUFDS_i  :  IBUFDS  port map (I  => GTPD2_P, IB => GTPD2_N, O  => GTPD2_left_i);
 
@@ -648,7 +687,11 @@ begin
 --		sync_in_i(63 downto 62) <= stupid_counter(1 downto 0);
 --		sync_in_i(63 downto 62) <= (others => '0');
 		
+		transmit_always                           <= sync_out_i(1);
+		transmit_enable                           <= sync_out_i(2);
 		internal_acknowledge_start_event_transfer <= sync_out_i(35);
+		external_trigger_enable                   <= sync_out_i(36);
+		fake_spill_structure_enable               <= sync_out_i(37);
 
 		-------------------------------------------------------------------
 		--  ICON core instance
@@ -678,8 +721,6 @@ begin
 		-- Shared VIO Outputs
 		reset_i <= system_reset_i or chipscope_aurora_reset;
 		chipscope_aurora_reset                 <= sync_out_i(0);
-		transmit_always                        <= sync_out_i(1);
-		internal_PACKET_GENERATOR_ENABLE(0)    <= sync_out_i(2);
 		internal_VARIABLE_DELAY_BETWEEN_EVENTS <= sync_out_i(34 downto 3);
 	end generate chipscope2;
 
