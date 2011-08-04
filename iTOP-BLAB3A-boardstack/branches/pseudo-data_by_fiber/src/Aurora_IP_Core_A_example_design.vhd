@@ -348,7 +348,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal spill_active : std_logic;
 	signal fill_active  : std_logic;
 	signal fake_spill_structure_enable : std_logic;
-	signal gated_spill_active : std_logic;
+	signal gated_fill_inactive : std_logic;
 	signal transmit_enable : std_logic;
 	signal transmit_always : std_logic;
 	signal trigger_a_digitization_and_readout_event : std_logic;
@@ -371,9 +371,9 @@ begin
 ------------------------------------------
 	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
 	gated_external_triggers_ORed_together <= external_trigger_enable and external_triggers_ORed_together;
-	gated_spill_active <= fake_spill_structure_enable and spill_active;
-	trigger_a_digitization_and_readout_event <= gated_external_triggers_ORed_together or gated_spill_active or transmit_always;
-	internal_PACKET_GENERATOR_ENABLE(1) <= trigger_a_digitization_and_readout_event;
+	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
+	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_external_triggers_ORed_together;
+	internal_PACKET_GENERATOR_ENABLE(1) <= trigger_a_digitization_and_readout_event or transmit_always;
 	internal_PACKET_GENERATOR_ENABLE(0) <= transmit_enable;
 --	trigger_a_digitization_and_readout_event
 
