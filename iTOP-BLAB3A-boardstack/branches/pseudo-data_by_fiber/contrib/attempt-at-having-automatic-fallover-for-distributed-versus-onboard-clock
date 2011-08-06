@@ -1,0 +1,54 @@
+
+	component BUFGMUX
+	port (
+		I0 : in    std_logic;
+		I1 : in    std_logic;
+		O  :   out std_logic;
+		S  : in    std_logic
+	);
+	end component;
+	
+--	clock_selector : BUFGMUX port map (
+--		I0 => internal_clock_250MHz,
+--		I1 => internal_clock_from_remote_source,
+--		O  => internal_clock_for_state_machine,
+--		S  => '1'
+--	);
+
+--	-- automatic selection of remote clock after it's plugged in:
+--	process (internal_clock_250MHz, internal_clock_from_remote_source, clock_select)
+--		variable counter_250    : integer range 0 to 65535 := 0;
+--		variable counter_remote : integer range 0 to 65535 := 0;
+--	begin
+--		if (rising_edge(internal_clock_250MHz)) then
+--			if (counter_250 < 2600) then
+--				counter_250 := counter_250 + 1;
+--				if (counter_250 > 2500 and counter_remote < 150) then -- this assumes something about the clock frequency ratio
+--					clock_select <= '0';
+--				else
+--					clock_select <= '1';
+--				end if;
+--			end if;
+--		end if;
+--		if (rising_edge(internal_clock_from_remote_source)) then
+--			if (counter_remote < 300) then
+--				counter_remote := counter_remote + 1;
+--			end if;
+--		end if;
+--	end process;
+
+--	-- automatic selection of remote clock after it's plugged in:
+-- -- this one 
+--	process (internal_clock_from_remote_source, clock_select)
+--		variable counter : integer range 0 to 65535 := 0;
+--	begin
+--		if (clock_select = '1') then
+--		elsif (rising_edge(internal_clock_from_remote_source)) then
+--			counter := counter + 1;
+--			if (counter > 30) then
+--				clock_select <= '1';
+--			end if;
+--		end if;
+--	end process;
+
+

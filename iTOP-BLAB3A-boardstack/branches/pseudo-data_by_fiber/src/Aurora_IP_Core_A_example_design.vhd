@@ -1,6 +1,7 @@
--- 2011-06 Xilinx coregen
+---- 2011-06 Xilinx coregen
 -- 2011-06 kurtis
 -- 2011-07 modified by mza
+-- 2011-08 modified by mza
 ---------------------------------------------------------------------------------------------
 --  Aurora Generator
 --  Description: Sample Instantiation of a 1 4-byte lane module.
@@ -48,6 +49,13 @@ entity Aurora_IP_Core_A_example_design is
 		FIBER_TRANSCEIVER_0_DISABLE_MODULE                      :   out std_logic;
 		-- fiber optic transceiver 1 I/O
 		FIBER_TRANSCEIVER_1_DISABLE_MODULE                      :   out std_logic;
+		-- remote trigger, revolution pulse and distributed clock
+		REMOTE_SIMPLE_TRIGGER_P    : in    std_logic;
+		REMOTE_SIMPLE_TRIGGER_N    : in    std_logic;
+		REMOTE_ENCODED_TRIGGER_P   : in    std_logic;
+		REMOTE_ENCODED_TRIGGER_N   : in    std_logic;
+		REMOTE_CLOCK_P             : in    std_logic;
+		REMOTE_CLOCK_N             : in    std_logic;
 		-- other I/O
 		board_clock_250MHz_P	: in    std_logic;
 		board_clock_250MHz_N	: in    std_logic;
@@ -114,7 +122,8 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	attribute ASYNC_REG        : string;
 	attribute ASYNC_REG of tx_lock_i  : signal is "TRUE";
 -------Kurtis additions------------
-	signal internal_clock_250MHz : std_logic;
+	signal internal_clock_from_remote_source : std_logic;
+	signal internal_clock_250MHz             : std_logic;
 	signal internal_COUNTER : std_logic_vector(31 downto 0);
 	signal INIT_CLK : std_logic;
 	signal AURORA_RESET_IN : std_logic := '1';
@@ -344,6 +353,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 -- trigger signals:
 	signal external_trigger_1_from_monitor_header : std_logic;
 	signal external_trigger_2_from_LVDS           : std_logic;
+	signal external_encoded_trigger_from_LVDS     : std_logic;
 	signal raw_500Hz_fake_trigger : std_logic := '0';
 	signal raw_100Hz_fake_trigger : std_logic := '0';
 --	signal raw_25Hz_fake_trigger : std_logic := '0';
@@ -360,6 +370,8 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal trigger_a_digitization_and_readout_event : std_logic;
 	signal pulsed_trigger : std_logic := '0';
 	signal trigger_acknowledge : std_logic;
+	signal internal_clock_for_state_machine : std_logic;
+	signal clock_select : std_logic := '0'; -- '0' = local; '1' = remote
 begin
 --	internal_acknowledge_start_event_transfer <= '0';
 	lane_up_reduce_i    <=  lane_up_i;
@@ -377,8 +389,13 @@ begin
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
 	
 ------------------------------------------
+	LVDS_SIMPLE_TRIGGER : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P, IB => REMOTE_SIMPLE_TRIGGER_N, O => external_trigger_2_from_LVDS);
+	LVDS_ENCODED_TRIGGER : IBUFDS port map (I => REMOTE_ENCODED_TRIGGER_P, IB => REMOTE_ENCODED_TRIGGER_N, O => external_encoded_trigger_from_LVDS);
+
 	internal_trigger <= raw_100Hz_fake_trigger;
-	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
+--	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
+	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
+--	external_triggers_ORed_together <= external_trigger_1_from_monitor_header;
 	process(external_trigger_enable)
 	begin
 		if (external_trigger_enable = '1') then
@@ -433,19 +450,21 @@ begin
 --	LEDS() <= SOFT_ERR_Buffer;
 
 	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
-	MONITOR_HEADER_OUTPUT(11 downto 1) <= (others => '0');
+	MONITOR_HEADER_OUTPUT(10 downto 1) <= (others => '0');
+	
+	MONITOR_HEADER_OUTPUT(11) <= external_trigger_2_from_LVDS;
 
 	MONITOR_HEADER_OUTPUT(12) <= pulsed_trigger;
 	MONITOR_HEADER_OUTPUT(13) <= raw_100Hz_fake_trigger;
 	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
 	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
 ------------------------------------------
-	process(internal_clock_250MHz, reset_i)
+	process(internal_clock_for_state_machine, reset_i)
 		variable counter_250_MHz  : integer range 0 to 250 := 0;
 	begin
 		if (reset_i = '1') then
 			counter_250_MHz := 0;
-		elsif rising_edge(internal_clock_250MHz) then
+		elsif rising_edge(internal_clock_for_state_machine) then
 			counter_250_MHz := counter_250_MHz + 1;
 			clock_1MHz <= '0';
 			if (counter_250_MHz > 124) then
@@ -534,12 +553,12 @@ begin
 			end if;
 		end if;
 	end process;
-	process(internal_clock_250MHz)
+	process(internal_clock_for_state_machine)
 		variable internal_COUNTER  : integer range 0 to 250000000 := 0;
 	begin
 --		AURORA_RESET_IN <= '1'; -- aurora
 --		GT_RESET_IN     <= '1'; -- aurora
-		if (rising_edge(internal_clock_250MHz)) then
+		if (rising_edge(internal_clock_for_state_machine)) then
 			internal_COUNTER := internal_COUNTER + 1;
 			if (internal_COUNTER > 200000000) then
 				AURORA_RESET_IN <= '0'; -- aurora
@@ -554,8 +573,11 @@ begin
 --		end if;
 --	end process;
 ---------------------------------------
-	IBUFGDS_i :  IBUFGDS port map (I  => board_clock_250MHz_P, IB => board_clock_250MHz_N, O  => internal_clock_250MHz);
 	IBUFDS_i  :  IBUFDS  port map (I  => GTPD2_P, IB => GTPD2_N, O  => GTPD2_left_i);
+
+	IBUFGDS_i_local  : IBUFGDS port map (I => board_clock_250MHz_P, IB => board_clock_250MHz_N, O => internal_clock_250MHz);
+	IBUFGDS_i_remote : IBUFGDS port map (I => REMOTE_CLOCK_P, IB => REMOTE_CLOCK_N, O => internal_clock_from_remote_source);
+	internal_clock_for_state_machine <= internal_clock_250MHz;
 
 	BUFIO2_i : BUFIO2 generic map (
 		DIVIDE         =>      1,
