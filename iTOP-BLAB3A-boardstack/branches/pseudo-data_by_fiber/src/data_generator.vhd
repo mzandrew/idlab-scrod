@@ -51,6 +51,7 @@ architecture Behavioral of data_generator is
 	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
 	signal internal_TRIGGER                : std_logic;
 	signal internal_TRIGGER_ACK            : std_logic;
+	signal low_16_bits : std_logic_vector(15 downto 0);
 begin
 	internal_ENABLE 				<= ENABLE;
 	internal_TX_DST_RDY_N 		<= TX_DST_RDY_N;
@@ -85,7 +86,14 @@ begin
 				when MAKE_DATA_READY_FOR_FIFO =>
 					internal_DATA_GENERATOR_STATE <= "001";				
 					internal_WRITE_DATA_TO_FIFO_ENABLE <= '0';				
-					internal_STATE <= CLOCK_DATA_INTO_FIFO;					
+					internal_STATE <= CLOCK_DATA_INTO_FIFO;
+					if (packet_number = 0) then
+						low_16_bits <= x"aaaa";
+					elsif (packet_number = 131) then
+						low_16_bits <= x"ffff";
+					else
+						low_16_bits <= x"bcde";
+					end if;
 					if (word_number = 0) then
 						internal_DATA_TO_FIFO <= x"00BE11E2"; -- header (similar to "Belle2" in hexadecimal)
 					elsif (word_number = 1) then
@@ -94,8 +102,10 @@ begin
 						internal_DATA_TO_FIFO <= CURRENT_PROTOCOL_FREEZE_DATE; -- protocol freeze date (YYYYMMDD in BCD)
 					elsif (word_number = 3) then
 						internal_DATA_TO_FIFO <= x"00C0FFEE"; -- packet type (similar to "coffee" in hexadecimal)
-					elsif (word_number >= 4 and word_number <= 136) then
-						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(word_number,16)) & x"BEEF"; -- pseudo-data
+					elsif (word_number = 4) then
+						internal_DATA_TO_FIFO <= x"000000" & std_logic_vector(to_unsigned(packet_number, 8));
+					elsif (word_number >= 5 and word_number <= 136) then
+						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(word_number, 16)) & low_16_bits; -- pseudo-data
 					elsif (word_number = 137) then
 						internal_DATA_TO_FIFO <= x"0001" & x"0000"; -- SCROD revision and ID (0 means all SCRODs)
 					elsif (word_number = 138) then
@@ -109,7 +119,7 @@ begin
 					internal_DATA_GENERATOR_STATE <= "010";				
 					internal_WRITE_DATA_TO_FIFO_ENABLE <= '1';
 					internal_CHECKSUM <= std_logic_vector(unsigned(internal_CHECKSUM) + unsigned(internal_DATA_TO_FIFO));
-					if (word_number = 139) then
+					if (word_number >= 139) then
 						internal_STATE <= PAUSE_BEFORE_SENDING;
 					else
 						word_number := word_number + 1;
@@ -127,7 +137,7 @@ begin
 					internal_TX_SRC_RDY_N <= internal_TX_DST_RDY_N; -- no sense in trying to send if the other side is not listening
 					if (internal_FIFO_EMPTY = '1') then
 						internal_TX_SRC_RDY_N <= '1';
-						if (packet_number = 129) then
+						if (packet_number >= 131) then
 							internal_STATE <= ACKNOWLEDGE_TRIGGER;
 						else
 							packet_number := packet_number + 1;
