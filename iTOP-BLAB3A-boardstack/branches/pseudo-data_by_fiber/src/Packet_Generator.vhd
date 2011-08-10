@@ -45,7 +45,8 @@ architecture Behavioral of Packet_Generator is
 			TX_SRC_RDY_N                  :   out STD_LOGIC;
 			READ_FROM_FIFO_ENABLE         :   out STD_LOGIC;
 			DATA_GENERATOR_STATE          :   out STD_LOGIC_VECTOR(2 downto 0);
-			VARIABLE_DELAY_BETWEEN_EVENTS : in    STD_LOGIC_VECTOR(31 downto 0)
+			VARIABLE_DELAY_BETWEEN_EVENTS : in    STD_LOGIC_VECTOR(31 downto 0);
+			RESET                         : in    STD_LOGIC
 		);
 	end component;
 	component packet_fifo
@@ -97,7 +98,8 @@ begin
 			DATA_GENERATOR_STATE		=> internal_DATA_GENERATOR_STATE,
 			FIFO_EMPTY					=> internal_FIFO_EMPTY,
 			FIFO_DATA_VALID			=> internal_FIFO_DATA_VALID,
-			VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS
+			VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS,
+			RESET => internal_RESET
 		);
 	packet_cache_A : packet_fifo
 		port map (

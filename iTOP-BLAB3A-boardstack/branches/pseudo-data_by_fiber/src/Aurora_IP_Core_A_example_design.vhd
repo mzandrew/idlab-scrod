@@ -66,76 +66,6 @@ entity Aurora_IP_Core_A_example_design is
 end Aurora_IP_Core_A_example_design;
 
 architecture MAPPED of Aurora_IP_Core_A_example_design is
-	attribute core_generation_info           : string;
-	attribute core_generation_info of MAPPED : architecture is "Aurora_IP_Core_A,aurora_8b10b_v5_2,{backchannel_mode=Sidebands, c_aurora_lanes=1, c_column_used=None, c_gt_clock_1=GTPD2, c_gt_clock_2=None, c_gt_loc_1=X, c_gt_loc_10=X, c_gt_loc_11=X, c_gt_loc_12=X, c_gt_loc_13=X, c_gt_loc_14=X, c_gt_loc_15=X, c_gt_loc_16=X, c_gt_loc_17=X, c_gt_loc_18=X, c_gt_loc_19=X, c_gt_loc_2=X, c_gt_loc_20=X, c_gt_loc_21=X, c_gt_loc_22=X, c_gt_loc_23=X, c_gt_loc_24=X, c_gt_loc_25=X, c_gt_loc_26=X, c_gt_loc_27=X, c_gt_loc_28=X, c_gt_loc_29=X, c_gt_loc_3=X, c_gt_loc_30=X, c_gt_loc_31=X, c_gt_loc_32=X, c_gt_loc_33=X, c_gt_loc_34=X, c_gt_loc_35=X, c_gt_loc_36=X, c_gt_loc_37=X, c_gt_loc_38=X, c_gt_loc_39=X, c_gt_loc_4=X, c_gt_loc_40=X, c_gt_loc_41=X, c_gt_loc_42=X, c_gt_loc_43=X, c_gt_loc_44=X, c_gt_loc_45=X, c_gt_loc_46=X, c_gt_loc_47=X, c_gt_loc_48=X, c_gt_loc_5=1, c_gt_loc_6=X, c_gt_loc_7=X, c_gt_loc_8=X, c_gt_loc_9=X, c_lane_width=4, c_line_rate=3.125, c_nfc=false, c_nfc_mode=IMM, c_refclk_frequency=156.25, c_simplex=false, c_simplex_mode=TX, c_stream=true, c_ufc=false, flow_mode=None, interface_mode=Streaming, dataflow_config=Duplex}";
--- Parameter Declarations --
-	constant DLY : time := 1 ns;
--- External Register Declarations --
-	signal HARD_ERR_Buffer    : std_logic;
-	signal SOFT_ERR_Buffer    : std_logic;
-	signal LANE_UP_Buffer     : std_logic;
-	signal CHANNEL_UP_Buffer  : std_logic;
-	signal TXP_Buffer         : std_logic;
-	signal TXN_Buffer         : std_logic;
--- Internal Register Declarations --
-	signal gt_reset_i         : std_logic; 
-	signal system_reset_i     : std_logic;
--- Wire Declarations --
--- Stream TX Interface
-	signal tx_d_i             : std_logic_vector(0 to 31);
-	signal tx_src_rdy_n_i     : std_logic;
-	signal tx_dst_rdy_n_i     : std_logic;
--- Stream RX Interface
-	signal rx_d_i             : std_logic_vector(0 to 31);
-	signal rx_src_rdy_n_i     : std_logic;
--- V5 Reference Clock Interface
-	signal GTPD2_left_i      : std_logic;
--- Error Detection Interface
-	signal hard_err_i       : std_logic;
-	signal soft_err_i       : std_logic;
--- Status
-	signal channel_up_i       : std_logic;
-	signal lane_up_i          : std_logic;
--- Clock Compensation Control Interface
-	signal warn_cc_i          : std_logic;
-	signal do_cc_i            : std_logic;
--- System Interface
-	signal pll_not_locked_i   : std_logic;
-	signal user_clk_i         : std_logic;
-	signal sync_clk_i         : std_logic;
-	signal reset_i            : std_logic;
-	signal power_down_i       : std_logic;
-	signal loopback_i         : std_logic_vector(2 downto 0);
-	signal tx_lock_i          : std_logic;
-	signal gtpclkout_i        : std_logic;
-	signal buf_gtpclkout_i    : std_logic;
---Frame check signals
-	signal err_count_i      : std_logic_vector(0 to 7);
-	signal ERR_COUNT_Buffer : std_logic_vector(0 to 7);
--- VIO Signals
-	signal icon_to_vio_i       : std_logic_vector (35 downto 0);
-	signal sync_in_i           : std_logic_vector (63 downto 0);
-	signal sync_out_i          : std_logic_vector (63 downto 0);
-	signal lane_up_i_i  	      : std_logic;
-	signal tx_lock_i_i  	      : std_logic;
-	signal lane_up_reduce_i    : std_logic;
-	attribute ASYNC_REG        : string;
-	attribute ASYNC_REG of tx_lock_i  : signal is "TRUE";
--------Kurtis additions------------
-	signal internal_clock_from_remote_source : std_logic;
-	signal internal_clock_250MHz             : std_logic;
-	signal internal_COUNTER : std_logic_vector(31 downto 0);
-	signal INIT_CLK : std_logic;
-	signal AURORA_RESET_IN : std_logic := '1';
-	signal GT_RESET_IN     : std_logic := '1';
-	signal rx_char_is_comma_i : std_logic_vector(3 downto 0);
-	signal lane_init_state_i  : std_logic_vector(6 downto 0);
-	signal reset_lanes_i : std_logic;
-	signal tx_pe_data_i : std_logic_vector(31 downto 0);
-	signal internal_PACKET_GENERATOR_ENABLE : std_logic_vector(1 downto 0);
-	signal internal_DATA_GENERATOR_STATE : std_logic_vector(2 downto 0);
-	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
------------------------------------
 -- Component Declarations --
 	component IBUFDS
 	port (
@@ -333,6 +263,77 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	);
 	end component;
                                                                                 
+-----------------------------------
+	attribute core_generation_info           : string;
+	attribute core_generation_info of MAPPED : architecture is "Aurora_IP_Core_A,aurora_8b10b_v5_2,{backchannel_mode=Sidebands, c_aurora_lanes=1, c_column_used=None, c_gt_clock_1=GTPD2, c_gt_clock_2=None, c_gt_loc_1=X, c_gt_loc_10=X, c_gt_loc_11=X, c_gt_loc_12=X, c_gt_loc_13=X, c_gt_loc_14=X, c_gt_loc_15=X, c_gt_loc_16=X, c_gt_loc_17=X, c_gt_loc_18=X, c_gt_loc_19=X, c_gt_loc_2=X, c_gt_loc_20=X, c_gt_loc_21=X, c_gt_loc_22=X, c_gt_loc_23=X, c_gt_loc_24=X, c_gt_loc_25=X, c_gt_loc_26=X, c_gt_loc_27=X, c_gt_loc_28=X, c_gt_loc_29=X, c_gt_loc_3=X, c_gt_loc_30=X, c_gt_loc_31=X, c_gt_loc_32=X, c_gt_loc_33=X, c_gt_loc_34=X, c_gt_loc_35=X, c_gt_loc_36=X, c_gt_loc_37=X, c_gt_loc_38=X, c_gt_loc_39=X, c_gt_loc_4=X, c_gt_loc_40=X, c_gt_loc_41=X, c_gt_loc_42=X, c_gt_loc_43=X, c_gt_loc_44=X, c_gt_loc_45=X, c_gt_loc_46=X, c_gt_loc_47=X, c_gt_loc_48=X, c_gt_loc_5=1, c_gt_loc_6=X, c_gt_loc_7=X, c_gt_loc_8=X, c_gt_loc_9=X, c_lane_width=4, c_line_rate=3.125, c_nfc=false, c_nfc_mode=IMM, c_refclk_frequency=156.25, c_simplex=false, c_simplex_mode=TX, c_stream=true, c_ufc=false, flow_mode=None, interface_mode=Streaming, dataflow_config=Duplex}";
+-- Parameter Declarations --
+	constant DLY : time := 1 ns;
+-- External Register Declarations --
+	signal HARD_ERR_Buffer    : std_logic;
+	signal SOFT_ERR_Buffer    : std_logic;
+	signal LANE_UP_Buffer     : std_logic;
+	signal CHANNEL_UP_Buffer  : std_logic;
+	signal TXP_Buffer         : std_logic;
+	signal TXN_Buffer         : std_logic;
+-- Internal Register Declarations --
+	signal gt_reset_i         : std_logic; 
+	signal system_reset_i     : std_logic;
+-- Wire Declarations --
+-- Stream TX Interface
+	signal tx_d_i             : std_logic_vector(0 to 31);
+	signal tx_src_rdy_n_i     : std_logic;
+	signal tx_dst_rdy_n_i     : std_logic;
+-- Stream RX Interface
+	signal rx_d_i             : std_logic_vector(0 to 31);
+	signal rx_src_rdy_n_i     : std_logic;
+-- V5 Reference Clock Interface
+	signal GTPD2_left_i      : std_logic;
+-- Error Detection Interface
+	signal hard_err_i       : std_logic;
+	signal soft_err_i       : std_logic;
+-- Status
+	signal channel_up_i       : std_logic;
+	signal lane_up_i          : std_logic;
+-- Clock Compensation Control Interface
+	signal warn_cc_i          : std_logic;
+	signal do_cc_i            : std_logic;
+-- System Interface
+	signal pll_not_locked_i   : std_logic;
+	signal user_clk_i         : std_logic;
+	signal sync_clk_i         : std_logic;
+	signal reset_i            : std_logic;
+	signal power_down_i       : std_logic;
+	signal loopback_i         : std_logic_vector(2 downto 0);
+	signal tx_lock_i          : std_logic;
+	signal gtpclkout_i        : std_logic;
+	signal buf_gtpclkout_i    : std_logic;
+--Frame check signals
+	signal err_count_i      : std_logic_vector(0 to 7);
+	signal ERR_COUNT_Buffer : std_logic_vector(0 to 7);
+-- VIO Signals
+	signal icon_to_vio_i       : std_logic_vector (35 downto 0);
+	signal sync_in_i           : std_logic_vector (63 downto 0);
+	signal sync_out_i          : std_logic_vector (63 downto 0);
+	signal lane_up_i_i  	      : std_logic;
+	signal tx_lock_i_i  	      : std_logic;
+	signal lane_up_reduce_i    : std_logic;
+	attribute ASYNC_REG        : string;
+	attribute ASYNC_REG of tx_lock_i  : signal is "TRUE";
+-------Kurtis additions------------
+	signal internal_clock_from_remote_source : std_logic;
+	signal internal_clock_250MHz             : std_logic;
+	signal internal_COUNTER : std_logic_vector(31 downto 0);
+	signal INIT_CLK : std_logic;
+	signal AURORA_RESET_IN : std_logic := '1';
+	signal GT_RESET_IN     : std_logic := '1';
+	signal rx_char_is_comma_i : std_logic_vector(3 downto 0);
+	signal lane_init_state_i  : std_logic_vector(6 downto 0);
+	signal reset_lanes_i : std_logic;
+	signal tx_pe_data_i : std_logic_vector(31 downto 0);
+	signal internal_PACKET_GENERATOR_ENABLE : std_logic_vector(1 downto 0);
+	signal internal_DATA_GENERATOR_STATE : std_logic_vector(2 downto 0);
+	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
+-----------------------------------
 	signal clock_1MHz : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
@@ -372,97 +373,30 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal trigger_acknowledge : std_logic;
 	signal internal_clock_for_state_machine : std_logic;
 	signal clock_select : std_logic := '0'; -- '0' = local; '1' = remote
+	signal disable_fiber_tranceiver_0 : std_logic := '1';
+	signal global_reset : std_logic := '1';
+	signal request_a_global_reset : std_logic := '0';
 begin
---	internal_acknowledge_start_event_transfer <= '0';
-	lane_up_reduce_i    <=  lane_up_i;
-	
-	HARD_ERR    <= HARD_ERR_Buffer;
-	SOFT_ERR    <= SOFT_ERR_Buffer;
-	ERR_COUNT   <= ERR_COUNT_Buffer;
-	LANE_UP     <= LANE_UP_Buffer;
-	CHANNEL_UP  <= CHANNEL_UP_Buffer;
-	TXP         <= TXP_Buffer;
-	TXN         <= TXN_Buffer;
-
-	INIT_CLK <= internal_COUNTER(2);
-	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= reset_i;	
-	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
-	
-------------------------------------------
-	LVDS_SIMPLE_TRIGGER : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P, IB => REMOTE_SIMPLE_TRIGGER_N, O => external_trigger_2_from_LVDS);
-	LVDS_ENCODED_TRIGGER : IBUFDS port map (I => REMOTE_ENCODED_TRIGGER_P, IB => REMOTE_ENCODED_TRIGGER_N, O => external_encoded_trigger_from_LVDS);
-
-	internal_trigger <= raw_100Hz_fake_trigger;
---	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
-	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
---	external_triggers_ORed_together <= external_trigger_1_from_monitor_header;
-	process(external_trigger_disable)
+-----------------------------------------------------------------------------
+	process(internal_clock_for_state_machine, request_a_global_reset)
+		variable internal_COUNTER  : integer range 0 to 1000000000 := 0;
 	begin
-		if (external_trigger_disable = '0') then
-			gated_trigger <= external_triggers_ORed_together;
-		else
-			gated_trigger <= internal_trigger;
+		if (rising_edge(internal_clock_for_state_machine)) then
+			if (request_a_global_reset = '1') then
+				internal_COUNTER := 0;
+				global_reset <= '1';
+			elsif (internal_COUNTER < 500000000) then
+				internal_COUNTER := internal_COUNTER + 1;
+			else
+				global_reset <= '0';
+			end if;
 		end if;
 	end process;
-	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
-	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_trigger;
-	internal_PACKET_GENERATOR_ENABLE(1) <= '1';--trigger_a_digitization_and_readout_event or transmit_always;
-	internal_PACKET_GENERATOR_ENABLE(0) <= not transmit_disable;
---	trigger_a_digitization_and_readout_event
-
---	pulsed_trigger <= trigger_a_digitization_and_readout_event or transmit_always;
-	process (trigger_a_digitization_and_readout_event, transmit_always, trigger_acknowledge)
-	begin
-		if (trigger_acknowledge = '1') then
-			pulsed_trigger <= '0';
-		elsif (transmit_always = '1') then
-			pulsed_trigger <= '1';
-		elsif rising_edge(trigger_a_digitization_and_readout_event) then
-			pulsed_trigger <= '1';
-		end if;
-	end process;
-
-------------------------------------------
-	LEDS(0) <= LANE_UP_Buffer;
-	LEDS(1) <= CHANNEL_UP_Buffer;
-	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(1) and internal_PACKET_GENERATOR_ENABLE(0);
-	LEDS(3) <= spill_active;
-
-	LEDS(4) <= fill_active;
-	LEDS(5) <= FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER;
-	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
-	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
-
-	LEDS(8)  <= raw_500Hz_fake_trigger;
-	LEDS(9)  <= external_trigger_1_from_monitor_header;
---	LEDS(10) <= external_triggers_ORed_together;
-	LEDS(10) <= pulsed_trigger;
-	LEDS(11) <= gated_trigger;
-	
-	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
-
---	LEDS(6) <= tx_lock_i;
---	LEDS(7) <= pll_not_locked_i;
---	LEDS(7) <= internal_COUNTER(26);
---	LEDS(15 downto 12) <= ERR_COUNT_Buffer(0 downto 3);
---	LEDS(11 downto 9) <= internal_DATA_GENERATOR_STATE;
---	LEDS(2) <= HARD_ERR_Buffer;
---	LEDS() <= SOFT_ERR_Buffer;
-
-	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
-	MONITOR_HEADER_OUTPUT(10 downto 1) <= (others => '0');
-	
-	MONITOR_HEADER_OUTPUT(11) <= external_trigger_2_from_LVDS;
-
-	MONITOR_HEADER_OUTPUT(12) <= pulsed_trigger;
-	MONITOR_HEADER_OUTPUT(13) <= raw_100Hz_fake_trigger;
-	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
-	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
-------------------------------------------
-	process(internal_clock_for_state_machine, reset_i)
+-----------------------------------------------------------------------------
+	process(internal_clock_for_state_machine, global_reset)
 		variable counter_250_MHz  : integer range 0 to 250 := 0;
 	begin
-		if (reset_i = '1') then
+		if (global_reset = '1') then
 			counter_250_MHz := 0;
 		elsif rising_edge(internal_clock_for_state_machine) then
 			counter_250_MHz := counter_250_MHz + 1;
@@ -475,7 +409,8 @@ begin
 			end if;
 		end if;
 	end process;
-	process(clock_1MHz, reset_i)
+-----------------------------------------------------------------------------
+	process(clock_1MHz, global_reset)
 		variable counter_1_MHz    : integer range 0 to 10 := 0;
 		variable counter_100_kHz  : integer range 0 to 10 := 0;
 		variable counter_10_kHz   : integer range 0 to 10 := 0;
@@ -484,12 +419,12 @@ begin
 		variable counter_100_Hz   : integer range 0 to 10 := 0;
 		variable counter_10_Hz    : integer range 0 to 10 := 0;
 		variable counter_1_Hz     : integer range 0 to 3600 := 0;
-		variable spill_counter         : integer range 0 to 60 := 0;
+		variable spill_counter         : integer range 0 to 60 := 1;
 		constant spill_counter_maximum : integer range 0 to 60 := 2;
-		variable fill_counter          : integer range 0 to 60 := 0;
+		variable fill_counter          : integer range 0 to 60 := 1;
 		constant fill_counter_maximum  : integer range 0 to 60 := 4;
 	begin
-		if (reset_i = '1') then
+		if (global_reset = '1') then
 			spill_active <= '1';
 			fill_active  <= '0';
 			counter_1_MHz   := 0;
@@ -500,8 +435,10 @@ begin
 			counter_100_Hz  := 0;
 			counter_10_Hz   := 0;
 			counter_1_Hz    := 0;
-			spill_counter   := 0;
-			fill_counter    := 0;
+			spill_counter   := 1;
+			fill_counter    := 1;
+			raw_100Hz_fake_trigger <= '0';
+			raw_500Hz_fake_trigger <= '0';
 		elsif rising_edge(clock_1MHz) then
 			counter_1_MHz := counter_1_MHz + 1;
 			if (counter_1_MHz > 9) then
@@ -546,33 +483,151 @@ begin
 					else
 						spill_active <= '1';
 						fill_active  <= '0';
-						spill_counter := 0;
-						fill_counter  := 0;
+						spill_counter := 1;
+						fill_counter  := 1;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
-	process(internal_clock_for_state_machine)
-		variable internal_COUNTER  : integer range 0 to 250000000 := 0;
+-----------------------------------------------------------------------------
+	process(clock_1MHz, global_reset, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
+		variable internal_COUNTER  : integer range 0 to 4000000 := 0;
 	begin
---		AURORA_RESET_IN <= '1'; -- aurora
---		GT_RESET_IN     <= '1'; -- aurora
-		if (rising_edge(internal_clock_for_state_machine)) then
-			internal_COUNTER := internal_COUNTER + 1;
-			if (internal_COUNTER > 200000000) then
-				AURORA_RESET_IN <= '0'; -- aurora
-				GT_RESET_IN     <= '0'; -- aurora
+		if (global_reset = '1' or FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT = '1') then
+			internal_COUNTER := 0;
+			AURORA_RESET_IN <= '1';
+			GT_RESET_IN     <= '1';
+			disable_fiber_tranceiver_0 <= '1';
+--		elsif (reset_i) then
+--			disable_fiber_tranceiver_0 <= '1';
+		elsif (rising_edge(clock_1MHz)) then
+-- reset_i = '1'
+			if (internal_COUNTER < 1000000) then
+				internal_COUNTER := internal_COUNTER + 1;
+				AURORA_RESET_IN <= '1';
+				GT_RESET_IN     <= '1';
+				disable_fiber_tranceiver_0 <= '1';
+			elsif (internal_COUNTER < 2000000) then
+				internal_COUNTER := internal_COUNTER + 1;
+				disable_fiber_tranceiver_0 <= '0';
+			elsif (internal_COUNTER < 3000000) then
+				internal_COUNTER := internal_COUNTER + 1;
+				AURORA_RESET_IN <= '0';
+			else
+				GT_RESET_IN     <= '0';
 			end if;
 		end if;
 	end process;
+-----------------------------------------------------------------------------
+	process(external_trigger_disable)
+	begin
+		if (external_trigger_disable = '0') then
+			gated_trigger <= external_triggers_ORed_together;
+		else
+			gated_trigger <= internal_trigger;
+		end if;
+	end process;
+-----------------------------------------------------------------------------
+	process (trigger_a_digitization_and_readout_event, transmit_always, trigger_acknowledge)
+	begin
+		if (trigger_acknowledge = '1') then
+			pulsed_trigger <= '0';
+		elsif (transmit_always = '1') then
+			pulsed_trigger <= '1';
+		elsif rising_edge(trigger_a_digitization_and_readout_event) then
+			pulsed_trigger <= '1';
+		end if;
+	end process;
+-----------------------------------------------------------------------------
 --	process(internal_COUNTER(27)) begin
 --		if rising_edge(internal_COUNTER(27)) then
 --			RESET <= '0';
 --			GT_RESET_IN <= '0';
 --		end if;
 --	end process;
----------------------------------------
+--	internal_acknowledge_start_event_transfer <= '0';
+-----------------------------------------------------------------------------
+    -- Register User I/O --
+    -- Register User Outputs from core.
+	process (user_clk_i)
+	begin
+		if (user_clk_i 'event and user_clk_i = '1') then
+			HARD_ERR_Buffer    <= hard_err_i;
+			SOFT_ERR_Buffer    <= soft_err_i;
+			ERR_COUNT_Buffer   <= err_count_i;
+			LANE_UP_Buffer     <= lane_up_i;
+			CHANNEL_UP_Buffer  <= channel_up_i;
+		end if;
+	end process;
+-----------------------------------------------------------------------------
+	lane_up_reduce_i    <=  lane_up_i;
+	
+	HARD_ERR    <= HARD_ERR_Buffer;
+	SOFT_ERR    <= SOFT_ERR_Buffer;
+	ERR_COUNT   <= ERR_COUNT_Buffer;
+	LANE_UP     <= LANE_UP_Buffer;
+	CHANNEL_UP  <= CHANNEL_UP_Buffer;
+	TXP         <= TXP_Buffer;
+	TXN         <= TXN_Buffer;
+
+	INIT_CLK <= internal_COUNTER(2);
+-----------------------------------------------------------------------------
+	LVDS_SIMPLE_TRIGGER : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P, IB => REMOTE_SIMPLE_TRIGGER_N, O => external_trigger_2_from_LVDS);
+	LVDS_ENCODED_TRIGGER : IBUFDS port map (I => REMOTE_ENCODED_TRIGGER_P, IB => REMOTE_ENCODED_TRIGGER_N, O => external_encoded_trigger_from_LVDS);
+
+	internal_trigger <= raw_100Hz_fake_trigger;
+--	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
+	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
+--	external_triggers_ORed_together <= external_trigger_1_from_monitor_header;
+	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
+	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_trigger;
+	internal_PACKET_GENERATOR_ENABLE(1) <= '1';--trigger_a_digitization_and_readout_event or transmit_always;
+	internal_PACKET_GENERATOR_ENABLE(0) <= not transmit_disable;
+--	trigger_a_digitization_and_readout_event
+--	pulsed_trigger <= trigger_a_digitization_and_readout_event or transmit_always;
+-----------------------------------------------------------------------------
+	LEDS(0) <= LANE_UP_Buffer;
+	LEDS(1) <= CHANNEL_UP_Buffer;
+--	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(1) and internal_PACKET_GENERATOR_ENABLE(0);
+	LEDS(2) <= global_reset;
+--	LEDS(3) <= spill_active;
+	LEDS(3) <= reset_i;
+
+	LEDS(4) <= disable_fiber_tranceiver_0;
+	LEDS(5) <= FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER;
+	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
+	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
+
+	LEDS(8)  <= raw_500Hz_fake_trigger;
+	LEDS(9)  <= external_trigger_1_from_monitor_header;
+--	LEDS(10) <= external_triggers_ORed_together;
+	LEDS(10) <= pulsed_trigger;
+	LEDS(11) <= gated_trigger;
+	
+	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
+
+--	LEDS(6) <= tx_lock_i;
+--	LEDS(7) <= pll_not_locked_i;
+--	LEDS(7) <= internal_COUNTER(26);
+--	LEDS(15 downto 12) <= ERR_COUNT_Buffer(0 downto 3);
+--	LEDS(11 downto 9) <= internal_DATA_GENERATOR_STATE;
+--	LEDS(2) <= HARD_ERR_Buffer;
+--	LEDS() <= SOFT_ERR_Buffer;
+-----------------------------------------------------------------------------
+	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
+	MONITOR_HEADER_OUTPUT(10 downto 1) <= (others => '0');
+	
+	MONITOR_HEADER_OUTPUT(11) <= external_trigger_2_from_LVDS;
+
+	MONITOR_HEADER_OUTPUT(12) <= pulsed_trigger;
+	MONITOR_HEADER_OUTPUT(13) <= raw_100Hz_fake_trigger;
+	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
+	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
+-----------------------------------------------------------------------------
+	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= disable_fiber_tranceiver_0;
+	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
+-----------------------------------------------------------------------------
 	IBUFDS_i  :  IBUFDS  port map (I  => GTPD2_P, IB => GTPD2_N, O  => GTPD2_left_i);
 
 	IBUFGDS_i_local  : IBUFGDS port map (I => board_clock_250MHz_P, IB => board_clock_250MHz_N, O => internal_clock_250MHz);
@@ -598,19 +653,6 @@ begin
 		SYNC_CLK        => sync_clk_i,
 		PLL_NOT_LOCKED  => pll_not_locked_i
 	);
-
-    -- Register User I/O --
-    -- Register User Outputs from core.
-	process (user_clk_i)
-	begin
-		if (user_clk_i 'event and user_clk_i = '1') then
-			HARD_ERR_Buffer    <= hard_err_i;
-			SOFT_ERR_Buffer    <= soft_err_i;
-			ERR_COUNT_Buffer   <= err_count_i;
-			LANE_UP_Buffer     <= lane_up_i;
-			CHANNEL_UP_Buffer  <= channel_up_i;
-		end if;
-	end process;
 
     -- System Interface
 	power_down_i     <= '0';
@@ -779,18 +821,13 @@ begin
 		internal_acknowledge_start_event_transfer <= sync_out_i(35);
 		external_trigger_disable                  <= sync_out_i(36);
 		fake_spill_structure_enable               <= sync_out_i(37);
+		request_a_global_reset                    <= sync_out_i(38);
 
-		-------------------------------------------------------------------
-		--  ICON core instance
-		-------------------------------------------------------------------
 		i_icon : s6_icon
 		port map (
 			control0    => icon_to_vio_i
 		);
 
-		-------------------------------------------------------------------
-		--  VIO core instance
-		-------------------------------------------------------------------
 		i_vio : s6_vio
 		port map (
 			control   => icon_to_vio_i,
@@ -806,14 +843,14 @@ begin
 
 	chipscope2 : if USE_CHIPSCOPE = 1 generate
 		-- Shared VIO Outputs
-		reset_i <= system_reset_i or chipscope_aurora_reset;
+		reset_i <= system_reset_i or chipscope_aurora_reset or global_reset;
 		chipscope_aurora_reset                 <= sync_out_i(0);
 		internal_VARIABLE_DELAY_BETWEEN_EVENTS <= sync_out_i(34 downto 3);
 	end generate chipscope2;
 
 	no_chipscope2 : if USE_CHIPSCOPE = 0 generate
 		-- Shared VIO Outputs
-		reset_i <= system_reset_i;
+		reset_i <= system_reset_i or global_reset;
 	end generate no_chipscope2;
 
 end MAPPED;
