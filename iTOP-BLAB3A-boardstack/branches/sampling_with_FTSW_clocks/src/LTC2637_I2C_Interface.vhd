@@ -179,8 +179,6 @@ begin
 					end if;
 					
 				when STOP =>
-					internal_UPDATE_SUCCEEDED <= '1';
-					internal_UPDATING <= '0';
 					if (stop_pulse_counter = 0) then
 						internal_SCL <= '0';
 						stop_pulse_counter := stop_pulse_counter + 1;
@@ -194,11 +192,12 @@ begin
 					end if;
 
 				when WAIT_AFTER_STOP =>
-					internal_UPDATING <= '0';
 					if (stop_counter < 60) then
 						IIC_STATE <= WAIT_AFTER_STOP;
 						stop_counter := stop_counter + 1;
 					else
+						internal_UPDATING <= '0';					
+						internal_UPDATE_SUCCEEDED <= '1';
 						IIC_STATE <= IDLE;
 					end if;
 					
