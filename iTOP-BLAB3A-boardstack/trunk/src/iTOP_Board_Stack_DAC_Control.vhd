@@ -110,7 +110,7 @@ begin
 		variable dac_channel : integer range 0 to 7 := 0;
 		variable dac_address : integer range 0 to 1 := 0;
 	begin
-		if (rising_edge(IIC_CLK)) then
+		if (falling_edge(IIC_CLK)) then
 			case DAC_STATE is
 				when SEARCHING_FOR_UPDATES =>
 					internal_DAC_STATE_MONITOR	<= "000";
