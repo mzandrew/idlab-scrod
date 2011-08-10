@@ -1,0 +1,72 @@
+# FMC O3_RX (LA06) を trg  => S6 D4/D5 (p/n)
+# FMC O4_RX (LA00) を clk  => S6 G9/F10 (p/n)
+#
+# FMC O3_TX (LA03) を ack  => S6 B18/A18 (p/n)
+# FMC O4_TX (LA05) を rsv  => S6 C4/A4 (p/n)
+
+
+# FMC O3_TX (LA06) を ack  => S6 D4/D5 (p/n)
+# FMC O3_RX (LA00) を trg  => S6 G9/F10 (p/n)
+# FMC O4_TX (LA03) を rsv  => S6 B18/A18 (p/n)
+# FMC O4_RX (LA05) を clk  => S6 C4/A4 (p/n)
+
+
+#
+# SMA_GPIO_P - S6 A3
+# SMA_GPIO_N - S6 B3
+# 
+# LED0 - DS3 - S6 D17
+# LED1 - DS4 - S6 AB4
+# LED2 - DS5 - S6 D21
+# LED3 - DS6 - S6 W15
+#
+# USER_CLOCK(lclk) - S6 AB13
+
+net ack_p loc=ad14 | iostandard=lvds_25;
+net ack_n loc=af14 | iostandard=lvds_25;
+net trg_p loc=ab14  | iostandard=lvds_25 | diff_term=true;
+net trg_n loc=ac14  | iostandard=lvds_25 | diff_term=true;
+net rsv_p loc=ae15  | iostandard=lvds_25;
+net rsv_n loc=af15  | iostandard=lvds_25;
+net clk_p loc=ae13  | iostandard=lvds_25 | diff_term=true;
+net clk_n loc=af13 | iostandard=lvds_25 | diff_term=true;
+
+#net user_clock loc=ab13 | iostandard=lvcmos25;
+#net sma_gpio_p loc=b3 | iostandard=lvcmos25;
+#net sma_gpio_n loc=a3 | iostandard=lvcmos25;
+
+net led<0> loc=f18 | iostandard=lvcmos33;
+net led<1> loc=e18 | iostandard=lvcmos33;
+net led<2> loc=g16 | iostandard=lvcmos33;
+net led<3> loc=f17 | iostandard=lvcmos33;
+NET LED<4>		LOC = "f20"  | IOSTANDARD = LVCMOS33;
+NET LED<5>		LOC = "e20"  | IOSTANDARD = LVCMOS33;
+NET LED<6>		LOC = "h17"  | IOSTANDARD = LVCMOS33;
+NET LED<7>		LOC = "g17"  | IOSTANDARD = LVCMOS33;
+NET LED<8>		LOC = "c21"  | IOSTANDARD = LVCMOS33;
+NET LED<9>		LOC = "b21"  | IOSTANDARD = LVCMOS33;
+NET LED<10>	LOC = "h18"  | IOSTANDARD = LVCMOS33;
+NET LED<11>	LOC = "h19"  | IOSTANDARD = LVCMOS33;
+NET LED<12>	LOC = "b22"  | IOSTANDARD = LVCMOS33;
+NET LED<13>	LOC = "a22"  | IOSTANDARD = LVCMOS33;
+NET LED<14>	LOC = "g19"  | IOSTANDARD = LVCMOS33;
+NET LED<15>	LOC = "f19"  | IOSTANDARD = LVCMOS33;
+
+
+NET MONITOR<0>		LOC = "L26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<1>		LOC = "K26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<2>		LOC = "J25" | IOSTANDARD = LVCMOS25;
+NET MONITOR<3>		LOC = "J26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<4>		LOC = "H26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<5>		LOC = "G25" | IOSTANDARD = LVCMOS25;
+NET MONITOR<6>		LOC = "G26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<7>		LOC = "F26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<8>		LOC = "E25" | IOSTANDARD = LVCMOS25;
+NET MONITOR<9>		LOC = "E26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<10>	LOC = "D26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<11>	LOC = "C25" | IOSTANDARD = LVCMOS25;
+NET MONITOR<12>	LOC = "C26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<13>	LOC = "B25" | IOSTANDARD = LVCMOS25;
+NET MONITOR<14>	LOC = "B26" | IOSTANDARD = LVCMOS25;
+NET MONITOR<15>	LOC = "A25" | IOSTANDARD = LVCMOS25;
+
