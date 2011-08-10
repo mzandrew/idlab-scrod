@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 12.2
-# Date: Thu Aug 04 09:21:36 2011
+# Date: Wed Aug 10 00:02:51 2011
 #
 ##############################################################
 #
@@ -41,14 +41,14 @@ CSET component_name=packet_fifo
 CSET data_count=false
 CSET data_count_width=10
 CSET disable_timing_violations=false
-CSET dout_reset_value=0
+CSET dout_reset_value=77778888
 CSET empty_threshold_assert_value=2
 CSET empty_threshold_negate_value=3
 CSET enable_ecc=false
 CSET enable_int_clk=false
 CSET enable_reset_synchronization=true
 CSET fifo_implementation=Independent_Clocks_Block_RAM
-CSET full_flags_reset_value=1
+CSET full_flags_reset_value=0
 CSET full_threshold_assert_value=1021
 CSET full_threshold_negate_value=1020
 CSET inject_dbit_error=false
@@ -81,4 +81,4 @@ CSET write_data_count=true
 CSET write_data_count_width=10
 # END Parameters
 GENERATE
-# CRC: 179c1ad8
+# CRC: 9925ad90
