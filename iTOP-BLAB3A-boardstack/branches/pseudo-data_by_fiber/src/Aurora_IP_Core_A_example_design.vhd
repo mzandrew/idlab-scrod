@@ -555,11 +555,15 @@ begin
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '0';
 				GT_RESET_IN     <= '0';
-			elsif (internal_COUNTER < 500) then
+			elsif (internal_COUNTER < 305) then
 				internal_COUNTER := internal_COUNTER + 1;
 			else
 				fiber_link_is_up <= CHANNEL_UP_Buffer and LANE_UP_Buffer;
-				fiber_link_should_be_up <= '1';
+				if (FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER = '0') then
+					fiber_link_should_be_up <= '1';
+				else
+					fiber_link_should_be_up <= '0';
+				end if;
 			end if;
 		end if;
 	end process;
@@ -633,7 +637,7 @@ begin
 -----------------------------------------------------------------------------
 	LEDS(0) <= fiber_link_is_up;
 	LEDS(1) <= fiber_link_should_be_up;
-	LEDS(2) <= reset_i;
+	LEDS(2) <= AURORA_RESET_IN or GT_RESET_IN;
 	LEDS(3) <= global_reset;
 
 	LEDS(4) <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
