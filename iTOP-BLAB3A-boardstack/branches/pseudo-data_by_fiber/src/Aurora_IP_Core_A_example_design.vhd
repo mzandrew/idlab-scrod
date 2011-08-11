@@ -335,6 +335,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
 -----------------------------------
 	signal clock_1MHz : std_logic;
+	signal clock_1kHz : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
@@ -348,7 +349,6 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
-	signal chipscope_aurora_reset : std_logic;
 --	signal stupid_counter : std_logic_vector(31 downto 0);
 ------------------------------------------
 -- trigger signals:
@@ -373,19 +373,25 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal trigger_acknowledge : std_logic;
 	signal internal_clock_for_state_machine : std_logic;
 	signal clock_select : std_logic := '0'; -- '0' = local; '1' = remote
-	signal disable_fiber_tranceiver_0 : std_logic := '1';
 	signal global_reset : std_logic := '1';
 	signal request_a_global_reset : std_logic := '0';
+-----------------------------------------------------------------------------
+	signal chipscope_aurora_reset                             : std_logic;
+	signal request_a_fiber_link_reset                         : std_logic := '0';
+	signal internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE        : std_logic := '1';
+	signal fiber_link_is_up                                   : std_logic;
+	signal fiber_link_should_be_up                            : std_logic;
+	signal should_not_automatically_try_to_keep_fiber_link_up : std_logic := '0';
 begin
 -----------------------------------------------------------------------------
 	process(internal_clock_for_state_machine, request_a_global_reset)
-		variable internal_COUNTER  : integer range 0 to 1000000000 := 0;
+		variable internal_COUNTER  : integer range 0 to 250000000 := 0;
 	begin
 		if (rising_edge(internal_clock_for_state_machine)) then
 			if (request_a_global_reset = '1') then
 				internal_COUNTER := 0;
 				global_reset <= '1';
-			elsif (internal_COUNTER < 500000000) then
+			elsif (internal_COUNTER < 2500000) then
 				internal_COUNTER := internal_COUNTER + 1;
 			else
 				global_reset <= '0';
@@ -414,8 +420,42 @@ begin
 		variable counter_1_MHz    : integer range 0 to 10 := 0;
 		variable counter_100_kHz  : integer range 0 to 10 := 0;
 		variable counter_10_kHz   : integer range 0 to 10 := 0;
+--		variable counter_2_kHz    : integer range 0 to 10 := 0;
+	begin
+		if (global_reset = '1') then
+			counter_1_MHz   := 0;
+			counter_100_kHz := 0;
+			counter_10_kHz  := 0;
+--			counter_2_kHz   := 0;
+		elsif rising_edge(clock_1MHz) then
+			-- evaluated once per microsecond
+			counter_1_MHz := counter_1_MHz + 1;
+			if (counter_1_MHz > 9) then
+				-- evaluated 100,000 times per second
+				counter_1_MHz := 0;
+				counter_100_kHz := counter_100_kHz + 1;
+			end if;
+			if (counter_100_kHz > 9) then
+				-- evaluated 10,000 times per second
+				counter_100_kHz := 0;
+				counter_10_kHz := counter_10_kHz + 1;
+			end if;
+			if (counter_10_kHz > 4) then
+				-- evaluated 2,000 times per second
+				counter_10_kHz := 0;
+--				counter_2_kHz := counter_2_kHz + 1;
+				clock_1kHz <= not clock_1kHz;
+			end if;
+--			if (counter_2_kHz > 2) then
+				-- evaluated 1,000 times per second
+--				counter_2_kHz := 0;
+--				
+--			end if;
+		end if;
+	end process;
+	process(clock_1kHz, global_reset)
 		variable counter_1_kHz    : integer range 0 to 10 := 0;
-		variable counter_200_Hz   : integer range 0 to  2 := 0;
+		variable counter_200_Hz   : integer range 0 to 10 := 0;
 		variable counter_100_Hz   : integer range 0 to 10 := 0;
 		variable counter_10_Hz    : integer range 0 to 10 := 0;
 		variable counter_1_Hz     : integer range 0 to 3600 := 0;
@@ -427,9 +467,6 @@ begin
 		if (global_reset = '1') then
 			spill_active <= '1';
 			fill_active  <= '0';
-			counter_1_MHz   := 0;
-			counter_100_kHz := 0;
-			counter_10_kHz  := 0;
 			counter_1_kHz   := 0;
 			counter_200_Hz  := 0;
 			counter_100_Hz  := 0;
@@ -439,37 +476,32 @@ begin
 			fill_counter    := 1;
 			raw_100Hz_fake_trigger <= '0';
 			raw_500Hz_fake_trigger <= '0';
-		elsif rising_edge(clock_1MHz) then
-			counter_1_MHz := counter_1_MHz + 1;
-			if (counter_1_MHz > 9) then
-				counter_1_MHz := 0;
-				counter_100_kHz := counter_100_kHz + 1;
-			end if;
-			if (counter_100_kHz > 9) then
-				counter_100_kHz := 0;
-				counter_10_kHz := counter_10_kHz + 1;
-			end if;
-			if (counter_10_kHz > 9) then
-				counter_10_kHz := 0;
-				counter_1_kHz := counter_1_kHz + 1;
-				raw_500Hz_fake_trigger <= not raw_500Hz_fake_trigger;
-			end if;
---			if (counter_1_kHz > 9) then
+		elsif rising_edge(clock_1kHz) then
+			-- evaluated once per millisecond
+			counter_1_kHz := counter_1_kHz + 1;
 			if (counter_1_kHz > 4) then
+				-- evaluated 200 times per second
 				counter_1_kHz := 0;
 				counter_200_Hz := counter_200_Hz + 1;
 				raw_100Hz_fake_trigger <= not raw_100Hz_fake_trigger;
 			end if;
 			if (counter_200_Hz > 1) then
+				-- evaluated 100 times per second
 				counter_200_Hz := 0;
 				counter_100_Hz := counter_100_Hz + 1;
 			end if;
 			if (counter_100_Hz > 9) then
+				-- evaluated 10 times per second
 				counter_100_Hz := 0;
 				counter_10_Hz := counter_10_Hz + 1;
 			end if;
 --				raw_25Hz_fake_trigger <= not raw_25Hz_fake_trigger;
 			if (counter_10_Hz > 9) then
+				-- evaluated once per second
+--				if (fiber_link_is_up = '0') then
+--					pulsed_fiber_link_is_down = '1';
+--					request_an_aurora_reset = '1';
+--				end if;
 				counter_10_Hz := 0;
 				counter_1_Hz := counter_1_Hz + 1;
 --				stupid_counter <= std_logic_vector(unsigned(stupid_counter) + 1);
@@ -491,31 +523,43 @@ begin
 		end if;
 	end process;
 -----------------------------------------------------------------------------
-	process(clock_1MHz, global_reset, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
-		variable internal_COUNTER  : integer range 0 to 4000000 := 0;
+	process(clock_1kHz, global_reset, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
+		variable internal_COUNTER  : integer range 0 to 1000 := 0;
 	begin
-		if (global_reset = '1' or FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT = '1') then
+		if (	global_reset = '1' or
+				FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT = '1' or
+				request_a_fiber_link_reset = '1' or
+				(should_not_automatically_try_to_keep_fiber_link_up = '0' and fiber_link_should_be_up = '1' and fiber_link_is_up = '0')
+				) then
+			fiber_link_should_be_up <= '0';
+--			fiber_link_is_up <= '0';
 			internal_COUNTER := 0;
 			AURORA_RESET_IN <= '1';
 			GT_RESET_IN     <= '1';
-			disable_fiber_tranceiver_0 <= '1';
---		elsif (reset_i) then
---			disable_fiber_tranceiver_0 <= '1';
-		elsif (rising_edge(clock_1MHz)) then
--- reset_i = '1'
-			if (internal_COUNTER < 1000000) then
+			internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE <= '1';
+		elsif (rising_edge(clock_1kHz)) then
+			-- an avago afbr-57r5aez requires the following (pdf, page 12):
+			-- a rising edge on tx_disable (from page 12 note 1)
+			-- a maximum power-up time of 300ms from power up or falling edge of
+			--     tx_disable to when it can be used for data (from page 12 note 3)
+			if (internal_COUNTER < 1) then
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '1';
 				GT_RESET_IN     <= '1';
-				disable_fiber_tranceiver_0 <= '1';
-			elsif (internal_COUNTER < 2000000) then
+				fiber_link_is_up <= '0';
+				internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE <= '1';
+			elsif (internal_COUNTER < 2) then
 				internal_COUNTER := internal_COUNTER + 1;
-				disable_fiber_tranceiver_0 <= '0';
-			elsif (internal_COUNTER < 3000000) then
+				internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE <= '0';
+			elsif (internal_COUNTER < 302) then
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '0';
-			else
 				GT_RESET_IN     <= '0';
+			elsif (internal_COUNTER < 500) then
+				internal_COUNTER := internal_COUNTER + 1;
+			else
+				fiber_link_is_up <= CHANNEL_UP_Buffer and LANE_UP_Buffer;
+				fiber_link_should_be_up <= '1';
 			end if;
 		end if;
 	end process;
@@ -587,14 +631,12 @@ begin
 --	trigger_a_digitization_and_readout_event
 --	pulsed_trigger <= trigger_a_digitization_and_readout_event or transmit_always;
 -----------------------------------------------------------------------------
-	LEDS(0) <= LANE_UP_Buffer;
-	LEDS(1) <= CHANNEL_UP_Buffer;
---	LEDS(2) <= internal_PACKET_GENERATOR_ENABLE(1) and internal_PACKET_GENERATOR_ENABLE(0);
-	LEDS(2) <= global_reset;
---	LEDS(3) <= spill_active;
-	LEDS(3) <= reset_i;
+	LEDS(0) <= fiber_link_is_up;
+	LEDS(1) <= fiber_link_should_be_up;
+	LEDS(2) <= reset_i;
+	LEDS(3) <= global_reset;
 
-	LEDS(4) <= disable_fiber_tranceiver_0;
+	LEDS(4) <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
 	LEDS(5) <= FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER;
 	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
 	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
@@ -616,7 +658,9 @@ begin
 --	LEDS() <= SOFT_ERR_Buffer;
 -----------------------------------------------------------------------------
 	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
-	MONITOR_HEADER_OUTPUT(10 downto 1) <= (others => '0');
+	MONITOR_HEADER_OUTPUT(1) <= clock_1MHz;
+	MONITOR_HEADER_OUTPUT(2) <= clock_1kHz;
+	MONITOR_HEADER_OUTPUT(10 downto 3) <= (others => '0');
 	
 	MONITOR_HEADER_OUTPUT(11) <= external_trigger_2_from_LVDS;
 
@@ -625,7 +669,7 @@ begin
 	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
 	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
 -----------------------------------------------------------------------------
-	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= disable_fiber_tranceiver_0;
+	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
 -----------------------------------------------------------------------------
 	IBUFDS_i  :  IBUFDS  port map (I  => GTPD2_P, IB => GTPD2_N, O  => GTPD2_left_i);
@@ -816,12 +860,14 @@ begin
 --		sync_in_i(63 downto 62) <= stupid_counter(1 downto 0);
 --		sync_in_i(63 downto 62) <= (others => '0');
 		
-		transmit_always                           <= sync_out_i(1);
-		transmit_disable                          <= sync_out_i(2);
-		internal_acknowledge_start_event_transfer <= sync_out_i(35);
-		external_trigger_disable                  <= sync_out_i(36);
-		fake_spill_structure_enable               <= sync_out_i(37);
-		request_a_global_reset                    <= sync_out_i(38);
+		transmit_always                                    <= sync_out_i(1);
+		transmit_disable                                   <= sync_out_i(2);
+		internal_acknowledge_start_event_transfer          <= sync_out_i(35);
+		external_trigger_disable                           <= sync_out_i(36);
+		fake_spill_structure_enable                        <= sync_out_i(37);
+		request_a_global_reset                             <= sync_out_i(38);
+		request_a_fiber_link_reset                         <= sync_out_i(39);
+		should_not_automatically_try_to_keep_fiber_link_up <= sync_out_i(40);
 
 		i_icon : s6_icon
 		port map (
