@@ -1,5 +1,5 @@
 #ChipScope Pro Analyzer Project File, Version 3.0
-#Thu Aug 11 14:43:42 JST 2011
+#Fri Aug 12 13:05:01 JST 2011
 deviceChain.deviceName0=XC6SLX150T
 deviceChain.deviceName1=XCF16P
 deviceChain.iRLength0=6
@@ -2448,7 +2448,7 @@ unit.0.0.port.2.b.10.tokencount=0
 unit.0.0.port.2.b.10.unsignedOffset=0.0
 unit.0.0.port.2.b.10.unsignedPrecision=0
 unit.0.0.port.2.b.10.unsignedScaleFactor=1.0
-unit.0.0.port.2.b.10.value=00
+unit.0.0.port.2.b.10.value=02
 unit.0.0.port.2.b.10.visible=1
 unit.0.0.port.2.b.11.alias=TRGBIAS
 unit.0.0.port.2.b.11.channellist=60 61 62 63 64 65 66 67 68 69 70 71
@@ -2752,7 +2752,7 @@ unit.0.0.port.2.b.9.tokencount=0
 unit.0.0.port.2.b.9.unsignedOffset=0.0
 unit.0.0.port.2.b.9.unsignedPrecision=0
 unit.0.0.port.2.b.9.unsignedScaleFactor=1.0
-unit.0.0.port.2.b.9.value=00
+unit.0.0.port.2.b.9.value=02
 unit.0.0.port.2.b.9.visible=1
 unit.0.0.port.2.buscount=22
 unit.0.0.port.2.channelcount=256
@@ -3778,7 +3778,7 @@ unit.0.0.port.2.s.212.display=3
 unit.0.0.port.2.s.212.name=SyncOut[212]
 unit.0.0.port.2.s.212.orderindex=-1
 unit.0.0.port.2.s.212.persistence=0
-unit.0.0.port.2.s.212.value=0
+unit.0.0.port.2.s.212.value=1
 unit.0.0.port.2.s.212.visible=1
 unit.0.0.port.2.s.213.alias=ENABLE_CHIPSCOPE_RAM_CONTROL
 unit.0.0.port.2.s.213.color=java.awt.Color[r\=0,g\=0,b\=124]
