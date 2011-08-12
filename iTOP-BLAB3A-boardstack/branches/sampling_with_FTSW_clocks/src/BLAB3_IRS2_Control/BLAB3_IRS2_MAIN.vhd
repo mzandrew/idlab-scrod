@@ -28,6 +28,7 @@ entity BLAB3_IRS2_MAIN is
 		ASIC_SST_IN	      : out std_logic;		
 		ASIC_SSP_OUT	   : in  std_logic;
 		ASIC_TRIGGER_BITS : in  std_logic_vector(7 downto 0);
+		
 		SOFT_WRITE_ADDR   : in  std_logic_vector(8 downto 0);
 		SOFT_READ_ADDR    : in  std_logic_vector(8 downto 0);		
 		-- User I/O
@@ -41,6 +42,7 @@ entity BLAB3_IRS2_MAIN is
 		CLR_ALL		 	   : in  std_logic;
 		TRIGGER			   : in  std_logic;
 		RAM_READ_ADDRESS  : in std_logic_vector(11 downto 0);
+		RAM_READ_CLOCK		: in std_logic;
 		DATA_TO_USB       : out std_logic_vector(15 downto 0));
 end BLAB3_IRS2_MAIN;
 
@@ -57,7 +59,7 @@ architecture implementation of BLAB3_IRS2_MAIN is
 
 	type STATE_TYPE is ( WAITING, NOMINAL_SAMPLING,
 								ARM_WILKINSON,PERFORM_WILKINSON,
-								ARM_READING,READ_TO_RAM,WAIT_FOR_READ_SETTLING,
+								ARM_READING,READ_TO_RAM,WAIT_FOR_READ_SETTLING,INCREMENT_ADDRESSES,
 								READOUT_BY_USB);	
 	signal internal_STATE          : STATE_TYPE;
 
@@ -68,6 +70,7 @@ architecture implementation of BLAB3_IRS2_MAIN is
 	signal internal_RAM_INPUT_DATA         : std_logic_vector(15 downto 0);
 	signal internal_RAM_WRITE_ENABLE       : std_logic;
 	signal internal_RAM_WRITE_ENABLE_VEC   : std_logic_vector(0 downto 0);
+	signal internal_RAM_READ_CLOCK			: std_logic;
 	
 	signal internal_ASIC_CH_SEL	 	 : std_logic_vector(2 downto 0);
 	signal internal_ASIC_RD_ADDR	 	 : std_logic_vector(9 downto 0) := (others => '0');
@@ -119,6 +122,8 @@ begin
 	internal_TRIGGER <= TRIGGER;
 
 	internal_RAM_WRITE_ENABLE_VEC(0) <= internal_RAM_WRITE_ENABLE;
+	
+	internal_RAM_READ_CLOCK <= RAM_READ_CLOCK;
 	----------------------------------------------------
 
 	-------LOGIC TO RUN ASIC SAMPLING------
@@ -128,14 +133,15 @@ begin
 	internal_ASIC_WR_ADDR(0) <= CLK_SST;
 
 	-------MONITOR HEADER------------------
-	internal_MONITOR(0) <= internal_ASIC_SSP_IN;
-	internal_MONITOR(1) <= internal_ASIC_SST_IN;
-	internal_MONITOR(2) <= internal_ASIC_WR_STRB;
-	internal_MONITOR(3) <= internal_ASIC_WR_ADDR(0);
-	internal_MONITOR(4) <= internal_ASIC_SSP_OUT;
-	internal_MONITOR(15) <= internal_ASIC_WR_ADDR(9);
-	internal_MONITOR(14 downto 5) <= (others => '0');
-
+	internal_MONITOR(0) <= internal_ASIC_SST_IN;
+	internal_MONITOR(1) <= CLK_WRITE_STROBE;
+	internal_MONITOR(7 downto 2) <= internal_ASIC_SMPL_SEL;
+	internal_MONITOR(9 downto 8) <= internal_RAM_WRITE_ADDRESS(1 downto 0);
+	internal_MONITOR(10) <= internal_RAM_WRITE_ADDRESS(6);
+	internal_MONITOR(11) <= internal_ASIC_SMPL_SEL_ALL;
+	internal_MONITOR(12) <= internal_RAM_WRITE_ENABLE;
+	internal_MONITOR(15 downto 13) <= internal_RAM_INPUT_DATA(2 downto 0);
+	
 	--Signals 15 downto 4 are simple pass throughs.
 	--Signals 3 downto 0 come from clocks, 
 	--  so must be driven by ODDR2 primitives.
@@ -145,12 +151,15 @@ begin
 	-------------------------------------------------------------------------			
 	READOUT_RAM_BLOCK : entity work.MULTI_WINDOW_RAM_BLOCK
 		port map (
-			clka => CLK_WRITE_STROBE,
+			clka => CLK_SST,
 			ena => '1',
 			wea => internal_RAM_WRITE_ENABLE_VEC,
 			addra => internal_RAM_WRITE_ADDRESS,
 			dina => internal_RAM_INPUT_DATA,
-			clkb => not(CLK_WRITE_STROBE),
+--			clkb => internal_RAM_READ_CLOCK,
+			clkb => CLK_WRITE_STROBE,
+--			enb => internal_RAM_READ_ENABLE,
+			enb => '1',
 			addrb => RAM_READ_ADDRESS,
 			doutb => DATA_TO_USB);		
 			
@@ -327,6 +336,7 @@ begin
 				if (internal_TRIGGER <= '1') then
 				   internal_BUSY <= '1';
 					internal_ASIC_WR_ADDR(9) <= '1';
+					internal_RAM_WRITE_ENABLE <= '0';					
 					if (delay_counter >= trigger_arming_time) then
 						internal_STATE <= NOMINAL_SAMPLING;
 						windows_sampled_after_trigger := 2;
@@ -380,6 +390,7 @@ begin
 			when ARM_READING =>
 				internal_ASIC_SMPL_SEL_ALL <= '1';
 				internal_STATE <= READ_TO_RAM;
+				internal_RAM_READ_ENABLE <= '0';
 --------------------
 			when READ_TO_RAM =>	
 				internal_RAM_WRITE_ENABLE <= '0';
@@ -400,27 +411,32 @@ begin
 				end if;
 --------------------
 			when WAIT_FOR_READ_SETTLING =>
-				internal_RAM_WRITE_ENABLE <= '1';
-				if (delay_counter >= read_to_ram_settling_time) then					
-					internal_RAM_WRITE_ADDRESS <= std_logic_vector(unsigned(internal_RAM_WRITE_ADDRESS) + 1);
-					samples_read_out_this_window := samples_read_out_this_window + 1;
-					if ( unsigned(internal_ASIC_SMPL_SEL) = 63) then
-						internal_ASIC_SMPL_SEL(5 downto 0) <= (others => '0');
-						if ( unsigned(internal_ASIC_CH_SEL) = 7) then
-							internal_ASIC_CH_SEL(2 downto 0) <= (others => '0');
-						else
-							internal_ASIC_CH_SEL <= std_logic_vector(unsigned(internal_ASIC_CH_SEL) + 1);
-						end if;
-					else
-						internal_ASIC_SMPL_SEL <= std_logic_vector(unsigned(internal_ASIC_SMPL_SEL) + 1);
-					end if;
+				if (delay_counter >= read_to_ram_settling_time) then	
+					internal_RAM_WRITE_ENABLE <= '1';
 					delay_counter := 0;					
-					internal_STATE <= READ_TO_RAM;
+					internal_STATE <= INCREMENT_ADDRESSES;
 				else
 					delay_counter := delay_counter + 1;
 				end if;
 --------------------
+			when INCREMENT_ADDRESSES =>
+				internal_RAM_WRITE_ENABLE <= '0';
+				internal_RAM_WRITE_ADDRESS <= std_logic_vector(unsigned(internal_RAM_WRITE_ADDRESS) + 1);
+				samples_read_out_this_window := samples_read_out_this_window + 1;
+				if ( unsigned(internal_ASIC_SMPL_SEL) = 63) then
+					internal_ASIC_SMPL_SEL(5 downto 0) <= (others => '0');
+					if ( unsigned(internal_ASIC_CH_SEL) = 7) then
+						internal_ASIC_CH_SEL(2 downto 0) <= (others => '0');
+					else
+						internal_ASIC_CH_SEL <= std_logic_vector(unsigned(internal_ASIC_CH_SEL) + 1);
+					end if;
+				else
+					internal_ASIC_SMPL_SEL <= std_logic_vector(unsigned(internal_ASIC_SMPL_SEL) + 1);
+				end if;
+				internal_STATE <= READ_TO_RAM;
+--------------------
 			when READOUT_BY_USB =>
+				internal_RAM_READ_ENABLE <= '1';			
 				START_USB_XFER <= '1';
 --------------------
 			when others => --Catch for undefined state
