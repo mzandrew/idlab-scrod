@@ -65,6 +65,9 @@ entity SCROD_iTOP_Board_Stack is
 			  ASIC_TRIGGER		  : in std_logic_vector(7 downto 0);
 			  ASIC_DC1_DISABLE  : out std_logic;
 			  ASIC_trigger_sign : out std_logic;
+			  ASIC_MONITOR_WILK_COUNTER_START : out std_logic;
+			  ASIC_MONITOR_WILK_COUNTER_RESET : out std_logic;
+			  ASIC_MONITOR_WILK_COUNTER		 : in std_logic;
 			  -- Pulse output
 			  ASIC_CARRIER1_CAL_OUT : out std_logic;			  
 			  -- USB I/O
@@ -142,10 +145,18 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_ASIC_DATA_TO_USB  : std_logic_vector(15 downto 0);	
 	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
 	signal internal_ASIC_trigger_sign : std_logic;
+	signal internal_ASIC_MONITOR_WILK_COUNTER_START : std_logic;
+	signal internal_ASIC_MONITOR_WILK_COUNTER_RESET : std_logic;
+	signal internal_ASIC_MONITOR_WILK_COUNTER : std_logic;
+
+	signal internal_WILK_FEEDBACK_ENABLE : std_logic;
+	signal internal_WILK_FEEDBACK_DAC_SETTING : std_logic_vector(11 downto 0);
+	signal internal_LAST_WILK_FEEDBACK_COUNTER : std_logic_vector(19 downto 0);
 
 	signal internal_CAL_ENABLE			 : std_logic;
 	
 	signal internal_RAM_READ_ADDR     : std_logic_vector(11 downto 0);
+	signal internal_RAM_READ_CLOCK	 : std_logic;
 	signal internal_USB_START			 : std_logic;
 	signal internal_USB_DONE          : std_logic;
 	signal internal_USB_SLWR          : std_logic;
@@ -163,6 +174,10 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_CLK21		: std_logic;
 	signal internal_TRIGGER127	: std_logic;
 	signal internal_TRIGGER21	: std_logic;	
+
+	signal internal_ENABLE_CHIPSCOPE_RAM_CONTROL : std_logic;
+	signal internal_CHIPSCOPE_RAM_READ_ADDR : std_logic_vector(11 downto 0);
+	signal internal_USB_RAM_READ_ADDR : std_logic_vector(11 downto 0);
    ---------------------------------------------------------	
 begin
 	---------------------------------------------------------
@@ -243,8 +258,19 @@ begin
 			CLR_ALL		 	   => internal_USB_CLR_ALL,
 			TRIGGER			   => internal_SOFT_TRIG,
 			RAM_READ_ADDRESS  => internal_RAM_READ_ADDR,
+			RAM_READ_CLOCK		=> internal_RAM_READ_CLOCK,
 			DATA_TO_USB       => internal_ASIC_DATA_TO_USB);
    ---------------------------------------------------------
+	map_CTRL_LOOP_PRCO : entity work.CTRL_LOOP_PRCO
+	port map (
+		ENABLE => internal_WILK_FEEDBACK_ENABLE,
+		xCLR_ALL => not(internal_WILK_FEEDBACK_ENABLE),
+		xREFRESH_CLK => internal_COUNTER(17), --~80 Hz clock when counter is driven from 21 MHz
+		xTST_OUT => internal_ASIC_MONITOR_WILK_COUNTER,
+		xPRCO_INT => internal_LAST_WILK_FEEDBACK_COUNTER,
+		xPROVDD => internal_WILK_FEEDBACK_DAC_SETTING
+	);
+	---------------------------------------------------------
 	xUSB_MAIN : entity work.USB_MAIN 
 	port map (
 		-- USB I/O
@@ -270,8 +296,8 @@ begin
 		xDONE  		=> internal_USB_DONE,
 		xIFCLK  		=> open,
 		xADC  		=> internal_ASIC_DATA_TO_USB(11 downto 0),
-		xPRCO_INT	=> x"D0A",
-		xPROVDD		=> x"D0A",
+		xPRCO_INT	=> internal_LAST_WILK_FEEDBACK_COUNTER(11 downto 0),
+		xPROVDD		=> internal_WILK_FEEDBACK_DAC_SETTING,
 		xRCO_INT		=> x"D0A",
 		xROVDD		=> x"D0A",
 		xWBIAS_INT	=> x"D0A",
@@ -279,7 +305,7 @@ begin
       xPED_SCAN	=> open,
 		xPED_ADDR	=> open,
 		xDEBUG  		=> open,
-		xRADDR  		=> internal_RAM_READ_ADDR,
+		xRADDR  		=> internal_USB_RAM_READ_ADDR,
 		xSLWR  		=> internal_USB_SLWR,
 		xSOFT_TRIG	=> internal_SOFT_TRIG,
 		xVCAL			=> open,
@@ -304,11 +330,12 @@ begin
 			SYNC_OUT => internal_CHIPSCOPE_VIO_OUT);	
 	---------------------------------------------------------
 	LEDS <= internal_LEDS;
+--	MONITOR(15) <= internal_ASIC_MONITOR_WILK_COUNTER;
+-- MONITOR(14) <= internal_USB_SLWR;
 	MONITOR(15 downto 0) <= internal_MONITOR(15 downto 0);
 	internal_LEDS(0) <= internal_DCM_LOCKED;
 	internal_LEDS(1) <= internal_FTSW_INTERFACE_READY;
 	internal_LEDS(15 downto 2) <= (others => '0');
-	--   internal_MONITOR(15 downto 0) <= (others => '0');
 	--	internal_IIC_CLK <= internal_COUNTER(11);  --This line is appropriate when we're using 250 MHz base clock
 	internal_IIC_CLK <= internal_COUNTER(8);	    --This line is for when we're using 21 MHz base clock
 
@@ -323,17 +350,20 @@ begin
 	internal_INTENDED_DAC_VALUES_DC1(1)(0) <= internal_CHIPSCOPE_VIO_OUT(107 downto 96);
 	internal_INTENDED_DAC_VALUES_DC1(1)(1) <= internal_CHIPSCOPE_VIO_OUT(119 downto 108);	
 	internal_INTENDED_DAC_VALUES_DC1(1)(2) <= internal_CHIPSCOPE_VIO_OUT(131 downto 120);
-	internal_INTENDED_DAC_VALUES_DC1(1)(3) <= internal_CHIPSCOPE_VIO_OUT(143 downto 132);	
+-- (1)(3) is used for wilkinson... added feedback below
+--	internal_INTENDED_DAC_VALUES_DC1(1)(3) <= internal_CHIPSCOPE_VIO_OUT(143 downto 132);	
 	internal_INTENDED_DAC_VALUES_DC1(1)(4) <= internal_CHIPSCOPE_VIO_OUT(155 downto 144);
 	internal_INTENDED_DAC_VALUES_DC1(1)(5) <= internal_CHIPSCOPE_VIO_OUT(167 downto 156);
 	internal_INTENDED_DAC_VALUES_DC1(1)(6) <= internal_CHIPSCOPE_VIO_OUT(179 downto 168);
 	internal_INTENDED_DAC_VALUES_DC1(1)(7) <= internal_CHIPSCOPE_VIO_OUT(191 downto 180);
+
 	internal_SOFT_WRITE_ADDR(8 downto 0) <= internal_CHIPSCOPE_VIO_OUT(200 downto 192);
 	internal_SOFT_READ_ADDR(8 downto 0) <= internal_CHIPSCOPE_VIO_OUT(209 downto 201);
 	internal_CAL_ENABLE <= internal_CHIPSCOPE_VIO_OUT(210);
---	internal_sample_strobe_width_vector(7 downto 0) <= internal_CHIPSCOPE_VIO_OUT(218 downto 211);
---	internal_autotrigger_enabled <= internal_CHIPSCOPE_VIO_OUT(219);
-	internal_ASIC_trigger_sign <= internal_CHIPSCOPE_VIO_OUT(220);
+	internal_ASIC_trigger_sign <= internal_CHIPSCOPE_VIO_OUT(211);
+	internal_WILK_FEEDBACK_ENABLE <= internal_CHIPSCOPE_VIO_OUT(212);
+	internal_ENABLE_CHIPSCOPE_RAM_CONTROL <= internal_CHIPSCOPE_VIO_OUT(213);
+	internal_CHIPSCOPE_RAM_READ_ADDR <= internal_CHIPSCOPE_VIO_OUT(225 downto 214);
 
 	internal_CHIPSCOPE_VIO_IN(11 downto 0)    <= internal_CURRENT_DAC_VALUES_DC1(0)(0);
 	internal_CHIPSCOPE_VIO_IN(23 downto 12)   <= internal_CURRENT_DAC_VALUES_DC1(0)(1);
@@ -351,7 +381,9 @@ begin
 	internal_CHIPSCOPE_VIO_IN(167 downto 156) <= internal_CURRENT_DAC_VALUES_DC1(1)(5);
 	internal_CHIPSCOPE_VIO_IN(179 downto 168) <= internal_CURRENT_DAC_VALUES_DC1(1)(6);
 	internal_CHIPSCOPE_VIO_IN(191 downto 180) <= internal_CURRENT_DAC_VALUES_DC1(1)(7);
-	internal_CHIPSCOPE_VIO_IN(251 downto 192) <= (others => '0');
+	internal_CHIPSCOPE_VIO_IN(211 downto 192) <= internal_LAST_WILK_FEEDBACK_COUNTER;
+	internal_CHIPSCOPE_VIO_IN(223 downto 212) <= internal_ASIC_DATA_TO_USB(11 downto 0);
+	internal_CHIPSCOPE_VIO_IN(251 downto 224) <= (others => '0');
 	internal_CHIPSCOPE_VIO_IN(254 downto 252) <= internal_DAC_STATE_MONITOR;
 	internal_CHIPSCOPE_VIO_IN(255) <= (internal_COUNTER(2) and internal_CAL_ENABLE);
 	
@@ -369,6 +401,11 @@ begin
 	internal_ASIC_TRIGGER_BITS <= ASIC_TRIGGER;
 	ASIC_TDC_START    <= internal_ASIC_TDC_START;
 	ASIC_TDC_CLR	   <= internal_ASIC_TDC_CLR;
+	internal_ASIC_MONITOR_WILK_COUNTER <= ASIC_MONITOR_WILK_COUNTER;
+	ASIC_MONITOR_WILK_COUNTER_START <= internal_ASIC_MONITOR_WILK_COUNTER_START;
+	ASIC_MONITOR_WILK_COUNTER_RESET <= internal_ASIC_MONITOR_WILK_COUNTER_RESET;
+	internal_ASIC_MONITOR_WILK_COUNTER_START <= internal_COUNTER(23); --~1Hz clock
+	internal_ASIC_MONITOR_WILK_COUNTER_RESET <= '0';
 
 	ASIC_WR_STRB	   <= internal_ASIC_WR_STRB;
 	ASIC_SSP_IN	      <= internal_ASIC_SSP_IN;
@@ -387,6 +424,24 @@ begin
 --		if (rising_edge(internal_CLOCK_4NS)) then
 		if (rising_edge(internal_CLK21)) then		
 			internal_COUNTER <= std_logic_vector( unsigned(internal_COUNTER) + 1 );
+		end if;
+	end process;
+
+	process(internal_WILK_FEEDBACK_ENABLE) begin
+		if (internal_WILK_FEEDBACK_ENABLE = '1') then
+			internal_INTENDED_DAC_VALUES_DC1(1)(3) <= internal_WILK_FEEDBACK_DAC_SETTING;
+		else
+			internal_INTENDED_DAC_VALUES_DC1(1)(3) <= internal_CHIPSCOPE_VIO_OUT(143 downto 132);
+		end if;
+	end process;
+	
+	process(internal_ENABLE_CHIPSCOPE_RAM_CONTROL) begin
+		if (internal_ENABLE_CHIPSCOPE_RAM_CONTROL = '1') then
+			internal_RAM_READ_ADDR <= internal_CHIPSCOPE_RAM_READ_ADDR;
+			internal_RAM_READ_CLOCK <= internal_COUNTER(7);
+		else
+			internal_RAM_READ_ADDR <= internal_USB_RAM_READ_ADDR;
+			internal_RAM_READ_CLOCK <= internal_USB_SLWR;
 		end if;
 	end process;
 	
