@@ -2,9 +2,10 @@
 -- Design by: Kurtis Nishimura
 -- Last updated: 2011-06-12
 -- Notes: This firmware is to operate IRS2 or BLAB3 in 
---        "one-shot" mode, where the sample signal is 
---        given only when a software trigger is received.
---        It is primarily for simple evaluation.
+--        "common-start" mode, where sampling is performed
+--			 continuously but writing to analog memory and 
+-- 		 readout is performed only when a trigger is 
+--        received.
 --------------------------------------------------------
 
 library IEEE;
@@ -14,23 +15,9 @@ use IEEE.NUMERIC_STD.ALL;
 entity BLAB3_IRS2_MAIN is
     port (
 		-- IRS ASIC I/Os
-		ASIC_CH_SEL	 	   : out std_logic_vector(2 downto 0);
-		ASIC_RD_ADDR	 	: out std_logic_vector(9 downto 0);
-		ASIC_SMPL_SEL 	   : out std_logic_vector(5 downto 0);
-		ASIC_SMPL_SEL_ALL : out std_logic; 
-		ASIC_RD_ENA	 	   : out std_logic; 
-		ASIC_RAMP	 	 	: out std_logic; 
-		ASIC_DAT		      : in  std_logic_vector(11 downto 0);
-		ASIC_TDC_START    : out std_logic; 
-		ASIC_TDC_CLR	   : out std_logic; 
-		ASIC_WR_STRB	   : out std_logic; 
-		ASIC_WR_ADDR	   : out std_logic_vector(9 downto 0);
-		ASIC_SSP_IN	      : out std_logic;
-		ASIC_SST_IN	      : out std_logic;		
-		ASIC_SSP_OUT	   : in  std_logic;
-		ASIC_TRIGGER_BITS : in  std_logic_vector(7 downto 0);
-		SOFT_WRITE_ADDR   : in  std_logic_vector(8 downto 0);
-		SOFT_READ_ADDR    : in  std_logic_vector(8 downto 0);		
+		AsicIn_DIGITIZING		: out AsicInputs_for_Digitizing;
+		AsicIn_SAMPLING		: out AsicInputs_for_Sampling;
+		AsicOut_DIGITIZING 	: in	AsicOutputs_for_Digitizing;
 		-- User I/O
 		CLK_SSP          : in  std_logic;--Sampling rate / 128 (0 deg)
 		CLK_SST          : in  std_logic;--Sampling rate / 128 (90 deg)
@@ -64,21 +51,6 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 	signal internal_RAM_WRITE_ENABLE       : std_logic;
 	signal internal_RAM_WRITE_ENABLE_VEC   : std_logic_vector(0 downto 0);
 	
-	signal internal_ASIC_CH_SEL	 	 : std_logic_vector(2 downto 0);
-	signal internal_ASIC_RD_ADDR	 	 : std_logic_vector(9 downto 0) := (others => '0');
-	signal internal_ASIC_SMPL_SEL 	 : std_logic_vector(5 downto 0);
-	signal internal_ASIC_SMPL_SEL_ALL : std_logic; 
-	signal internal_ASIC_RD_ENA	 	 : std_logic; 
-	signal internal_ASIC_RAMP	 	 	 : std_logic; 
-	signal internal_ASIC_DAT		    : std_logic_vector(11 downto 0);
-	signal internal_ASIC_TDC_START    : std_logic; 
-	signal internal_ASIC_TDC_CLR	    : std_logic; 
-	signal internal_ASIC_WR_STRB	    : std_logic; 
-	signal internal_ASIC_WR_ADDR	    : std_logic_vector(9 downto 0) := (others => '0');
-	signal internal_ASIC_SSP_IN	    : std_logic;
-	signal internal_ASIC_SST_IN	    : std_logic;		
-	signal internal_ASIC_SSP_OUT	    : std_logic;
-	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
 	signal internal_SOFT_WRITE_ADDR   : std_logic_vector(8 downto 0);
 	signal internal_SOFT_READ_ADDR    : std_logic_vector(8 downto 0);		
 	
@@ -86,6 +58,10 @@ architecture Behavioral of BLAB3_IRS2_MAIN is
 	signal internal_BUSY              : std_logic;
 
 	signal internal_CLK_STATE_MACHINE_DIV_BY_2 : std_logic;
+
+	signal internal_AsicIn_DIGITIZING 	: AsicInputs_for_Digitizing;
+	signal internal_AsicIn_SAMPLING		: AsicInputs_for_Sampling;
+	signal internal_AsicOut_DIGITIZING	: AsicOutputs_for_Digitizing;
 
 -------------------------------------------------------------------------
 	component MULTI_WINDOW_RAM_BLOCK
@@ -120,7 +96,6 @@ MON_HDR(1) <= internal_ASIC_SST_IN;
 MON_HDR(2) <= internal_ASIC_WR_STRB;
 MON_HDR(3) <= internal_ASIC_WR_ADDR(0);
 MON_HDR(4) <= internal_ASIC_SSP_OUT;
---MON_HDR(12 downto 5) <= internal_ASIC_TRIGGER_BITS;
 MON_HDR(5) <= internal_ASIC_TDC_CLR;
 MON_HDR(6) <= internal_ASIC_TDC_START;
 MON_HDR(7) <= internal_ASIC_RAMP;
@@ -156,7 +131,15 @@ internal_ASIC_WR_STRB <= CLK_WRITE_STROBE;
 internal_ASIC_SSP_IN <= CLK_SSP;
 internal_ASIC_SST_IN <= CLK_SST;
 internal_ASIC_WR_ADDR(0) <= CLK_SST;
+
+internal
+
 ---------------------------------------	
+
+AsicIn_DIGITIZING 				<= internal_AsicIn_DIGITIZING;
+AsicIn_SAMPLING 					<= internal_AsicIn_SAMPLING;
+internal_AsicOut_DIGITIZING 	<= AsicOut_DIGITIZING;
+
 
 --------------------------------------------------------------------------------
 process(CLK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER, internal_BUSY)
