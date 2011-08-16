@@ -1,0 +1,23 @@
+##############################################################
+##############################################################
+##############################################################
+SET designentry = VHDL
+SET BusFormat = BusFormatAngleBracketNotRipped
+SET devicefamily = spartan6
+SET device = xc6slx150t
+SET package = fgg676
+SET speedgrade = -3
+SET FlowVendor = Foundation_ISE
+SET VerilogSim = True
+SET VHDLSim = True
+SELECT VIO_(ChipScope_Pro_-_Virtual_Input/Output) family Xilinx,_Inc. 1.03.a
+CSET asynchronous_input_port_width=8
+CSET asynchronous_output_port_width=8
+CSET component_name=Chipscope_VIO
+CSET enable_asynchronous_input_port=false
+CSET enable_asynchronous_output_port=false
+CSET enable_synchronous_input_port=true
+CSET enable_synchronous_output_port=true
+CSET invert_clock_input=false
+CSET synchronous_input_port_width=256
+CSET synchronous_output_port_width=256
