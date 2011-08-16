@@ -155,7 +155,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 
 	signal internal_CAL_ENABLE			 : std_logic;
 	
-	signal internal_RAM_READ_ADDR     : std_logic_vector(11 downto 0);
+	signal internal_RAM_READ_ADDR     : std_logic_vector(12 downto 0);
 	signal internal_RAM_READ_CLOCK	 : std_logic;
 	signal internal_USB_START			 : std_logic;
 	signal internal_USB_DONE          : std_logic;
@@ -295,7 +295,7 @@ begin
 		xSTART  		=> internal_USB_START,
 		xDONE  		=> internal_USB_DONE,
 		xIFCLK  		=> open,
-		xADC  		=> internal_ASIC_DATA_TO_USB(11 downto 0),
+		xADC  		=> internal_ASIC_DATA_TO_USB(15 downto 0),
 		xPRCO_INT	=> internal_LAST_WILK_FEEDBACK_COUNTER(11 downto 0),
 		xPROVDD		=> internal_WILK_FEEDBACK_DAC_SETTING,
 		xRCO_INT		=> x"D0A",
@@ -437,11 +437,12 @@ begin
 	
 	process(internal_ENABLE_CHIPSCOPE_RAM_CONTROL) begin
 		if (internal_ENABLE_CHIPSCOPE_RAM_CONTROL = '1') then
-			internal_RAM_READ_ADDR <= internal_CHIPSCOPE_RAM_READ_ADDR;
+			internal_RAM_READ_ADDR <= '0' & internal_CHIPSCOPE_RAM_READ_ADDR;
 			internal_RAM_READ_CLOCK <= internal_COUNTER(7);
 		else
-			internal_RAM_READ_ADDR <= internal_USB_RAM_READ_ADDR;
-			internal_RAM_READ_CLOCK <= internal_USB_SLWR;
+			internal_RAM_READ_ADDR <= '0' & internal_USB_RAM_READ_ADDR;
+--			internal_RAM_READ_CLOCK <= internal_USB_SLWR;
+			internal_RAM_READ_CLOCK <= internal_CLOCK_4NS;
 		end if;
 	end process;
 	
