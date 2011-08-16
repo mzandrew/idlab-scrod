@@ -308,7 +308,7 @@ begin
 	-----------------------------------
 
 --------------------------------------------------------------------------------
-process(CLK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER, internal_BUSY)
+process(internal_NOT_CLOCK_SST, internal_STATE, CLR_ALL, DONE_USB_XFER, internal_BUSY)
 	variable delay_counter : integer range 0 to 1023 := 0;
 	constant time_to_arm_wilkinson : integer := 3; -- A guess... should just buy some extra time for logic to settle
 --	constant time_to_wilkinson : integer := 97; -- 6.2 us @ 15.625 MHz
