@@ -1,0 +1,20 @@
+##############################################################
+##############################################################
+##############################################################
+SET designentry = VHDL
+SET BusFormat = BusFormatAngleBracketNotRipped
+SET devicefamily = spartan6
+SET device = xc6slx150t
+SET package = fgg676
+SET speedgrade = -3
+SET FlowVendor = Foundation_ISE
+SET VerilogSim = True
+SET VHDLSim = True
+SELECT ICON_(ChipScope_Pro_-_Integrated_Controller) family Xilinx,_Inc. 1.04.a
+CSET component_name=Chipscope_Core
+CSET enable_jtag_bufg=true
+CSET number_control_ports=1
+CSET use_ext_bscan=false
+CSET use_softbscan=false
+CSET use_unused_bscan=false
+CSET user_scan_chain=USER1
