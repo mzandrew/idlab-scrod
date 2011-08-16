@@ -44,7 +44,7 @@ NET ASIC_DAT<1>	    LOC = "U2";
 NET ASIC_DAT<0>	    LOC = "U1";
 NET ASIC_TDC_START    LOC = "AA12";
 NET ASIC_TDC_CLR	    LOC = "W25";
-NET ASIC_WR_STRB	    LOC = "AA9" | SLOW;
+NET ASIC_WR_STRB	    LOC = "AA9";
 NET ASIC_WR_ADDR<9>   LOC = "AD26"; #Column Select 5  AD26
 NET ASIC_WR_ADDR<8>   LOC = "R26";  #Column Select 4  R26
 NET ASIC_WR_ADDR<7>   LOC = "T26";  #Column Select 3  T26
@@ -64,8 +64,8 @@ NET ASIC_TRIGGER<3>   LOC = "AB7";
 NET ASIC_TRIGGER<2>   LOC = "AA7";
 NET ASIC_TRIGGER<1>   LOC = "D1";
 NET ASIC_TRIGGER<0>   LOC = "F1";
-NET ASIC_SSP_IN	    LOC = "AD4" | SLOW;
-NET ASIC_SST_IN	    LOC = "W8" | SLOW;
+NET ASIC_SSP_IN	    LOC = "AD4";
+NET ASIC_SST_IN	    LOC = "W8";
 NET ASIC_SSP_OUT		 LOC = "AC5";
 NET ASIC_DC1_DISABLE   LOC = "P1";
 
@@ -164,6 +164,7 @@ NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
 NET map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
 NET map_FTSW_interface/map_belle2clk/map_pll/sig_clk1 PERIOD = 7.8 ns;
 NET single_ASIC_control/CLK_SST_inv							PERIOD = 47.1 ns;
+#NET internal_CLOCK_SST 				PERIOD = 47.1 ns;
 #NET internal_CLOCK_SSP 				PERIOD = 47.1 ns;
 #NET internal_CLOCK_WRITE_STROBE 	PERIOD = 23.5 ns;
 #NET internal_CLK21						PERIOD = 47.1 ns;

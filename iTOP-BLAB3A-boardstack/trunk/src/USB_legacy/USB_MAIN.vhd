@@ -49,7 +49,7 @@ entity USB_MAIN is
       xSTART     	: in  std_logic; 
       xDONE      	: out std_logic; 
       xIFCLK     	: out std_logic;--50 MHz CLK
-		xADC       	: in  std_logic_vector(11 downto 0); 
+		xADC       	: in  std_logic_vector(15 downto 0); 
 		xPRCO_INT 	: in  std_logic_vector(11 downto 0);
 		xPROVDD 		: in  std_logic_vector(11 downto 0);
 		xRCO_INT 	: in  std_logic_vector(11 downto 0);
@@ -111,7 +111,7 @@ architecture BEHAVIORAL of USB_MAIN is
       xSTART      : in  std_logic; 
       xDONE       : in  std_logic; 
       xCLR_ALL    : in  std_logic; 
-      xADC        : in  std_logic_vector(11 downto 0); 
+      xADC        : in  std_logic_vector(15 downto 0); 
 		xPRCO_INT 	: in  std_logic_vector(11 downto 0);
 		xPROVDD 		: in  std_logic_vector(11 downto 0);
 		xRCO_INT 	: in  std_logic_vector(11 downto 0);
