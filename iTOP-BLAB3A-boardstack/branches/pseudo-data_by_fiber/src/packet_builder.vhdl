@@ -15,7 +15,7 @@ entity packet_builder is
 		NUMBER_OF_WORDS_IN_A_PACKET              : integer := 140;
 		HEADER                                   : std_logic_vector(31 downto 0) := x"00be11e2";
 		PACKET_SIZE_IN_WORDS                     : std_logic_vector(31 downto 0) := x"0000008c";
-		CURRENT_PROTOCOL_FREEZE_DATE             : std_logic_vector(31 downto 0) := x"20110718";
+		CURRENT_PROTOCOL_FREEZE_DATE             : std_logic_vector(31 downto 0) := x"20110831";
 		PACKET_TYPE_EVENT_HEADER                 : std_logic_vector(31 downto 0) := x"55555555";
 		PACKET_TYPE_COFFEE                       : std_logic_vector(31 downto 0) := x"00c0ffee";
 		PACKET_RESERVED_WORD                     : std_logic_vector(31 downto 0) := x"99999999";

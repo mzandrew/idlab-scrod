@@ -15,7 +15,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity Packet_Receiver is
 	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE : unsigned := x"20110718";
+		CURRENT_PROTOCOL_FREEZE_DATE : unsigned := x"20110831";
 		EXPECTED_PACKET_SIZE : unsigned := x"8c";
 		SCROD_REVISION       : unsigned := x"000a";
 		SCROD_ID             : unsigned := x"0001"
