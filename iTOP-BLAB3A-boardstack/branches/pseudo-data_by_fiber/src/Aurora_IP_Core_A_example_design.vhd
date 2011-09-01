@@ -21,6 +21,10 @@ use UNISIM.VCOMPONENTS.ALL;
 
 entity Aurora_IP_Core_A_example_design is
 	generic(
+		WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS           : integer := 16;
+		WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS        : integer := 15;
+		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS    : integer := 32;
+		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS : integer := 17;
 		USE_CHIPSCOPE        : integer := 1;
 		SIM_GTPRESET_SPEEDUP : integer := 1  --Set to 1 to speed up sim reset
 	);
@@ -242,27 +246,47 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	);
 	end component;
 
-  -------------------------------------------------------------------
-  --  ICON core component declaration
-  -------------------------------------------------------------------
+	-------------------------------------------------------------------
 	component s6_icon
 	port (
-		control0    :   out std_logic_vector(35 downto 0)
+		control0    : inout std_logic_vector(35 downto 0);
+		control1    : inout std_logic_vector(35 downto 0)
 	);
 	end component;
 
-  -------------------------------------------------------------------
-  --  VIO core component declaration
-  -------------------------------------------------------------------
 	component s6_vio
 	port (
-		control     : in    std_logic_vector(35 downto 0);
+		control     : inout std_logic_vector(35 downto 0);
 		clk         : in    std_logic;
 		sync_in     : in    std_logic_vector(63 downto 0);
-		sync_out    : out   std_logic_vector(63 downto 0)
+		sync_out    :   out std_logic_vector(63 downto 0)
 	);
 	end component;
-                                                                                
+
+	component s6_ila
+	port (
+		control  : inout std_logic_vector(35 downto 0);
+		clk      : in    std_logic;
+		data     : in    std_logic_vector(255 downto 0);
+		trig0    : in    std_logic_vector(255 downto 0);
+		trig_out :   out std_logic
+	);
+	end component;
+	-------------------------------------------------------------------
+
+	component quarter_event_builder port (
+		RESET                          : in    std_logic;
+		CLOCK                          : in    std_logic;
+		INPUT_DATA_BUS                 : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1           downto 0);
+		INPUT_ADDRESS_BUS              :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1        downto 0);
+		OUTPUT_DATA_BUS                :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1    downto 0);
+		OUTPUT_ADDRESS_BUS             :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS-1 downto 0);
+		OUTPUT_FIFO_WRITE_ENABLE       :   out std_logic;
+		START_BUILDING_A_QUARTER_EVENT : in    std_logic;
+		DONE_BUILDING_A_QUARTER_EVENT  :   out std_logic
+	);
+	end component;
+
 -----------------------------------
 	attribute core_generation_info           : string;
 	attribute core_generation_info of MAPPED : architecture is "Aurora_IP_Core_A,aurora_8b10b_v5_2,{backchannel_mode=Sidebands, c_aurora_lanes=1, c_column_used=None, c_gt_clock_1=GTPD2, c_gt_clock_2=None, c_gt_loc_1=X, c_gt_loc_10=X, c_gt_loc_11=X, c_gt_loc_12=X, c_gt_loc_13=X, c_gt_loc_14=X, c_gt_loc_15=X, c_gt_loc_16=X, c_gt_loc_17=X, c_gt_loc_18=X, c_gt_loc_19=X, c_gt_loc_2=X, c_gt_loc_20=X, c_gt_loc_21=X, c_gt_loc_22=X, c_gt_loc_23=X, c_gt_loc_24=X, c_gt_loc_25=X, c_gt_loc_26=X, c_gt_loc_27=X, c_gt_loc_28=X, c_gt_loc_29=X, c_gt_loc_3=X, c_gt_loc_30=X, c_gt_loc_31=X, c_gt_loc_32=X, c_gt_loc_33=X, c_gt_loc_34=X, c_gt_loc_35=X, c_gt_loc_36=X, c_gt_loc_37=X, c_gt_loc_38=X, c_gt_loc_39=X, c_gt_loc_4=X, c_gt_loc_40=X, c_gt_loc_41=X, c_gt_loc_42=X, c_gt_loc_43=X, c_gt_loc_44=X, c_gt_loc_45=X, c_gt_loc_46=X, c_gt_loc_47=X, c_gt_loc_48=X, c_gt_loc_5=1, c_gt_loc_6=X, c_gt_loc_7=X, c_gt_loc_8=X, c_gt_loc_9=X, c_lane_width=4, c_line_rate=3.125, c_nfc=false, c_nfc_mode=IMM, c_refclk_frequency=156.25, c_simplex=false, c_simplex_mode=TX, c_stream=true, c_ufc=false, flow_mode=None, interface_mode=Streaming, dataflow_config=Duplex}";
@@ -297,7 +321,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 -- Clock Compensation Control Interface
 	signal warn_cc_i          : std_logic;
 	signal do_cc_i            : std_logic;
--- System Interface
+-- System Interface ---------------------------------------------------------
 	signal pll_not_locked_i   : std_logic;
 	signal user_clk_i         : std_logic;
 	signal sync_clk_i         : std_logic;
@@ -307,13 +331,17 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal tx_lock_i          : std_logic;
 	signal gtpclkout_i        : std_logic;
 	signal buf_gtpclkout_i    : std_logic;
---Frame check signals
+--Frame check signals -------------------------------------------------------
 	signal err_count_i      : std_logic_vector(0 to 7);
 	signal ERR_COUNT_Buffer : std_logic_vector(0 to 7);
--- VIO Signals
-	signal icon_to_vio_i       : std_logic_vector (35 downto 0);
-	signal sync_in_i           : std_logic_vector (63 downto 0);
-	signal sync_out_i          : std_logic_vector (63 downto 0);
+-- chipscope signals --------------------------------------------------------
+	signal icon_to_vio_i         : std_logic_vector(35 downto 0);
+	signal icon_to_ila_i         : std_logic_vector(35 downto 0);
+	signal sync_in_i             : std_logic_vector(63 downto 0);
+	signal sync_out_i            : std_logic_vector(63 downto 0);
+	signal chipscope_ila_data    : std_logic_vector(255 downto 0) := (others => '0');
+	signal chipscope_ila_trigger : std_logic_vector(255 downto 0) := (others => '0');
+-----------------------------------------------------------------------------
 	signal lane_up_i_i  	      : std_logic;
 	signal tx_lock_i_i  	      : std_logic;
 	signal lane_up_reduce_i    : std_logic;
@@ -333,7 +361,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_PACKET_GENERATOR_ENABLE : std_logic_vector(1 downto 0);
 	signal internal_DATA_GENERATOR_STATE : std_logic_vector(2 downto 0);
 	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
------------------------------------
+-----------------------------------------------------------------------------
 	signal clock_1MHz : std_logic;
 	signal clock_1kHz : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
@@ -350,7 +378,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
 --	signal stupid_counter : std_logic_vector(31 downto 0);
-------------------------------------------
+-----------------------------------------------------------------------------
 -- trigger signals:
 	signal external_trigger_1_from_monitor_header : std_logic;
 	signal external_trigger_2_from_LVDS           : std_logic;
@@ -382,6 +410,19 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal fiber_link_is_up                                   : std_logic;
 	signal fiber_link_should_be_up                            : std_logic;
 	signal should_not_automatically_try_to_keep_fiber_link_up : std_logic := '0';
+-----------------------------------------------------------------------------
+	signal internal_ASIC_DATA_BLOCKRAM_DATA_BUS        : std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1        downto 0);
+	signal internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS     : std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1     downto 0);
+	signal internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS  : std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1 downto 0);
+	signal internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS : std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1 downto 0);
+	signal internal_QUARTER_EVENT_FIFO_WRITE_ENABLE    : std_logic;
+	signal internal_START_BUILDING_A_QUARTER_EVENT     : std_logic;
+	signal internal_DONE_BUILDING_A_QUARTER_EVENT      : std_logic;
+	signal quarter_event_builder_enable : std_logic := '0';
+-----------------------------------------------------------------------------
+--	signal inverted_clock_1MHz            : std_logic;
+	signal quarter_event_fifo_read_enable : std_logic := '0';
+	signal quarter_event_fifo_is_empty    : std_logic;
 begin
 -----------------------------------------------------------------------------
 	process(internal_clock_for_state_machine, request_a_global_reset)
@@ -588,6 +629,27 @@ begin
 		end if;
 	end process;
 -----------------------------------------------------------------------------
+	process (clock_1MHz, global_reset)
+		variable trigger_acknowledge_counter : integer range 0 to 100 := 0;
+	begin
+		if (global_reset = '1') then
+			trigger_acknowledge <= '0';
+			trigger_acknowledge_counter := 0;
+		elsif rising_edge(clock_1MHz) then
+			if (internal_DONE_BUILDING_A_QUARTER_EVENT = '1') then
+				if (trigger_acknowledge_counter < 30) then
+					trigger_acknowledge <= '1';
+					trigger_acknowledge_counter := trigger_acknowledge_counter + 1;
+				else
+					trigger_acknowledge <= '0';
+				end if;
+			else
+				trigger_acknowledge <= '0';
+				trigger_acknowledge_counter := 0;
+			end if;
+		end if;
+	end process;
+-----------------------------------------------------------------------------
 --	process(internal_COUNTER(27)) begin
 --		if rising_edge(internal_COUNTER(27)) then
 --			RESET <= '0';
@@ -621,7 +683,7 @@ begin
 
 	INIT_CLK <= internal_COUNTER(2);
 -----------------------------------------------------------------------------
-	LVDS_SIMPLE_TRIGGER : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P, IB => REMOTE_SIMPLE_TRIGGER_N, O => external_trigger_2_from_LVDS);
+	LVDS_SIMPLE_TRIGGER  : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P,  IB => REMOTE_SIMPLE_TRIGGER_N,  O => external_trigger_2_from_LVDS);
 	LVDS_ENCODED_TRIGGER : IBUFDS port map (I => REMOTE_ENCODED_TRIGGER_P, IB => REMOTE_ENCODED_TRIGGER_N, O => external_encoded_trigger_from_LVDS);
 
 	internal_trigger <= raw_100Hz_fake_trigger;
@@ -750,23 +812,75 @@ begin
 --        CHANNEL_UP      =>  channel_up_i
 --    ); 
 
-	Packet_Generator_A : Packet_Generator
-	port map
-	( 
-		TX_DST_RDY_N 	=> tx_dst_rdy_n_i,
-		USER_CLK 		=> user_clk_i,
-		RESET 			=> reset_i,
-		CHANNEL_UP 		=> channel_up_i,
-		ENABLE 			=> internal_PACKET_GENERATOR_ENABLE,
-		TRIGGER        => pulsed_trigger,
-		TRIGGER_ACK    => trigger_acknowledge,
-		TX_SRC_RDY_N 	=> tx_src_rdy_n_i,
-		TX_D 				=> tx_d_i,
-		DATA_GENERATOR_STATE => internal_DATA_GENERATOR_STATE,
-		VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS
+	QEB : quarter_event_builder port map (
+		RESET                          => reset_i,
+		CLOCK                          => clock_1MHz,
+		INPUT_DATA_BUS                 => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
+		INPUT_ADDRESS_BUS              => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
+		OUTPUT_DATA_BUS                => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
+		OUTPUT_ADDRESS_BUS             => open,
+		OUTPUT_FIFO_WRITE_ENABLE       => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
+		START_BUILDING_A_QUARTER_EVENT => internal_START_BUILDING_A_QUARTER_EVENT,
+		DONE_BUILDING_A_QUARTER_EVENT  => internal_DONE_BUILDING_A_QUARTER_EVENT
 	);
+	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= (others => '0');
+	internal_START_BUILDING_A_QUARTER_EVENT <= quarter_event_builder_enable and pulsed_trigger;
+	quarter_event_builder_enable <= not transmit_disable;
 
-    -- Module Instantiations --
+	chipscope_ila_data(31 downto 0)  <= internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS;
+	chipscope_ila_data(63 downto 32) <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
+	chipscope_ila_data(232 downto 64) <= (others => '0');
+	chipscope_ila_data(233) <= quarter_event_fifo_is_empty; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
+	chipscope_ila_data(234) <= tx_dst_rdy_n_i; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
+	chipscope_ila_data(249 downto 235) <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
+	chipscope_ila_data(250) <= quarter_event_fifo_read_enable; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
+	chipscope_ila_data(251) <= tx_src_rdy_n_i; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
+	chipscope_ila_data(252) <= quarter_event_builder_enable;
+	chipscope_ila_data(253) <= internal_QUARTER_EVENT_FIFO_WRITE_ENABLE;
+	chipscope_ila_data(254) <= internal_START_BUILDING_A_QUARTER_EVENT;
+	chipscope_ila_data(255) <= internal_DONE_BUILDING_A_QUARTER_EVENT;
+
+	chipscope_ila_trigger(0) <= internal_START_BUILDING_A_QUARTER_EVENT;
+	chipscope_ila_trigger(1) <= quarter_event_fifo_read_enable;
+	chipscope_ila_trigger(255 downto 2) <= (others => '0');
+
+	QUARTER_EVENT_FIFO : entity work.quarter_event_fifo port map (
+		rst    => reset_i,
+		wr_clk => clock_1MHz,
+		rd_clk => user_clk_i,
+		din    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
+		wr_en  => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
+		rd_en  => quarter_event_fifo_read_enable,
+		dout   => internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS,
+		full   => open,
+		empty  => quarter_event_fifo_is_empty,
+		valid  => open
+	);
+--	inverted_clock_1MHz <= not clock_1MHz;
+	-- might want to have an additional signal anded with these that is a
+	-- set-reset flip flop that is set when the quarter event is finished
+	--	building and cleared when another one is started:
+	quarter_event_fifo_read_enable <= (not quarter_event_fifo_is_empty) and (not tx_dst_rdy_n_i);
+	tx_src_rdy_n_i <= not quarter_event_fifo_read_enable;
+	tx_d_i <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
+
+--	Packet_Generator_A : Packet_Generator
+--	port map
+--	( 
+--		TX_DST_RDY_N 	=> tx_dst_rdy_n_i,
+--		USER_CLK 		=> user_clk_i,
+--		RESET 			=> reset_i,
+--		CHANNEL_UP 		=> channel_up_i,
+--		ENABLE 			=> internal_PACKET_GENERATOR_ENABLE,
+--		TRIGGER        => pulsed_trigger,
+--		TRIGGER_ACK    => trigger_acknowledge,
+--		TX_SRC_RDY_N 	=> tx_src_rdy_n_i,
+--		TX_D 				=> tx_d_i,
+--		DATA_GENERATOR_STATE => internal_DATA_GENERATOR_STATE,
+--		VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS
+--	);
+	internal_DATA_GENERATOR_STATE <= (others => '0');
+
 	aurora_module_i : Aurora_IP_Core_A
 	generic map(
 		SIM_GTPRESET_SPEEDUP => SIM_GTPRESET_SPEEDUP
@@ -835,12 +949,22 @@ begin
 	);
 
 	chipscope1 : if USE_CHIPSCOPE = 1 generate
+--		sync_in_i <= (others => '0');
 		lane_up_i_i    <= lane_up_i;
 		tx_lock_i_i    <= tx_lock_i;
 		-- aurora status:
-		sync_in_i(6 downto 0) <= lane_init_state_i;
-		sync_in_i(7)          <= lane_up_i_i;
-		sync_in_i(8)          <= channel_up_i;
+--		sync_in_i(6 downto 0) <= lane_init_state_i;
+		sync_in_i(0)          <= lane_up_i_i and channel_up_i;
+		sync_in_i(1)          <= quarter_event_builder_enable;
+		sync_in_i(2)          <= pulsed_trigger;
+		sync_in_i(3)          <= internal_START_BUILDING_A_QUARTER_EVENT;
+		sync_in_i(4)          <= internal_DONE_BUILDING_A_QUARTER_EVENT;
+		sync_in_i(5)          <= trigger_acknowledge;
+		sync_in_i(6)          <= internal_QUARTER_EVENT_FIFO_WRITE_ENABLE;
+		sync_in_i(7)          <= quarter_event_fifo_is_empty;
+		sync_in_i(8)          <= tx_dst_rdy_n_i;
+		sync_in_i(9)          <= quarter_event_fifo_read_enable;
+--		sync_in_i(8 downto 5) <= (others => '0');
 --		sync_in_i(9)          <= pll_not_locked_i;
 		-- data generator status:
 --		sync_in_i(11 downto 9) <= internal_DATA_GENERATOR_STATE;
@@ -848,7 +972,7 @@ begin
 --		sync_in_i(19 downto 12) <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR(7 downto 0);
 --		sync_in_i(20)           <= internal_resynchronizing_with_header;
 --		sync_in_i(22)           <= tx_src_rdy_n_i;
-		sync_in_i(9)            <= internal_start_event_transfer;
+--		sync_in_i(9)            <= internal_start_event_transfer;
 --		sync_in_i(10)           <= reset_i;
 		sync_in_i(10)           <= spill_active;
 --		sync_in_i(61)           <= fill_active;
@@ -875,7 +999,8 @@ begin
 
 		i_icon : s6_icon
 		port map (
-			control0    => icon_to_vio_i
+			control0    => icon_to_vio_i,
+			control1    => icon_to_ila_i
 		);
 
 		i_vio : s6_vio
@@ -884,6 +1009,15 @@ begin
 			clk       => user_clk_i,
 			sync_in   => sync_in_i,
 			sync_out  => sync_out_i
+		);
+
+		i_ila : s6_ila
+		port map (
+			control  => icon_to_ila_i,
+			clk      => user_clk_i, -- clock_1MHz,
+			data     => chipscope_ila_data,
+			trig0    => chipscope_ila_trigger,
+			trig_out => open
 		);
 	end generate chipscope1;
 
