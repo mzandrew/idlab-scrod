@@ -16,7 +16,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity data_generator is
 	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110718"
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110831"
 	);
 	port (
 		ENABLE                        : in    STD_LOGIC;
