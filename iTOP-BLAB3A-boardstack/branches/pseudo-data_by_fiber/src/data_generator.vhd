@@ -121,7 +121,7 @@ begin
 					elsif (word_number = 137) then
 						internal_DATA_TO_FIFO <= x"0001" & x"0000"; -- SCROD revision and ID (0 means all SCRODs)
 					elsif (word_number = 138) then
-						internal_DATA_TO_FIFO <= std_logic_vector(unsigned(internal_CHECKSUM) + x"62504944"); -- 32 bit checksum, including header+footer, but not self
+						internal_DATA_TO_FIFO <= std_logic_vector(to_unsigned(internal_CHECKSUM, 32) + x"62504944"); -- 32 bit checksum, including header+footer, but not self
 					elsif (word_number = 139) then
 						internal_DATA_TO_FIFO <= x"62504944"; -- footer ("bPID" in ASCII)
 					else
