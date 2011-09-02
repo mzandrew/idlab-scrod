@@ -15,7 +15,7 @@ entity packet_builder is
 		NUMBER_OF_WORDS_IN_A_PACKET              : integer := 140;
 		HEADER                                   : std_logic_vector(31 downto 0) := x"00be11e2";
 		PACKET_SIZE_IN_WORDS                     : std_logic_vector(31 downto 0) := x"0000008c";
-		CURRENT_PROTOCOL_FREEZE_DATE             : std_logic_vector(31 downto 0) := x"20110831";
+		CURRENT_PROTOCOL_FREEZE_DATE             : std_logic_vector(31 downto 0) := x"20110901";
 		PACKET_TYPE_EVENT_HEADER                 : std_logic_vector(31 downto 0) := x"55555555";
 		PACKET_TYPE_COFFEE                       : std_logic_vector(31 downto 0) := x"00c0ffee";
 		PACKET_RESERVED_WORD                     : std_logic_vector(31 downto 0) := x"99999999";
@@ -36,6 +36,7 @@ entity packet_builder is
 		CLOCK                                              : in    std_logic;
 		INPUT_DATA_BUS                                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		OUTPUT_FIFO_WRITE_ENABLE                           :   out std_logic;
@@ -73,6 +74,7 @@ architecture packet_builder_architecture of packet_builder is
 	signal internal_INPUT_BASE_ADDRESS                                 : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 	signal internal_OUTPUT_BASE_ADDRESS                                : std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 	signal CHECKSUM                                                    : std_logic_vector(31 downto 0);
+	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : std_logic_vector(8 downto 0) := "1" & x"5a";
 	type packet_builder_state_type is (IDLE,
 		ABOUT_TO_BUILD_A_PACKET, BUILD_THE_FIRST_PART_OF_A_PACKET,
 		ABOUT_TO_FETCH_SOME_INPUT_DATA, FETCH_SOME_INPUT_DATA, PACK_DATA, WRITE_SOME_OUTPUT_DATA,
@@ -99,7 +101,8 @@ begin
 		constant PACKET_TYPE_INDEX                  : integer := 3;
 		constant EVENT_NUMBER_INDEX                 : integer := 4;
 		constant PACKET_NUMBER_INDEX                : integer := 5;
-		constant START_OF_SAMPLE_DATA_INDEX         : integer := 6;
+		constant ADDRESS_OF_STARTING_WINDOW_INDEX   : integer := 6;
+		constant START_OF_SAMPLE_DATA_INDEX         : integer := 7;
 		constant END_OF_SAMPLE_DATA_INDEX           : integer := START_OF_SAMPLE_DATA_INDEX + NUMBER_OF_SAMPLES_IN_A_PACKET * NUMBER_OF_WORDS_NEEDED_TO_PACK_8_SAMPLES / 8;
 		constant START_OF_RESERVED_WORDS_INDEX      : integer := END_OF_SAMPLE_DATA_INDEX + 1;
 		constant END_OF_RESERVED_WORDS_INDEX        : integer := NUMBER_OF_WORDS_IN_A_PACKET - 4;
@@ -143,6 +146,7 @@ begin
 					internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           <= '0';
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 					if (internal_START_BUILDING_A_PACKET = '1') then
+						internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC <= ADDRESS_OF_STARTING_WINDOW_IN_ASIC;
 						internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= '1';
 						packet_builder_state <= ABOUT_TO_BUILD_A_PACKET;
 					end if;
@@ -185,6 +189,8 @@ begin
 						internal_OUTPUT_DATA_BUS <= EVENT_NUMBER;
 					elsif (word_counter = PACKET_NUMBER_INDEX) then
 						internal_OUTPUT_DATA_BUS <= x"0000" & PACKET_NUMBER;
+					elsif (word_counter = ADDRESS_OF_STARTING_WINDOW_INDEX) then
+						internal_OUTPUT_DATA_BUS <= x"00000" & "000" & internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC;
 						packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
 					end if;
 					word_counter := word_counter + 1;

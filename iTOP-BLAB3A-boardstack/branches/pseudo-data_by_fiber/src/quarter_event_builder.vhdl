@@ -6,6 +6,7 @@ use ieee.std_logic_1164.all;
 -----------------------------------------------------------------------------
 entity quarter_event_builder is
 	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE                : std_logic_vector(31 downto 0) := x"20110901";
 		WIDTH_OF_INPUT_ADDRESS_BUS                  : integer := 15; -- 128 channels/qevent * 64 samples/window/channel * 4 windows = 32768 samples/qevent
 		WIDTH_OF_INPUT_DATA_BUS                     : integer := 16;
 		WIDTH_OF_OUTPUT_ADDRESS_BUS                 : integer := 17; -- 132 packets/qevent * 140 words/packet = 73920 words/qevent
@@ -19,24 +20,30 @@ entity quarter_event_builder is
 		WIDTH_OF_PACKET_NUMBER                      : integer := 16
 	);
 	port (
-		RESET                          : in    std_logic;
-		CLOCK                          : in    std_logic;
-		INPUT_DATA_BUS                 : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
-		INPUT_ADDRESS_BUS              :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
-		OUTPUT_DATA_BUS                :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
-		OUTPUT_ADDRESS_BUS             :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
-		OUTPUT_FIFO_WRITE_ENABLE       :   out std_logic;
-		START_BUILDING_A_QUARTER_EVENT : in    std_logic;
-		DONE_BUILDING_A_QUARTER_EVENT  :   out std_logic
+		RESET                              : in    std_logic;
+		CLOCK                              : in    std_logic;
+		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1           downto 0);
+		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1        downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
+		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
+		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
+		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
+		START_BUILDING_A_QUARTER_EVENT     : in    std_logic;
+		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic
 	);
 end quarter_event_builder;
 -----------------------------------------------------------------------------
 architecture quarter_event_builder_architecture of quarter_event_builder is
-	component packet_builder port (
+	component packet_builder
+	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := CURRENT_PROTOCOL_FREEZE_DATE
+	);
+	port (
 		RESET                                              : in    std_logic;
 		CLOCK                                              : in    std_logic;
 		INPUT_DATA_BUS                                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		OUTPUT_FIFO_WRITE_ENABLE                           :   out std_logic;
@@ -80,6 +87,7 @@ begin
 		CLOCK                                              => internal_CLOCK,
 		INPUT_DATA_BUS                                     => INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS                                  => INPUT_ADDRESS_BUS,
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 => ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                                    => OUTPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS                                 => OUTPUT_ADDRESS_BUS,
 		OUTPUT_FIFO_WRITE_ENABLE                           => OUTPUT_FIFO_WRITE_ENABLE,
