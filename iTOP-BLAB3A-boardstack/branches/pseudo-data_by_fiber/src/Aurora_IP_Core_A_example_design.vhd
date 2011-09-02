@@ -21,6 +21,7 @@ use UNISIM.VCOMPONENTS.ALL;
 
 entity Aurora_IP_Core_A_example_design is
 	generic(
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110902";
 		WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS           : integer := 16;
 		WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS        : integer := 15;
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS    : integer := 32;
@@ -202,25 +203,11 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 --	); 
 --	end component;
  
-	component Packet_Generator is
-	port ( 
-		TX_DST_RDY_N 	: in    STD_LOGIC;
-		USER_CLK 		: in    STD_LOGIC;
-		RESET 			: in    STD_LOGIC;
-		CHANNEL_UP 		: in    STD_LOGIC;
-		ENABLE 			: in    STD_LOGIC_VECTOR(1 downto 0);
-		TRIGGER        : in    STD_LOGIC;
-		TRIGGER_ACK    :   out STD_LOGIC;
-		TX_SRC_RDY_N 	:   out STD_LOGIC;
-		TX_D 				:   out STD_LOGIC_VECTOR (31 downto 0);
-		DATA_GENERATOR_STATE : out STD_LOGIC_VECTOR(2 downto 0);
-		FIFO_EMPTY     :   out STD_LOGIC;
-		VARIABLE_DELAY_BETWEEN_EVENTS : in STD_LOGIC_VECTOR(31 downto 0)
-	);
-	end component;	
-  
 --	component Aurora_IP_Core_A_FRAME_CHECK
 	component Packet_Receiver
+	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE : unsigned(31 downto 0) := unsigned(CURRENT_PROTOCOL_FREEZE_DATE)
+	);
 	port (
 		-- User Interface
 		RX_D            : in    std_logic_vector(0 to 31); 
@@ -274,16 +261,21 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	end component;
 	-------------------------------------------------------------------
 
-	component quarter_event_builder port (
-		RESET                          : in    std_logic;
-		CLOCK                          : in    std_logic;
-		INPUT_DATA_BUS                 : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1           downto 0);
-		INPUT_ADDRESS_BUS              :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1        downto 0);
-		OUTPUT_DATA_BUS                :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1    downto 0);
-		OUTPUT_ADDRESS_BUS             :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS-1 downto 0);
-		OUTPUT_FIFO_WRITE_ENABLE       :   out std_logic;
-		START_BUILDING_A_QUARTER_EVENT : in    std_logic;
-		DONE_BUILDING_A_QUARTER_EVENT  :   out std_logic
+	component quarter_event_builder
+	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := CURRENT_PROTOCOL_FREEZE_DATE
+	);
+	port (
+		RESET                              : in    std_logic;
+		CLOCK                              : in    std_logic;
+		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1           downto 0);
+		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1        downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
+		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1    downto 0);
+		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS-1 downto 0);
+		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
+		START_BUILDING_A_QUARTER_EVENT     : in    std_logic;
+		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic
 	);
 	end component;
 
@@ -423,6 +415,8 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 --	signal inverted_clock_1MHz            : std_logic;
 	signal quarter_event_fifo_read_enable : std_logic := '0';
 	signal quarter_event_fifo_is_empty    : std_logic;
+-----------------------------------------------------------------------------
+	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC : std_logic_vector(8 downto 0) := "1" & x"f0";
 begin
 -----------------------------------------------------------------------------
 	process(internal_clock_for_state_machine, request_a_global_reset)
@@ -813,17 +807,19 @@ begin
 --    ); 
 
 	QEB : quarter_event_builder port map (
-		RESET                          => reset_i,
-		CLOCK                          => clock_1MHz,
-		INPUT_DATA_BUS                 => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
-		INPUT_ADDRESS_BUS              => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
-		OUTPUT_DATA_BUS                => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
-		OUTPUT_ADDRESS_BUS             => open,
-		OUTPUT_FIFO_WRITE_ENABLE       => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
-		START_BUILDING_A_QUARTER_EVENT => internal_START_BUILDING_A_QUARTER_EVENT,
-		DONE_BUILDING_A_QUARTER_EVENT  => internal_DONE_BUILDING_A_QUARTER_EVENT
+		RESET                              => reset_i,
+		CLOCK                              => clock_1MHz,
+		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
+		INPUT_ADDRESS_BUS                  => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
+		OUTPUT_DATA_BUS                    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
+		OUTPUT_ADDRESS_BUS                 => open,
+		OUTPUT_FIFO_WRITE_ENABLE           => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
+		START_BUILDING_A_QUARTER_EVENT     => internal_START_BUILDING_A_QUARTER_EVENT,
+		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT
 	);
-	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= (others => '0');
+	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= x"1812"; -- upper four bits should be masked off elsewhere, so should see 0x0812
+	internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC <= "0" & x"64";
 	internal_START_BUILDING_A_QUARTER_EVENT <= quarter_event_builder_enable and pulsed_trigger;
 	quarter_event_builder_enable <= not transmit_disable;
 
