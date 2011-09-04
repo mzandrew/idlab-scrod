@@ -119,6 +119,9 @@ begin
 		variable block_ram_phase_counter : integer range 0 to 10 := 0;
 		-----------------------------------------------------------------------------
 	begin
+		if falling_edge(internal_CLOCK) then
+			internal_INPUT_DATA_BUS <= INPUT_DATA_BUS;
+		end if;
 		if (internal_RESET = '1') then
 			packet_builder_state <= IDLE;
 --			internal_INPUT_ADDRESS_BUS  <= (others => '0');
@@ -133,9 +136,7 @@ begin
 			sample_counter := 0;
 			eight_sample_counter := 0;
 			internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
---		elsif falling_edge(internal_CLOCK) then -- enabling this line stops the whole fiber output state machine from functioning...?
 		elsif rising_edge(internal_CLOCK) then
-			internal_INPUT_DATA_BUS <= INPUT_DATA_BUS;
 			internal_START_BUILDING_A_PACKET <= START_BUILDING_A_PACKET;
 			case packet_builder_state is
 				when IDLE =>
@@ -163,7 +164,7 @@ begin
 					internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= '0';
 				-----------------------------------------------------------------------------
 					if (word_counter = 0) then
-						CHECKSUM <= std_logic_vector(unsigned(FOOTER) + unsigned(SCROD_REVISION & SCROD_ID)); -- there's nothing valid on the OUTPUT_DATA_BUS the first time through, so we might as well start with the words that come too late at the end...
+						CHECKSUM <= std_logic_vector(unsigned(FOOTER) + unsigned(SCROD_REVISION & SCROD_ID) + unsigned(internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC)); -- there's nothing valid on the OUTPUT_DATA_BUS the first time through, so we might as well start with the words that come too late at the end...
 					else
 						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
 						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
@@ -201,7 +202,6 @@ begin
 					eight_sample_counter := 0;
 					block_ram_phase_counter := 0;
 					packet_builder_state <= FETCH_SOME_INPUT_DATA;
---					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
 				when FETCH_SOME_INPUT_DATA =>
 					if (block_ram_phase_counter < INPUT_BLOCK_RAM_PHASE_OFFSET) then -- block_ram_phase_counter = 0,1,2
 						internal_INPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_INPUT_ADDRESS_BUS) + 1);
@@ -250,16 +250,14 @@ begin
 					packet_builder_state <= PACK_DATA;
 					word_counter := word_counter + 1;
 				-----------------------------------------------------------------------------
-				when WRITE_THE_LAST_PART_OF_A_PACKET =>
+				when WRITE_THE_LAST_PART_OF_A_PACKET => -- word_counter = 135, 136, 137, 138, 139, 140
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
---					if (word_counter /= START_OF_RESERVED_WORDS_INDEX) then
-						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
---					end if;
 					if (word_counter <= FOOTER_INDEX) then
 						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
 					end if;
 					if (word_counter <= END_OF_RESERVED_WORDS_INDEX) then
 						internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
+						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(PACKET_RESERVED_WORD));
 					elsif (word_counter = SCROD_REV_AND_ID_INDEX) then
 						internal_OUTPUT_DATA_BUS <= SCROD_REVISION & SCROD_ID;
 					elsif (word_counter = CHECKSUM_INDEX) then
