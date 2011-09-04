@@ -582,9 +582,11 @@ begin
 				internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE <= '0';
 			elsif (internal_COUNTER < 302) then
 				internal_COUNTER := internal_COUNTER + 1;
-				AURORA_RESET_IN <= '0';
 				GT_RESET_IN     <= '0';
-			elsif (internal_COUNTER < 310) then
+			elsif (internal_COUNTER < 305) then
+				internal_COUNTER := internal_COUNTER + 1;
+				AURORA_RESET_IN <= '0';
+			elsif (internal_COUNTER < 350) then
 				internal_COUNTER := internal_COUNTER + 1;
 			else
 				fiber_link_is_up <= CHANNEL_UP_Buffer and LANE_UP_Buffer;
