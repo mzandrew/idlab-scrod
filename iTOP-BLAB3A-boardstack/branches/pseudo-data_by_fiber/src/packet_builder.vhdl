@@ -133,8 +133,9 @@ begin
 			sample_counter := 0;
 			eight_sample_counter := 0;
 			internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+--		elsif falling_edge(internal_CLOCK) then -- enabling this line stops the whole fiber output state machine from functioning...?
 		elsif rising_edge(internal_CLOCK) then
-			internal_INPUT_DATA_BUS          <= INPUT_DATA_BUS;
+			internal_INPUT_DATA_BUS <= INPUT_DATA_BUS;
 			internal_START_BUILDING_A_PACKET <= START_BUILDING_A_PACKET;
 			case packet_builder_state is
 				when IDLE =>
