@@ -190,20 +190,6 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	);
 	end component;
 
---	component Aurora_IP_Core_A_FRAME_GEN
---	port (
---		-- User Interface
---		TX_D            : out  std_logic_vector(0 to 31); 
---		TX_SRC_RDY_N    : out  std_logic;
---		TX_DST_RDY_N    : in   std_logic;  
---		-- System Interface
---		USER_CLK        : in  std_logic;   
---		RESET           : in  std_logic;
---		CHANNEL_UP      : in  std_logic
---	); 
---	end component;
- 
---	component Aurora_IP_Core_A_FRAME_CHECK
 	component Packet_Receiver
 	generic (
 		CURRENT_PROTOCOL_FREEZE_DATE : unsigned(31 downto 0) := unsigned(CURRENT_PROTOCOL_FREEZE_DATE)
@@ -276,6 +262,14 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
 		START_BUILDING_A_QUARTER_EVENT     : in    std_logic;
 		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic
+	);
+	end component;
+
+	component pseudo_data_block_ram
+	port (
+		CLOCK      : in    std_logic;
+		ADDRESS_IN : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1 downto 0);
+		DATA_OUT   :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1 downto 0)
 	);
 	end component;
 
@@ -590,7 +584,7 @@ begin
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '0';
 				GT_RESET_IN     <= '0';
-			elsif (internal_COUNTER < 305) then
+			elsif (internal_COUNTER < 310) then
 				internal_COUNTER := internal_COUNTER + 1;
 			else
 				fiber_link_is_up <= CHANNEL_UP_Buffer and LANE_UP_Buffer;
@@ -808,7 +802,7 @@ begin
 
 	QEB : quarter_event_builder port map (
 		RESET                              => reset_i,
-		CLOCK                              => clock_1MHz,
+		CLOCK                              => user_clk_i,
 		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
@@ -818,10 +812,16 @@ begin
 		START_BUILDING_A_QUARTER_EVENT     => internal_START_BUILDING_A_QUARTER_EVENT,
 		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT
 	);
-	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= x"1812"; -- upper four bits should be masked off elsewhere, so should see 0x0812
+--	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= x"1812"; -- upper four bits should be masked off elsewhere, so should see 0x0812
 	internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC <= "0" & x"64";
 	internal_START_BUILDING_A_QUARTER_EVENT <= quarter_event_builder_enable and pulsed_trigger;
 	quarter_event_builder_enable <= not transmit_disable;
+
+	PDBR : pseudo_data_block_ram port map (
+		CLOCK      => user_clk_i,
+		ADDRESS_IN => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
+		DATA_OUT   => internal_ASIC_DATA_BLOCKRAM_DATA_BUS
+	);
 
 	chipscope_ila_data(31 downto 0)  <= internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS;
 	chipscope_ila_data(63 downto 32) <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
@@ -842,7 +842,7 @@ begin
 
 	QUARTER_EVENT_FIFO : entity work.quarter_event_fifo port map (
 		rst    => reset_i,
-		wr_clk => clock_1MHz,
+		wr_clk => user_clk_i,
 		rd_clk => user_clk_i,
 		din    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
 		wr_en  => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,

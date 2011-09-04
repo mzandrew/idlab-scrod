@@ -126,6 +126,8 @@ begin
 			case quarter_event_builder_state is
 				when IDLE =>
 					if (internal_START_BUILDING_A_QUARTER_EVENT = '1') then
+						internal_INPUT_BASE_ADDRESS  <= (others => '0');
+						internal_OUTPUT_BASE_ADDRESS <= (others => '0');
 						internal_DONE_BUILDING_A_QUARTER_EVENT <= '0';
 						current_packet_number := 0;
 						internal_EVENT_NUMBER <= std_logic_vector(unsigned(internal_EVENT_NUMBER) + 1);
@@ -215,21 +217,33 @@ use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 use work.all;
 architecture quarter_event_builder_testbench_architecture of quarter_event_builder_testbench is
-	component quarter_event_builder port (
-		RESET                          : in    std_logic;
-		CLOCK                          : in    std_logic;
-		INPUT_DATA_BUS                 : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
-		INPUT_ADDRESS_BUS              :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
-		OUTPUT_DATA_BUS                :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
-		OUTPUT_ADDRESS_BUS             :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
-		OUTPUT_FIFO_WRITE_ENABLE       :   out std_logic;
-		START_BUILDING_A_QUARTER_EVENT : in    std_logic;
-		DONE_BUILDING_A_QUARTER_EVENT  :   out std_logic
+	component quarter_event_builder
+	generic (
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110902"
+	);
+	port (
+		RESET                              : in    std_logic;
+		CLOCK                              : in    std_logic;
+		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
+		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
+		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
+		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
+		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
+		START_BUILDING_A_QUARTER_EVENT     : in    std_logic;
+		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic
+	);
+	end component;
+	component pseudo_data_block_ram
+	port (
+		CLOCK      : in    std_logic;
+		ADDRESS_IN : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1 downto 0);
+		DATA_OUT   :   out std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1 downto 0)
 	);
 	end component;
 	signal internal_RESET                          : std_logic := '0';
 	signal internal_CLOCK                          : std_logic := '0';
-	signal internal_inverted_CLOCK                 : std_logic := '1';
+--	signal internal_inverted_CLOCK                 : std_logic := '1';
 	signal internal_INPUT_DATA_BUS                 : std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0) := x"6767";
 	signal internal_INPUT_ADDRESS_BUS              : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 	signal internal_OUTPUT_DATA_BUS                : std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
@@ -238,40 +252,47 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	signal internal_OUTPUT_FIFO_WRITE_ENABLE       : std_logic;
 	signal internal_START_BUILDING_A_QUARTER_EVENT : std_logic := '0';
 	signal internal_DONE_BUILDING_A_QUARTER_EVENT  : std_logic := '0';
-	signal fake_input_address_bus                  : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0) := (others => '0');
-	signal internal_FAKE_ASIC_DATA    : std_logic_vector(11 downto 0) := x"321";
-	signal internal_FAKE_ASIC_ADDRESS : std_logic_vector(11 downto 0) := (others => '0');
-	signal db : std_logic_vector(15 downto 0) := x"0321";
+--	signal fake_input_address_bus                  : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0) := (others => '0');
+--	signal internal_FAKE_ASIC_DATA    : std_logic_vector(11 downto 0) := x"321";
+--	signal internal_FAKE_ASIC_ADDRESS : std_logic_vector(11 downto 0) := (others => '0');
+--	signal db : std_logic_vector(15 downto 0) := x"0321";
 	signal fifo_is_empty : std_logic;
 	signal fifo_read_enable : std_logic := '0';
 	signal fifo_should_be_read_now : std_logic := '0';
+	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC : std_logic_vector(8 downto 0) := "0" & x"64";
 begin
 	QEB : quarter_event_builder port map (
 		RESET                          => internal_RESET,
 		CLOCK                          => internal_CLOCK,
 		INPUT_DATA_BUS                 => internal_INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS              => internal_INPUT_ADDRESS_BUS,
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                => internal_OUTPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS             => internal_OUTPUT_ADDRESS_BUS,
 		OUTPUT_FIFO_WRITE_ENABLE       => internal_OUTPUT_FIFO_WRITE_ENABLE,
 		START_BUILDING_A_QUARTER_EVENT => internal_START_BUILDING_A_QUARTER_EVENT,
 		DONE_BUILDING_A_QUARTER_EVENT  => internal_DONE_BUILDING_A_QUARTER_EVENT
 	);
-	FAKE_ASIC_RAM_BLOCK : entity work.MULTI_WINDOW_RAM_BLOCK port map (
-		clka  => internal_CLOCK,
-		ena   => '1',
-		wea   => std_logic_vector(to_unsigned(1, 1)),
-		addra => internal_FAKE_ASIC_ADDRESS,
-		dina  => db,
-		clkb  => internal_CLOCK,
-		enb   => '1',
-		addrb => internal_INPUT_ADDRESS_BUS(11 downto 0),
-		doutb => internal_INPUT_DATA_BUS
+	PDBR : pseudo_data_block_ram port map (
+		CLOCK      => internal_CLOCK,
+		ADDRESS_IN => internal_INPUT_ADDRESS_BUS,
+		DATA_OUT   => internal_INPUT_DATA_BUS
 	);
-	db <= x"0" & internal_FAKE_ASIC_DATA;
+--	FAKE_ASIC_RAM_BLOCK : entity work.MULTI_WINDOW_RAM_BLOCK port map (
+--		clka  => internal_CLOCK,
+--		ena   => '1',
+--		wea   => std_logic_vector(to_unsigned(1, 1)),
+--		addra => internal_FAKE_ASIC_ADDRESS,
+--		dina  => db,
+--		clkb  => internal_CLOCK,
+--		enb   => '1',
+--		addrb => internal_INPUT_ADDRESS_BUS(11 downto 0),
+--		doutb => internal_INPUT_DATA_BUS
+--	);
+--	db <= x"0" & internal_FAKE_ASIC_DATA;
 	QUARTER_EVENT_FIFO : entity work.quarter_event_fifo port map (
 		rst    => internal_RESET,
-		wr_clk => internal_inverted_CLOCK,
+		wr_clk => internal_CLOCK,
 		rd_clk => internal_CLOCK,
 		din    => internal_OUTPUT_DATA_BUS,
 		wr_en  => internal_OUTPUT_FIFO_WRITE_ENABLE,
@@ -281,7 +302,7 @@ begin
 		empty  => fifo_is_empty,
 		valid  => open
 	);
-	internal_inverted_CLOCK <= not internal_CLOCK;
+--	internal_inverted_CLOCK <= not internal_CLOCK;
 	process
 		constant half_clock_period : time := 5 ns;
 		variable clock_counter     : integer range 0 to 10000000 := 0;
@@ -308,8 +329,8 @@ begin
 -----------------------------------------------------------------------------
 	fifo_read_enable <= fifo_should_be_read_now and (not fifo_is_empty);
 	process (internal_CLOCK)
-		variable                           junk_address : integer range 0 to 4096 := 0;
-		variable least_significant_part_of_junk_address : integer range 0 to 4096 := 0;
+--		variable                           junk_address : integer range 0 to 4096 := 0;
+--		variable least_significant_part_of_junk_address : integer range 0 to 4096 := 0;
 	begin
 		if (internal_RESET = '1') then
 			fifo_should_be_read_now <= '0';
@@ -320,76 +341,10 @@ begin
 			if (fifo_is_empty = '1') then
 				fifo_should_be_read_now <= '0';
 			end if;
-			internal_FAKE_ASIC_ADDRESS <= std_logic_vector(to_unsigned(junk_address, 12));
-			least_significant_part_of_junk_address := to_integer(to_unsigned(junk_address, 4));
-			if    (least_significant_part_of_junk_address =  0) then
-				internal_FAKE_ASIC_DATA <= x"000";
-			elsif (least_significant_part_of_junk_address =  1) then
-				internal_FAKE_ASIC_DATA <= x"111";
-			elsif (least_significant_part_of_junk_address =  2) then
-				internal_FAKE_ASIC_DATA <= x"222";
-			elsif (least_significant_part_of_junk_address =  3) then
-				internal_FAKE_ASIC_DATA <= x"333";
-			elsif (least_significant_part_of_junk_address =  4) then
-				internal_FAKE_ASIC_DATA <= x"444";
-			elsif (least_significant_part_of_junk_address =  5) then
-				internal_FAKE_ASIC_DATA <= x"555";
-			elsif (least_significant_part_of_junk_address =  6) then
-				internal_FAKE_ASIC_DATA <= x"666";
-			elsif (least_significant_part_of_junk_address =  7) then
-				internal_FAKE_ASIC_DATA <= x"777";
-			elsif (least_significant_part_of_junk_address =  8) then
-				internal_FAKE_ASIC_DATA <= x"888";
-			elsif (least_significant_part_of_junk_address =  9) then
-				internal_FAKE_ASIC_DATA <= x"999";
-			elsif (least_significant_part_of_junk_address = 10) then
-				internal_FAKE_ASIC_DATA <= x"aaa";
-			elsif (least_significant_part_of_junk_address = 11) then
-				internal_FAKE_ASIC_DATA <= x"bbb";
-			elsif (least_significant_part_of_junk_address = 12) then
-				internal_FAKE_ASIC_DATA <= x"ccc";
-			elsif (least_significant_part_of_junk_address = 13) then
-				internal_FAKE_ASIC_DATA <= x"ddd";
-			elsif (least_significant_part_of_junk_address = 14) then
-				internal_FAKE_ASIC_DATA <= x"eee";
-			elsif (least_significant_part_of_junk_address = 15) then
-				internal_FAKE_ASIC_DATA <= x"fff";
-			elsif (least_significant_part_of_junk_address = 16) then
-				internal_FAKE_ASIC_DATA <= x"eee";
-			elsif (least_significant_part_of_junk_address = 17) then
-				internal_FAKE_ASIC_DATA <= x"ddd";
-			elsif (least_significant_part_of_junk_address = 18) then
-				internal_FAKE_ASIC_DATA <= x"ccc";
-			elsif (least_significant_part_of_junk_address = 19) then
-				internal_FAKE_ASIC_DATA <= x"bbb";
-			elsif (least_significant_part_of_junk_address = 20) then
-				internal_FAKE_ASIC_DATA <= x"aaa";
-			elsif (least_significant_part_of_junk_address = 21) then
-				internal_FAKE_ASIC_DATA <= x"999";
-			elsif (least_significant_part_of_junk_address = 22) then
-				internal_FAKE_ASIC_DATA <= x"888";
-			elsif (least_significant_part_of_junk_address = 23) then
-				internal_FAKE_ASIC_DATA <= x"777";
-			elsif (least_significant_part_of_junk_address = 24) then
-				internal_FAKE_ASIC_DATA <= x"666";
-			elsif (least_significant_part_of_junk_address = 25) then
-				internal_FAKE_ASIC_DATA <= x"555";
-			elsif (least_significant_part_of_junk_address = 26) then
-				internal_FAKE_ASIC_DATA <= x"444";
-			elsif (least_significant_part_of_junk_address = 27) then
-				internal_FAKE_ASIC_DATA <= x"333";
-			elsif (least_significant_part_of_junk_address = 28) then
-				internal_FAKE_ASIC_DATA <= x"222";
-			elsif (least_significant_part_of_junk_address = 29) then
-				internal_FAKE_ASIC_DATA <= x"111";
-			elsif (least_significant_part_of_junk_address = 30) then
-				internal_FAKE_ASIC_DATA <= x"000";
-			elsif (least_significant_part_of_junk_address = 31) then
-				internal_FAKE_ASIC_DATA <= x"0a5";
-			else
-				internal_FAKE_ASIC_DATA <= x"340";
-			end if;
-			junk_address := junk_address + 1;
+--			internal_FAKE_ASIC_ADDRESS <= std_logic_vector(to_unsigned(junk_address, 12));
+--			least_significant_part_of_junk_address := to_integer(to_unsigned(junk_address, 4));
+
+--			junk_address := junk_address + 1;
 		end if;
 	end process;
 end architecture quarter_event_builder_testbench_architecture;

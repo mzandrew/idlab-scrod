@@ -3,7 +3,7 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="C:/mza/FPGA/idlab-scrod/iTOP-BLAB3A-boardstack/branches/pseudo-data_by_fiber/ise-project/quarter_event_builder_testbench_isim_beh.wdb" id="1" type="auto">
+      <db_ref path="D:/mza/FPGA/idlab-scrod/iTOP-BLAB3A-boardstack/branches/pseudo-data_by_fiber/ise-project/quarter_event_builder_testbench_isim_beh.wdb" id="1" type="auto">
          <top_modules>
             <top_module name="numeric_std" />
             <top_module name="quarter_event_builder_testbench" />
@@ -15,7 +15,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="23" />
+   <WVObjectSize size="24" />
    <wvobject fp_name="/quarter_event_builder_testbench/internal_reset" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_reset</obj_property>
       <obj_property name="ObjectShortName">internal_reset</obj_property>
@@ -27,10 +27,12 @@
    <wvobject fp_name="/quarter_event_builder_testbench/internal_input_data_bus" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">internal_input_data_bus[15:0]</obj_property>
       <obj_property name="ObjectShortName">internal_input_data_bus[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/internal_input_address_bus" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">internal_input_address_bus[14:0]</obj_property>
       <obj_property name="ObjectShortName">internal_input_address_bus[14:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/internal_output_fifo_write_enable" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_output_fifo_write_enable</obj_property>
@@ -39,18 +41,26 @@
    <wvobject fp_name="/quarter_event_builder_testbench/internal_output_data_bus" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">internal_output_data_bus[31:0]</obj_property>
       <obj_property name="ObjectShortName">internal_output_data_bus[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/internal_output_address_bus" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">internal_output_address_bus[16:0]</obj_property>
       <obj_property name="ObjectShortName">internal_output_address_bus[16:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/internal_start_building_a_quarter_event" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_start_building_a_quarter_event</obj_property>
       <obj_property name="ObjectShortName">internal_start_building_a_quarter_event</obj_property>
    </wvobject>
+   <wvobject fp_name="/quarter_event_builder_testbench/QEB/PB/checksum" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">checksum[31:0]</obj_property>
+      <obj_property name="ObjectShortName">checksum[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/fake_input_address_bus" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">fake_input_address_bus[14:0]</obj_property>
       <obj_property name="ObjectShortName">fake_input_address_bus[14:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/QEB/internal_start_building_a_quarter_event" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_start_building_a_quarter_event</obj_property>
