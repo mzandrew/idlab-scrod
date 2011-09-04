@@ -243,6 +243,7 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	end component;
 	signal internal_RESET                          : std_logic := '0';
 	signal internal_CLOCK                          : std_logic := '0';
+	signal internal_DOUBLE_CLOCK                   : std_logic := '0';
 --	signal internal_inverted_CLOCK                 : std_logic := '1';
 	signal internal_INPUT_DATA_BUS                 : std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0) := x"6767";
 	signal internal_INPUT_ADDRESS_BUS              : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
@@ -304,13 +305,19 @@ begin
 	);
 --	internal_inverted_CLOCK <= not internal_CLOCK;
 	process
-		constant half_clock_period : time := 5 ns;
-		variable clock_counter     : integer range 0 to 10000000 := 0;
+		constant quarter_clock_period : time := 2.5 ns;
+		variable clock_counter     : integer range 0 to 100000000 := 0;
 	begin
 		internal_CLOCK <= '0';
-		wait for half_clock_period;
+		internal_DOUBLE_CLOCK <= '1';
+		wait for quarter_clock_period;
+		internal_DOUBLE_CLOCK <= '0';
+		wait for quarter_clock_period;
 		internal_CLOCK <= '1';
-		wait for half_clock_period;
+		internal_DOUBLE_CLOCK <= '1';
+		wait for quarter_clock_period;
+		internal_DOUBLE_CLOCK <= '0';
+		wait for quarter_clock_period;
 		clock_counter := clock_counter + 1;
 		-----------------------------------------------------------------------------
 		if (clock_counter < 3 or clock_counter > 5) then

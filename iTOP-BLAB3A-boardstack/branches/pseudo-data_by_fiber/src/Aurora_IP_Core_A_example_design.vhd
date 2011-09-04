@@ -756,9 +756,6 @@ begin
 	power_down_i     <= '0';
 	loopback_i       <= "000";
 
-	-- Connect a frame checker to the user interface
---	frame_check_i : Aurora_IP_Core_A_FRAME_CHECK
-
 	frame_check_i : Packet_Receiver
 	port map (
 		-- User Interface
@@ -783,22 +780,6 @@ begin
 		acknowledge_start_event_transfer => internal_acknowledge_start_event_transfer,
 		ERR_COUNT       =>  err_count_i
 	);
-
---    --Connect a frame generator to the user interface
---    frame_gen_i : Aurora_IP_Core_A_FRAME_GEN
---    port map
---    (
---        -- User Interface
---        TX_D            =>  tx_d_i,
---        TX_SRC_RDY_N    =>  tx_src_rdy_n_i,
---        TX_DST_RDY_N    =>  tx_dst_rdy_n_i,    
---
---
---        -- System Interface
---        USER_CLK        =>  user_clk_i,
---        RESET           =>  reset_i,
---        CHANNEL_UP      =>  channel_up_i
---    ); 
 
 	QEB : quarter_event_builder port map (
 		RESET                              => reset_i,
@@ -860,21 +841,6 @@ begin
 	tx_src_rdy_n_i <= not quarter_event_fifo_read_enable;
 	tx_d_i <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
 
---	Packet_Generator_A : Packet_Generator
---	port map
---	( 
---		TX_DST_RDY_N 	=> tx_dst_rdy_n_i,
---		USER_CLK 		=> user_clk_i,
---		RESET 			=> reset_i,
---		CHANNEL_UP 		=> channel_up_i,
---		ENABLE 			=> internal_PACKET_GENERATOR_ENABLE,
---		TRIGGER        => pulsed_trigger,
---		TRIGGER_ACK    => trigger_acknowledge,
---		TX_SRC_RDY_N 	=> tx_src_rdy_n_i,
---		TX_D 				=> tx_d_i,
---		DATA_GENERATOR_STATE => internal_DATA_GENERATOR_STATE,
---		VARIABLE_DELAY_BETWEEN_EVENTS => internal_VARIABLE_DELAY_BETWEEN_EVENTS
---	);
 	internal_DATA_GENERATOR_STATE <= (others => '0');
 
 	aurora_module_i : Aurora_IP_Core_A

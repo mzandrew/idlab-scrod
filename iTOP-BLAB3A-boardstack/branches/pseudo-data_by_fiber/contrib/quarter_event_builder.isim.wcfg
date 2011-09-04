@@ -9,16 +9,18 @@
             <top_module name="quarter_event_builder_testbench" />
             <top_module name="std_logic_1164" />
             <top_module name="std_logic_arith" />
-            <top_module name="std_logic_textio" />
             <top_module name="std_logic_unsigned" />
-            <top_module name="textio" />
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="24" />
+   <WVObjectSize size="23" />
    <wvobject fp_name="/quarter_event_builder_testbench/internal_reset" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_reset</obj_property>
       <obj_property name="ObjectShortName">internal_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/quarter_event_builder_testbench/internal_double_clock" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_double_clock</obj_property>
+      <obj_property name="ObjectShortName">internal_double_clock</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/internal_clock" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_clock</obj_property>
@@ -55,11 +57,6 @@
    <wvobject fp_name="/quarter_event_builder_testbench/QEB/PB/checksum" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">checksum[31:0]</obj_property>
       <obj_property name="ObjectShortName">checksum[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/quarter_event_builder_testbench/fake_input_address_bus" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">fake_input_address_bus[14:0]</obj_property>
-      <obj_property name="ObjectShortName">fake_input_address_bus[14:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/QEB/internal_start_building_a_quarter_event" type="logic" db_ref_id="1">
@@ -107,10 +104,6 @@
    <wvobject fp_name="/quarter_event_builder_testbench/fifo_read_enable" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">fifo_read_enable</obj_property>
       <obj_property name="ObjectShortName">fifo_read_enable</obj_property>
-   </wvobject>
-   <wvobject fp_name="/quarter_event_builder_testbench/internal_inverted_clock" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">internal_inverted_clock</obj_property>
-      <obj_property name="ObjectShortName">internal_inverted_clock</obj_property>
    </wvobject>
    <wvobject fp_name="/quarter_event_builder_testbench/internal_done_building_a_quarter_event" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">internal_done_building_a_quarter_event</obj_property>
