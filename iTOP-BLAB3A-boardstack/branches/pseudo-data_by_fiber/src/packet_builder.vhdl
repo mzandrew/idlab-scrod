@@ -73,7 +73,7 @@ architecture packet_builder_architecture of packet_builder is
 	signal internal_PACKET_NUMBER                                      : std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 	signal internal_INPUT_BASE_ADDRESS                                 : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 	signal internal_OUTPUT_BASE_ADDRESS                                : std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
-	signal CHECKSUM                                                    : std_logic_vector(31 downto 0);
+	signal CHECKSUM                                                    : std_logic_vector(31 downto 0) := x"01237654";
 	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : std_logic_vector(8 downto 0) := "1" & x"5a";
 	type packet_builder_state_type is (IDLE,
 		ABOUT_TO_BUILD_A_PACKET, BUILD_THE_FIRST_PART_OF_A_PACKET,
@@ -200,6 +200,7 @@ begin
 					eight_sample_counter := 0;
 					block_ram_phase_counter := 0;
 					packet_builder_state <= FETCH_SOME_INPUT_DATA;
+--					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
 				when FETCH_SOME_INPUT_DATA =>
 					if (block_ram_phase_counter < INPUT_BLOCK_RAM_PHASE_OFFSET) then -- block_ram_phase_counter = 0,1,2
 						internal_INPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_INPUT_ADDRESS_BUS) + 1);
@@ -250,7 +251,9 @@ begin
 				-----------------------------------------------------------------------------
 				when WRITE_THE_LAST_PART_OF_A_PACKET =>
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
-					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
+--					if (word_counter /= START_OF_RESERVED_WORDS_INDEX) then
+						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
+--					end if;
 					if (word_counter <= FOOTER_INDEX) then
 						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
 					end if;
