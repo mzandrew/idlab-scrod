@@ -163,7 +163,8 @@ NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
 
 NET map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
 NET map_FTSW_interface/map_belle2clk/map_pll/sig_clk1 PERIOD = 7.8 ns;
-NET single_ASIC_control/CLK_SST_inv							PERIOD = 47.1 ns;
+NET single_ASIC_control/CLK_SST_GBUF_inv					PERIOD = 47.1 ns;
+#NET single_ASIC_control/CLK_SST_inv						PERIOD = 47.1 ns;
 #NET internal_CLOCK_SST 				PERIOD = 47.1 ns;
 #NET internal_CLOCK_SSP 				PERIOD = 47.1 ns;
 #NET internal_CLOCK_WRITE_STROBE 	PERIOD = 23.5 ns;

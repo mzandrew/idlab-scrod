@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 12.2
-# Date: Mon Aug 15 23:37:06 2011
+# Xilinx Core Generator version 13.2
+# Date: Fri Sep 09 01:53:33 2011
 #
 ##############################################################
 #
@@ -9,6 +9,10 @@
 #  Xilinx CORE Generator IP GUI. It is strongly recommended
 #  that you do not manually alter this file as it may cause
 #  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:blk_mem_gen:4.2
 #
 ##############################################################
 #
@@ -28,7 +32,7 @@ SET package = fgg676
 SET removerpms = false
 SET simulationfiles = Behavioral
 SET speedgrade = -3
-SET verilogsim = true
+SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
@@ -36,7 +40,7 @@ SELECT Block_Memory_Generator family Xilinx,_Inc. 4.2
 # END Select
 # BEGIN Parameters
 CSET additional_inputs_for_power_estimation=false
-CSET algorithm=Minimum_Area
+CSET algorithm=Fixed_Primitives
 CSET assume_synchronous_clk=false
 CSET byte_size=9
 CSET coe_file=no_coe_file_loaded
@@ -90,4 +94,4 @@ CSET write_width_a=16
 CSET write_width_b=16
 # END Parameters
 GENERATE
-# CRC: 6f50d06e
+# CRC: f936a292

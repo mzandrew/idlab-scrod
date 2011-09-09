@@ -46,6 +46,7 @@ entity USB_MAIN is
       RDY1       	: out std_logic; 
       WAKEUP     	: in  std_logic; 
 		-- USER I/O
+		WRITE_BUSY  : out std_logic;
       xSTART     	: in  std_logic; 
       xDONE      	: out std_logic; 
       xIFCLK     	: out std_logic;--50 MHz CLK
@@ -71,7 +72,8 @@ entity USB_MAIN is
 		SOFT_VADJP2 : out std_logic_vector(11 downto 0);
 		SOFT_RW_ADDR : out std_logic_vector(8 downto 0);
 		SOFT_PROVDD : out std_logic_vector(11 downto 0);
-		SOFT_TIABIAS : out std_logic_vector(11 downto 0));
+		SOFT_TIABIAS : out std_logic_vector(11 downto 0);
+		MESS_BUSY	: out std_logic);
 end USB_MAIN;
 
 architecture BEHAVIORAL of USB_MAIN is
@@ -102,6 +104,7 @@ architecture BEHAVIORAL of USB_MAIN is
    signal PED_ADDR     : std_logic_vector (14 downto 0);
    signal DEBUG    	  : std_logic_vector (15 downto 0);	
 	signal xSOFT_RESET  : std_logic;
+	signal internal_MESS_BUSY : std_logic;
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -122,7 +125,8 @@ architecture BEHAVIORAL of USB_MAIN is
 		xPED_ADDR  	: in  std_logic_vector(14 downto 0);
 		xDEBUG 	  	: in  std_logic_vector(15 downto 0);
 		xFPGA_DATA  : out std_logic_vector(15 downto 0); 
-      xRADDR      : out std_logic_vector(11 downto 0));
+      xRADDR      : out std_logic_vector(11 downto 0);
+		MESS_BUSY	: out std_logic);
    end component;
 --------------------------------------------------------------------------------
 	component USBread
@@ -227,6 +231,8 @@ begin
    xDEBUG		<= DEBUG;
 	xIFCLK 		<= USB_CLK;
 	xWAKEUP     <= WAKE_UP;
+	WRITE_BUSY  <= xWBUSY;
+	MESS_BUSY 	<= internal_MESS_BUSY;
 --------------------------------------------------------------------------------
    xMESS : MESS
 	port map(
@@ -245,7 +251,8 @@ begin
       xSLWR			=> SLWR,
       xSTART		=> xSTART,
       xFPGA_DATA	=> xFPGA_DATA,
-      xRADDR		=> xRADDR);
+      xRADDR		=> xRADDR,
+		MESS_BUSY	=> internal_MESS_BUSY);
 --------------------------------------------------------------------------------
    xUSBread : USBread
 	port map(

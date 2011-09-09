@@ -95,7 +95,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	---------------------------------------------------------
 	component Chipscope_Core
 	PORT (
-		CONTROL0 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0));
+		CONTROL0 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+		CONTROL1 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0));
 	end component;	
 	attribute BOX_TYPE of Chipscope_Core : component is "BLACK_BOX";	
 	---------------------------------------------------------
@@ -108,11 +109,20 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	end component;
 	attribute BOX_TYPE of Chipscope_VIO : component is "BLACK_BOX";	
 	---------------------------------------------------------
+	component Chipscope_ILA
+	PORT (
+		CONTROL : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+		CLK : IN STD_LOGIC;
+		TRIG0 : IN STD_LOGIC_VECTOR(127 DOWNTO 0));	
+	end component;
+	attribute BOX_TYPE of Chipscope_ILA : component is "BLACK_BOX";
+	---------------------------------------------------------
 
 	--------SIGNAL DEFINITIONS-------------------------------
 	signal internal_CLOCK_4NS   : std_logic;
 	signal internal_LEDS        : std_logic_vector(15 downto 0);
 	signal internal_MONITOR     : std_logic_vector(15 downto 0);
+	signal internal_ILA_MONITOR : std_logic_vector(127 downto 0);
 	signal internal_SCL_DC1     : std_logic;
 	signal internal_SDA_DC1     : std_logic;
 	signal internal_INTENDED_DAC_VALUES_DC1 : Daughter_Card_Voltages;
@@ -121,7 +131,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 
 	signal internal_DAC_STATE_MONITOR : std_logic_vector(2 downto 0);
 
-	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_CONTROL0 : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_CONTROL1 : std_logic_vector(35 downto 0);
 	signal internal_CHIPSCOPE_VIO_IN  : std_logic_vector(255 downto 0);
 	signal internal_CHIPSCOPE_VIO_OUT : std_logic_vector(255 downto 0);
 
@@ -142,6 +153,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_ASIC_SSP_OUT		 : std_logic;
 	signal internal_SOFT_WRITE_ADDR	 : std_logic_vector(8 downto 0);
 	signal internal_SOFT_READ_ADDR 	 : std_logic_vector(8 downto 0);	
+	signal internal_USE_SOFT_READ_ADDR : std_logic;
+	signal internal_FIRST_ADDRESS_OUT : std_logic_vector(8 downto 0);
 	signal internal_ASIC_DATA_TO_USB  : std_logic_vector(15 downto 0);	
 	signal internal_ASIC_TRIGGER_BITS : std_logic_vector(7 downto 0);
 	signal internal_ASIC_trigger_sign : std_logic;
@@ -162,11 +175,15 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_USB_SLWR          : std_logic;
 	signal internal_USB_CLR_ALL       : std_logic;
 	signal internal_SOFT_TRIG			 : std_logic;
+	signal internal_USB_WRITE_BUSY	 : std_logic;
+	
+	signal internal_TRIGGER_TO_ASIC_BLOCK : std_logic;
 
 	signal internal_COUNTER : std_logic_vector(31 downto 0) := x"00000000";
 	signal internal_DCM_LOCKED : std_logic;
 	signal internal_CLOCK_SSP : std_logic;
 	signal internal_CLOCK_SST : std_logic;	
+	signal internal_CLOCK_SST_GBUF : std_logic;
 	signal internal_CLOCK_WRITE_STROBE : std_logic;	
 	
 	signal internal_FTSW_INTERFACE_READY : std_logic;
@@ -174,6 +191,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_CLK21		: std_logic;
 	signal internal_TRIGGER127	: std_logic;
 	signal internal_TRIGGER21	: std_logic;	
+
+	signal internal_TTL_TRIGGER_FROM_MONITOR : std_logic;
 
 	signal internal_ENABLE_CHIPSCOPE_RAM_CONTROL : std_logic;
 	signal internal_CHIPSCOPE_RAM_READ_ADDR : std_logic_vector(11 downto 0);
@@ -207,13 +226,24 @@ begin
 	------SAMPLING CLOCKS GENERATED HERE---------------------
 	internal_CLOCK_SST <= internal_CLK21;
 	---------
-	CLOCK_GEN : entity work.Clock_Generator
+--	CLOCK_GEN : entity work.Clock_Generator
+--	  port map
+--		(-- Clock in ports
+--		CLK_IN1            => internal_CLOCK_SST,
+--		-- Clock out ports
+--		CLK_OUT1           => internal_CLOCK_SSP,
+--		CLK_OUT2           => internal_CLOCK_WRITE_STROBE,
+--		-- Status and control signals
+--		RESET              => '0',
+--		LOCKED             => internal_DCM_LOCKED);	
+	CLOCK_GEN : entity work.SAMPLING_CLOCK_GEN
 	  port map
 		(-- Clock in ports
 		CLK_IN1            => internal_CLOCK_SST,
 		-- Clock out ports
 		CLK_OUT1           => internal_CLOCK_SSP,
 		CLK_OUT2           => internal_CLOCK_WRITE_STROBE,
+		CLK_OUT3				 => internal_CLOCK_SST_GBUF,
 		-- Status and control signals
 		RESET              => '0',
 		LOCKED             => internal_DCM_LOCKED);	
@@ -247,18 +277,23 @@ begin
 			ASIC_TRIGGER_BITS => internal_ASIC_TRIGGER_BITS,
 			SOFT_WRITE_ADDR   => internal_SOFT_WRITE_ADDR,
 			SOFT_READ_ADDR    => internal_SOFT_READ_ADDR,
+			USE_SOFT_READ_ADDR => internal_USE_SOFT_READ_ADDR,
+			FIRST_ADDRESS_OUT => internal_FIRST_ADDRESS_OUT,
 			-- User I/O
 			CLK_SSP 				=> internal_CLOCK_SSP,
-			CLK_SST 				=> internal_CLOCK_SST,			
+			CLK_SST				=> internal_CLOCK_SST,
+			CLK_SST_GBUF		=> internal_CLOCK_SST_GBUF,			
 			CLK_WRITE_STROBE 	=> internal_CLOCK_WRITE_STROBE,			
 			START_USB_XFER	   => internal_USB_START,
 			DONE_USB_XFER 	   => internal_USB_DONE,
 			MONITOR		 	   => internal_MONITOR,
+			ILA_MONITOR			=> internal_ILA_MONITOR,
 --			MONITOR		 	   => open,			
 			CLR_ALL		 	   => internal_USB_CLR_ALL,
-			TRIGGER			   => internal_SOFT_TRIG,
+			TRIGGER			   => internal_TRIGGER_TO_ASIC_BLOCK,
 			RAM_READ_ADDRESS  => internal_RAM_READ_ADDR,
 			RAM_READ_CLOCK		=> internal_RAM_READ_CLOCK,
+			USB_WRITE_BUSY		=> internal_USB_WRITE_BUSY,
 			DATA_TO_USB       => internal_ASIC_DATA_TO_USB);
    ---------------------------------------------------------
 	map_CTRL_LOOP_PRCO : entity work.CTRL_LOOP_PRCO
@@ -292,6 +327,8 @@ begin
 		RDY1  	=> RDY1,
 		WAKEUP  	=> WAKEUP,
 		-- USER I/O
+--		WRITE_BUSY  => internal_USB_WRITE_BUSY,
+		WRITE_BUSY	=> open,
 		xSTART  		=> internal_USB_START,
 		xDONE  		=> internal_USB_DONE,
 		xIFCLK  		=> open,
@@ -299,7 +336,8 @@ begin
 		xPRCO_INT	=> internal_LAST_WILK_FEEDBACK_COUNTER(11 downto 0),
 		xPROVDD		=> internal_WILK_FEEDBACK_DAC_SETTING,
 		xRCO_INT		=> x"D0A",
-		xROVDD		=> x"D0A",
+		--I've hijacked the ROVDD line with the address information
+		xROVDD		=> "000" & internal_FIRST_ADDRESS_OUT,
 		xWBIAS_INT	=> x"D0A",
 		xWBIAS		=> x"D0A",
       xPED_SCAN	=> open,
@@ -317,27 +355,46 @@ begin
 		SOFT_VADJP2 => open,
 		SOFT_RW_ADDR => open,
 		SOFT_PROVDD  => open,
-		SOFT_TIABIAS => open);		
+		SOFT_TIABIAS => open,
+		MESS_BUSY	 => internal_USB_WRITE_BUSY);		
 	---------------------------------------------------------	
 	instance_CHIPSCOPE_CORE : Chipscope_Core
-		port map (CONTROL0 => internal_CHIPSCOPE_CONTROL);
+		port map (CONTROL0 => internal_CHIPSCOPE_CONTROL0, CONTROL1 => internal_CHIPSCOPE_CONTROL1);
 	---------------------------------------------------------
 	instance_CHIPSCOPE_VIO : Chipscope_VIO
 		port map (
-			CONTROL => internal_CHIPSCOPE_CONTROL,
+			CONTROL => internal_CHIPSCOPE_CONTROL0,
 			CLK => internal_COUNTER(7),
 			SYNC_IN => internal_CHIPSCOPE_VIO_IN,
 			SYNC_OUT => internal_CHIPSCOPE_VIO_OUT);	
 	---------------------------------------------------------
+	instance_CHIPSCOPE_ILA : Chipscope_ILA
+		port map (
+			CONTROL => internal_CHIPSCOPE_CONTROL1,
+			CLK => internal_CLK127,
+--			CLK => internal_CLK21,
+			TRIG0 => internal_ILA_MONITOR);
+	---------------------------------------------------------
 	LEDS <= internal_LEDS;
---	MONITOR(15) <= internal_ASIC_MONITOR_WILK_COUNTER;
--- MONITOR(14) <= internal_USB_SLWR;
+	--Aborted this attempt at TTL trigger... seems to be an "inout" problem.
+	--Should probably declare separate "in"s and "out"s.
+--	--Warning... this is done to get external triggering from TTL working
+--	--Don't expect to read anything from MONITOR(15) now.
+--	internal_TTL_TRIGGER_FROM_MONITOR <= internal_MONITOR(15);
+	internal_TTL_TRIGGER_FROM_MONITOR <= '0';
 	MONITOR(15 downto 0) <= internal_MONITOR(15 downto 0);
 	internal_LEDS(0) <= internal_DCM_LOCKED;
 	internal_LEDS(1) <= internal_FTSW_INTERFACE_READY;
-	internal_LEDS(15 downto 2) <= (others => '0');
+	internal_LEDS(11 downto 2) <= (others => '0');
+	internal_LEDS(12) <= internal_TTL_TRIGGER_FROM_MONITOR;
+	internal_LEDS(13) <= internal_TRIGGER21;
+	internal_LEDS(14) <= internal_SOFT_TRIG;
+	internal_LEDS(15) <= internal_TRIGGER_TO_ASIC_BLOCK;
 	--	internal_IIC_CLK <= internal_COUNTER(11);  --This line is appropriate when we're using 250 MHz base clock
 	internal_IIC_CLK <= internal_COUNTER(8);	    --This line is for when we're using 21 MHz base clock
+
+--	internal_TRIGGER_TO_ASIC_BLOCK <= (internal_SOFT_TRIG or internal_TRIGGER21 or internal_TTL_TRIGGER_FROM_MONITOR);
+	internal_TRIGGER_TO_ASIC_BLOCK <= (internal_SOFT_TRIG or internal_TRIGGER21);
 
 	internal_INTENDED_DAC_VALUES_DC1(0)(0) <= internal_CHIPSCOPE_VIO_OUT(11 downto 0);
 	internal_INTENDED_DAC_VALUES_DC1(0)(1) <= internal_CHIPSCOPE_VIO_OUT(23 downto 12);
@@ -364,6 +421,7 @@ begin
 	internal_WILK_FEEDBACK_ENABLE <= internal_CHIPSCOPE_VIO_OUT(212);
 	internal_ENABLE_CHIPSCOPE_RAM_CONTROL <= internal_CHIPSCOPE_VIO_OUT(213);
 	internal_CHIPSCOPE_RAM_READ_ADDR <= internal_CHIPSCOPE_VIO_OUT(225 downto 214);
+	internal_USE_SOFT_READ_ADDR <= internal_CHIPSCOPE_VIO_OUT(226);	
 
 	internal_CHIPSCOPE_VIO_IN(11 downto 0)    <= internal_CURRENT_DAC_VALUES_DC1(0)(0);
 	internal_CHIPSCOPE_VIO_IN(23 downto 12)   <= internal_CURRENT_DAC_VALUES_DC1(0)(1);
