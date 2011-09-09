@@ -42,7 +42,8 @@ entity MESS is
 		xPED_ADDR  	: in  std_logic_vector(14 downto 0);
 		xDEBUG 	  	: in  std_logic_vector(15 downto 0);
 		xFPGA_DATA  : out std_logic_vector(15 downto 0); 
-      xRADDR      : out std_logic_vector(11 downto 0));
+      xRADDR      : out std_logic_vector(11 downto 0);
+		MESS_BUSY	: out std_logic);
 end MESS; 
 
 architecture Behavioral of MESS is
@@ -59,6 +60,7 @@ architecture Behavioral of MESS is
 	signal STATE 			: STATE_TYPE;
 	signal RADDR			: std_logic_vector(11 downto 0);
 	signal FPGA_DATA		: std_logic_vector(15 downto 0);
+	signal internal_MESS_BUSY : std_logic := '0';
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -77,6 +79,8 @@ architecture Behavioral of MESS is
 --------------------------------------------------------------------------------
 begin
 --------------------------------------------------------------------------------
+	MESS_BUSY <= internal_MESS_BUSY;
+--------------------------------------------------------------------------------
 	xBUF_FPGA_DATA : BUF_BUS
 	generic map(bus_width => 16)
 	port map (
@@ -94,6 +98,7 @@ begin
 		if xCLR_ALL = '1' or xDONE = '1' then
 			RADDR 		<= (others=>'0');
 			FPGA_DATA 	<= (others=>'0');
+			internal_MESS_BUSY <= '0';
 			STATE 		<= HDR_START;
 		elsif falling_edge(xSLWR) and xSTART = '1' then
 --------------------------------------------------------------------------------			
@@ -105,6 +110,7 @@ begin
 					STATE <= ADC;	
 --------------------------------------------------------------------------------					
 				when ADC =>	
+					internal_MESS_BUSY <= '1';
 					FPGA_DATA <= xADC;
 					RADDR <= RADDR + 1;
 					if RADDR = 4095 then --8 windows
@@ -154,6 +160,7 @@ begin
 					STATE <= GND_STATE;	
 --------------------------------------------------------------------------------	
 				when GND_STATE =>			
+					internal_MESS_BUSY <= '0';				
 					FPGA_DATA <= (others=>'0');
 --------------------------------------------------------------------------------	
 				when others =>	STATE<=HDR_START;																
