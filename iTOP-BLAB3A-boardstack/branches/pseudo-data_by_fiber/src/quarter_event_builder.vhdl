@@ -192,9 +192,11 @@ begin
 						quarter_event_builder_state <= ALMOST_DONE_BUILDING_QUARTER_EVENT;
 					end if;
 				when ALMOST_DONE_BUILDING_QUARTER_EVENT =>
-					quarter_event_builder_state <= DONE_BUILDING_QUARTER_EVENT;
-				when DONE_BUILDING_QUARTER_EVENT =>
 					internal_DONE_BUILDING_A_QUARTER_EVENT <= '1';
+					if (internal_START_BUILDING_A_QUARTER_EVENT = '0') then
+						quarter_event_builder_state <= DONE_BUILDING_QUARTER_EVENT;						
+					end if;
+				when DONE_BUILDING_QUARTER_EVENT =>
 					quarter_event_builder_state <= IDLE;
 				when others =>
 					quarter_event_builder_state <= IDLE;
