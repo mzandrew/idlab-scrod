@@ -586,7 +586,7 @@ begin
 			elsif (internal_COUNTER < 305) then
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '0';
-			elsif (internal_COUNTER < 350) then
+			elsif (internal_COUNTER < 400) then
 				internal_COUNTER := internal_COUNTER + 1;
 			else
 				fiber_link_is_up <= CHANNEL_UP_Buffer and LANE_UP_Buffer;
