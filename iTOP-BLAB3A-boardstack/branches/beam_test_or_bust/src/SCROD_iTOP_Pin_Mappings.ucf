@@ -47,10 +47,10 @@ NET MONITOR_OUTPUTS<14>	LOC = "B26" | IOSTANDARD = LVCMOS25;
 NET MONITOR_OUTPUTS<15>	LOC = "A25" | IOSTANDARD = LVCMOS25;
 
 #Timing constraints
-NET map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
-NET map_FTSW_interface/map_belle2clk/map_pll/sig_clk1 PERIOD = 7.8 ns;
-NET internal_BOARD_CLOCK_250MHz								PERIOD = 4.0 ns;
+NET map_clocking_and_ftsw_interface/map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
+NET map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/sig_clk1  PERIOD = 7.8 ns;
+NET map_clocking_and_ftsw_interface/internal_BOARD_CLOCK_250MHz								PERIOD = 4.0 ns;
 #The location of the FTSW receiver PLL seems to only work in specific locations.
 #The one below is verified working... others may also work but have not been
 #systematically tried.
-INST "map_FTSW_interface/map_belle2clk/map_pll/map_pll" LOC = PLL_ADV_X0Y0;
+INST map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/map_pll 	LOC = PLL_ADV_X0Y0;

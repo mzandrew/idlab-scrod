@@ -48,124 +48,52 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_LEDS        		: std_logic_vector(15 downto 0);
 	signal internal_MONITOR_INPUTS	: std_logic_vector(0 downto 0);
 	signal internal_MONITOR_OUTPUTS	: std_logic_vector(15 downto 1);	
-
-	signal internal_BOARD_CLOCK_250MHz		: std_logic;
-	signal internal_BOARD_CLOCK_127MHz		: std_logic;
-	signal internal_BOARD_CLOCK_21MHz		: std_logic;	
-	signal internal_BOARD_CLOCK_DCM_LOCKED : std_logic;
-
-	signal internal_FTSW_INTERFACE_READY	: std_logic;
-	signal internal_FTSW_CLOCK_127MHz		: std_logic;
-	signal internal_FTSW_CLOCK_21MHz			: std_logic;
-	signal internal_FTSW_TRIGGER127			: std_logic;
-	signal internal_FTSW_TRIGGER21			: std_logic;
-
+	--------Signals for the clocking and FTSW interface------
 	signal internal_USE_FTSW_CLOCK			: std_logic;
-
-	signal internal_CLOCK_127MHz				: std_logic;
-	signal internal_CLOCK_21Mhz				: std_logic;
-	signal internal_CLOCK_83kHz				: std_logic;
-	signal internal_CLOCK_80Hz					: std_logic;
-	
+	signal internal_FTSW_INTERFACE_READY	: std_logic;
 	signal internal_RESET_SAMPLING_CLOCK_GEN : std_logic;
 	signal internal_SAMPLING_CLOCKS_READY	  : std_logic;
-
+	
+	signal internal_CLOCK_127MHz				: std_logic;
 	signal internal_CLOCK_SSP 				: std_logic;
 	signal internal_CLOCK_SST 				: std_logic;	
 	signal internal_CLOCK_WRITE_STROBE	: std_logic;
 	signal internal_CLOCK_4xSST			: std_logic;
+	signal internal_CLOCK_83kHz				: std_logic;
+	signal internal_CLOCK_80Hz					: std_logic;
    ---------------------------------------------------------	
 begin
-	---------------------------------------------------------
-	map_FTSW_interface: entity work.bpid
-    port map (
-      ack_p  => RJ45_ACK_P,
-      ack_n  => RJ45_ACK_N,
-      trg_p  => RJ45_TRG_P,
-      trg_n  => RJ45_TRG_N,
-		rsv_p  => RJ45_RSV_P,
-		rsv_n  => RJ45_RSV_N,
-		clk_p  => RJ45_CLK_P,
-		clk_n  => RJ45_CLK_N,
-		clk127 => internal_FTSW_CLOCK_127MHz,
-		clk21  => internal_FTSW_CLOCK_21MHz,
-		trg127 => internal_FTSW_TRIGGER127,
-		trg21  => internal_FTSW_TRIGGER21,
-		ready  => internal_FTSW_INTERFACE_READY,
-		monitor => open);
-   ---------------------------------------------------------
-	map_ibufgds_250MHz : IBUFGDS
-      port map (O  => internal_BOARD_CLOCK_250MHz,
-                I  => BOARD_CLOCK_250MHz_P,
-                IB => BOARD_CLOCK_250MHz_N); 
-	---------------------------------------------------------
-	map_primary_ibufgmux : BUFGMUX
-		port map (I0 => internal_BOARD_CLOCK_127MHz,
-					 I1 => internal_FTSW_CLOCK_127MHz,
-					 O  => internal_CLOCK_127MHz,
-					 S  => internal_USE_FTSW_CLOCK);
-	---------------------------------------------------------
-	map_board_derived_clockgen : entity work.board_derived_clockgen
-		port map (	-- Clock in ports
-						CLK_IN1 => internal_BOARD_CLOCK_250MHz,
-						-- Clock out ports
-						CLK_OUT1 => internal_BOARD_CLOCK_127MHz,
-						CLK_OUT2 => internal_BOARD_CLOCK_21MHz,
-						-- Status and control signals
-						RESET  => internal_USE_FTSW_CLOCK,
-						LOCKED => internal_BOARD_CLOCK_DCM_LOCKED);
-	---------------------------------------------------------
-	map_sst_ibufgmux : BUFGMUX
-		port map (I0 => internal_BOARD_CLOCK_21MHz,
-					 I1 => internal_FTSW_CLOCK_21MHz,
-					 O  => internal_CLOCK_21MHz,
-					 S  => internal_USE_FTSW_CLOCK);
-	---------------------------------------------------------
-	map_sampling_clock_gen : entity work.sampling_clock_gen
-		port map (	CLK_IN1  => internal_CLOCK_SST,
-						CLK_OUT1 => internal_CLOCK_SSP,
-						CLK_OUT2 => internal_CLOCK_WRITE_STROBE,
-						CLK_OUT3 => internal_CLOCK_4xSST,
-						RESET 	=> internal_RESET_SAMPLING_CLOCK_GEN,
-						LOCKED	=> internal_SAMPLING_CLOCKS_READY);
-	---------------------------------------------------------
-	process (internal_CLOCK_21MHz) 
-		variable counter : integer := 0;
-		constant target  : integer := 128;
-	begin
-		if rising_edge(internal_CLOCK_21MHz) then
-			if (counter = target) then
-				internal_CLOCK_83kHz <= not(internal_CLOCK_83kHz);
-				counter := 0;
-			else 
-				counter := counter + 1;
-			end if;
-		end if;
-	end process;
-	---------------------------------------------------------
-	process (internal_CLOCK_83kHz)
-		variable counter : integer := 0;
-		constant target  : integer := 512;
-	begin
-		if rising_edge(internal_CLOCK_83kHz) then
-			if (counter = target) then
-				internal_CLOCK_80Hz <= not(internal_CLOCK_80Hz);
-				counter := 0;
-			else
-				counter := counter + 1;
-			end if;
-		end if;
-	end process;
-	---------------------------------------------------------
-	internal_CLOCK_SST <= internal_CLOCK_21MHz;
+	-----Clocking and FTSW interface-------------------------
 	internal_USE_FTSW_CLOCK <= internal_MONITOR_INPUTS(0);
-	process (internal_USE_FTSW_CLOCK, internal_BOARD_CLOCK_DCM_LOCKED, internal_FTSW_INTERFACE_READY) begin
-		if (internal_USE_FTSW_CLOCK = '1') then
-			internal_RESET_SAMPLING_CLOCK_GEN <= not(internal_FTSW_INTERFACE_READY);
-		else
-			internal_RESET_SAMPLING_CLOCK_GEN <= not(internal_BOARD_CLOCK_DCM_LOCKED);
-		end if;
-	end process;
+	---------
+	map_clocking_and_ftsw_interface : entity work.clocking_and_ftsw_interface
+		port map (
+			BOARD_CLOCK_250MHz_P => BOARD_CLOCK_250MHz_P,
+			BOARD_CLOCK_250MHz_N => BOARD_CLOCK_250MHz_N,
+			---FTSW I/Os (from RJ45)
+			RJ45_ACK_P				=> RJ45_ACK_P,
+			RJ45_ACK_N				=> RJ45_ACK_N,
+			RJ45_TRG_P				=> RJ45_TRG_P,
+			RJ45_TRG_N				=> RJ45_TRG_N,
+			RJ45_RSV_P				=> RJ45_RSV_P,
+			RJ45_RSV_N				=> RJ45_RSV_N,
+			RJ45_CLK_P				=> RJ45_CLK_P,
+			RJ45_CLK_N				=> RJ45_CLK_N,
+			--Inputs from the user/board
+			USE_FTSW_CLOCK			=> internal_USE_FTSW_CLOCK,
+			--Status outputs
+			FTSW_INTERFACE_READY 	=> internal_FTSW_INTERFACE_READY,
+			SAMPLING_CLOCKS_READY 	=> internal_SAMPLING_CLOCKS_READY,
+			--Clock outputs 
+			CLOCK_127MHz			=> internal_CLOCK_127MHz,
+			CLOCK_SST				=> internal_CLOCK_SST,
+			CLOCK_SSP				=> internal_CLOCK_SSP,
+			CLOCK_WRITE_STROBE 	=> internal_CLOCK_WRITE_STROBE,
+			CLOCK_4xSST				=> internal_CLOCK_4xSST,
+			CLOCK_83kHz				=> internal_CLOCK_83kHz,
+			CLOCK_80Hz				=> internal_CLOCK_80Hz
+		);
+	---------------------------------------------------------
 	---------------------------------------------------------
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
 	internal_MONITOR_OUTPUTS(14 downto 1) <= (others => '0');
@@ -173,11 +101,9 @@ begin
 	MONITOR_OUTPUTS <= internal_MONITOR_OUTPUTS;
 	internal_LEDS(0) <= internal_CLOCK_80Hz;
 	internal_LEDS(1) <= internal_CLOCK_83kHz;
-	internal_LEDS(10 downto 2) <= (others => '0');
-	internal_LEDS(11) <= internal_FTSW_INTERFACE_READY;
-	internal_LEDS(12) <= internal_BOARD_CLOCK_DCM_LOCKED;
+	internal_LEDS(12 downto 2) <= (others => '0');
 	internal_LEDS(13) <= internal_USE_FTSW_CLOCK;
-	internal_LEDS(14) <= internal_RESET_SAMPLING_CLOCK_GEN;
+	internal_LEDS(14) <= internal_FTSW_INTERFACE_READY;
 	internal_LEDS(15) <= internal_SAMPLING_CLOCKS_READY;
 	LEDS <= internal_LEDS;
 
