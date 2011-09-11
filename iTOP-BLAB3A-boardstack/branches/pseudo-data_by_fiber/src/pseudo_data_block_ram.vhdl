@@ -6,14 +6,16 @@ use ieee.std_logic_1164.all;
 
 entity pseudo_data_block_ram is
 	generic (
+		NUMBER_OF_INPUT_BLOCK_RAMS                          : integer :=  2;
 		WIDTH_OF_DATA_BUS                                   : integer := 16;
-		WIDTH_OF_ADDRESS_BUS                                : integer := 15;
+		WIDTH_OF_ADDRESS_BUS                                : integer := 13;
 		LOG_BASE_2_OF_NUMBER_OF_VALUES_IN_REPEATING_PATTERN : integer :=  5
 	);
 	port (
-		CLOCK      : in    std_logic;
-		ADDRESS_IN : in    std_logic_vector(WIDTH_OF_ADDRESS_BUS-1 downto 0);
-		DATA_OUT   :   out std_logic_vector(WIDTH_OF_DATA_BUS-1 downto 0)
+		CLOCK                   : in    std_logic;
+		ADDRESS_IN              : in    std_logic_vector(WIDTH_OF_ADDRESS_BUS-1        downto 0);
+		INPUT_BLOCK_RAM_ADDRESS : in    std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
+		DATA_OUT                :   out std_logic_vector(WIDTH_OF_DATA_BUS-1           downto 0)
 	);
 end pseudo_data_block_ram;
 
@@ -61,37 +63,37 @@ begin
 			elsif (least_significant_part_of_address = 15) then
 				internal_DATA_OUT <= x"ffff";
 			elsif (least_significant_part_of_address = 16) then
-				internal_DATA_OUT <= x"eeee";
+				internal_DATA_OUT <= x"ffff";
 			elsif (least_significant_part_of_address = 17) then
-				internal_DATA_OUT <= x"dddd";
+				internal_DATA_OUT <= x"eeee";
 			elsif (least_significant_part_of_address = 18) then
-				internal_DATA_OUT <= x"cccc";
+				internal_DATA_OUT <= x"dddd";
 			elsif (least_significant_part_of_address = 19) then
-				internal_DATA_OUT <= x"bbbb";
+				internal_DATA_OUT <= x"cccc";
 			elsif (least_significant_part_of_address = 20) then
-				internal_DATA_OUT <= x"aaaa";
+				internal_DATA_OUT <= x"bbbb";
 			elsif (least_significant_part_of_address = 21) then
-				internal_DATA_OUT <= x"9999";
+				internal_DATA_OUT <= x"aaaa";
 			elsif (least_significant_part_of_address = 22) then
-				internal_DATA_OUT <= x"8888";
+				internal_DATA_OUT <= x"9999";
 			elsif (least_significant_part_of_address = 23) then
-				internal_DATA_OUT <= x"7777";
+				internal_DATA_OUT <= x"8888";
 			elsif (least_significant_part_of_address = 24) then
-				internal_DATA_OUT <= x"6666";
+				internal_DATA_OUT <= x"7777";
 			elsif (least_significant_part_of_address = 25) then
-				internal_DATA_OUT <= x"5555";
+				internal_DATA_OUT <= x"6666";
 			elsif (least_significant_part_of_address = 26) then
-				internal_DATA_OUT <= x"4444";
+				internal_DATA_OUT <= x"5555";
 			elsif (least_significant_part_of_address = 27) then
-				internal_DATA_OUT <= x"3333";
+				internal_DATA_OUT <= x"4444";
 			elsif (least_significant_part_of_address = 28) then
-				internal_DATA_OUT <= x"2222";
+				internal_DATA_OUT <= x"3333";
 			elsif (least_significant_part_of_address = 29) then
-				internal_DATA_OUT <= x"1111";
+				internal_DATA_OUT <= x"2222";
 			elsif (least_significant_part_of_address = 30) then
-				internal_DATA_OUT <= x"0000";
+				internal_DATA_OUT <= x"1111";
 			elsif (least_significant_part_of_address = 31) then
-				internal_DATA_OUT <= x"5aa5";
+				internal_DATA_OUT <= x"0000";
 			else
 				internal_DATA_OUT <= x"0340";
 			end if;
