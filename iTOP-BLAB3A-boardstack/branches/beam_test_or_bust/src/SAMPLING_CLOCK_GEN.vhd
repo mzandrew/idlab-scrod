@@ -3,13 +3,17 @@
 ------------------------------------------------------------------------------
 -- Copied basic functionality from the Xilinx coregen 
 --
+-- CLK_IN1 : SST clock
+-- CLK_OUT1 : SSP clock
+-- CLK_OUT2 : WRITE STROBE clock
+-- CLK_OUT3 : 2xWRITE_STROBE clock (4x SST clock)
 ------------------------------------------------------------------------------
 -- Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
 -- Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
 ------------------------------------------------------------------------------
 -- CLK_OUT1    21.200    315.000    50.000      445.260    289.441
 -- CLK_OUT2    42.401     90.000    50.000      387.435    289.441
---
+-- CLK_OUT3    84.802     90.000    50.000      ???        ???
 ------------------------------------------------------------------------------
 -- Input Clock   Input Freq (MHz)   Input Jitter (UI)
 ------------------------------------------------------------------------------
@@ -31,7 +35,7 @@ port
   -- Clock out ports
   CLK_OUT1          : out    std_logic;
   CLK_OUT2          : out    std_logic;
-  CLK_OUT3			  : out	  std_logic;
+  CLK_OUT3			  : out    std_logic;
   -- Status and control signals
   RESET             : in     std_logic;
   LOCKED            : out    std_logic
@@ -46,7 +50,7 @@ architecture behavioral of SAMPLING_CLOCK_GEN is
   signal clkfbout_buf     : std_logic;
   signal clkout0          : std_logic;
   signal clkout1          : std_logic;
-  signal clkout2_unused	  : std_logic;
+  signal clkout2	  		  : std_logic;
   signal clkout3_unused   : std_logic;
   signal clkout4_unused   : std_logic;
   signal clkout5_unused   : std_logic;
@@ -55,12 +59,13 @@ architecture behavioral of SAMPLING_CLOCK_GEN is
 begin
 
 
-  -- Input buffering
-  --------------------------------------
-  clkin1_buf : BUFG
-  port map
-   (O => clkin1,
-    I => CLK_IN1);
+    clkin1 <= CLK_IN1;
+--  -- Input buffering
+--  --------------------------------------
+--  clkin1_buf : BUFG
+--  port map
+--   (O => clkin1,
+--    I => CLK_IN1);
 
 
   -- Clocking primitive
@@ -83,6 +88,9 @@ begin
     CLKOUT1_DIVIDE       => 10,
     CLKOUT1_PHASE        => 90.000,
     CLKOUT1_DUTY_CYCLE   => 0.500,
+	 CLKOUT2_DIVIDE       => 5,
+	 CLKOUT2_PHASE        => 90.000,
+	 CLKOUT2_DUTY_CYCLE   => 0.500,
     CLKIN_PERIOD         => 47.169,
     REF_JITTER           => 0.005)
   port map
@@ -90,7 +98,7 @@ begin
    (CLKFBOUT            => clkfbout,
     CLKOUT0             => clkout0,
     CLKOUT1             => clkout1,
-    CLKOUT2             => clkout2_unused,
+    CLKOUT2             => clkout2,
     CLKOUT3             => clkout3_unused,
     CLKOUT4             => clkout4_unused,
     CLKOUT5             => clkout5_unused,
@@ -108,21 +116,21 @@ begin
    (O => clkfbout_buf,
     I => clkfbout);
 
+  CLK_OUT1 <= clkout0;
+--  clkout1_buf : BUFG
+--  port map
+--   (O   => CLK_OUT1,
+--    I   => clkout0);
 
-  --Trying to save a clock buffer here.
---  CLK_OUT1 <= clkout0;
-  clkout1_buf : BUFG
+  CLK_OUT2 <= clkout1;
+--  clkout2_buf : BUFG
+--  port map
+--   (O   => CLK_OUT2,
+--    I   => clkout1);
+
+  clkout3_buf : BUFG
   port map
-   (O   => CLK_OUT1,
-    I   => clkout0);
-
-  --Trying to save another clock buffer here.
---  CLK_OUT2 <= clkout1;
-  clkout2_buf : BUFG
-  port map
-   (O   => CLK_OUT2,
-    I   => clkout1);
-
-  CLK_OUT3 <= clkin1;
+   (O   => CLK_OUT3,
+    I   => clkout2);
 
 end behavioral;
