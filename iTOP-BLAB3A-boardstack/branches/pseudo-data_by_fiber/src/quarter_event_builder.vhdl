@@ -7,7 +7,8 @@ use ieee.std_logic_1164.all;
 entity quarter_event_builder is
 	generic (
 		CURRENT_PROTOCOL_FREEZE_DATE                : std_logic_vector(31 downto 0) := x"20110901";
-		WIDTH_OF_INPUT_ADDRESS_BUS                  : integer := 15; -- 128 channels/qevent * 64 samples/window/channel * 4 windows = 32768 samples/qevent
+		NUMBER_OF_INPUT_BLOCK_RAMS                  : integer :=  2;
+		WIDTH_OF_INPUT_ADDRESS_BUS                  : integer := 13; -- (128 channels/qevent * 64 samples/window/channel * 4 windows = 32768 samples/qevent) / 2^NUMBER_OF_INPUT_BLOCK_RAMS
 		WIDTH_OF_INPUT_DATA_BUS                     : integer := 16;
 		WIDTH_OF_OUTPUT_ADDRESS_BUS                 : integer := 17; -- 132 packets/qevent * 140 words/packet = 73920 words/qevent
 		WIDTH_OF_OUTPUT_DATA_BUS                    : integer := 32;
@@ -17,13 +18,14 @@ entity quarter_event_builder is
 		NUMBER_OF_WORDS_IN_A_PACKET                 : integer := 140;
 		NUMBER_OF_PACKETS_IN_AN_EVENT               : integer := 132;
 		WIDTH_OF_EVENT_NUMBER                       : integer := 32;
-		WIDTH_OF_PACKET_NUMBER                      : integer := 16
+		WIDTH_OF_PACKET_NUMBER                      : integer := 8
 	);
 	port (
 		RESET                              : in    std_logic;
 		CLOCK                              : in    std_logic;
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1           downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1        downto 0);
+		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1        downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
@@ -36,13 +38,15 @@ end quarter_event_builder;
 architecture quarter_event_builder_architecture of quarter_event_builder is
 	component packet_builder
 	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := CURRENT_PROTOCOL_FREEZE_DATE
+		NUMBER_OF_PACKETS_IN_AN_EVENT : integer := NUMBER_OF_PACKETS_IN_AN_EVENT;
+		CURRENT_PROTOCOL_FREEZE_DATE  : std_logic_vector(31 downto 0) := CURRENT_PROTOCOL_FREEZE_DATE
 	);
 	port (
 		RESET                                              : in    std_logic;
 		CLOCK                                              : in    std_logic;
 		INPUT_DATA_BUS                                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
+		INPUT_BLOCK_RAM_ADDRESS                            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
@@ -87,6 +91,7 @@ begin
 		CLOCK                                              => internal_CLOCK,
 		INPUT_DATA_BUS                                     => INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS                                  => INPUT_ADDRESS_BUS,
+		INPUT_BLOCK_RAM_ADDRESS                            => INPUT_BLOCK_RAM_ADDRESS,
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 => ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                                    => OUTPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS                                 => OUTPUT_ADDRESS_BUS,
@@ -130,7 +135,8 @@ begin
 						internal_OUTPUT_BASE_ADDRESS <= (others => '0');
 						internal_DONE_BUILDING_A_QUARTER_EVENT <= '0';
 						current_packet_number := 0;
-						internal_EVENT_NUMBER <= std_logic_vector(unsigned(internal_EVENT_NUMBER) + 1);
+						internal_EVENT_NUMBER  <= std_logic_vector(unsigned(internal_EVENT_NUMBER) + 1);
+						internal_PACKET_NUMBER <= (others => '0');
 						quarter_event_builder_state <= BUILD_A_QUARTER_EVENT_HEADER_PACKET;
 					end if;
 				when BUILD_A_QUARTER_EVENT_HEADER_PACKET =>
@@ -207,7 +213,8 @@ end architecture quarter_event_builder_architecture;
 -----------------------------------------------------------------------------
 entity quarter_event_builder_testbench is
 	generic (
-		WIDTH_OF_INPUT_ADDRESS_BUS                  : integer := 15; -- 128 channels/qevent * 64 samples/window/channel * 4 windows = 32768 samples/qevent
+		NUMBER_OF_INPUT_BLOCK_RAMS                  : integer :=  2;
+		WIDTH_OF_INPUT_ADDRESS_BUS                  : integer := 13; -- (128 channels/qevent * 64 samples/window/channel * 4 windows = 32768 samples/qevent) / 2^NUMBER_OF_INPUT_BLOCK_RAMS
 		WIDTH_OF_INPUT_DATA_BUS                     : integer := 16;
 		WIDTH_OF_OUTPUT_ADDRESS_BUS                 : integer := 17; -- 132 packets/qevent * 140 words/packet = 73920 words/qevent
 		WIDTH_OF_OUTPUT_DATA_BUS                    : integer := 32
@@ -228,6 +235,7 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 		CLOCK                              : in    std_logic;
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
+		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
@@ -238,9 +246,10 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	end component;
 	component pseudo_data_block_ram
 	port (
-		CLOCK      : in    std_logic;
-		ADDRESS_IN : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1 downto 0);
-		DATA_OUT   :   out std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1 downto 0)
+		CLOCK                   : in    std_logic;
+		ADDRESS_IN              : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1 downto 0);
+		INPUT_BLOCK_RAM_ADDRESS : in    std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
+		DATA_OUT                :   out std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1 downto 0)
 	);
 	end component;
 	signal internal_RESET                          : std_logic := '0';
@@ -255,6 +264,7 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	signal internal_OUTPUT_FIFO_WRITE_ENABLE       : std_logic;
 	signal internal_START_BUILDING_A_QUARTER_EVENT : std_logic := '0';
 	signal internal_DONE_BUILDING_A_QUARTER_EVENT  : std_logic := '0';
+	signal internal_INPUT_BLOCK_RAM_ADDRESS        : std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 --	signal fake_input_address_bus                  : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0) := (others => '0');
 --	signal internal_FAKE_ASIC_DATA    : std_logic_vector(11 downto 0) := x"321";
 --	signal internal_FAKE_ASIC_ADDRESS : std_logic_vector(11 downto 0) := (others => '0');
@@ -265,21 +275,23 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC : std_logic_vector(8 downto 0) := "0" & x"64";
 begin
 	QEB : quarter_event_builder port map (
-		RESET                          => internal_RESET,
-		CLOCK                          => internal_CLOCK,
-		INPUT_DATA_BUS                 => internal_INPUT_DATA_BUS,
-		INPUT_ADDRESS_BUS              => internal_INPUT_ADDRESS_BUS,
+		RESET                              => internal_RESET,
+		CLOCK                              => internal_CLOCK,
+		INPUT_DATA_BUS                     => internal_INPUT_DATA_BUS,
+		INPUT_ADDRESS_BUS                  => internal_INPUT_ADDRESS_BUS,
+		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
-		OUTPUT_DATA_BUS                => internal_OUTPUT_DATA_BUS,
-		OUTPUT_ADDRESS_BUS             => internal_OUTPUT_ADDRESS_BUS,
-		OUTPUT_FIFO_WRITE_ENABLE       => internal_OUTPUT_FIFO_WRITE_ENABLE,
-		START_BUILDING_A_QUARTER_EVENT => internal_START_BUILDING_A_QUARTER_EVENT,
-		DONE_BUILDING_A_QUARTER_EVENT  => internal_DONE_BUILDING_A_QUARTER_EVENT
+		OUTPUT_DATA_BUS                    => internal_OUTPUT_DATA_BUS,
+		OUTPUT_ADDRESS_BUS                 => internal_OUTPUT_ADDRESS_BUS,
+		OUTPUT_FIFO_WRITE_ENABLE           => internal_OUTPUT_FIFO_WRITE_ENABLE,
+		START_BUILDING_A_QUARTER_EVENT     => internal_START_BUILDING_A_QUARTER_EVENT,
+		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT
 	);
 	PDBR : pseudo_data_block_ram port map (
-		CLOCK      => internal_CLOCK,
-		ADDRESS_IN => internal_INPUT_ADDRESS_BUS,
-		DATA_OUT   => internal_INPUT_DATA_BUS
+		CLOCK                   => internal_CLOCK,
+		ADDRESS_IN              => internal_INPUT_ADDRESS_BUS,
+		INPUT_BLOCK_RAM_ADDRESS => internal_INPUT_BLOCK_RAM_ADDRESS,
+		DATA_OUT                => internal_INPUT_DATA_BUS
 	);
 --	FAKE_ASIC_RAM_BLOCK : entity work.MULTI_WINDOW_RAM_BLOCK port map (
 --		clka  => internal_CLOCK,

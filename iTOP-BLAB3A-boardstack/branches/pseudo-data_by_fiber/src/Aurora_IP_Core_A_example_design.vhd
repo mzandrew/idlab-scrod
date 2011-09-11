@@ -21,9 +21,10 @@ use UNISIM.VCOMPONENTS.ALL;
 
 entity Aurora_IP_Core_A_example_design is
 	generic(
-		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110902";
+		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := x"20110910";
+		NUMBER_OF_INPUT_BLOCK_RAMS                     : integer :=  2;
 		WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS           : integer := 16;
-		WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS        : integer := 15;
+		WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS        : integer := 13;
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS    : integer := 32;
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS : integer := 17;
 		USE_CHIPSCOPE        : integer := 1;
@@ -32,22 +33,20 @@ entity Aurora_IP_Core_A_example_design is
 	port (
 		-- User I/O
 --		RESET             : in    std_logic;
-		HARD_ERR          :   out std_logic;
-		SOFT_ERR          :   out std_logic;
-		ERR_COUNT         :   out std_logic_vector(0 to 7); -- is 0 to 7 a bug?
-		LANE_UP           :   out std_logic;
-		CHANNEL_UP        :   out std_logic;
+--		HARD_ERR          :   out std_logic;
+--		SOFT_ERR          :   out std_logic;
+--		ERR_COUNT         :   out std_logic_vector(0 to 7); -- is 0 to 7 a bug?
+--		LANE_UP           :   out std_logic;
+--		CHANNEL_UP        :   out std_logic;
 --		INIT_CLK          : in    std_logic;
 --		GT_RESET_IN       : in    std_logic;
-		-- Clocks
+		-- fiber optic transceiver 0 I/O
 		GTPD2_P    : in  std_logic;
 		GTPD2_N    : in  std_logic;
-		-- V5 I/O
 		RXP               : in    std_logic;
 		RXN               : in    std_logic;
 		TXP               :   out std_logic;
 		TXN               :   out std_logic;
-		-- fiber optic transceiver 0 I/O
 		FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER : in    std_logic;
 		FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER : in    std_logic;
  		FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  : in    std_logic;
@@ -256,6 +255,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 		CLOCK                              : in    std_logic;
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1           downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1        downto 0);
+		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS-1 downto 0);
@@ -267,9 +267,10 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 
 	component pseudo_data_block_ram
 	port (
-		CLOCK      : in    std_logic;
-		ADDRESS_IN : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1 downto 0);
-		DATA_OUT   :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1 downto 0)
+		CLOCK                   : in    std_logic;
+		ADDRESS_IN              : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1 downto 0);
+		INPUT_BLOCK_RAM_ADDRESS : in    std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
+		DATA_OUT                :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1 downto 0)
 	);
 	end component;
 
@@ -371,7 +372,8 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal external_encoded_trigger_from_LVDS     : std_logic;
 	signal raw_500Hz_fake_trigger : std_logic := '0';
 	signal raw_100Hz_fake_trigger : std_logic := '0';
---	signal raw_25Hz_fake_trigger : std_logic := '0';
+	signal raw_5Hz_fake_trigger   : std_logic := '0';
+--	signal raw_25Hz_fake_trigger  : std_logic := '0';
 	signal external_triggers_ORed_together : std_logic;
 	signal gated_trigger : std_logic;
 	signal external_trigger_disable : std_logic := '0';
@@ -411,6 +413,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal quarter_event_fifo_is_empty    : std_logic;
 -----------------------------------------------------------------------------
 	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC : std_logic_vector(8 downto 0) := "1" & x"f0";
+	signal internal_INPUT_BLOCK_RAM_ADDRESS            : std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 begin
 -----------------------------------------------------------------------------
 	process(internal_clock_for_state_machine, request_a_global_reset)
@@ -503,6 +506,7 @@ begin
 			counter_1_Hz    := 0;
 			spill_counter   := 1;
 			fill_counter    := 1;
+			raw_5Hz_fake_trigger   <= '0';
 			raw_100Hz_fake_trigger <= '0';
 			raw_500Hz_fake_trigger <= '0';
 		elsif rising_edge(clock_1kHz) then
@@ -523,6 +527,7 @@ begin
 				-- evaluated 10 times per second
 				counter_100_Hz := 0;
 				counter_10_Hz := counter_10_Hz + 1;
+				raw_5Hz_fake_trigger <= not raw_5Hz_fake_trigger;
 			end if;
 --				raw_25Hz_fake_trigger <= not raw_25Hz_fake_trigger;
 			if (counter_10_Hz > 9) then
@@ -640,12 +645,6 @@ begin
 		end if;
 	end process;
 -----------------------------------------------------------------------------
---	process(internal_COUNTER(27)) begin
---		if rising_edge(internal_COUNTER(27)) then
---			RESET <= '0';
---			GT_RESET_IN <= '0';
---		end if;
---	end process;
 --	internal_acknowledge_start_event_transfer <= '0';
 -----------------------------------------------------------------------------
     -- Register User I/O --
@@ -663,11 +662,11 @@ begin
 -----------------------------------------------------------------------------
 	lane_up_reduce_i    <=  lane_up_i;
 	
-	HARD_ERR    <= HARD_ERR_Buffer;
-	SOFT_ERR    <= SOFT_ERR_Buffer;
-	ERR_COUNT   <= ERR_COUNT_Buffer;
-	LANE_UP     <= LANE_UP_Buffer;
-	CHANNEL_UP  <= CHANNEL_UP_Buffer;
+--	HARD_ERR    <= HARD_ERR_Buffer;
+--	SOFT_ERR    <= SOFT_ERR_Buffer;
+--	ERR_COUNT   <= ERR_COUNT_Buffer;
+--	LANE_UP     <= LANE_UP_Buffer;
+--	CHANNEL_UP  <= CHANNEL_UP_Buffer;
 	TXP         <= TXP_Buffer;
 	TXN         <= TXN_Buffer;
 
@@ -676,7 +675,7 @@ begin
 	LVDS_SIMPLE_TRIGGER  : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P,  IB => REMOTE_SIMPLE_TRIGGER_N,  O => external_trigger_2_from_LVDS);
 	LVDS_ENCODED_TRIGGER : IBUFDS port map (I => REMOTE_ENCODED_TRIGGER_P, IB => REMOTE_ENCODED_TRIGGER_N, O => external_encoded_trigger_from_LVDS);
 
-	internal_trigger <= raw_100Hz_fake_trigger;
+	internal_trigger <= raw_5Hz_fake_trigger;
 --	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
 	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
 --	external_triggers_ORed_together <= external_trigger_1_from_monitor_header;
@@ -697,21 +696,13 @@ begin
 	LEDS(6) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
 	LEDS(7) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
 
-	LEDS(8)  <= raw_500Hz_fake_trigger;
+	LEDS(8)  <= raw_5Hz_fake_trigger;
 	LEDS(9)  <= external_trigger_1_from_monitor_header;
 --	LEDS(10) <= external_triggers_ORed_together;
 	LEDS(10) <= pulsed_trigger;
 	LEDS(11) <= gated_trigger;
 	
 	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
-
---	LEDS(6) <= tx_lock_i;
---	LEDS(7) <= pll_not_locked_i;
---	LEDS(7) <= internal_COUNTER(26);
---	LEDS(15 downto 12) <= ERR_COUNT_Buffer(0 downto 3);
---	LEDS(11 downto 9) <= internal_DATA_GENERATOR_STATE;
---	LEDS(2) <= HARD_ERR_Buffer;
---	LEDS() <= SOFT_ERR_Buffer;
 -----------------------------------------------------------------------------
 	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
 	MONITOR_HEADER_OUTPUT(1) <= clock_1MHz;
@@ -722,7 +713,7 @@ begin
 
 	MONITOR_HEADER_OUTPUT(12) <= pulsed_trigger;
 	MONITOR_HEADER_OUTPUT(13) <= raw_100Hz_fake_trigger;
-	MONITOR_HEADER_OUTPUT(14) <= raw_500Hz_fake_trigger;
+	MONITOR_HEADER_OUTPUT(14) <= raw_5Hz_fake_trigger;
 	external_trigger_1_from_monitor_header <= MONITOR_HEADER_INPUT(15);
 -----------------------------------------------------------------------------
 	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
@@ -788,6 +779,7 @@ begin
 		CLOCK                              => user_clk_i,
 		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
+		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS                 => open,
@@ -801,9 +793,10 @@ begin
 	quarter_event_builder_enable <= not transmit_disable;
 
 	PDBR : pseudo_data_block_ram port map (
-		CLOCK      => user_clk_i,
-		ADDRESS_IN => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
-		DATA_OUT   => internal_ASIC_DATA_BLOCKRAM_DATA_BUS
+		CLOCK                   => user_clk_i,
+		INPUT_BLOCK_RAM_ADDRESS => internal_INPUT_BLOCK_RAM_ADDRESS,
+		ADDRESS_IN              => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
+		DATA_OUT                => internal_ASIC_DATA_BLOCKRAM_DATA_BUS
 	);
 
 	chipscope_ila_data(31 downto 0)  <= internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS;
@@ -811,7 +804,8 @@ begin
 	chipscope_ila_data(232 downto 64) <= (others => '0');
 	chipscope_ila_data(233) <= quarter_event_fifo_is_empty; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
 	chipscope_ila_data(234) <= tx_dst_rdy_n_i; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
-	chipscope_ila_data(249 downto 235) <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
+	chipscope_ila_data(247 downto 235) <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
+	chipscope_ila_data(249 downto 248) <= internal_INPUT_BLOCK_RAM_ADDRESS;
 	chipscope_ila_data(250) <= quarter_event_fifo_read_enable; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
 	chipscope_ila_data(251) <= tx_src_rdy_n_i; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
 	chipscope_ila_data(252) <= quarter_event_builder_enable;
