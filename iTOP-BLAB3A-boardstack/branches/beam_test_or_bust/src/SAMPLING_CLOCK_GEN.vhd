@@ -116,17 +116,17 @@ begin
    (O => clkfbout_buf,
     I => clkfbout);
 
-  CLK_OUT1 <= clkout0;
---  clkout1_buf : BUFG
---  port map
---   (O   => CLK_OUT1,
---    I   => clkout0);
+--  CLK_OUT1 <= clkout0;
+  clkout1_buf : BUFG
+  port map
+   (O   => CLK_OUT1,
+    I   => clkout0);
 
-  CLK_OUT2 <= clkout1;
---  clkout2_buf : BUFG
---  port map
---   (O   => CLK_OUT2,
---    I   => clkout1);
+--  CLK_OUT2 <= clkout1;
+  clkout2_buf : BUFG
+  port map
+   (O   => CLK_OUT2,
+    I   => clkout1);
 
   clkout3_buf : BUFG
   port map
