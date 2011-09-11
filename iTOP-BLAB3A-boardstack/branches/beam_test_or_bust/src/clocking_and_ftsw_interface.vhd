@@ -13,6 +13,10 @@
 --        CLOCK_80Hz         80 Hz
 --   These clocks are generated either from FTSW or from the 250 MHz on-board
 --   oscillator.  The "USE_FTSW_CLOCK" signal decides which to use.
+--   The FTSW_TRIGGER21_SHIFTED output gives the FTSW trigger that's 
+--   synchronized with the 21 MHz clock, delayed by half a cycle so 
+--   that our logic that works on falling edges of SST can always 
+--   see it.
 -- Change log:
 -- 2011-09-10 - Created by Kurtis
 ----------------------------------------------------------------------------------
@@ -53,7 +57,9 @@ entity clocking_and_ftsw_interface is
 				CLOCK_WRITE_STROBE : out std_logic;--NOT explicitly on a BUFG
 				CLOCK_4xSST			: out std_logic; --NOT explicitly on a BUFG
 				CLOCK_83kHz			: out std_logic; --This clock is on a BUFG
-				CLOCK_80Hz			: out std_logic
+				CLOCK_80Hz			: out std_logic;
+				--Trigger outputs
+				FTSW_TRIGGER21_SHIFTED : out std_logic
 			);
 end clocking_and_ftsw_interface;
 
@@ -70,6 +76,7 @@ architecture Behavioral of clocking_and_ftsw_interface is
 	signal internal_FTSW_CLOCK_21MHz			: std_logic;
 	signal internal_FTSW_TRIGGER127			: std_logic;
 	signal internal_FTSW_TRIGGER21			: std_logic;
+	signal internal_FTSW_TRIGGER21_SHIFTED : std_logic;
 
 	signal internal_USE_FTSW_CLOCK			: std_logic;
 
@@ -98,6 +105,8 @@ begin
 	CLOCK_80Hz   <= internal_CLOCK_80Hz;
 	FTSW_INTERFACE_READY <= internal_FTSW_INTERFACE_READY;
 	SAMPLING_CLOCKS_READY <= internal_SAMPLING_CLOCKS_READY;
+	FTSW_TRIGGER21_SHIFTED <= internal_FTSW_TRIGGER21_SHIFTED;
+	internal_USE_FTSW_CLOCK <= USE_FTSW_CLOCK;
    -----------------------------------------------------------------
 	internal_CLOCK_SST <= internal_CLOCK_21MHz;	
    ----Map out the interface signals--------------------------------
@@ -191,7 +200,12 @@ begin
 	end process;
 	---------------------------------------------------------
 
-	
+	--Make a copy of the FTSW 21 MHz trigger that's shifted by 180 degrees
+	process (internal_CLOCK_21MHz) begin
+		if (falling_edge(internal_CLOCK_21MHz)) then
+			internal_FTSW_TRIGGER21_SHIFTED <= internal_FTSW_TRIGGER21;
+		end if;
+	end process;
 
 end Behavioral;
 
