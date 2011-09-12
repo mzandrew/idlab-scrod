@@ -12,6 +12,16 @@ NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25;
 NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
 
+#Pins for controlling external DACs - separated by column.
+NET DAC_SCL_C<0>		LOC = "H13" | IOSTANDARD = LVCMOS33; #DAC1 on SCROD schematic
+NET DAC_SDA_C<0>		LOC = "F14" | IOSTANDARD = LVCMOS33; #DAC2 on SCROD schematic
+NET DAC_SCL_C<1>		LOC = "E14" | IOSTANDARD = LVCMOS33; #DAC3 on SCROD schematic
+NET DAC_SDA_C<1>		LOC = "K14" | IOSTANDARD = LVCMOS33; #DAC4 on SCROD schematic
+NET DAC_SCL_C<2>		LOC = "H14" | IOSTANDARD = LVCMOS33; #DAC5 on SCROD schematic
+NET DAC_SDA_C<2>		LOC = "J15" | IOSTANDARD = LVCMOS33; #DAC6 on SCROD schematic
+NET DAC_SCL_C<3>		LOC = "H15" | IOSTANDARD = LVCMOS33; #DAC7 on SCROD schematic
+NET DAC_SDA_C<3>		LOC = "J16" | IOSTANDARD = LVCMOS33; #DAC8 on SCROD schematic
+
 #Pins for ASIC sampling and analog storage
 NET	AsicIn_SAMPLING_HOLD_MODE_C<0>				LOC = 	W8;	#SST_IN_A
 NET	AsicIn_SAMPLING_HOLD_MODE_C<1>				LOC = 	AE2;	#SST_IN_B
