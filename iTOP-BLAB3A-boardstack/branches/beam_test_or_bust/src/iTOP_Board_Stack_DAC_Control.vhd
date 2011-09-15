@@ -186,8 +186,8 @@ end iTOP_Board_Stack_DAC_Control;
 architecture Behavioral of iTOP_Board_Stack_DAC_Control is
 
 begin
-	DAC_Control_COLGEN : for i in 0 to 3 generate
-		DAC_Control_COL : entity work.Board_Stack_Column_DAC_Control
+	map_DAC_Control_COL_GEN : for i in 0 to 3 generate
+		map_DAC_Control_COL : entity work.Board_Stack_Column_DAC_Control
 			port map (
 				INTENDED_DAC_VALUES	=> INTENDED_DAC_VALUES(i),
 				CURRENT_DAC_VALUES	=> CURRENT_DAC_VALUES(i),
