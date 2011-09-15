@@ -58,15 +58,13 @@ module CTRL_LOOP_PRCO(ENABLE, xCLR_ALL, xREFRESH_CLK, xTST_OUT, xPRCO_INT, xPROV
 	input xCLR_ALL;				// reset signal for counters?
 	input xREFRESH_CLK;			// refresh update clock, set in RCO_MAIN -- typ 100Hz
 	input xTST_OUT;				// output from test Wilkinson counter (13th bit), typ. ~120-200kHz
-//	output [11:0] xPRCO_INT;	// last counter setting (passed to USB MESS)
-	output [19:0] xPRCO_INT;	// last counter setting (passed to USB MESS)
+	output [15:0] xPRCO_INT;	// last counter setting (passed to USB MESS)
 	output [11:0] xPROVDD;		// DAC setting for Wilkinson clock control
 //	output [31:0] xDBGVEC;		// DEBUG signals only! 
 	
-//	reg	[11:0] xPRCO_INT;
-	reg	[19:0] xPRCO_INT;
+	reg	[15:0] xPRCO_INT;
 	reg	[11:0] xPROVDD;
-	wire	[19:0] tst_counter;
+	wire	[15:0] tst_counter;
 	reg	toolow, toohigh;
 	
 	//////////////////////////////////////////////////////////////////////////
@@ -145,13 +143,13 @@ endmodule
 // 20-bit up counter with reset
 
 module COUNTER20(data, rst, clk);
-	output [19:0] data;
+	output [15:0] data;
 	input         rst;
 	input         clk;
 	
-	reg    [19:0] data;
+	reg    [15:0] data;
 	
 	always @ (posedge clk)
-		if (rst)		data <= 20'h0000;
+		if (rst)		data <= 16'h0000;
 		else			data <= data + 1'b1;
 endmodule

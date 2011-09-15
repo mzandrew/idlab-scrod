@@ -8,6 +8,8 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
 package Board_Stack_Definitions is
+
+	-------------------DAC RELATED DEFINITIONS----------------------------------
 	-- A single LTC2637 has 8 DAC channels, each 12 bits
 	type LTC2637_Voltages is array(7 downto 0) of std_logic_vector(11 downto 0);
 	-- There are 2 LTC2637 DACs per daughter card, so 8 per column.
@@ -25,15 +27,22 @@ package Board_Stack_Definitions is
 	-- *Recommend a name change on the schematic for consistency.
 	-- 
 	-- Name (R<row>_(0/1))								IIC Address		CA(2)	CA(1)	CA(0)
-	constant DAC_Address_R0_0	: LTC2637_Address := "0010000";--GND	GND	GND
-	constant DAC_Address_R0_1	: LTC2637_Address := "0010001";--GND	GND	FLT
-	constant DAC_Address_R1_0	: LTC2637_Address := "0010011";--GND	FLT	GND
-	constant DAC_Address_R1_1	: LTC2637_Address := "0100000";--GND	FLT	FLT
-	constant DAC_Address_R2_0	: LTC2637_Address := "0110001";--FLT	GND	GND
-	constant DAC_Address_R2_1	: LTC2637_Address := "0110010";--FLT	GND	FLT
-	constant DAC_Address_R3_0	: LTC2637_Address := "1000000";--FLT	FLT	GND
-	constant DAC_Address_R3_1	: LTC2637_Address := "1000001";--FLT	FLT	FLT 
+	constant DAC_Address_R3_0	: LTC2637_Address := "0010000";--GND	GND	GND
+	constant DAC_Address_R3_1	: LTC2637_Address := "0010001";--GND	GND	FLT
+	constant DAC_Address_R2_0	: LTC2637_Address := "0010011";--GND	FLT	GND
+	constant DAC_Address_R2_1	: LTC2637_Address := "0100000";--GND	FLT	FLT
+	constant DAC_Address_R1_0	: LTC2637_Address := "0110001";--FLT	GND	GND
+	constant DAC_Address_R1_1	: LTC2637_Address := "0110010";--FLT	GND	FLT
+	constant DAC_Address_R0_0	: LTC2637_Address := "1000000";--FLT	FLT	GND
+	constant DAC_Address_R0_1	: LTC2637_Address := "1000001";--FLT	FLT	FLT 
    constant DAC_Write_and_Update : std_logic_vector(3 downto 0) := "0011";
+	---------------------------------------------------------------------------
+	-----------------ASIC FEEDBACK RELATED SIGNALS-----------------------------
+	type Wilkinson_Rate_Counters_Column_R	is array(3 downto 0) of std_logic_vector(15 downto 0);
+	type Wilkinson_Rate_DAC_Column_R is array(3 downto 0) of std_logic_vector(11 downto 0);
+	type Wilkinson_Rate_Counters_C_R is array(3 downto 0) of Wilkinson_Rate_Counters_Column_R;
+	type Wilkinson_Rate_DAC_C_R is array(3 downto 0) of Wilkinson_Rate_DAC_Column_R;
+	---------------------------------------------------------------------------
   
 end Board_Stack_Definitions;
 

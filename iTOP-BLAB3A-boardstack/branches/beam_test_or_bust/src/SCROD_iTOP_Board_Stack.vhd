@@ -49,7 +49,24 @@ entity SCROD_iTOP_Board_Stack is
 				AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		: out	std_logic_vector(3 downto 0);
 				AsicIn_SAMPLING_TRACK_MODE_C					: out	std_logic_vector(3 downto 0);				
 				
-				---Monitor and diagnostic
+				--ASIC monitoring and feedback signals
+				AsicIn_MONITOR_TRIG								: out std_logic;
+				AsicOut_MONITOR_TRIG_C0_R						: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_TRIG_C1_R						: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_TRIG_C2_R						: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_TRIG_C3_R						: in std_logic_vector(3 downto 0);
+				AsicIn_MONITOR_WILK_COUNTER_RESET			: out std_logic;
+				AsicIn_MONITOR_WILK_COUNTER_START			: out std_logic;
+				AsicOut_MONITOR_WILK_COUNTER_C0_R			: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_WILK_COUNTER_C1_R			: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_WILK_COUNTER_C2_R			: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_WILK_COUNTER_C3_R			: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C0_R				: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C1_R				: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C2_R				: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C3_R				: in std_logic_vector(3 downto 0);				
+
+				---General monitor and diagnostic
 				LEDS 					: out STD_LOGIC_VECTOR(15 downto 0);
 				MONITOR_INPUTS		: in STD_LOGIC_VECTOR(0 downto 0);
 				MONITOR_OUTPUTS 	: out STD_LOGIC_VECTOR(15 downto 1)
@@ -83,13 +100,20 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_DESIRED_DAC_VOLTAGES : Board_Stack_Voltages;
 	signal internal_CURRENT_DAC_VOLTAGES : Board_Stack_Voltages;
    ---------------------------------------------------------	
+	---------ASIC feedback related signals-------------------
+	signal internal_FEEDBACK_WILKINSON_COUNTER_C_R		: Wilkinson_Rate_Counters_C_R;
+	signal internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R		: Wilkinson_Rate_DAC_C_R;
+	---------------------------------------------------------
 	--Temporary debugging signals----------------------------
 	signal internal_VIO_IN : std_logic_vector(255 downto 0);
 	signal internal_VIO_OUT : std_logic_vector(255 downto 0);
-	signal internal_TEST_DAC_VALUE : std_logic_vector(11 downto 0);
 	signal internal_TEST_DAC_COLUMN : std_logic_vector(1 downto 0);
 	signal internal_TEST_DAC_LOC	 : std_logic_vector(2 downto 0);
 	signal internal_TEST_DAC_CH	: std_logic_vector(2 downto 0);
+	signal internal_RESET_ALL_DACS : std_logic;
+	signal internal_WILK_FEEDBACK_ENABLE : std_logic;
+	signal internal_FEEDBACK_MONITOR_COLUMN : std_logic_vector(1 downto 0);
+	signal internal_FEEDBACK_MONITOR_ROW : std_logic_vector(1 downto 0);
 	---------------------------------------------------------
 begin
 	-----Clocking and FTSW interface-------------------------
@@ -152,6 +176,29 @@ begin
 			CHIPSCOPE_CONTROL			=> internal_CHIPSCOPE_CONTROL0
 		);
 	---------------------------------------------------------
+	--------Asic feedback and monitoring loops---------------
+	map_ASIC_feedback_and_monitorin : entity work.Board_Stack_Feedback_and_Monitoring 
+		port map (
+			AsicIn_MONITOR_TRIG								=> AsicIn_MONITOR_TRIG,
+			AsicOut_MONITOR_TRIG_C0_R						=> AsicOut_MONITOR_TRIG_C0_R,
+			AsicOut_MONITOR_TRIG_C1_R						=> AsicOut_MONITOR_TRIG_C1_R,
+			AsicOut_MONITOR_TRIG_C2_R						=> AsicOut_MONITOR_TRIG_C2_R,
+			AsicOut_MONITOR_TRIG_C3_R						=> AsicOut_MONITOR_TRIG_C3_R,
+			AsicOut_SAMPLING_TRACK_MODE_C0_R				=> AsicOut_SAMPLING_TRACK_MODE_C0_R,
+			AsicOut_SAMPLING_TRACK_MODE_C1_R				=> AsicOut_SAMPLING_TRACK_MODE_C1_R,
+			AsicOut_SAMPLING_TRACK_MODE_C2_R				=> AsicOut_SAMPLING_TRACK_MODE_C2_R,
+			AsicOut_SAMPLING_TRACK_MODE_C3_R				=> AsicOut_SAMPLING_TRACK_MODE_C3_R,
+			AsicIn_MONITOR_WILK_COUNTER_RESET			=> AsicIn_MONITOR_WILK_COUNTER_RESET,
+			AsicIn_MONITOR_WILK_COUNTER_START			=> AsicIn_MONITOR_WILK_COUNTER_START,
+			AsicOut_MONITOR_WILK_COUNTER_C0_R			=> AsicOut_MONITOR_WILK_COUNTER_C0_R,
+			AsicOut_MONITOR_WILK_COUNTER_C1_R			=> AsicOut_MONITOR_WILK_COUNTER_C1_R,
+			AsicOut_MONITOR_WILK_COUNTER_C2_R			=> AsicOut_MONITOR_WILK_COUNTER_C2_R,
+			AsicOut_MONITOR_WILK_COUNTER_C3_R			=> AsicOut_MONITOR_WILK_COUNTER_C3_R,
+			FEEDBACK_WILKINSON_COUNTER_C_R				=> internal_FEEDBACK_WILKINSON_COUNTER_C_R,
+			FEEDBACK_WILKINSON_DAC_VALUE_C_R				=> internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
+			CLOCK_80Hz											=> internal_CLOCK_80Hz
+		);
+	-----------------------------------------------------------
 
 	--Diagnostic outputs, monitors, LEDs, Chipscope Core, etc--
 	map_Chipscope_Core : entity work.Chipscope_Core
@@ -168,18 +215,83 @@ begin
 			SYNC_OUT => internal_VIO_OUT		
 		);	
 	--
-	internal_TEST_DAC_VALUE <= internal_VIO_OUT(11 downto 0);
-	internal_TEST_DAC_COLUMN <= internal_VIO_OUT(13 downto 12);
-	internal_TEST_DAC_LOC <= internal_VIO_OUT(16 downto 14);
-	internal_TEST_DAC_CH <= internal_VIO_OUT(19 downto 17);
+	internal_RESET_ALL_DACS <= internal_VIO_OUT(0);
+	internal_TEST_DAC_COLUMN <= internal_VIO_OUT(2 downto 1);
+	internal_TEST_DAC_LOC <= internal_VIO_OUT(5 downto 3);
+	internal_TEST_DAC_CH <= internal_VIO_OUT(8 downto 6);
+	internal_WILK_FEEDBACK_ENABLE <= internal_VIO_OUT(9);
+	internal_FEEDBACK_MONITOR_COLUMN <= internal_VIO_OUT(11 downto 10);
+	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(13 downto 12);
 	process(internal_CLOCK_80Hz) begin
 		if (rising_edge(internal_CLOCK_80Hz)) then
-			internal_DESIRED_DAC_VOLTAGES(to_integer( unsigned(internal_TEST_DAC_COLUMN)))
-												  (to_integer( unsigned(internal_TEST_DAC_LOC) ))
-												  (to_integer( unsigned(internal_TEST_DAC_CH) )) <= internal_TEST_DAC_VALUE;
 			internal_VIO_IN(11 downto 0) <= internal_CURRENT_DAC_VOLTAGES( to_integer( unsigned(internal_TEST_DAC_COLUMN) ))
 																							 ( to_integer( unsigned(internal_TEST_DAC_LOC) ))
 																							 ( to_integer( unsigned(internal_TEST_DAC_CH) ) );
+			internal_VIO_IN(27 downto 12) <= internal_FEEDBACK_WILKINSON_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+																											( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+			internal_VIO_IN(39 downto 28) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+																											  ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+		end if;
+	end process;
+	--
+	process(internal_CLOCK_80Hz) begin
+		if (rising_edge(internal_CLOCK_80Hz)) then
+			if (internal_RESET_ALL_DACS = '1') then
+				for i in 0 to 3 loop 
+					for j in 0 to 7 loop
+						for k in 0 to 7 loop
+							internal_DESIRED_DAC_VOLTAGES(i)(j)(k) <= x"001";
+						end loop;
+					end loop;
+				end loop;
+			else
+				for i in 0 to 3 loop
+					for j in 0 to 3 loop 
+						--Rev A channel mappings
+						--DAC0 : "DAC1" on schematic
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(0) <= x"C9E"; -- VADJP
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(1) <= x"42E"; -- VADJN
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(2) <= x"000"; -- TRGTHREF
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(3) <= x"7D0"; -- ISEL
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(4) <= x"578"; -- WBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(5) <= x"3E8"; -- TRGBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(6) <= x"44C"; -- VBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(7) <= x"3E8"; -- TRIG_THRESH
+						--DAC1 : "DAC2" on schematic
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(0) <= x"640"; -- SBBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(1) <= x"CE4"; -- PUBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(2) <= x"384"; -- CMPBIAS
+						if (internal_WILK_FEEDBACK_ENABLE = '1') then
+							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+						else
+							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= x"AF0"; -- VDLY
+						end if;						
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= x"000"; -- PAD_E
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(5) <= x"000"; -- unconnected
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(6) <= x"7FF"; -- PAD_G
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(7) <= x"000"; -- unconnected
+--						--Rev B channel mappings
+--						--DAC0 : "DAC1" on schematic
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(0) <= x""; -- TRIG_THRESH_01
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(1) <= x""; -- TRIG_THRESH_23
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(2) <= x""; -- VADJP
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(3) <= x""; -- VADJN
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(4) <= x""; -- TRGBIAS
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(5) <= x""; -- VBIAS
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(6) <= x""; -- TRIG_THRESH_45
+--						internal_DESIRED_DAC_VOLTAGES(0)(0)(7) <= x""; -- TRIG_THRESH_67
+--						--DAC1 : "DAC2" on schematic
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(0) <= x""; -- TRGTHREF
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(1) <= x""; -- ISEL
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(2) <= x""; -- SBBIAS
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(3) <= x""; -- PUBIAS
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(4) <= x""; -- VDLY
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(5) <= x""; -- CMPBIAS
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(6) <= x""; -- PAD_G
+--						internal_DESIRED_DAC_VOLTAGES(0)(1)(7) <= x""; -- WBIAS
+					end loop;
+				end loop;
+			end if;
 		end if;
 	end process;
 	--
