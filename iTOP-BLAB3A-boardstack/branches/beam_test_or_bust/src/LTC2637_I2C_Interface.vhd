@@ -188,6 +188,7 @@ begin
 					else 
 						internal_SDA <= '1';
 						stop_counter := 0;
+						internal_UPDATE_SUCCEEDED <= '1';						
 						IIC_STATE <= WAIT_AFTER_STOP;
 					end if;
 
@@ -197,7 +198,6 @@ begin
 						stop_counter := stop_counter + 1;
 					else
 						internal_UPDATING <= '0';					
-						internal_UPDATE_SUCCEEDED <= '1';
 						IIC_STATE <= IDLE;
 					end if;
 					
