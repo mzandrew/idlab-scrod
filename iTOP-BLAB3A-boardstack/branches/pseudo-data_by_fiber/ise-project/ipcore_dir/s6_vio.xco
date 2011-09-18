@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 12.2
-# Date: Thu Aug 04 09:24:39 2011
+# Xilinx Core Generator version 13.2
+# Date: Sun Sep 18 03:05:38 2011
 #
 ##############################################################
 #
@@ -9,6 +9,10 @@
 #  Xilinx CORE Generator IP GUI. It is strongly recommended
 #  that you do not manually alter this file as it may cause
 #  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:chipscope_vio:1.03.a
 #
 ##############################################################
 #
@@ -28,7 +32,7 @@ SET package = fgg676
 SET removerpms = false
 SET simulationfiles = Structural
 SET speedgrade = -3
-SET verilogsim = true
+SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
@@ -43,8 +47,8 @@ CSET enable_asynchronous_output_port=false
 CSET enable_synchronous_input_port=true
 CSET enable_synchronous_output_port=true
 CSET invert_clock_input=false
-CSET synchronous_input_port_width=64
-CSET synchronous_output_port_width=64
+CSET synchronous_input_port_width=256
+CSET synchronous_output_port_width=256
 # END Parameters
 GENERATE
-# CRC: e48a4792
+# CRC: dee8f6e7
