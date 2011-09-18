@@ -1,23 +1,13 @@
----- 2011-06 Xilinx coregen
+-- 2011-06 Xilinx coregen
 -- 2011-06 kurtis
--- 2011-07 modified by mza
--- 2011-08 modified by mza
----------------------------------------------------------------------------------------------
---  Aurora Generator
---  Description: Sample Instantiation of a 1 4-byte lane module.
---               Only tests initialization in hardware.
+-- 2011-07 to 2011-09 mza
 ---------------------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
---use IEEE.STD_LOGIC_MISC.all;
---use IEEE.STD_LOGIC_unsigned.all;
 use ieee.numeric_std.all;
 use WORK.AURORA_PKG.all;
-
--- synthesis translate_off
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
--- synthesis translate_on
 
 entity Aurora_IP_Core_A_example_design is
 	generic(
@@ -31,27 +21,19 @@ entity Aurora_IP_Core_A_example_design is
 		SIM_GTPRESET_SPEEDUP : integer := 1  --Set to 1 to speed up sim reset
 	);
 	port (
-		-- User I/O
---		RESET             : in    std_logic;
---		HARD_ERR          :   out std_logic;
---		SOFT_ERR          :   out std_logic;
---		ERR_COUNT         :   out std_logic_vector(0 to 7); -- is 0 to 7 a bug?
---		LANE_UP           :   out std_logic;
---		CHANNEL_UP        :   out std_logic;
---		INIT_CLK          : in    std_logic;
---		GT_RESET_IN       : in    std_logic;
-		-- fiber optic transceiver 0 I/O
-		GTPD2_P    : in  std_logic;
-		GTPD2_N    : in  std_logic;
-		RXP               : in    std_logic;
-		RXN               : in    std_logic;
-		TXP               :   out std_logic;
-		TXN               :   out std_logic;
+		-- fiber optic dual clock input
+		Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P             : in    std_logic;
+		Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N             : in    std_logic;
+		-- fiber optic transceiver #101 lane 0 I/O
+		Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P             : in    std_logic;
+		Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N             : in    std_logic;
+		Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P            :   out std_logic;
+		Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N            :   out std_logic;
 		FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER : in    std_logic;
 		FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER : in    std_logic;
  		FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  : in    std_logic;
 		FIBER_TRANSCEIVER_0_DISABLE_MODULE                      :   out std_logic;
-		-- fiber optic transceiver 1 I/O
+		-- fiber optic transceiver #101 lane 1 I/O
 		FIBER_TRANSCEIVER_1_DISABLE_MODULE                      :   out std_logic;
 		-- remote trigger, revolution pulse and distributed clock
 		REMOTE_SIMPLE_TRIGGER_P    : in    std_logic;
@@ -69,212 +51,23 @@ entity Aurora_IP_Core_A_example_design is
 	);
 end Aurora_IP_Core_A_example_design;
 
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use ieee.numeric_std.all;
+use WORK.AURORA_PKG.all;
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
+
 architecture MAPPED of Aurora_IP_Core_A_example_design is
--- Component Declarations --
-	component IBUFDS
-	port (
-		O : out std_ulogic;
-		I : in std_ulogic;
-		IB : in std_ulogic
-	);
-	end component;
-
-	component IBUFGDS
-	port (
-		O  :  out STD_ULOGIC;
-		I  : in STD_ULOGIC;
-		IB : in STD_ULOGIC
-	);
-	end component;
-
-	component BUFIO2 
-	generic(
-		DIVIDE_BYPASS : boolean := TRUE;  -- TRUE, FALSE
-		DIVIDE        : integer := 1;     -- {1..8}
-		I_INVERT      : boolean := FALSE; -- TRUE, FALSE
-		USE_DOUBLER   : boolean := FALSE  -- TRUE, FALSE
-	);
-	port(
-		DIVCLK       : out std_ulogic;
-		IOCLK        : out std_ulogic;
-		SERDESSTROBE : out std_ulogic;
-		I            : in  std_ulogic
-	);
-	end component;
-
-	component IBUFG
-	port (
-		O : out std_ulogic;
-		I : in  std_ulogic
-	);
-	end component;
-
-	component Aurora_IP_Core_A_CLOCK_MODULE
-	port (
-		GT_CLK                  : in std_logic;
-		GT_CLK_LOCKED           : in std_logic;
-		USER_CLK                : out std_logic;
-		SYNC_CLK                : out std_logic;
-		PLL_NOT_LOCKED          : out std_logic
-	);
-	end component;
-
-	component Aurora_IP_Core_A_RESET_LOGIC
-	port (
-		RESET                  : in std_logic;
-		USER_CLK               : in std_logic;
-		INIT_CLK               : in std_logic;
-		GT_RESET_IN            : in std_logic;
-		TX_LOCK_IN             : in std_logic;
-		PLL_NOT_LOCKED         : in std_logic;
-		SYSTEM_RESET           : out std_logic;
-		GT_RESET_OUT           : out std_logic
-	);
-	end component;
-
-	component Aurora_IP_Core_A
-	generic (
-		SIM_GTPRESET_SPEEDUP : integer := 1
-	);
-	port (
-		-- LocalLink TX Interface
-		TX_D             : in std_logic_vector(0 to 31);
-		TX_SRC_RDY_N     : in std_logic;
-		TX_DST_RDY_N     : out std_logic;
-		-- LocalLink RX Interface
-		RX_D             : out std_logic_vector(0 to 31);
-		RX_SRC_RDY_N     : out std_logic;
-		-- V5 Serial I/O
-		RXP              : in std_logic;
-		RXN              : in std_logic;
-		TXP              : out std_logic;
-		TXN              : out std_logic;
-		-- V5 Reference Clock Interface
-		GTPD2    : in std_logic;
-		-- Error Detection Interface
-		HARD_ERR       : out std_logic;
-		SOFT_ERR       : out std_logic;
-		-- Status
-		CHANNEL_UP       : out std_logic;
-		LANE_UP          : out std_logic;
-		-- Clock Compensation Control Interface
-		WARN_CC          : in std_logic;
-		DO_CC            : in std_logic;
-		-- System Interface
-		USER_CLK         : in std_logic;
-		SYNC_CLK         : in std_logic;
-		GT_RESET         : in std_logic;
-		RESET            : in std_logic;
-		POWER_DOWN       : in std_logic;
-		LOOPBACK         : in std_logic_vector(2 downto 0);
-		GTPCLKOUT        : out std_logic;
-		TX_LOCK          : out std_logic;
-		--Kurtis added
-		RX_CHAR_IS_COMMA : out std_logic_vector(3 downto 0);
-		LANE_INIT_STATE  : out std_logic_vector(6 downto 0);
-		RESET_LANES      : out std_logic;
-		TX_PE_DATA			: out std_logic_vector(31 downto 0)
-	);
-	end component;
-
-	component Aurora_IP_Core_A_STANDARD_CC_MODULE
-	port (
-		-- Clock Compensation Control Interface
-		WARN_CC        : out std_logic;
-		DO_CC          : out std_logic;
-		-- System Interface
-		PLL_NOT_LOCKED : in std_logic;
-		USER_CLK       : in std_logic;
-		RESET          : in std_logic
-	);
-	end component;
-
-	component Packet_Receiver
-	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE : unsigned(31 downto 0) := unsigned(CURRENT_PROTOCOL_FREEZE_DATE)
-	);
-	port (
-		-- User Interface
-		RX_D            : in    std_logic_vector(0 to 31); 
-		RX_SRC_RDY_N    : in    std_logic; 
-		-- System Interface
-		USER_CLK        : in    std_logic;   
-		RESET           : in    std_logic;
-		CHANNEL_UP      : in    std_logic;
-		WRONG_PACKET_SIZE_COUNTER          :   out std_logic_vector(31 downto 0);
-		WRONG_PACKET_TYPE_COUNTER          :   out std_logic_vector(31 downto 0);
-		WRONG_PROTOCOL_FREEZE_DATE_COUNTER :   out std_logic_vector(31 downto 0);
-		WRONG_SCROD_ADDRESSED_COUNTER      :   out std_logic_vector(31 downto 0);
-		WRONG_CHECKSUM_COUNTER             :   out std_logic_vector(31 downto 0);
-		WRONG_FOOTER_COUNTER               :   out std_logic_vector(31 downto 0);
-		UNKNOWN_ERROR_COUNTER              :   out std_logic_vector(31 downto 0);
-		MISSING_ACKNOWLEDGEMENT_COUNTER    :   out std_logic_vector(31 downto 0);
-		number_of_sent_events              :   out std_logic_vector(31 downto 0);
-		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR :   out std_logic_vector(31 downto 0);
-		resynchronizing_with_header        :   out std_logic;
-		start_event_transfer               :   out std_logic;
-		acknowledge_start_event_transfer   : in    std_logic;
-		ERR_COUNT       :   out std_logic_vector(0 to 7)
-	);
-	end component;
-
-	-------------------------------------------------------------------
-	component s6_icon
-	port (
-		control0    : inout std_logic_vector(35 downto 0);
-		control1    : inout std_logic_vector(35 downto 0)
-	);
-	end component;
-
 	component s6_vio
 	port (
 		control     : inout std_logic_vector(35 downto 0);
 		clk         : in    std_logic;
-		sync_in     : in    std_logic_vector(63 downto 0);
-		sync_out    :   out std_logic_vector(63 downto 0)
+		sync_in     : in    std_logic_vector(255 downto 0);
+		sync_out    :   out std_logic_vector(255 downto 0)
 	);
 	end component;
-
-	component s6_ila
-	port (
-		control  : inout std_logic_vector(35 downto 0);
-		clk      : in    std_logic;
-		data     : in    std_logic_vector(255 downto 0);
-		trig0    : in    std_logic_vector(255 downto 0);
-		trig_out :   out std_logic
-	);
-	end component;
-	-------------------------------------------------------------------
-
-	component quarter_event_builder
-	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE : std_logic_vector(31 downto 0) := CURRENT_PROTOCOL_FREEZE_DATE
-	);
-	port (
-		RESET                              : in    std_logic;
-		CLOCK                              : in    std_logic;
-		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1           downto 0);
-		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1        downto 0);
-		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
-		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
-		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1    downto 0);
-		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS-1 downto 0);
-		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
-		START_BUILDING_A_QUARTER_EVENT     : in    std_logic;
-		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic
-	);
-	end component;
-
-	component pseudo_data_block_ram
-	port (
-		CLOCK                   : in    std_logic;
-		ADDRESS_IN              : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1 downto 0);
-		INPUT_BLOCK_RAM_ADDRESS : in    std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
-		DATA_OUT                :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1 downto 0)
-	);
-	end component;
-
------------------------------------
+-----------------------------------------------------------------------------
 	attribute core_generation_info           : string;
 	attribute core_generation_info of MAPPED : architecture is "Aurora_IP_Core_A,aurora_8b10b_v5_2,{backchannel_mode=Sidebands, c_aurora_lanes=1, c_column_used=None, c_gt_clock_1=GTPD2, c_gt_clock_2=None, c_gt_loc_1=X, c_gt_loc_10=X, c_gt_loc_11=X, c_gt_loc_12=X, c_gt_loc_13=X, c_gt_loc_14=X, c_gt_loc_15=X, c_gt_loc_16=X, c_gt_loc_17=X, c_gt_loc_18=X, c_gt_loc_19=X, c_gt_loc_2=X, c_gt_loc_20=X, c_gt_loc_21=X, c_gt_loc_22=X, c_gt_loc_23=X, c_gt_loc_24=X, c_gt_loc_25=X, c_gt_loc_26=X, c_gt_loc_27=X, c_gt_loc_28=X, c_gt_loc_29=X, c_gt_loc_3=X, c_gt_loc_30=X, c_gt_loc_31=X, c_gt_loc_32=X, c_gt_loc_33=X, c_gt_loc_34=X, c_gt_loc_35=X, c_gt_loc_36=X, c_gt_loc_37=X, c_gt_loc_38=X, c_gt_loc_39=X, c_gt_loc_4=X, c_gt_loc_40=X, c_gt_loc_41=X, c_gt_loc_42=X, c_gt_loc_43=X, c_gt_loc_44=X, c_gt_loc_45=X, c_gt_loc_46=X, c_gt_loc_47=X, c_gt_loc_48=X, c_gt_loc_5=1, c_gt_loc_6=X, c_gt_loc_7=X, c_gt_loc_8=X, c_gt_loc_9=X, c_lane_width=4, c_line_rate=3.125, c_nfc=false, c_nfc_mode=IMM, c_refclk_frequency=156.25, c_simplex=false, c_simplex_mode=TX, c_stream=true, c_ufc=false, flow_mode=None, interface_mode=Streaming, dataflow_config=Duplex}";
 -- Parameter Declarations --
@@ -284,21 +77,21 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal SOFT_ERR_Buffer    : std_logic;
 	signal LANE_UP_Buffer     : std_logic;
 	signal CHANNEL_UP_Buffer  : std_logic;
-	signal TXP_Buffer         : std_logic;
-	signal TXN_Buffer         : std_logic;
+--	signal TXP_Buffer         : std_logic;
+--	signal TXN_Buffer         : std_logic;
 -- Internal Register Declarations --
 	signal gt_reset_i         : std_logic; 
 	signal system_reset_i     : std_logic;
 -- Wire Declarations --
 -- Stream TX Interface
-	signal tx_d_i             : std_logic_vector(0 to 31);
-	signal tx_src_rdy_n_i     : std_logic;
-	signal tx_dst_rdy_n_i     : std_logic;
+	signal Aurora_lane0_transmit_data_bus             : std_logic_vector(0 to 31);
+	signal Aurora_lane0_transmit_source_ready_active_low     : std_logic;
+	signal Aurora_lane0_transmit_destination_ready_active_low     : std_logic;
 -- Stream RX Interface
-	signal rx_d_i             : std_logic_vector(0 to 31);
-	signal rx_src_rdy_n_i     : std_logic;
+	signal Aurora_lane0_receive_data_bus             : std_logic_vector(0 to 31);
+	signal Aurora_lane0_receive_source_ready_active_low     : std_logic;
 -- V5 Reference Clock Interface
-	signal GTPD2_left_i      : std_logic;
+	signal Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left      : std_logic;
 -- Error Detection Interface
 	signal hard_err_i       : std_logic;
 	signal soft_err_i       : std_logic;
@@ -310,7 +103,7 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal do_cc_i            : std_logic;
 -- System Interface ---------------------------------------------------------
 	signal pll_not_locked_i   : std_logic;
-	signal user_clk_i         : std_logic;
+	signal Aurora_78MHz_clock : std_logic;
 	signal sync_clk_i         : std_logic;
 	signal reset_i            : std_logic;
 	signal power_down_i       : std_logic;
@@ -321,30 +114,31 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 --Frame check signals -------------------------------------------------------
 	signal err_count_i      : std_logic_vector(0 to 7);
 	signal ERR_COUNT_Buffer : std_logic_vector(0 to 7);
--- chipscope signals --------------------------------------------------------
-	signal icon_to_vio_i         : std_logic_vector(35 downto 0);
-	signal icon_to_ila_i         : std_logic_vector(35 downto 0);
-	signal sync_in_i             : std_logic_vector(63 downto 0);
-	signal sync_out_i            : std_logic_vector(63 downto 0);
-	signal chipscope_ila_data    : std_logic_vector(255 downto 0) := (others => '0');
-	signal chipscope_ila_trigger : std_logic_vector(255 downto 0) := (others => '0');
 -----------------------------------------------------------------------------
-	signal lane_up_i_i  	      : std_logic;
-	signal tx_lock_i_i  	      : std_logic;
-	signal lane_up_reduce_i    : std_logic;
+	signal lane_up_i_i  	: std_logic;
+	signal tx_lock_i_i  	: std_logic;
+	signal not_lane_up_i : std_logic;
 	attribute ASYNC_REG        : string;
 	attribute ASYNC_REG of tx_lock_i  : signal is "TRUE";
--------Kurtis additions------------
-	signal internal_clock_from_remote_source : std_logic;
-	signal internal_clock_250MHz             : std_logic;
-	signal internal_COUNTER : std_logic_vector(31 downto 0);
-	signal INIT_CLK : std_logic;
 	signal AURORA_RESET_IN : std_logic := '1';
 	signal GT_RESET_IN     : std_logic := '1';
+	signal INIT_CLK : std_logic;
 	signal rx_char_is_comma_i : std_logic_vector(3 downto 0);
 	signal lane_init_state_i  : std_logic_vector(6 downto 0);
 	signal reset_lanes_i : std_logic;
 	signal tx_pe_data_i : std_logic_vector(31 downto 0);
+-- chipscope signals --------------------------------------------------------
+	signal icon_to_vio_i         : std_logic_vector(35 downto 0);
+	signal icon_to_ila_i         : std_logic_vector(35 downto 0);
+	signal sync_in_i             : std_logic_vector(255 downto 0);
+	signal sync_out_i            : std_logic_vector(255 downto 0);
+	signal chipscope_ila_data    : std_logic_vector(255 downto 0) := (others => '0');
+	signal chipscope_ila_trigger : std_logic_vector(255 downto 0) := (others => '0');
+-----------------------------------------------------------------------------
+-------Kurtis additions------------
+	signal internal_clock_from_remote_source : std_logic;
+	signal internal_clock_250MHz             : std_logic;
+	signal internal_COUNTER : std_logic_vector(31 downto 0);
 	signal internal_PACKET_GENERATOR_ENABLE : std_logic_vector(1 downto 0);
 	signal internal_DATA_GENERATOR_STATE : std_logic_vector(2 downto 0);
 	signal internal_VARIABLE_DELAY_BETWEEN_EVENTS : std_logic_vector(31 downto 0);
@@ -649,9 +443,9 @@ begin
 -----------------------------------------------------------------------------
     -- Register User I/O --
     -- Register User Outputs from core.
-	process (user_clk_i)
+	process (Aurora_78MHz_clock)
 	begin
-		if (user_clk_i 'event and user_clk_i = '1') then
+		if (Aurora_78MHz_clock 'event and Aurora_78MHz_clock = '1') then
 			HARD_ERR_Buffer    <= hard_err_i;
 			SOFT_ERR_Buffer    <= soft_err_i;
 			ERR_COUNT_Buffer   <= err_count_i;
@@ -660,16 +454,7 @@ begin
 		end if;
 	end process;
 -----------------------------------------------------------------------------
-	lane_up_reduce_i    <=  lane_up_i;
-	
---	HARD_ERR    <= HARD_ERR_Buffer;
---	SOFT_ERR    <= SOFT_ERR_Buffer;
---	ERR_COUNT   <= ERR_COUNT_Buffer;
---	LANE_UP     <= LANE_UP_Buffer;
---	CHANNEL_UP  <= CHANNEL_UP_Buffer;
-	TXP         <= TXP_Buffer;
-	TXN         <= TXN_Buffer;
-
+	not_lane_up_i <= not lane_up_i;
 	INIT_CLK <= internal_COUNTER(2);
 -----------------------------------------------------------------------------
 	LVDS_SIMPLE_TRIGGER  : IBUFDS port map (I => REMOTE_SIMPLE_TRIGGER_P,  IB => REMOTE_SIMPLE_TRIGGER_N,  O => external_trigger_2_from_LVDS);
@@ -704,7 +489,7 @@ begin
 	
 	LEDS(15 downto 12) <= internal_number_of_sent_events(3 downto 0);
 -----------------------------------------------------------------------------
-	MONITOR_HEADER_OUTPUT(0) <= tx_src_rdy_n_i;
+	MONITOR_HEADER_OUTPUT(0) <= Aurora_lane0_transmit_source_ready_active_low;
 	MONITOR_HEADER_OUTPUT(1) <= clock_1MHz;
 	MONITOR_HEADER_OUTPUT(2) <= clock_1kHz;
 	MONITOR_HEADER_OUTPUT(10 downto 3) <= (others => '0');
@@ -719,16 +504,18 @@ begin
 	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
 -----------------------------------------------------------------------------
-	IBUFDS_i  :  IBUFDS  port map (I  => GTPD2_P, IB => GTPD2_N, O  => GTPD2_left_i);
+	IBUFDS_i  :  IBUFDS  port map (I  => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P, IB => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N, O  => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left);
 
 	IBUFGDS_i_local  : IBUFGDS port map (I => board_clock_250MHz_P, IB => board_clock_250MHz_N, O => internal_clock_250MHz);
 	IBUFGDS_i_remote : IBUFGDS port map (I => REMOTE_CLOCK_P, IB => REMOTE_CLOCK_N, O => internal_clock_from_remote_source);
 	internal_clock_for_state_machine <= internal_clock_250MHz;
 
-	BUFIO2_i : BUFIO2 generic map (
+	BUFIO2_i : BUFIO2
+	generic map (
 		DIVIDE         =>      1,
 		DIVIDE_BYPASS  =>      TRUE
-	) port map (
+	)
+	port map (
 		I              =>      gtpclkout_i,
 		DIVCLK         =>      buf_gtpclkout_i,
 		IOCLK          =>      open,
@@ -736,11 +523,11 @@ begin
 	);
 
 	-- Instantiate a clock module for clock division
-	clock_module_i : Aurora_IP_Core_A_CLOCK_MODULE
+	clock_module_i : entity work.Aurora_IP_Core_A_CLOCK_MODULE
 	port map (
 		GT_CLK          => buf_gtpclkout_i,
 		GT_CLK_LOCKED   => tx_lock_i,
-		USER_CLK        => user_clk_i,
+		USER_CLK        => Aurora_78MHz_clock,
 		SYNC_CLK        => sync_clk_i,
 		PLL_NOT_LOCKED  => pll_not_locked_i
 	);
@@ -749,13 +536,16 @@ begin
 	power_down_i     <= '0';
 	loopback_i       <= "000";
 
-	frame_check_i : Packet_Receiver
+	frame_check_i : entity work.Packet_Receiver
+	generic map (
+		CURRENT_PROTOCOL_FREEZE_DATE => unsigned(CURRENT_PROTOCOL_FREEZE_DATE)
+	)
 	port map (
 		-- User Interface
-		RX_D            =>  rx_d_i, 
-		RX_SRC_RDY_N    =>  rx_src_rdy_n_i,  
+		RX_D            =>  Aurora_lane0_receive_data_bus, 
+		RX_SRC_RDY_N    =>  Aurora_lane0_receive_source_ready_active_low,  
 		-- System Interface
-		USER_CLK        =>  user_clk_i,   
+		USER_CLK        =>  Aurora_78MHz_clock,   
 		RESET           =>  reset_i,
 		CHANNEL_UP      =>  channel_up_i,
 		WRONG_PACKET_SIZE_COUNTER => internal_WRONG_PACKET_SIZE_COUNTER,
@@ -774,9 +564,13 @@ begin
 		ERR_COUNT       =>  err_count_i
 	);
 
-	QEB : quarter_event_builder port map (
+	QEB : entity work.quarter_event_builder
+	generic map (
+		CURRENT_PROTOCOL_FREEZE_DATE => CURRENT_PROTOCOL_FREEZE_DATE
+	)
+	port map (
 		RESET                              => reset_i,
-		CLOCK                              => user_clk_i,
+		CLOCK                              => Aurora_78MHz_clock,
 		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,
@@ -792,8 +586,8 @@ begin
 	internal_START_BUILDING_A_QUARTER_EVENT <= quarter_event_builder_enable and pulsed_trigger;
 	quarter_event_builder_enable <= not transmit_disable;
 
-	PDBR : pseudo_data_block_ram port map (
-		CLOCK                   => user_clk_i,
+	PDBR : entity work.pseudo_data_block_ram port map (
+		CLOCK                   => Aurora_78MHz_clock,
 		INPUT_BLOCK_RAM_ADDRESS => internal_INPUT_BLOCK_RAM_ADDRESS,
 		ADDRESS_IN              => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
 		DATA_OUT                => internal_ASIC_DATA_BLOCKRAM_DATA_BUS
@@ -803,11 +597,11 @@ begin
 	chipscope_ila_data(63 downto 32) <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
 	chipscope_ila_data(232 downto 64) <= (others => '0');
 	chipscope_ila_data(233) <= quarter_event_fifo_is_empty; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
-	chipscope_ila_data(234) <= tx_dst_rdy_n_i; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
+	chipscope_ila_data(234) <= Aurora_lane0_transmit_destination_ready_active_low; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
 	chipscope_ila_data(247 downto 235) <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
 	chipscope_ila_data(249 downto 248) <= internal_INPUT_BLOCK_RAM_ADDRESS;
 	chipscope_ila_data(250) <= quarter_event_fifo_read_enable; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
-	chipscope_ila_data(251) <= tx_src_rdy_n_i; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
+	chipscope_ila_data(251) <= Aurora_lane0_transmit_source_ready_active_low; -- warning:  this happens much faster than 1MHz, so it'll look like it rarely changes
 	chipscope_ila_data(252) <= quarter_event_builder_enable;
 	chipscope_ila_data(253) <= internal_QUARTER_EVENT_FIFO_WRITE_ENABLE;
 	chipscope_ila_data(254) <= internal_START_BUILDING_A_QUARTER_EVENT;
@@ -819,8 +613,8 @@ begin
 
 	QUARTER_EVENT_FIFO : entity work.quarter_event_fifo port map (
 		rst    => reset_i,
-		wr_clk => user_clk_i,
-		rd_clk => user_clk_i,
+		wr_clk => Aurora_78MHz_clock,
+		rd_clk => Aurora_78MHz_clock,
 		din    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
 		wr_en  => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
 		rd_en  => quarter_event_fifo_read_enable,
@@ -833,31 +627,31 @@ begin
 	-- might want to have an additional signal anded with these that is a
 	-- set-reset flip flop that is set when the quarter event is finished
 	--	building and cleared when another one is started:
-	quarter_event_fifo_read_enable <= (not quarter_event_fifo_is_empty) and (not tx_dst_rdy_n_i);
-	tx_src_rdy_n_i <= not quarter_event_fifo_read_enable;
-	tx_d_i <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
+	quarter_event_fifo_read_enable <= (not quarter_event_fifo_is_empty) and (not Aurora_lane0_transmit_destination_ready_active_low);
+	Aurora_lane0_transmit_source_ready_active_low <= not quarter_event_fifo_read_enable;
+	Aurora_lane0_transmit_data_bus <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
 
 	internal_DATA_GENERATOR_STATE <= (others => '0');
 
-	aurora_module_i : Aurora_IP_Core_A
+	aurora_module_i : entity work.Aurora_IP_Core_A
 	generic map(
 		SIM_GTPRESET_SPEEDUP => SIM_GTPRESET_SPEEDUP
 	)
 	port map (
 		-- LocalLink TX Interface
-		TX_D             => tx_d_i,
-		TX_SRC_RDY_N     => tx_src_rdy_n_i,
-		TX_DST_RDY_N     => tx_dst_rdy_n_i,
+		TX_D             => Aurora_lane0_transmit_data_bus,
+		TX_SRC_RDY_N     => Aurora_lane0_transmit_source_ready_active_low,
+		TX_DST_RDY_N     => Aurora_lane0_transmit_destination_ready_active_low,
 		-- LocalLink RX Interface
-		RX_D             => rx_d_i,
-		RX_SRC_RDY_N     => rx_src_rdy_n_i,
+		RX_D             => Aurora_lane0_receive_data_bus,
+		RX_SRC_RDY_N     => Aurora_lane0_receive_source_ready_active_low,
 		-- V5 Serial I/O
-		RXP              => RXP,
-		RXN              => RXN,
-		TXP              => TXP_Buffer,
-		TXN              => TXN_Buffer,
+		RXP              => Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P,
+		RXN              => Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N,
+		TXP              => Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P,
+		TXN              => Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N,
 		-- V5 Reference Clock Interface
-		GTPD2    => GTPD2_left_i,
+		GTPD2    => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left,
 		-- Error Detection Interface
 		HARD_ERR       => hard_err_i,
 		SOFT_ERR       => soft_err_i,
@@ -868,7 +662,7 @@ begin
 		WARN_CC          => warn_cc_i,
 		DO_CC            => do_cc_i,
 		-- System Interface
-		USER_CLK         => user_clk_i,
+		USER_CLK         => Aurora_78MHz_clock,
 		SYNC_CLK         => sync_clk_i,
 		RESET            => reset_i,
 		POWER_DOWN       => power_down_i,
@@ -883,21 +677,21 @@ begin
 		TX_PE_DATA       => tx_pe_data_i
 		);
 
-	standard_cc_module_i : Aurora_IP_Core_A_STANDARD_CC_MODULE
-		port map (
+	standard_cc_module_i : entity work.Aurora_IP_Core_A_STANDARD_CC_MODULE
+	port map (
 		-- Clock Compensation Control Interface
 		WARN_CC        => warn_cc_i,
 		DO_CC          => do_cc_i,
 		-- System Interface
 		PLL_NOT_LOCKED => pll_not_locked_i,
-		USER_CLK       => user_clk_i,
-		RESET          => not(lane_up_reduce_i)
+		USER_CLK       => Aurora_78MHz_clock,
+		RESET          => not_lane_up_i
 	);
 
-	reset_logic_i : Aurora_IP_Core_A_RESET_LOGIC
+	reset_logic_i : entity work.Aurora_IP_Core_A_RESET_LOGIC
 	port map (
 		RESET            => AURORA_RESET_IN,
-		USER_CLK         => user_clk_i,
+		USER_CLK         => Aurora_78MHz_clock,
 		INIT_CLK         => INIT_CLK,
 		GT_RESET_IN      => GT_RESET_IN,
 		TX_LOCK_IN       => tx_lock_i,
@@ -920,7 +714,7 @@ begin
 		sync_in_i(5)          <= trigger_acknowledge;
 		sync_in_i(6)          <= internal_QUARTER_EVENT_FIFO_WRITE_ENABLE;
 		sync_in_i(7)          <= quarter_event_fifo_is_empty;
-		sync_in_i(8)          <= tx_dst_rdy_n_i;
+		sync_in_i(8)          <= Aurora_lane0_transmit_destination_ready_active_low;
 		sync_in_i(9)          <= quarter_event_fifo_read_enable;
 --		sync_in_i(8 downto 5) <= (others => '0');
 --		sync_in_i(9)          <= pll_not_locked_i;
@@ -929,7 +723,7 @@ begin
 		-- data receiver status:
 --		sync_in_i(19 downto 12) <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR(7 downto 0);
 --		sync_in_i(20)           <= internal_resynchronizing_with_header;
---		sync_in_i(22)           <= tx_src_rdy_n_i;
+--		sync_in_i(22)           <= Aurora_lane0_transmit_source_ready_active_low;
 --		sync_in_i(9)            <= internal_start_event_transfer;
 --		sync_in_i(10)           <= reset_i;
 		sync_in_i(10)           <= spill_active;
@@ -945,7 +739,8 @@ begin
 --		sync_in_i(59 downto 56) <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER(3 downto 0);
 --		sync_in_i(63 downto 62) <= stupid_counter(1 downto 0);
 --		sync_in_i(63 downto 62) <= (others => '0');
-		
+		sync_in_i(255 downto 64) <= (others => '0');
+
 		transmit_always                                    <= sync_out_i(1);
 		transmit_disable                                   <= sync_out_i(2);
 		internal_acknowledge_start_event_transfer          <= sync_out_i(35);
@@ -955,24 +750,24 @@ begin
 		request_a_fiber_link_reset                         <= sync_out_i(39);
 		should_not_automatically_try_to_keep_fiber_link_up <= sync_out_i(40);
 
-		i_icon : s6_icon
+		chipscope_icon : entity work.s6_icon
 		port map (
-			control0    => icon_to_vio_i,
-			control1    => icon_to_ila_i
+			control0 => icon_to_vio_i,
+			control1 => icon_to_ila_i
 		);
 
-		i_vio : s6_vio
+		chipscope_vio : s6_vio
 		port map (
 			control   => icon_to_vio_i,
-			clk       => user_clk_i,
+			clk       => Aurora_78MHz_clock,
 			sync_in   => sync_in_i,
 			sync_out  => sync_out_i
 		);
 
-		i_ila : s6_ila
+		chipscope_ila : entity work.s6_ila
 		port map (
 			control  => icon_to_ila_i,
-			clk      => user_clk_i, -- clock_1MHz,
+			clk      => Aurora_78MHz_clock,
 			data     => chipscope_ila_data,
 			trig0    => chipscope_ila_trigger,
 			trig_out => open
@@ -994,5 +789,4 @@ begin
 		-- Shared VIO Outputs
 		reset_i <= system_reset_i or global_reset;
 	end generate no_chipscope2;
-
 end MAPPED;
