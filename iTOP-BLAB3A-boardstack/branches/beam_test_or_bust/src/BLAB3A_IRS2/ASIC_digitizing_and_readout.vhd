@@ -34,7 +34,8 @@ use work.Board_Stack_Definitions.ALL;
 entity ASIC_digitizing_and_readout is
 	Generic (
 				WIDTH_OF_BLOCKRAM_DATA_BUS		: integer := 16;
-				WIDTH_OF_BLOCKRAM_ADDRESS_BUS : integer := 13
+				WIDTH_OF_BLOCKRAM_ADDRESS_BUS : integer := 13;
+				use_chipscope_ila					: boolean := false
 	);
 	Port (
 				AsicIn_DATA_BUS_CHANNEL_ADDRESS			: out std_logic_vector(2 downto 0);		
@@ -65,7 +66,9 @@ entity ASIC_digitizing_and_readout is
 				DAQ_BUSY											: in std_logic;
 				
 				CLOCK_SST										: in std_logic;
-				CLOCK_DAQ_INTERFACE							: in std_logic
+				CLOCK_DAQ_INTERFACE							: in std_logic;
+				
+				CHIPSCOPE_CONTROL								: inout std_logic_vector(35 downto 0)
 		);
 end ASIC_digitizing_and_readout;
 
@@ -96,6 +99,8 @@ architecture Behavioral of ASIC_digitizing_and_readout is
 	
 	signal internal_CONTINUE_ANALOG_WRITING				: std_logic;
 	signal internal_DONE_DIGITIZING							: std_logic;
+	
+	signal internal_CHIPSCOPE_ILA_SIGNALS					: std_logic_vector(255 downto 0);	
 begin
 	-----------------------------------------------------------------------------
 	--Signal mapping
@@ -183,7 +188,7 @@ begin
 					internal_DONE_DIGITIZING							<= '0';	
 					if (TRIGGER_DIGITIZING = '1') then
 						--Send the signal to the sampling block to stop writing to analog memory
-						internal_CONTINUE_ANALOG_WRITING 				<= '0';
+						internal_CONTINUE_ANALOG_WRITING 			<= '0';
 						--Move to the next state where we might want to continue sampling 
 						--a bit after the trigger.
 						internal_STATE <= POST_TRIGGER_SAMPLING;
@@ -307,6 +312,49 @@ begin
 			end case;
 		end if;
 	end process;
+	
+	
+	-----------------------------------------------------------------
+	-----Diagnostic access through ILA-------------------------------
+	-----------------------------------------------------------------
+	--Diagnostic access through ILA----------------
+	gen_Chipscope_ILA : if (use_chipscope_ila = true) generate
+		map_Chipscope_ILA : entity work.Chipscope_ILA
+			port map (
+				CONTROL => CHIPSCOPE_CONTROL,
+				CLK => CLOCK_SST,
+				TRIG0 => internal_CHIPSCOPE_ILA_SIGNALS 
+			);
+		internal_CHIPSCOPE_ILA_SIGNALS(2 downto 0) 	<= internal_ASIC_DATA_BUS_ADDRESS_FLATTENED(8 downto 6); --CH
+		internal_CHIPSCOPE_ILA_SIGNALS(8 downto 3) 	<= internal_ASIC_DATA_BUS_ADDRESS_FLATTENED(5 downto 0); --SAMPLE
+		internal_CHIPSCOPE_ILA_SIGNALS(9) 				<= internal_ASIC_DATA_BUS_OUTPUT_ENABLE;
+		internal_CHIPSCOPE_ILA_SIGNALS(13 downto 10) <= internal_ASIC_DATA_BUS_OUTPUT_DISABLE_R;
+		internal_CHIPSCOPE_ILA_SIGNALS(22 downto 14) <= internal_ASIC_STORAGE_TO_WILK_ADDRESS;
+		internal_CHIPSCOPE_ILA_SIGNALS(23)				<= internal_ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE;
+		internal_CHIPSCOPE_ILA_SIGNALS(24)				<= internal_ASIC_STORAGE_TO_WILK_ENABLE;
+		internal_CHIPSCOPE_ILA_SIGNALS(25)				<= internal_ASIC_WILK_COUNTER_RESET;
+		internal_CHIPSCOPE_ILA_SIGNALS(26)				<= internal_ASIC_WILK_COUNTER_START;
+		internal_CHIPSCOPE_ILA_SIGNALS(27)				<= internal_ASIC_WILK_RAMP_ACTIVE;
+		internal_CHIPSCOPE_ILA_SIGNALS(28)				<= internal_CONTINUE_ANALOG_WRITING;
+		internal_CHIPSCOPE_ILA_SIGNALS(40 downto 29)	<= AsicOut_DATA_BUS_C0;
+		internal_CHIPSCOPE_ILA_SIGNALS(52 downto 41)	<= AsicOut_DATA_BUS_C1;
+		internal_CHIPSCOPE_ILA_SIGNALS(64 downto 53)	<= AsicOut_DATA_BUS_C2;
+		internal_CHIPSCOPE_ILA_SIGNALS(76 downto 65)	<= AsicOut_DATA_BUS_C3;
+		internal_CHIPSCOPE_ILA_SIGNALS(77) 				<= internal_BLOCKRAM_WRITE_ENABLE;
+		internal_CHIPSCOPE_ILA_SIGNALS(78)				<= internal_DONE_DIGITIZING;
+		internal_CHIPSCOPE_ILA_SIGNALS(94 downto 79)	<= internal_BLOCKRAM_DATA_OUT;
+		internal_CHIPSCOPE_ILA_SIGNALS(103 downto 95)<= LAST_ADDRESS_WRITTEN;
+		internal_CHIPSCOPE_ILA_SIGNALS(104)				<= TRIGGER_DIGITIZING;
+		internal_CHIPSCOPE_ILA_SIGNALS(106 downto 105) 	<= BLOCKRAM_COLUMN_SELECT;
+		internal_CHIPSCOPE_ILA_SIGNALS(119 downto 107) 	<= BLOCKRAM_READ_ADDRESS;
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 120)	<= (others => '0');
+	end generate;
+	--Or connect up to ground if we don't want ILA
+	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 0) <= (others => '0');
+		CHIPSCOPE_CONTROL <= (others => 'Z');
+	end generate;
+	----------------------------------------------	
 
 end Behavioral;
 
