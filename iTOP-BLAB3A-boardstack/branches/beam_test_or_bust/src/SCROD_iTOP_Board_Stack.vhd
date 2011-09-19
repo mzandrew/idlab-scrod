@@ -213,11 +213,16 @@ begin
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
 			AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		=> AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C,
 			AsicIn_SAMPLING_TRACK_MODE_C					=> AsicIn_SAMPLING_TRACK_MODE_C,
-			CHIPSCOPE_CONTROL									=> internal_CHIPSCOPE_CONTROL0
+			CHIPSCOPE_CONTROL									=> open
 		);
 	---------------------------------------------------------
 	--------ASIC digitizing and readout----------------------
 	map_ASIC_digitizing_and_readout : entity work.ASIC_digitizing_and_readout
+		generic map (
+			WIDTH_OF_BLOCKRAM_DATA_BUS		=> WIDTH_OF_BLOCKRAM_DATA_BUS,
+			WIDTH_OF_BLOCKRAM_ADDRESS_BUS => WIDTH_OF_BLOCKRAM_ADDRESS_BUS,	
+			use_chipscope_ila					=> true
+		)
 		port map (
 			AsicIn_DATA_BUS_CHANNEL_ADDRESS			=> AsicIn_DATA_BUS_CHANNEL_ADDRESS,
 			AsicIn_DATA_BUS_SAMPLE_ADDRESS			=> AsicIn_DATA_BUS_SAMPLE_ADDRESS,
@@ -247,7 +252,9 @@ begin
 			DAQ_BUSY											=> internal_DAQ_BUSY,
 			
 			CLOCK_SST										=> internal_CLOCK_SST,
-			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE
+			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE,
+			
+			CHIPSCOPE_CONTROL								=> internal_CHIPSCOPE_CONTROL0
 		);
 	---------------------------------------------------------
 	--------ASIC feedback and monitoring loops---------------
