@@ -52,6 +52,9 @@ use UNISIM.VComponents.all;
 use work.Board_Stack_Definitions.ALL;
 
 entity ASIC_sampling_control is
+	Generic ( 
+		use_chipscope_ila		: boolean := false
+	);
 	Port (
 		CONTINUE_WRITING		: in std_logic;
 		CLOCK_SST				: in std_logic;
@@ -72,7 +75,6 @@ end ASIC_sampling_control;
 architecture Behavioral of ASIC_sampling_control is
 	signal internal_LAST_ADDRESS_WRITTEN	: std_logic_vector(8 downto 0);
 	signal internal_CONTINUE_WRITING			: std_logic;
-	signal internal_WRITING						: std_logic;
 	signal internal_FIRST_ADDRESS_ALLOWED	: std_logic_vector(8 downto 0);
 	signal internal_LAST_ADDRESS_ALLOWED	: std_logic_vector(8 downto 0);
 	signal internal_AsicIn_SAMPLING_HOLD_MODE_C						: std_logic_vector(3 downto 0);
@@ -91,18 +93,23 @@ begin
 	internal_LAST_ADDRESS_ALLOWED		<= LAST_ADDRESS_ALLOWED;
 	
 	--Diagnostic access through ILA----------------
-	map_Chipscope_ILA : entity work.Chipscope_ILA
-		port map (
-			CONTROL => CHIPSCOPE_CONTROL,
-			CLK => not(CLOCK_SST),
-			TRIG0 => internal_CHIPSCOPE_ILA_SIGNALS );
-	--
-	internal_CHIPSCOPE_ILA_SIGNALS(0) <= '0';
-	internal_CHIPSCOPE_ILA_SIGNALS(8 downto 1) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1);
-	internal_CHIPSCOPE_ILA_SIGNALS(9) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
-	internal_CHIPSCOPE_ILA_SIGNALS(10) <= internal_CONTINUE_WRITING;
-	internal_CHIPSCOPE_ILA_SIGNALS(19 downto 11) <= internal_LAST_ADDRESS_WRITTEN;
-	internal_CHIPSCOPE_ILA_SIGNALS(255 downto 20) <= (others => '0');
+	gen_Chipscope_ILA : if (use_chipscope_ila = true) generate
+		map_Chipscope_ILA : entity work.Chipscope_ILA
+			port map (
+				CONTROL => CHIPSCOPE_CONTROL,
+				CLK => CLOCK_SST,
+				TRIG0 => internal_CHIPSCOPE_ILA_SIGNALS );
+		internal_CHIPSCOPE_ILA_SIGNALS(0) <= '0';
+		internal_CHIPSCOPE_ILA_SIGNALS(8 downto 1) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1);
+		internal_CHIPSCOPE_ILA_SIGNALS(9) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
+		internal_CHIPSCOPE_ILA_SIGNALS(10) <= internal_CONTINUE_WRITING;
+		internal_CHIPSCOPE_ILA_SIGNALS(19 downto 11) <= internal_LAST_ADDRESS_WRITTEN;
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 20) <= (others => '0');
+	end generate;
+	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 0) <= (others => '0');
+		CHIPSCOPE_CONTROL <= (others => 'Z');
+	end generate;
 	----------------------------------------------
 
 	--The signals here are controlled by clock logic, so are wired appropriately

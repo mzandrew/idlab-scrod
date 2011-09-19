@@ -23,7 +23,11 @@ use UNISIM.VComponents.all;
 use work.Board_Stack_Definitions.ALL;
 
 entity SCROD_iTOP_Board_Stack is
-    Port ( 
+	Generic (
+				WIDTH_OF_BLOCKRAM_DATA_BUS		: integer := 16;
+				WIDTH_OF_BLOCKRAM_ADDRESS_BUS : integer := 13
+	);
+   Port ( 
 				--On board differential oscillator pins
 				BOARD_CLOCK_250MHz_P : in STD_LOGIC;
 				BOARD_CLOCK_250MHz_N : in STD_LOGIC;
@@ -48,23 +52,42 @@ entity SCROD_iTOP_Board_Stack is
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	: out	std_logic;
 				AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		: out	std_logic_vector(3 downto 0);
 				AsicIn_SAMPLING_TRACK_MODE_C					: out	std_logic_vector(3 downto 0);				
+
+				--ASIC Digitizing and Readout
+				AsicIn_DATA_BUS_CHANNEL_ADDRESS			: out std_logic_vector(2 downto 0);		
+				AsicIn_DATA_BUS_SAMPLE_ADDRESS			: out std_logic_vector(5 downto 0);
+				AsicIn_DATA_BUS_OUTPUT_ENABLE				: out std_logic;
+				AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R		: out std_logic_vector(3 downto 0);	
+				AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R		: out std_logic_vector(3 downto 0);
+				AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R		: out std_logic_vector(3 downto 0);
+				AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R		: out std_logic_vector(3 downto 0);
+				AsicIn_STORAGE_TO_WILK_ADDRESS			: out std_logic_vector(8 downto 0);
+				AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE	: out std_logic;
+				AsicIn_STORAGE_TO_WILK_ENABLE				: out std_logic;
+				AsicIn_WILK_COUNTER_RESET					: out std_logic;
+				AsicIn_WILK_COUNTER_START_C				: out std_logic_vector(3 downto 0);
+				AsicIn_WILK_RAMP_ACTIVE						: out std_logic;
+				AsicOut_DATA_BUS_C0							: in std_logic_vector(11 downto 0);
+				AsicOut_DATA_BUS_C1							: in std_logic_vector(11 downto 0);
+				AsicOut_DATA_BUS_C2							: in std_logic_vector(11 downto 0);	
+				AsicOut_DATA_BUS_C3							: in std_logic_vector(11 downto 0);	
 				
 				--ASIC monitoring and feedback signals
-				AsicIn_MONITOR_TRIG								: out std_logic;
-				AsicOut_MONITOR_TRIG_C0_R						: in std_logic_vector(3 downto 0);
-				AsicOut_MONITOR_TRIG_C1_R						: in std_logic_vector(3 downto 0);
-				AsicOut_MONITOR_TRIG_C2_R						: in std_logic_vector(3 downto 0);
-				AsicOut_MONITOR_TRIG_C3_R						: in std_logic_vector(3 downto 0);
-				AsicIn_MONITOR_WILK_COUNTER_RESET			: out std_logic;
-				AsicIn_MONITOR_WILK_COUNTER_START			: out std_logic;
-				AsicOut_MONITOR_WILK_COUNTER_C0_R			: in std_logic_vector(3 downto 0);
-				AsicOut_MONITOR_WILK_COUNTER_C1_R			: in std_logic_vector(3 downto 0);
-				AsicOut_MONITOR_WILK_COUNTER_C2_R			: in std_logic_vector(3 downto 0);
-				AsicOut_MONITOR_WILK_COUNTER_C3_R			: in std_logic_vector(3 downto 0);
-				AsicOut_SAMPLING_TRACK_MODE_C0_R				: in std_logic_vector(3 downto 0);
-				AsicOut_SAMPLING_TRACK_MODE_C1_R				: in std_logic_vector(3 downto 0);
-				AsicOut_SAMPLING_TRACK_MODE_C2_R				: in std_logic_vector(3 downto 0);
-				AsicOut_SAMPLING_TRACK_MODE_C3_R				: in std_logic_vector(3 downto 0);				
+				AsicIn_MONITOR_TRIG							: out std_logic;
+				AsicOut_MONITOR_TRIG_C0_R					: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_TRIG_C1_R					: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_TRIG_C2_R					: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_TRIG_C3_R					: in std_logic_vector(3 downto 0);
+				AsicIn_MONITOR_WILK_COUNTER_RESET		: out std_logic;
+				AsicIn_MONITOR_WILK_COUNTER_START		: out std_logic;
+				AsicOut_MONITOR_WILK_COUNTER_C0_R		: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_WILK_COUNTER_C1_R		: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_WILK_COUNTER_C2_R		: in std_logic_vector(3 downto 0);
+				AsicOut_MONITOR_WILK_COUNTER_C3_R		: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C0_R			: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C1_R			: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C2_R			: in std_logic_vector(3 downto 0);
+				AsicOut_SAMPLING_TRACK_MODE_C3_R			: in std_logic_vector(3 downto 0);				
 
 				---General monitor and diagnostic
 				LEDS 					: out STD_LOGIC_VECTOR(15 downto 0);
@@ -102,8 +125,22 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
    ---------------------------------------------------------	
 	---------ASIC feedback related signals-------------------
 	signal internal_FEEDBACK_WILKINSON_COUNTER_C_R		: Wilkinson_Rate_Counters_C_R;
-	signal internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R		: Wilkinson_Rate_DAC_C_R;
+	signal internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R	: Wilkinson_Rate_DAC_C_R;
 	---------------------------------------------------------
+	----Signals for ASIC sampling / analog storage-----------
+	signal internal_CONTINUE_ANALOG_WRITING	: std_logic;
+	signal internal_LAST_ADDRESS_WRITTEN		: std_logic_vector(8 downto 0);
+	---------------------------------------------------------
+	----Signals for ASIC digitizing / readout <==> fiber interface
+	signal internal_DONE_DIGITIZING			: std_logic;
+	signal internal_BLOCKRAM_COLUMN_SELECT	: std_logic_vector(1 downto 0);
+	signal internal_BLOCKRAM_READ_ADDRESS	: std_logic_vector(WIDTH_OF_BLOCKRAM_ADDRESS_BUS-1	downto 0); 
+	signal internal_BLOCKRAM_READ_DATA		: std_logic_vector(WIDTH_OF_BLOCKRAM_DATA_BUS-1		downto 0);
+	------------------------------------------------------------
+	--Signals that I expect will be added later but are now placeholders---
+	signal internal_CLOCK_DAQ_INTERFACE		: std_logic;
+	signal internal_DAQ_BUSY					: std_logic;
+	------------------------------------------------------------
 	--Temporary debugging signals----------------------------
 	signal internal_VIO_IN : std_logic_vector(255 downto 0);
 	signal internal_VIO_OUT : std_logic_vector(255 downto 0);
@@ -160,23 +197,60 @@ begin
 	---------------------------------------------------------
 	-----ASIC sampling and analog storage control------------
 	map_ASIC_sampling_control : entity work.ASIC_sampling_control
+		generic map (
+			use_chipscope_ila			=> false
+		)
 		port map (
-			CONTINUE_WRITING			=> not(internal_FTSW_TRIGGER21_SHIFTED),
+			CONTINUE_WRITING			=> internal_CONTINUE_ANALOG_WRITING,
 			CLOCK_SST					=> internal_CLOCK_SST,
 			CLOCK_SSP					=> internal_CLOCK_SSP,
 			CLOCK_WRITE_STROBE		=> internal_CLOCK_WRITE_STROBE,
 			FIRST_ADDRESS_ALLOWED	=> "000000000",
 			LAST_ADDRESS_ALLOWED		=> "111111111",
-			LAST_ADDRESS_WRITTEN 	=> open,
+			LAST_ADDRESS_WRITTEN 	=>	internal_LAST_ADDRESS_WRITTEN,
 			AsicIn_SAMPLING_HOLD_MODE_C					=> AsicIn_SAMPLING_HOLD_MODE_C,
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS			=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS,
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
 			AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		=> AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C,
 			AsicIn_SAMPLING_TRACK_MODE_C					=> AsicIn_SAMPLING_TRACK_MODE_C,
-			CHIPSCOPE_CONTROL			=> internal_CHIPSCOPE_CONTROL0
+			CHIPSCOPE_CONTROL									=> internal_CHIPSCOPE_CONTROL0
 		);
 	---------------------------------------------------------
-	--------Asic feedback and monitoring loops---------------
+	--------ASIC digitizing and readout----------------------
+	map_ASIC_digitizing_and_readout : entity work.ASIC_digitizing_and_readout
+		port map (
+			AsicIn_DATA_BUS_CHANNEL_ADDRESS			=> AsicIn_DATA_BUS_CHANNEL_ADDRESS,
+			AsicIn_DATA_BUS_SAMPLE_ADDRESS			=> AsicIn_DATA_BUS_SAMPLE_ADDRESS,
+			AsicIn_DATA_BUS_OUTPUT_ENABLE				=> AsicIn_DATA_BUS_OUTPUT_ENABLE,
+			AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R		=> AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R,
+			AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R		=> AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R,
+			AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R		=> AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R,
+			AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R		=> AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R,
+			AsicIn_STORAGE_TO_WILK_ADDRESS			=> AsicIn_STORAGE_TO_WILK_ADDRESS,
+			AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE	=> AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE,
+			AsicIn_STORAGE_TO_WILK_ENABLE				=> AsicIn_STORAGE_TO_WILK_ENABLE,
+			AsicIn_WILK_COUNTER_RESET					=> AsicIn_WILK_COUNTER_RESET,
+			AsicIn_WILK_COUNTER_START_C				=> AsicIn_WILK_COUNTER_START_C,
+			AsicIn_WILK_RAMP_ACTIVE						=> AsicIn_WILK_RAMP_ACTIVE,
+			AsicOut_DATA_BUS_C0							=> AsicOut_DATA_BUS_C0,
+			AsicOut_DATA_BUS_C1							=> AsicOut_DATA_BUS_C1,
+			AsicOut_DATA_BUS_C2							=> AsicOut_DATA_BUS_C2,
+			AsicOut_DATA_BUS_C3							=> AsicOut_DATA_BUS_C3,
+			BLOCKRAM_COLUMN_SELECT						=> internal_BLOCKRAM_COLUMN_SELECT,
+			BLOCKRAM_READ_ADDRESS						=> internal_BLOCKRAM_READ_ADDRESS,
+			BLOCKRAM_READ_DATA							=> internal_BLOCKRAM_READ_DATA,
+			LAST_ADDRESS_WRITTEN 						=> internal_LAST_ADDRESS_WRITTEN,
+			TRIGGER_DIGITIZING							=> internal_FTSW_TRIGGER21_SHIFTED,
+			CONTINUE_ANALOG_WRITING						=> internal_CONTINUE_ANALOG_WRITING,
+
+			DONE_DIGITIZING								=> internal_DONE_DIGITIZING,
+			DAQ_BUSY											=> internal_DAQ_BUSY,
+			
+			CLOCK_SST										=> internal_CLOCK_SST,
+			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE
+		);
+	---------------------------------------------------------
+	--------ASIC feedback and monitoring loops---------------
 	map_ASIC_feedback_and_monitorin : entity work.Board_Stack_Feedback_and_Monitoring 
 		port map (
 			AsicIn_MONITOR_TRIG								=> AsicIn_MONITOR_TRIG,

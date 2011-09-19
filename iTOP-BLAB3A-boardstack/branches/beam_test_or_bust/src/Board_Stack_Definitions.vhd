@@ -43,6 +43,9 @@ package Board_Stack_Definitions is
 	type Wilkinson_Rate_Counters_C_R is array(3 downto 0) of Wilkinson_Rate_Counters_Column_R;
 	type Wilkinson_Rate_DAC_C_R is array(3 downto 0) of Wilkinson_Rate_DAC_Column_R;
 	---------------------------------------------------------------------------
+	-----------------ASIC READOUT SIGNALS--------------------------------------
+	type ASIC_BLOCKRAM_DATA is array(3 downto 0) of std_logic_vector(15 downto 0);
+	---------------------------------------------------------------------------
   
 end Board_Stack_Definitions;
 
