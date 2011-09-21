@@ -1,4 +1,4 @@
-A short how-to for svn access from the command-line
+#summary A short how-to for svn access from the command-line
 
 =basic usage=
 
