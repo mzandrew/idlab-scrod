@@ -5,3 +5,7 @@
   * Trigger data stream implementation - a running "waveform" of trigger bits, see documentation page 12 ( http://www.phys.hawaii.edu/~kurtisn/documentation/bPID_electronics/2011-09-01.BelleII-bPID.electronics-documentation.pdf )
   * Merge Xiao-Wen's temperature sensor readout into main code
   * Merge Xiao-Wen's EEPROM code to set/get SCROD ID into main code.
+
+2011-09-15 firmware block diagram:
+
+[http://idlab-scrod.googlecode.com/files/2011-09-15.SCROD-beam-test-firmware-block-diagram.whiteboard.jpeg http://idlab-scrod.googlecode.com/files/2011-09-15.SCROD-beam-test-firmware-block-diagram.whiteboard.lowres.jpeg]
