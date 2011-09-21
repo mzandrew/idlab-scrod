@@ -66,3 +66,23 @@ For the files that don't belong in the repository that show up with an annoying 
 svn propset svn:ignore "*" ise-project/
 }}}
 Which ignore all files not specifically added to the repository in that directory (it acts recursively).
+
+===reintegrating a branch into the trunk===
+
+Once you have something you like in a branch of the svn, you can reintegrate it into the trunk as follows:
+  # First do a dry run to make sure that it's going to do what you expect:
+{{{
+svn merge --reintegrate --dry-run https://idlab-scrod.googlecode.com/svn/iTOP-BLAB3A-boardstack/branches/one-shot-4windows
+}}}
+  # Then do the reintegration on your local machine:
+{{{
+svn merge --reintegrate https://idlab-scrod.googlecode.com/svn/iTOP-BLAB3A-boardstack/branches/one-shot-4windows
+}}}
+  # Then commit it with the usual command:
+{{{
+svn commit -m "Changed the trunk to reflect the current \"best\" version."
+}}}
+  # Assuming that's all been successful, you can delete the branch you were working on:
+{{{
+svn delete https://idlab-scrod.googlecode.com/svn/iTOP-BLAB3A-boardstack/branches/one-shot-4windows -m "Deleted one-shot 4 windows version since it has been merged into trunk."
+}}}
