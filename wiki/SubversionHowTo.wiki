@@ -15,7 +15,12 @@ Which should output a line that's:
 {{{
 A src/my_new_file.vhdl
 }}}
-among a bunch of "? blah" lines that indicate you haven't told it what to do with those other files yet (which is fine).
+among a bunch of
+{{{
+? blah1
+? blah2
+}}}
+lines that indicate you haven't told it what to do with those other files yet (which is fine).
 
 ===committing files (the most common command)===
 Once you're happy with the content of a file you want to put in the repository (whether you've committed that file before or not), commit the change with the following:
