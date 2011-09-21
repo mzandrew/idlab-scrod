@@ -6,6 +6,6 @@
   * Merge Xiao-Wen's temperature sensor readout into main code
   * Merge Xiao-Wen's EEPROM code to set/get SCROD ID into main code.
 
-2011-09-15 firmware block diagram:
+2011-09-15 firmware block diagram (click image to download full size version):
 
 [http://idlab-scrod.googlecode.com/files/2011-09-15.SCROD-beam-test-firmware-block-diagram.whiteboard.jpeg http://idlab-scrod.googlecode.com/files/2011-09-15.SCROD-beam-test-firmware-block-diagram.whiteboard.lowres.jpeg]
