@@ -4,6 +4,32 @@
 
 The following are a list of items to bring for the following tests:
 
+== September 2011 - Second Nagoya Integration Trip ==
+
+  * Oscilloscope probes: 4x
+  * Minimum of the following boards, debugged for shorts and opens:
+    * 3x SCROD 
+    * 3x Interconnect
+    * 3x ASIC carrier level 0 (silkscreen not labeled with a number)
+    * 4x ASIC carrier level 1 (silkscreen labeled "1")
+    * 4x ASIC carrier level 2 (silkscreen labeled "2")
+    * 4x ASIC carrier level 3 (silkscreen labeled "4")
+    * 41x IRS2 Daughter cards, rev B (with or without all amplifiers TBD)
+    * 5x Front-front boards
+    * 4x Front-back boards
+    * 5x HV boards
+    * 1x Front-middle
+  * 2x mini-USB cables
+  * 2x Xilinx programmers
+  * JTAG programmer with flying leads
+  * 5x long (15 m) fiberoptic cables
+  * Wifi router
+  * HV panel (soldered to HV boards)
+  * CAT-5 cable bundle
+  * RJ45 crimp ends
+  * RJ45 crimper
+  * 32 HV cables (SHV - SHV)
+
 == August 2011 - First Nagoya Integration Trip ==
 
   * Mixed signal oscilloscope and probes(?)
@@ -37,7 +63,3 @@ The following are a list of items to bring for the following tests:
   * Wiener CAMAC controller
   * Power supplies??
   * High voltage supplies??
-
-== September 2011 - Second Nagoya Integration Trip (Cosmic?)  ==
-
-== ??? - Beam Test at ??? ==
