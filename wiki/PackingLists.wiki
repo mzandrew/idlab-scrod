@@ -14,7 +14,8 @@ The following are a list of items to bring for the following tests:
     * 4x ASIC carrier level 1 (silkscreen labeled "1")
     * 4x ASIC carrier level 2 (silkscreen labeled "2")
     * 4x ASIC carrier level 3 (silkscreen labeled "4")
-    * 41x IRS2 Daughter cards, rev B (with or without all amplifiers TBD)
+    * 41x IRS2 Daughter cards, rev B
+      * 0-ohm resistors to set DAC addresses (if not done before departure)
     * 5x Front-front boards
     * 4x Front-back boards
     * 5x HV boards
