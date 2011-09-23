@@ -15,7 +15,8 @@ The following are a list of items to bring for the following tests:
     * 4x ASIC carrier level 2 (silkscreen labeled "2")
     * 4x ASIC carrier level 3 (silkscreen labeled "4")
     * 41x IRS2 Daughter cards, rev B
-      * 0-ohm resistors to set DAC addresses (if not done before departure)
+      * 1000x 0-ohm resistors to set DAC addresses (if not done before departure)
+      * 100x Fair-rites
     * 5x Front-front boards
     * 4x Front-back boards
     * 5x HV boards
@@ -30,6 +31,7 @@ The following are a list of items to bring for the following tests:
   * RJ45 crimp ends
   * RJ45 crimper
   * 32 HV cables (SHV - SHV)
+  * 4x LV cables
 
 == August 2011 - First Nagoya Integration Trip ==
 
