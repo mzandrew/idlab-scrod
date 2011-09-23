@@ -32,6 +32,10 @@ The following are a list of items to bring for the following tests:
   * RJ45 crimper
   * 32 HV cables (SHV - SHV)
   * 4x LV cables
+  * Mechanical enclosure
+  * Set screws
+  * Screwdriver
+  * Loc-tite
 
 == August 2011 - First Nagoya Integration Trip ==
 
