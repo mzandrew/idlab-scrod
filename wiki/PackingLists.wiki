@@ -11,6 +11,7 @@ The following are a list of items to bring for the following tests:
     * 3x Interconnect
     * 3x ASIC carrier level 0 (silkscreen not labeled with a number)
     * 4x ASIC carrier level 1 (silkscreen labeled "1")
+      * (2x?) Extra temperature sensors 
     * 4x ASIC carrier level 2 (silkscreen labeled "2")
     * 4x ASIC carrier level 3 (silkscreen labeled "4")
     * 41x IRS2 Daughter cards, rev B
