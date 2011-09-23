@@ -36,6 +36,9 @@ The following are a list of items to bring for the following tests:
   * Screwdriver
   * Loc-tite
   * 4x fiberoptic transceivers
+  * 1-2x USB hubs
+  * SMA connectors
+  * Vector board
 
 == August 2011 - First Nagoya Integration Trip ==
 
