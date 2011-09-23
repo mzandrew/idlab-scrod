@@ -6,7 +6,6 @@ The following are a list of items to bring for the following tests:
 
 == September 2011 - Second Nagoya Integration Trip ==
 
-  * Oscilloscope probes: 4x
   * Minimum of the following boards, debugged for shorts and opens:
     * 3x SCROD 
     * 3x Interconnect
@@ -36,6 +35,7 @@ The following are a list of items to bring for the following tests:
   * Set screws
   * Screwdriver
   * Loc-tite
+  * 4x fiberoptic transceivers
 
 == August 2011 - First Nagoya Integration Trip ==
 
