@@ -328,48 +328,53 @@ begin
 			else
 				for i in 0 to 3 loop
 					for j in 0 to 3 loop 
-						--Rev A channel mappings
-						--DAC0 : "DAC1" on schematic
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(0) <= x"C9E"; -- VADJP
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(1) <= x"42E"; -- VADJN
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(2) <= x"000"; -- TRGTHREF
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(3) <= x"7D0"; -- ISEL
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(4) <= x"578"; -- WBIAS
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(5) <= x"3E8"; -- TRGBIAS
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(6) <= x"44C"; -- VBIAS
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(7) <= x"3E8"; -- TRIG_THRESH
-						--DAC1 : "DAC2" on schematic
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(0) <= x"640"; -- SBBIAS
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(1) <= x"CE4"; -- PUBIAS
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(2) <= x"384"; -- CMPBIAS
-						if (internal_WILK_FEEDBACK_ENABLE = '1') then
-							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
-						else
-							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= x"AF0"; -- VDLY
-						end if;						
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= x"000"; -- PAD_E
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(5) <= x"000"; -- unconnected
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(6) <= x"7FF"; -- PAD_G
-						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(7) <= x"000"; -- unconnected
---						--Rev B channel mappings
+--						--Rev A channel mappings
 --						--DAC0 : "DAC1" on schematic
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(0) <= x""; -- TRIG_THRESH_01
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(1) <= x""; -- TRIG_THRESH_23
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(2) <= x""; -- VADJP
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(3) <= x""; -- VADJN
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(4) <= x""; -- TRGBIAS
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(5) <= x""; -- VBIAS
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(6) <= x""; -- TRIG_THRESH_45
---						internal_DESIRED_DAC_VOLTAGES(0)(0)(7) <= x""; -- TRIG_THRESH_67
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(0) <= x"C9E"; -- VADJP
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(1) <= x"42E"; -- VADJN
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(2) <= x"000"; -- TRGTHREF
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(3) <= x"7D0"; -- ISEL
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(4) <= x"578"; -- WBIAS
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(5) <= x"3E8"; -- TRGBIAS
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(6) <= x"44C"; -- VBIAS
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(7) <= x"3E8"; -- TRIG_THRESH
 --						--DAC1 : "DAC2" on schematic
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(0) <= x""; -- TRGTHREF
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(1) <= x""; -- ISEL
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(2) <= x""; -- SBBIAS
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(3) <= x""; -- PUBIAS
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(4) <= x""; -- VDLY
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(5) <= x""; -- CMPBIAS
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(6) <= x""; -- PAD_G
---						internal_DESIRED_DAC_VOLTAGES(0)(1)(7) <= x""; -- WBIAS
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(0) <= x"640"; -- SBBIAS
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(1) <= x"CE4"; -- PUBIAS
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(2) <= x"384"; -- CMPBIAS
+--						if (internal_WILK_FEEDBACK_ENABLE = '1') then
+--							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+--						else
+--							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= x"AF0"; -- VDLY
+--						end if;						
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= x"000"; -- PAD_E
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(5) <= x"000"; -- unconnected
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(6) <= x"7FF"; -- PAD_G
+--						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(7) <= x"000"; -- unconnected
+
+						--Rev B channel mappings
+						--DAC0 : "DAC1" on schematic
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(0) <= x"3E8"; -- TRIG_THRESH_01
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(1) <= x"3E8"; -- TRIG_THRESH_23
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(2) <= x"C9E"; -- VADJP
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(3) <= x"42E"; -- VADJN
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(4) <= x"3E8"; -- TRGBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(5) <= x"44C"; -- VBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(6) <= x"3E8"; -- TRIG_THRESH_45
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(7) <= x"3E8"; -- TRIG_THRESH_67
+						--DAC1 : "DAC2" on schematic
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(1) <= x"7D0"; -- ISEL
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(2) <= x"640"; -- SBBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= x"CE4"; -- PUBIAS
+						if (internal_WILK_FEEDBACK_ENABLE = '1') then
+							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+						else
+							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= x"AF0"; --VDLY
+						end if;
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(5) <= x"384"; -- CMPBIAS
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(6) <= x"7FF"; -- PAD_G
+						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(7) <= x"578"; -- WBIAS
 					end loop;
 				end loop;
 			end if;
