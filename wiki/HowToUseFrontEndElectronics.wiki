@@ -34,11 +34,11 @@ A JTAG programmer is used to send a program to the FPGA on SCROD.  Before this i
 
 ===IMPACT===
 
-IMPACT is a Xilinx ISE / Xilinx LabTools program to send a .bit file to an FPGA.
+IMPACT is a Xilinx ISE / Xilinx Labtools program to send a .bit file to an FPGA.
 
-===ChipScope===
+===Chipscope===
 
-ChipScope is a Xilinx ISE / Xilinx LabTools program to allow communication with the internal workings of the FPGA in real-time while the FPGA program is active.
+Chipscope is a Xilinx ISE / Xilinx Labtools program to allow communication with the internal workings of the FPGA in real-time while the FPGA program is active.
 
 =DAQ=
 
