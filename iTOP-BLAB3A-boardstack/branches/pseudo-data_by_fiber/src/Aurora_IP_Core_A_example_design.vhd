@@ -5,7 +5,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use ieee.numeric_std.all;
-use WORK.AURORA_PKG.all;
+--use WORK.AURORA_PKG.all;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 
@@ -54,7 +54,7 @@ end Aurora_IP_Core_A_example_design;
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use ieee.numeric_std.all;
-use WORK.AURORA_PKG.all;
+--use WORK.AURORA_PKG.all;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 
@@ -111,15 +111,17 @@ architecture MAPPED of Aurora_IP_Core_A_example_design is
 	signal gated_trigger : std_logic;
 	signal external_trigger_disable : std_logic := '0';
 	signal internal_trigger : std_logic;
-	signal spill_active : std_logic;
-	signal fill_active  : std_logic;
-	signal fake_spill_structure_enable : std_logic;
 	signal gated_fill_inactive : std_logic;
-	signal transmit_disable : std_logic := '0';
-	signal transmit_always : std_logic;
 	signal trigger_a_digitization_and_readout_event : std_logic;
 	signal pulsed_trigger : std_logic := '0';
 	signal trigger_acknowledge : std_logic;
+-----------------------------------------------------------------------------
+	signal transmit_disable : std_logic := '0';
+	signal transmit_always : std_logic;
+	signal spill_active : std_logic;
+	signal fill_active  : std_logic;
+	signal fake_spill_structure_enable : std_logic;
+-----------------------------------------------------------------------------
 	signal internal_clock_for_state_machine : std_logic;
 	signal clock_select : std_logic := '0'; -- '0' = local; '1' = remote
 	signal global_reset : std_logic := '1';
@@ -381,8 +383,8 @@ begin
 
 	internal_trigger <= raw_5Hz_fake_trigger;
 --	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
-	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
---	external_triggers_ORed_together <= external_trigger_1_from_monitor_header;
+--	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
+	external_triggers_ORed_together <= external_trigger_1_from_monitor_header;
 	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
 	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_trigger;
 --	internal_PACKET_GENERATOR_ENABLE(1) <= '1';--trigger_a_digitization_and_readout_event or transmit_always;
