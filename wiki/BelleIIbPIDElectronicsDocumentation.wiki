@@ -2,9 +2,13 @@
 
 =introduction=
 
-The following is a revision history of documentation for the Belle II barrel particle identification system. Information will change rapidly, so all documentation should be considered preliminary, unless otherwise noted.
+The following is a revision history of documentation for the Belle II barrel particle identification system.  Information will change rapidly, so all documentation should be considered preliminary, unless otherwise noted.
+
+=current version=
 
   * [http://idlab-scrod.googlecode.com/files/2011-09-10.BelleII-bPID.electronics-documentation.pdf 2011-09-10 Belle II bPID electronics documentation] - More development of raw waveform data packet format, as well as a new system block diagram.
+
+=previous versions=
 
   * [http://idlab-scrod.googlecode.com/files/2011-09-01.BelleII-bPID.electronics-documentation.pdf 2011-09-01 Belle II bPID electronics documentation] - Significant changes made to structure of document, as well as details on raw data formats.  This version is specifically about the cosmic / beam test version of the electronics with a deemphasized verbiage 
 
