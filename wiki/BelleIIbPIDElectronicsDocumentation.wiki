@@ -1,0 +1,15 @@
+#summary Documentation for (cosmic / beam test version as well as final version) of Belle II bPID Electronics
+
+=introduction=
+
+The following is a revision history of documentation for the Belle II barrel particle identification system. Information will change rapidly, so all documentation should be considered preliminary, unless otherwise noted.
+
+  * [http://idlab-scrod.googlecode.com/files/2011-09-10.BelleII-bPID.electronics-documentation.pdf 2011-09-10 documentation] - More development of raw waveform data packet format, as well as a new system block diagram.
+
+  * [http://idlab-scrod.googlecode.com/files/2011-09-01.BelleII-bPID.electronics-documentation.pdf 2011-09-01 documentation] - Significant changes made to structure of document, as well as details on raw data formats.  This version is specifically about the cosmic / beam test version of the electronics with a deemphasized verbiage 
+
+  * [http://idlab-scrod.googlecode.com/files/2011-07-08.BelleII-bPID.electronics-documentation.pdf 2011-07-08 documentation] - Changes to communication packet formats.
+
+  * [http://idlab-scrod.googlecode.com/files/2011-06-03.BelleII-bPID.electronics-documentation.pdf 2011-06-03 - First version of Belle II bPID electronics documentation] - Includes overview information and descriptions of the front and back-end electronics, as well as the data format proposed for beam test later this year.  Sections on trigger and support electronics are currently empty, as well as the current schedule and milestones.
+
+The original version of this page (now outdated) is located [http://www.phys.hawaii.edu/~kurtisn/documentation/bPID_electronics/ here].
