@@ -9,7 +9,7 @@ use ieee.numeric_std.all;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 
-entity Aurora_IP_Core_A_example_design is
+entity pseudo_data_by_fiber is
 	generic(
 		CURRENT_PROTOCOL_FREEZE_DATE                   : std_logic_vector(31 downto 0) := x"20110910";
 		NUMBER_OF_INPUT_BLOCK_RAMS                     : integer :=  2;
@@ -49,7 +49,7 @@ entity Aurora_IP_Core_A_example_design is
 		MONITOR_HEADER_OUTPUT :   out std_logic_vector(14 downto 0);
 		MONITOR_HEADER_INPUT  : in    std_logic_vector(15 downto 15)
 	);
-end Aurora_IP_Core_A_example_design;
+end pseudo_data_by_fiber;
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -58,7 +58,7 @@ use ieee.numeric_std.all;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 
-architecture MAPPED of Aurora_IP_Core_A_example_design is
+architecture PDBF of pseudo_data_by_fiber is
 	component s6_vio
 	port (
 		control     : inout std_logic_vector(35 downto 0);
@@ -582,4 +582,4 @@ begin
 		-- Shared VIO Outputs
 --		reset_i <= system_reset_i or global_reset;
 	end generate no_chipscope2;
-end MAPPED;
+end PDBF;
