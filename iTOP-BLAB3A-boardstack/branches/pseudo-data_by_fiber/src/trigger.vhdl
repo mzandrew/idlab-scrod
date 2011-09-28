@@ -166,8 +166,8 @@ begin
 	internal_raw_fake_trigger <= raw_5Hz_fake_trigger;
 --	internal_trigger <= raw_5Hz_fake_trigger;
 --	external_triggers_ORed_together <= external_trigger_1_from_monitor_header or external_trigger_2_from_LVDS;
---	external_triggers_ORed_together <= external_trigger_2_from_LVDS;
-	external_triggers_ORed_together <= external_trigger_from_monitor_header;
+	external_triggers_ORed_together <= external_simple_trigger_from_LVDS;
+--	external_triggers_ORed_together <= external_trigger_from_monitor_header;
 	gated_fill_inactive <= fake_spill_structure_enable nand fill_active;
 	trigger_a_digitization_and_readout_event <= gated_fill_inactive and gated_trigger;
 --	internal_PACKET_GENERATOR_ENABLE(1) <= '1';--trigger_a_digitization_and_readout_event or transmit_always;
