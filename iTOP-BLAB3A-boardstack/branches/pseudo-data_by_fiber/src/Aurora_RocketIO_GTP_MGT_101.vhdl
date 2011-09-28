@@ -9,8 +9,9 @@ use UNISIM.VComponents.all;
 
 entity Aurora_RocketIO_GTP_MGT_101 is
 	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE   : std_logic_vector(31 downto 0) := x"20110910";
-		SIM_GTPRESET_SPEEDUP           : integer := 1  --Set to 1 to speed up sim reset
+		CURRENT_PROTOCOL_FREEZE_DATE                : std_logic_vector(31 downto 0) := x"20110910";
+		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND : integer := 1; -- set to 83 for an 83kHz clock input
+		SIM_GTPRESET_SPEEDUP                        : integer := 1  -- set to 1 to speed up sim reset
 	);
 	port (
 		RESET                                                   : in    std_logic;
@@ -157,9 +158,17 @@ begin
 	status_LEDs                <= internal_status_LEDs;
 
 	process(internal_Aurora_RocketIO_GTP_MGT_101_reset_clock, RESET, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
-		variable internal_COUNTER                                     : integer range 0 to 1000 := 0;
-		constant number_of_cycles_per_millisecond                     : integer := 1;
-		constant number_of_cycles_to_wait_for_transceiver_to_power_on : integer := 300 * number_of_cycles_per_millisecond;
+		variable internal_COUNTER                                       : integer range 0 to 1000000 := 0;
+		constant number_of_cycles_to_keep_fiber_transceiver_powered_off : integer := 2 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_transceiver_to_power_on   : integer := 300 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_gt_logic_to_reset         : integer := 5 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_aurora_logic_to_reset     : integer := 5 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_aurora_to_connect         : integer := 100 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant counter_value_to_get_past_fiber_transceiver_power_off_state : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off;
+		constant counter_value_to_get_past_fiber_transceiver_reset_state     : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off + number_of_cycles_to_wait_for_transceiver_to_power_on;
+		constant counter_value_to_get_past_gt_logic_reset_state              : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off + number_of_cycles_to_wait_for_transceiver_to_power_on + number_of_cycles_to_wait_for_gt_logic_to_reset;
+		constant counter_value_to_get_past_aurora_logic_reset_state          : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off + number_of_cycles_to_wait_for_transceiver_to_power_on + number_of_cycles_to_wait_for_gt_logic_to_reset + number_of_cycles_to_wait_for_aurora_logic_to_reset;
+		constant counter_value_to_get_past_aurora_connection_wait_state      : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off + number_of_cycles_to_wait_for_transceiver_to_power_on + number_of_cycles_to_wait_for_gt_logic_to_reset + number_of_cycles_to_wait_for_aurora_logic_to_reset + number_of_cycles_to_wait_for_aurora_to_connect;
 	begin
 		if (	RESET = '1' or
 				FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT = '1' or
@@ -176,24 +185,24 @@ begin
 			-- a rising edge on tx_disable (from page 12 note 1)
 			-- a maximum power-up time of 300ms from power up or falling edge of
 			--     tx_disable to when it can be used for data (from page 12 note 3)
-			if (internal_COUNTER < 1 * number_of_cycles_per_millisecond) then
+			if (internal_COUNTER < counter_value_to_get_past_fiber_transceiver_power_off_state) then -- 0 to 1
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '1';
 				GT_RESET_IN     <= '1';
 				internal_fiber_link_is_up <= '0';
 				internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE <= '1';
-			elsif (internal_COUNTER < 2 * number_of_cycles_per_millisecond) then
+			elsif (internal_COUNTER < counter_value_to_get_past_fiber_transceiver_reset_state) then  -- 2 to 301
 				internal_COUNTER := internal_COUNTER + 1;
 				internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE <= '0';
-			elsif (internal_COUNTER < number_of_cycles_to_wait_for_transceiver_to_power_on + 2 * number_of_cycles_per_millisecond) then
+			elsif (internal_COUNTER < counter_value_to_get_past_gt_logic_reset_state) then           -- 302 to 306
 				internal_COUNTER := internal_COUNTER + 1;
 				GT_RESET_IN     <= '0';
-			elsif (internal_COUNTER < number_of_cycles_to_wait_for_transceiver_to_power_on + 2 * number_of_cycles_per_millisecond + 3 * number_of_cycles_per_millisecond) then
+			elsif (internal_COUNTER < counter_value_to_get_past_aurora_logic_reset_state) then       -- 307 to 311
 				internal_COUNTER := internal_COUNTER + 1;
 				AURORA_RESET_IN <= '0';
-			elsif (internal_COUNTER < number_of_cycles_to_wait_for_transceiver_to_power_on + 2 * number_of_cycles_per_millisecond + 3 * number_of_cycles_per_millisecond + 100 * number_of_cycles_per_millisecond) then
+			elsif (internal_COUNTER < counter_value_to_get_past_aurora_connection_wait_state) then   -- 312 to 411
 				internal_COUNTER := internal_COUNTER + 1;
-			else
+			else                                                                                     -- 412
 				internal_fiber_link_is_up <= CHANNEL_UP_Buffer and LANE_UP_Buffer;
 				if (FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER = '0') then
 					fiber_link_should_be_up <= '1';
