@@ -43,8 +43,8 @@ entity fiber_readout is
 		-----------------------------------------------------------------------------
 		Aurora_RocketIO_GTP_MGT_101_status_LEDs                 :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
-		chipscope_vio_in                                        : in    std_logic_vector(255 downto 0);
-		chipscope_vio_out                                       :   out std_logic_vector(255 downto 0);
+		chipscope_vio_buttons                                   : in    std_logic_vector(255 downto 0);
+		chipscope_vio_display                                   :   out std_logic_vector(255 downto 0);
 		-----------------------------------------------------------------------------
 		TRIGGER                                                 : in    std_logic;
 		DONE_BUILDING_A_QUARTER_EVENT                           :   out std_logic;
@@ -122,8 +122,8 @@ begin
 		fiber_link_is_up                                        => fiber_link_is_up,
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
-		chipscope_vio_in                                        => chipscope_vio_in,
-		chipscope_vio_out                                       => open
+		chipscope_vio_buttons                                   => chipscope_vio_buttons,
+		chipscope_vio_display                                   => chipscope_vio_display
 	);
 
 	QEB : entity work.quarter_event_builder

@@ -55,19 +55,9 @@ library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 
 architecture PDBF of pseudo_data_by_fiber is
-	component s6_vio
-	port (
-		control     : inout std_logic_vector(35 downto 0);
-		clk         : in    std_logic;
-		sync_in     : in    std_logic_vector(255 downto 0);
-		sync_out    :   out std_logic_vector(255 downto 0)
-	);
-	end component;
 -- chipscope signals --------------------------------------------------------
-	signal icon_to_vio_i         : std_logic_vector(35 downto 0);
-	signal icon_to_ila_i         : std_logic_vector(35 downto 0);
-	signal chipscope_vio_in      : std_logic_vector(255 downto 0);
-	signal chipscope_vio_out     : std_logic_vector(255 downto 0);
+	signal chipscope_vio_buttons : std_logic_vector(255 downto 0);
+	signal chipscope_vio_display : std_logic_vector(255 downto 0);
 	signal chipscope_ila_data    : std_logic_vector(255 downto 0) := (others => '0');
 	signal chipscope_ila_trigger : std_logic_vector(255 downto 0) := (others => '0');
 -----------------------------------------------------------------------------
@@ -117,6 +107,11 @@ architecture PDBF of pseudo_data_by_fiber is
 	signal internal_INPUT_BLOCK_RAM_ADDRESS            : std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 	signal internal_ASIC_DATA_BLOCKRAM_DATA_BUS        : std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1        downto 0);
 	signal internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS     : std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1     downto 0);
+-----------------------------------------------------------------------------
+	signal fiber_readout_chipscope_vio_buttons     : std_logic_vector(255 downto 0) := (others => '0');
+	signal fiber_readout_chipscope_vio_display     : std_logic_vector(255 downto 0) := (others => '0');
+-----------------------------------------------------------------------------
+	signal fake_button : std_logic := '1';
 begin
 -----------------------------------------------------------------------------
 	process(internal_clock_for_state_machine, request_a_global_reset)
@@ -328,8 +323,8 @@ begin
 		fiber_link_is_up                                        => fiber_link_is_up,
 		Aurora_RocketIO_GTP_MGT_101_status_LEDs                 => internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
-		chipscope_vio_in                                        => chipscope_vio_in,
-		chipscope_vio_out                                       => open,
+		chipscope_vio_display                                   => fiber_readout_chipscope_vio_display,
+		chipscope_vio_buttons                                   => fiber_readout_chipscope_vio_buttons,
 		TRIGGER                                                 => pulsed_trigger,
 		DONE_BUILDING_A_QUARTER_EVENT                           => internal_DONE_BUILDING_A_QUARTER_EVENT,
 		INPUT_DATA_BUS                                          => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
@@ -367,7 +362,7 @@ begin
 	LEDS(4) <= global_reset;
 	LEDS(5) <= '0';
 	LEDS(6) <= '0';
-	LEDS(7) <= '0';
+	LEDS(7) <= fake_button;
 
 	LEDS(8)  <= '0';--raw_5Hz_fake_trigger;
 	LEDS(9)  <= external_trigger_1_from_monitor_header;
@@ -395,56 +390,34 @@ begin
 	IBUFGDS_i_remote : IBUFGDS port map (I => REMOTE_CLOCK_P, IB => REMOTE_CLOCK_N, O => internal_clock_from_remote_source);
 	internal_clock_for_state_machine <= internal_clock_250MHz;
 
-	chipscope1 : if USE_CHIPSCOPE = 1 generate
-		chipscope_ila_data(234 downto 0) <= (others => '0');
-		chipscope_ila_data(247 downto 235) <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
-		chipscope_ila_data(249 downto 248) <= internal_INPUT_BLOCK_RAM_ADDRESS;
-		chipscope_ila_data(255 downto 250) <= (others => '0');
-		chipscope_ila_trigger(255 downto 0) <= (others => '0');
+	chipscope : entity work.chipscope
+	port map (
+		CLOCK       => internal_Aurora_78MHz_clock,
+		ILA_DATA    => chipscope_ila_data,
+		ILA_TRIGGER => chipscope_ila_trigger,
+		VIO_DISPLAY => chipscope_vio_display,
+		VIO_BUTTONS => chipscope_vio_buttons
+	);
 
-		chipscope_vio_out(0)  <= fiber_link_is_up;
-		chipscope_vio_out(1)  <= '0';
-		chipscope_vio_out(2)  <= pulsed_trigger;
-		chipscope_vio_out(4 downto 3) <= (others => '0');
-		chipscope_vio_out(5)  <= trigger_acknowledge;
-		chipscope_vio_out(9 downto 6) <= (others => '0');
-		chipscope_vio_out(10) <= spill_active;
-		chipscope_vio_out(255 downto 11) <= (others => '0');
+	chipscope_ila_data(234 downto 0)    <= (others => '0');
+	chipscope_ila_data(247 downto 235)  <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
+	chipscope_ila_data(249 downto 248)  <= internal_INPUT_BLOCK_RAM_ADDRESS;
+	chipscope_ila_data(255 downto 250)  <= (others => '0');
+	chipscope_ila_trigger(255 downto 0) <= (others => '0');
 
-		transmit_always                                    <= chipscope_vio_in(1);
-		transmit_disable                                   <= chipscope_vio_in(2);
-		external_trigger_disable                           <= chipscope_vio_in(36);
-		fake_spill_structure_enable                        <= chipscope_vio_in(37);
-		request_a_global_reset                             <= chipscope_vio_in(38);
-		request_a_fiber_link_reset                         <= chipscope_vio_in(39);
-		should_not_automatically_try_to_keep_fiber_link_up <= chipscope_vio_in(40);
+	chipscope_vio_display(0)             <= fiber_link_is_up;
+	chipscope_vio_display(1)             <= pulsed_trigger;
+	chipscope_vio_display(2)             <= trigger_acknowledge;
+	chipscope_vio_display(3)             <= spill_active;
+	chipscope_vio_display(255 downto 4)  <= (others => '0');
 
-		chipscope_icon : entity work.s6_icon
-		port map (
-			control0 => icon_to_vio_i,
-			control1 => icon_to_ila_i
-		);
-
-		chipscope_vio : s6_vio
-		port map (
-			control   => icon_to_vio_i,
-			clk       => internal_Aurora_78MHz_clock,
-			sync_in   => chipscope_vio_out,
-			sync_out  => chipscope_vio_in
-		);
-
-		chipscope_ila : entity work.s6_ila
-		port map (
-			control  => icon_to_ila_i,
-			clk      => internal_Aurora_78MHz_clock,
-			data     => chipscope_ila_data,
-			trig0    => chipscope_ila_trigger,
-			trig_out => open
-		);
-	end generate chipscope1;
-
-	no_chipscope1 : if USE_CHIPSCOPE = 0 generate
-		chipscope_vio_in  <= (others=>'0');
-	end generate no_chipscope1;
+	request_a_global_reset                             <= chipscope_vio_buttons(0);
+	request_a_fiber_link_reset                         <= chipscope_vio_buttons(1);
+	transmit_disable                                   <= chipscope_vio_buttons(2);
+	transmit_always                                    <= chipscope_vio_buttons(3);
+	external_trigger_disable                           <= chipscope_vio_buttons(4);
+	fake_spill_structure_enable                        <= chipscope_vio_buttons(5);
+	should_not_automatically_try_to_keep_fiber_link_up <= chipscope_vio_buttons(6);
+	fake_button                                        <= chipscope_vio_buttons(7);
 
 end PDBF;
