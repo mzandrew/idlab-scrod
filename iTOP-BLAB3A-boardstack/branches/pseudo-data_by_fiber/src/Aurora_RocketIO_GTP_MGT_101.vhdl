@@ -42,8 +42,8 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
-		chipscope_vio_in                                        : in    std_logic_vector(255 downto 0);
-		chipscope_vio_out                                       :   out std_logic_vector(255 downto 0)
+		chipscope_vio_buttons                                   : in    std_logic_vector(255 downto 0);
+		chipscope_vio_display                                   :   out std_logic_vector(255 downto 0)
 	);
 end Aurora_RocketIO_GTP_MGT_101;
 
@@ -54,10 +54,10 @@ library UNISIM;
 use UNISIM.VComponents.all;
 
 architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
-	signal internal_chipscope_ila     : std_logic_vector(255 downto 0);
-	signal internal_chipscope_vio_in  : std_logic_vector(255 downto 0);
-	signal internal_chipscope_vio_out : std_logic_vector(255 downto 0);
-	signal internal_Aurora_78MHz_clock : std_logic;
+	signal internal_chipscope_ila         : std_logic_vector(255 downto 0);
+	signal internal_chipscope_vio_buttons : std_logic_vector(255 downto 0);
+	signal internal_chipscope_vio_display : std_logic_vector(255 downto 0);
+	signal internal_Aurora_78MHz_clock    : std_logic;
 	-----------------------------------------------------------------------------
 --	signal request_a_fiber_link_reset                         : std_logic := '0';
 	signal internal_fiber_link_is_up                          : std_logic;
@@ -149,13 +149,13 @@ begin
 	-----------------------------------------------------------------------------
 	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
-	chipscope_ila              <= internal_chipscope_ila;
-	chipscope_vio_out          <= internal_chipscope_vio_out;
-	internal_chipscope_vio_in  <= chipscope_vio_in;
-	internal_chipscope_ila     <= (others => '0');
-	internal_chipscope_vio_out <= (others => '0');
-	reset_i                    <= system_reset_i or RESET;
-	status_LEDs                <= internal_status_LEDs;
+	chipscope_ila                  <= internal_chipscope_ila;
+	chipscope_vio_display          <= internal_chipscope_vio_display;
+	internal_chipscope_vio_buttons <= chipscope_vio_buttons;
+	internal_chipscope_ila         <= (others => '0');
+	internal_chipscope_vio_display <= (others => '0');
+	reset_i                        <= system_reset_i or RESET;
+	status_LEDs                    <= internal_status_LEDs;
 
 	process(internal_Aurora_RocketIO_GTP_MGT_101_reset_clock, RESET, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
 		variable internal_COUNTER                                       : integer range 0 to 1000000 := 0;
