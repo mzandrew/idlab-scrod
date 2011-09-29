@@ -1,21 +1,16 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    14:57:45 09/14/2011 
--- Design Name: 
--- Module Name:    Board_Stack_Feedback_and_Monitoring - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+-- Feedback and monitoring for ASIC items
+-- Description:
+--		This module handles all the feedback related ASIC items, such as 
+--    sampling rate, wilkinson conversion rate, and trigger width.
+--    Inputs and outputs are still in a state of flux... at the moment only
+--    the Wilkinson rate feedback is implemented.  The desired DAC values 
+--    come from this module, but should be multiplexed to the actual DAC
+--    choices somewhere else in case feedback should be turned off.
+--    State machines here run relatively slow, using an 80 Hz clock.
+-- Change log:
+-- 2011-09-?? - Created by Kurtis
+-- 2011-09-29 - Comments/description added to describe basic functionality - Kurtis
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;

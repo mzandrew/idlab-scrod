@@ -1,21 +1,24 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    16:24:04 06/03/2011 
--- Design Name: 
--- Module Name:    iTOP_Board_Stack_BAC_Control - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
+-- DAC Control for the full board stack
+-- Description:
+--		Inputs/outputs:
+--		
+--		INTENDED_DAC_VALUES - input of type Board_Stack_Voltages (see Board_Stack_Definitions.vhd)
+--									 These specify the target voltages for the board stack.
+--		CURRENT_DAC_VALUES  - output of type Board_Stack_Voltages (see Board_Stack_Definitions.vhd)
+--									 These specify the current known voltages for the board stack.
+--		CLK_100kHz_MAX		  - iinput clock used to drive the IIC state machines.
+--    SCL_C 		  		  - output bus for the four IIC SCL lines, ones for each column
+--		SDA_C		  			  - inout bus for the four IIC SDA lines, one for each column
 --
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+--		This module handles all the control to set DAC voltages on the various IIC
+-- 	buses.  It does not control what the desired voltages are.  That should be 
+--    set at a higher level or in a different module, for example from the command
+--    parser that accepts fiberoptic commands.
+--   
+-- Change log:
+-- 2011-09-?? - Created by Kurtis
+-- 2011-09-29 - Comments/description added to describe basic functionality - Kurtis
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -34,6 +37,13 @@ use work.Board_Stack_Definitions.ALL;
 
 -------------------------
 -------------------------
+-- This part controls a single column of DACs.  Four of these entities are
+-- instantiated (see below) to form the whole board stack's worth of DAC
+-- control.
+-- I'm not sure how to do something like declare a prototype so that this can
+-- be used without it appearing above the main part of this block.
+-- If you know how to do it, please tell me so we can modify this block for 
+-- increased clarity.  -KN
 -------------------------
 
 entity Board_Stack_Column_DAC_Control is
@@ -165,6 +175,8 @@ end Behavioral;
 
 -------------------------
 -------------------------
+-- This part is the highest level of this module, and forms the
+-- connections to the top level.
 -------------------------
 
 library IEEE;
