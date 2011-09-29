@@ -1,5 +1,6 @@
 -- 2011-06-07 kurtis, modified by mza
 -- 2011-07 under heavy development by mza
+-- 2011-09 mza started adding actual commands
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -40,15 +41,16 @@ entity packet_receiver_and_command_interpreter is
 		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR :   out std_logic_vector(31 downto 0);
 		resynchronizing_with_header        :   out std_logic;
 		start_event_transfer               :   out std_logic;
-		acknowledge_start_event_transfer   : in    std_logic;
+		acknowledge_execution_of_command   : in    std_logic;
 		ERR_COUNT                          :   out std_logic_vector(7 downto 0);
-		EVENT_NUMBER_RESET                 :   out std_logic
+		COMMAND_ARGUMENT                   :   out std_logic_vector(31 downto 0);
+		EVENT_NUMBER_SET                   :   out std_logic
 );
 end packet_receiver_and_command_interpreter;
 
 architecture Behavioral of packet_receiver_and_command_interpreter is
 	type PACKET_RECEIVER_STATE_TYPE is (WAITING_FOR_HEADER, READING_PACKET_SIZE, READING_PROTOCOL_DATE, READING_PACKET_TYPE, READING_VALUES, READING_SCROD_REV_AND_ID, READING_CHECKSUM, READING_FOOTER);
-	type COMMAND_PROCESSING_STATE_TYPE is (WAITING_TO_PROCESS_COMMAND, PROCESS_COMMAND, SET_SEND_EVENT_FLAG, WAITING_FOR_ACKNOWLEDGE);
+	type COMMAND_PROCESSING_STATE_TYPE is (WAITING_TO_PROCESS_COMMAND, PROCESS_COMMAND, WAITING_FOR_COMMAND_EXECUTION, CLEAR_ALL_SIGNALS, WAITING_FOR_ACKNOWLEDGE);
 	signal internal_RX_D                               : std_logic_vector(31 downto 0);
 	signal internal_RX_SRC_RDY_N                       : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
@@ -63,7 +65,8 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
-	signal internal_EVENT_NUMBER_RESET                 : std_logic := '0';
+	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0);
+	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	signal internal_ERROR_COUNT                        : std_logic_vector(7 downto 0) := x"00";
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE := WAITING_FOR_HEADER;
 	signal COMMAND_PROCESSING_STATE                    : COMMAND_PROCESSING_STATE_TYPE := WAITING_TO_PROCESS_COMMAND;
@@ -83,7 +86,8 @@ begin
 	MISSING_ACKNOWLEDGEMENT_COUNTER    <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER;
 	resynchronizing_with_header        <= internal_resynchronizing_with_header;
 	start_event_transfer               <= internal_start_event_transfer;
-	EVENT_NUMBER_RESET                 <= internal_EVENT_NUMBER_RESET;
+	COMMAND_ARGUMENT                   <= internal_COMMAND_ARGUMENT;
+	EVENT_NUMBER_SET                   <= internal_EVENT_NUMBER_SET;
 	process (USER_CLK, RX_SRC_RDY_N)
 		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 8 := 8;
 		variable packet_size               : unsigned(15 downto 0);
@@ -225,35 +229,35 @@ begin
 					when WAITING_TO_PROCESS_COMMAND =>
 					when PROCESS_COMMAND =>
 						if (command_word(0) = x"b01dface") then
-							COMMAND_PROCESSING_STATE <= SET_SEND_EVENT_FLAG;
+							internal_start_event_transfer <= '1';
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"e0000000") then
-							internal_EVENT_NUMBER_RESET <= '1';
-							COMMAND_PROCESSING_STATE <= SET_SEND_EVENT_FLAG;
+							internal_EVENT_NUMBER_SET <= '1';
+							internal_COMMAND_ARGUMENT <= std_logic_vector(command_word(1));
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						else
 							internal_ERROR_COUNT <= std_logic_vector(unsigned(internal_ERROR_COUNT) + 1);
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 						end if;
-					when SET_SEND_EVENT_FLAG =>
-						internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
-						internal_start_event_transfer <= '1';
+					when WAITING_FOR_COMMAND_EXECUTION =>
+--						internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
 						timeout_waiting_for_acknowledge_counter := NUMBER_OF_CYCLES_TO_WAIT_FOR_ACKNOWLEDGE;
 						COMMAND_PROCESSING_STATE <= WAITING_FOR_ACKNOWLEDGE;
 					when WAITING_FOR_ACKNOWLEDGE =>
 						timeout_waiting_for_acknowledge_counter := timeout_waiting_for_acknowledge_counter - 1;
-						if (acknowledge_start_event_transfer = '1') then
-							internal_start_event_transfer <= '0';
-							internal_EVENT_NUMBER_RESET <= '0';
-							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
+						if (acknowledge_execution_of_command = '1') then
+							COMMAND_PROCESSING_STATE <= CLEAR_ALL_SIGNALS;
 						elsif (timeout_waiting_for_acknowledge_counter = 0) then
-							internal_start_event_transfer <= '0';
-							internal_EVENT_NUMBER_RESET <= '0';
 							internal_MISSING_ACKNOWLEDGEMENT_COUNTER <= std_logic_vector(unsigned(internal_MISSING_ACKNOWLEDGEMENT_COUNTER) + 1);
-							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
+							COMMAND_PROCESSING_STATE <= CLEAR_ALL_SIGNALS;
 						end if;
---					when CLEAR_ALL_SIGNALS =>
+					when CLEAR_ALL_SIGNALS =>
+							internal_start_event_transfer <= '0';
+							internal_EVENT_NUMBER_SET <= '0';
+							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 					when others =>
 --						internal_UNKNOWN_ERROR_COUNTER <= std_logic_vector(unsigned(internal_UNKNOWN_ERROR_COUNTER) + 1);
-						COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
+						COMMAND_PROCESSING_STATE <= CLEAR_ALL_SIGNALS;
 				end case;
 			end if;
 		end if;
