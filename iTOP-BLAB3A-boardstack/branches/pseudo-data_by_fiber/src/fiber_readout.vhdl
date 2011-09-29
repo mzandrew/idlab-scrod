@@ -64,6 +64,7 @@ use UNISIM.VComponents.all;
 
 architecture behavioral of fiber_readout is
 	signal trigger_acknowledge : std_logic;
+	signal internal_EVENT_NUMBER_RESET : std_logic := '0';
 -----------------------------------------------------------------------------
 --	signal should_not_automatically_try_to_keep_fiber_link_up : std_logic;
 --	signal fiber_link_is_up                                   : std_logic;
@@ -120,6 +121,7 @@ begin
 		Aurora_lane0_receive_data_bus                           => Aurora_lane0_receive_data_bus,
 		should_not_automatically_try_to_keep_fiber_link_up      => should_not_automatically_try_to_keep_fiber_link_up,
 		fiber_link_is_up                                        => fiber_link_is_up,
+		EVENT_NUMBER_RESET                                      => internal_EVENT_NUMBER_RESET,
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
 		chipscope_vio_buttons                                   => chipscope_vio_buttons,
@@ -133,6 +135,7 @@ begin
 	port map (
 		RESET                              => RESET,
 		CLOCK                              => internal_Aurora_78MHz_clock,
+		EVENT_NUMBER_RESET                 => internal_EVENT_NUMBER_RESET,
 		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,
