@@ -13,7 +13,7 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity Packet_Receiver is
+entity packet_receiver_and_command_interpreter is
 	generic (
 		CURRENT_PROTOCOL_FREEZE_DATE  : unsigned(31 downto 0) := x"20110901";
 		EXPECTED_PACKET_SIZE : unsigned := x"8c";
@@ -41,15 +41,16 @@ entity Packet_Receiver is
 		resynchronizing_with_header        :   out std_logic;
 		start_event_transfer               :   out std_logic;
 		acknowledge_start_event_transfer   : in    std_logic;
-		ERR_COUNT       : out std_logic_vector(7 downto 0)
+		ERR_COUNT                          :   out std_logic_vector(7 downto 0);
+		EVENT_NUMBER_RESET                 :   out std_logic
 );
-end Packet_Receiver;
+end packet_receiver_and_command_interpreter;
 
-architecture Behavioral of Packet_Receiver is
+architecture Behavioral of packet_receiver_and_command_interpreter is
 	type PACKET_RECEIVER_STATE_TYPE is (WAITING_FOR_HEADER, READING_PACKET_SIZE, READING_PROTOCOL_DATE, READING_PACKET_TYPE, READING_VALUES, READING_SCROD_REV_AND_ID, READING_CHECKSUM, READING_FOOTER);
 	type COMMAND_PROCESSING_STATE_TYPE is (WAITING_TO_PROCESS_COMMAND, PROCESS_COMMAND, SET_SEND_EVENT_FLAG, WAITING_FOR_ACKNOWLEDGE);
-	signal internal_RX_D : std_logic_vector(31 downto 0);
-	signal internal_RX_SRC_RDY_N : std_logic;
+	signal internal_RX_D                               : std_logic_vector(31 downto 0);
+	signal internal_RX_SRC_RDY_N                       : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
@@ -59,14 +60,17 @@ architecture Behavioral of Packet_Receiver is
 	signal internal_UNKNOWN_ERROR_COUNTER              : std_logic_vector(31 downto 0);
 	signal internal_number_of_sent_events              : std_logic_vector(31 downto 0);
 	signal internal_MISSING_ACKNOWLEDGEMENT_COUNTER    : std_logic_vector(31 downto 0);
-	signal internal_resynchronizing_with_header : std_logic;
-	signal internal_start_event_transfer : std_logic;
+	signal internal_resynchronizing_with_header        : std_logic;
+	signal internal_start_event_transfer               : std_logic;
 	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
-	signal PACKET_RECEIVER_STATE : PACKET_RECEIVER_STATE_TYPE := WAITING_FOR_HEADER;
-	signal COMMAND_PROCESSING_STATE : COMMAND_PROCESSING_STATE_TYPE := WAITING_TO_PROCESS_COMMAND;
+	signal internal_EVENT_NUMBER_RESET                 : std_logic := '0';
+	signal internal_ERROR_COUNT                        : std_logic_vector(7 downto 0) := x"00";
+	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE := WAITING_FOR_HEADER;
+	signal COMMAND_PROCESSING_STATE                    : COMMAND_PROCESSING_STATE_TYPE := WAITING_TO_PROCESS_COMMAND;
 begin
-	internal_RX_D         <= RX_D;
-	internal_RX_SRC_RDY_N <= RX_SRC_RDY_N;
+	ERR_COUNT                          <= internal_ERROR_COUNT;
+	internal_RX_D                      <= RX_D;
+	internal_RX_SRC_RDY_N              <= RX_SRC_RDY_N;
 	WRONG_PACKET_TYPE_COUNTER          <= internal_WRONG_PACKET_TYPE_COUNTER;
 	WRONG_PACKET_SIZE_COUNTER          <= internal_WRONG_PACKET_SIZE_COUNTER;
 	WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER;
@@ -76,9 +80,10 @@ begin
 	UNKNOWN_ERROR_COUNTER              <= internal_UNKNOWN_ERROR_COUNTER;
 	number_of_sent_events              <= internal_number_of_sent_events;
 	NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR;
-	MISSING_ACKNOWLEDGEMENT_COUNTER <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER;
-	resynchronizing_with_header <= internal_resynchronizing_with_header;
-	start_event_transfer <= internal_start_event_transfer;
+	MISSING_ACKNOWLEDGEMENT_COUNTER    <= internal_MISSING_ACKNOWLEDGEMENT_COUNTER;
+	resynchronizing_with_header        <= internal_resynchronizing_with_header;
+	start_event_transfer               <= internal_start_event_transfer;
+	EVENT_NUMBER_RESET                 <= internal_EVENT_NUMBER_RESET;
 	process (USER_CLK, RX_SRC_RDY_N)
 		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 8 := 8;
 		variable packet_size               : unsigned(15 downto 0);
@@ -221,8 +226,11 @@ begin
 					when PROCESS_COMMAND =>
 						if (command_word(0) = x"b01dface") then
 							COMMAND_PROCESSING_STATE <= SET_SEND_EVENT_FLAG;
---						elsif () then
+						elsif (command_word(0) = x"e0000000") then
+							internal_EVENT_NUMBER_RESET <= '1';
+							COMMAND_PROCESSING_STATE <= SET_SEND_EVENT_FLAG;
 						else
+							internal_ERROR_COUNT <= std_logic_vector(unsigned(internal_ERROR_COUNT) + 1);
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 						end if;
 					when SET_SEND_EVENT_FLAG =>
@@ -234,12 +242,15 @@ begin
 						timeout_waiting_for_acknowledge_counter := timeout_waiting_for_acknowledge_counter - 1;
 						if (acknowledge_start_event_transfer = '1') then
 							internal_start_event_transfer <= '0';
+							internal_EVENT_NUMBER_RESET <= '0';
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 						elsif (timeout_waiting_for_acknowledge_counter = 0) then
 							internal_start_event_transfer <= '0';
+							internal_EVENT_NUMBER_RESET <= '0';
 							internal_MISSING_ACKNOWLEDGEMENT_COUNTER <= std_logic_vector(unsigned(internal_MISSING_ACKNOWLEDGEMENT_COUNTER) + 1);
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 						end if;
+--					when CLEAR_ALL_SIGNALS =>
 					when others =>
 --						internal_UNKNOWN_ERROR_COUNTER <= std_logic_vector(unsigned(internal_UNKNOWN_ERROR_COUNTER) + 1);
 						COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;

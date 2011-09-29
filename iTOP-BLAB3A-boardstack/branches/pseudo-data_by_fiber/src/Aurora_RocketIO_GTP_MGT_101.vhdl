@@ -39,6 +39,7 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		Aurora_lane0_receive_data_bus                           :   out std_logic_vector(31 downto 0);
 		should_not_automatically_try_to_keep_fiber_link_up      : in    std_logic;
 		fiber_link_is_up                                        :   out std_logic;
+		EVENT_NUMBER_RESET                                      :   out std_logic;
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -125,6 +126,7 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_start_event_transfer   : std_logic;
+	signal internal_EVENT_NUMBER_RESET                 : std_logic := '0';
 	-----------------------------------------------------------------------------
 	signal chipscope_aurora_reset                             : std_logic;
 	signal internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE        : std_logic := '1';
@@ -146,6 +148,7 @@ begin
 	internal_status_LEDs(1) <= fiber_link_should_be_up;
 	internal_status_LEDs(2) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
 	internal_status_LEDs(3) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
+	EVENT_NUMBER_RESET <= internal_EVENT_NUMBER_RESET;
 	-----------------------------------------------------------------------------
 	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
@@ -252,7 +255,7 @@ begin
 	power_down_i     <= '0';
 	loopback_i       <= "000";
 
-	frame_check_i : entity work.Packet_Receiver
+	PRCI : entity work.packet_receiver_and_command_interpreter
 	generic map (
 		CURRENT_PROTOCOL_FREEZE_DATE => unsigned(CURRENT_PROTOCOL_FREEZE_DATE)
 	)
@@ -277,7 +280,8 @@ begin
 		resynchronizing_with_header                    => internal_resynchronizing_with_header,
 		start_event_transfer                           => internal_start_event_transfer,
 		acknowledge_start_event_transfer               => internal_acknowledge_start_event_transfer,
-		ERR_COUNT                                      => err_count_i
+		ERR_COUNT                                      => err_count_i,
+		EVENT_NUMBER_RESET                             => internal_EVENT_NUMBER_RESET
 	);
 
 	aurora_module_i : entity work.Aurora_IP_Core_A
