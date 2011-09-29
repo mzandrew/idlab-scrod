@@ -23,7 +23,8 @@ entity quarter_event_builder is
 	port (
 		RESET                              : in    std_logic;
 		CLOCK                              : in    std_logic;
-		EVENT_NUMBER_RESET                 : in    std_logic;
+		COMMAND_ARGUMENT                   : in    std_logic_vector(31 downto 0);
+		EVENT_NUMBER_SET                   : in    std_logic;
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1           downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1        downto 0);
 		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1        downto 0);
@@ -76,7 +77,8 @@ architecture quarter_event_builder_architecture of quarter_event_builder is
 	signal internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                : std_logic;
 	signal internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           : std_logic;
 	signal internal_EVENT_NUMBER                                       : std_logic_vector(WIDTH_OF_EVENT_NUMBER-1       downto 0);
-	signal internal_EVENT_NUMBER_RESET                                 : std_logic := '0';
+	signal internal_COMMAND_ARGUMENT                                   : std_logic_vector(31 downto 0);
+	signal internal_EVENT_NUMBER_SET                                   : std_logic := '0';
 	signal internal_PACKET_NUMBER                                      : std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 	signal internal_INPUT_BASE_ADDRESS                                 : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 	signal internal_OUTPUT_BASE_ADDRESS                                : std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
@@ -131,11 +133,12 @@ begin
 		elsif rising_edge(internal_CLOCK) then
 			-- putting these here causes a one cycle delay:
 			internal_START_BUILDING_A_QUARTER_EVENT <= START_BUILDING_A_QUARTER_EVENT;
-			internal_EVENT_NUMBER_RESET             <= EVENT_NUMBER_RESET;
+			internal_COMMAND_ARGUMENT               <= COMMAND_ARGUMENT;
+			internal_EVENT_NUMBER_SET               <= EVENT_NUMBER_SET;
 			case quarter_event_builder_state is
 				when IDLE =>
-					if (internal_EVENT_NUMBER_RESET = '1') then
-						internal_EVENT_NUMBER <= (others => '0');
+					if (internal_EVENT_NUMBER_SET = '1') then
+						internal_EVENT_NUMBER <= internal_COMMAND_ARGUMENT;
 					elsif (internal_START_BUILDING_A_QUARTER_EVENT = '1') then
 						internal_INPUT_BASE_ADDRESS  <= (others => '0');
 						internal_OUTPUT_BASE_ADDRESS <= (others => '0');

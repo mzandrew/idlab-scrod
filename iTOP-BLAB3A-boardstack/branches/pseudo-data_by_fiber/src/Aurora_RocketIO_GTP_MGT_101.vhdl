@@ -39,7 +39,8 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		Aurora_lane0_receive_data_bus                           :   out std_logic_vector(31 downto 0);
 		should_not_automatically_try_to_keep_fiber_link_up      : in    std_logic;
 		fiber_link_is_up                                        :   out std_logic;
-		EVENT_NUMBER_RESET                                      :   out std_logic;
+		COMMAND_ARGUMENT                                        :   out std_logic_vector(31 downto 0);
+		EVENT_NUMBER_SET                                        :   out std_logic;
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -125,8 +126,9 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
-	signal internal_acknowledge_start_event_transfer   : std_logic;
-	signal internal_EVENT_NUMBER_RESET                 : std_logic := '0';
+	signal internal_acknowledge_execution_of_command   : std_logic;
+	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0) := x"00000000";
+	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	-----------------------------------------------------------------------------
 	signal chipscope_aurora_reset                             : std_logic;
 	signal internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE        : std_logic := '1';
@@ -148,7 +150,8 @@ begin
 	internal_status_LEDs(1) <= fiber_link_should_be_up;
 	internal_status_LEDs(2) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
 	internal_status_LEDs(3) <= FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT;
-	EVENT_NUMBER_RESET <= internal_EVENT_NUMBER_RESET;
+	EVENT_NUMBER_SET <= internal_EVENT_NUMBER_SET;
+	COMMAND_ARGUMENT <= internal_COMMAND_ARGUMENT;
 	-----------------------------------------------------------------------------
 	FIBER_TRANSCEIVER_0_DISABLE_MODULE <= internal_FIBER_TRANSCEIVER_0_DISABLE_MODULE;
 	FIBER_TRANSCEIVER_1_DISABLE_MODULE <= '1';
@@ -279,9 +282,10 @@ begin
 		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR => internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR,
 		resynchronizing_with_header                    => internal_resynchronizing_with_header,
 		start_event_transfer                           => internal_start_event_transfer,
-		acknowledge_start_event_transfer               => internal_acknowledge_start_event_transfer,
+		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
 		ERR_COUNT                                      => err_count_i,
-		EVENT_NUMBER_RESET                             => internal_EVENT_NUMBER_RESET
+		COMMAND_ARGUMENT                               => internal_COMMAND_ARGUMENT,
+		EVENT_NUMBER_SET                               => internal_EVENT_NUMBER_SET
 	);
 
 	aurora_module_i : entity work.Aurora_IP_Core_A
