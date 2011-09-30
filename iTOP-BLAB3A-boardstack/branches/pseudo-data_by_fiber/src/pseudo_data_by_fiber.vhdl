@@ -56,7 +56,9 @@ use UNISIM.VCOMPONENTS.ALL;
 
 architecture PDBF of pseudo_data_by_fiber is
 	signal global_reset : std_logic := '1';
-	signal request_a_global_reset : std_logic := '0';
+	signal internal_REQUEST_A_GLOBAL_RESET_1 : std_logic := '0';
+	signal internal_REQUEST_A_GLOBAL_RESET_2 : std_logic := '0';
+	signal request_a_global_reset            : std_logic := '0';
 -- clocks -------------------------------------------------------------------
 	signal internal_clock_from_remote_source : std_logic;
 	signal internal_clock_250MHz             : std_logic;
@@ -112,6 +114,7 @@ begin
 			end if;
 		end if;
 	end process;
+	request_a_global_reset <= internal_REQUEST_A_GLOBAL_RESET_1 or internal_REQUEST_A_GLOBAL_RESET_2;
 -----------------------------------------------------------------------------
 	process(internal_clock_for_state_machine, global_reset)
 		variable counter_250_MHz  : integer range 0 to 250 := 0;
@@ -198,6 +201,9 @@ begin
 		chipscope_vio_buttons                                   => fiber_readout_chipscope_vio_buttons,
 		TRIGGER                                                 => internal_TRIGGER,
 		DONE_BUILDING_A_QUARTER_EVENT                           => internal_DONE_BUILDING_A_QUARTER_EVENT,
+		-- commands -----------------------------------------------------------------
+		REQUEST_A_GLOBAL_RESET                                  => internal_REQUEST_A_GLOBAL_RESET_2,
+		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
 		INPUT_ADDRESS_BUS                                       => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS                                 => internal_INPUT_BLOCK_RAM_ADDRESS,
@@ -285,7 +291,7 @@ begin
 	chipscope_vio_display(2)             <= spill_active;
 	chipscope_vio_display(255 downto 3)  <= (others => '0');
 
-	request_a_global_reset                             <= chipscope_vio_buttons(0);
+	internal_REQUEST_A_GLOBAL_RESET_1                  <= chipscope_vio_buttons(0);
 	request_a_fiber_link_reset                         <= chipscope_vio_buttons(1);
 	transmit_disable                                   <= chipscope_vio_buttons(2);
 	transmit_always                                    <= chipscope_vio_buttons(3);

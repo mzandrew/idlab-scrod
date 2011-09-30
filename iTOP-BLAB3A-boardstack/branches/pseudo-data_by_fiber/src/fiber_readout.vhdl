@@ -48,6 +48,8 @@ entity fiber_readout is
 		-----------------------------------------------------------------------------
 		TRIGGER                                                 : in    std_logic;
 		DONE_BUILDING_A_QUARTER_EVENT                           :   out std_logic;
+		-- commamds -----------------------------------------------------------------
+		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
@@ -122,8 +124,11 @@ begin
 		Aurora_lane0_receive_data_bus                           => Aurora_lane0_receive_data_bus,
 		should_not_automatically_try_to_keep_fiber_link_up      => should_not_automatically_try_to_keep_fiber_link_up,
 		fiber_link_is_up                                        => fiber_link_is_up,
+		-- commands -----------------------------------------------------------------
 		COMMAND_ARGUMENT                                        => internal_COMMAND_ARGUMENT,
 		EVENT_NUMBER_SET                                        => internal_EVENT_NUMBER_SET,
+		REQUEST_A_GLOBAL_RESET                                  => REQUEST_A_GLOBAL_RESET,
+		-----------------------------------------------------------------------------
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
 		chipscope_vio_buttons                                   => chipscope_vio_buttons,

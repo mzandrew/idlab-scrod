@@ -39,8 +39,10 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		Aurora_lane0_receive_data_bus                           :   out std_logic_vector(31 downto 0);
 		should_not_automatically_try_to_keep_fiber_link_up      : in    std_logic;
 		fiber_link_is_up                                        :   out std_logic;
+		-- commands -----------------------------------------------------------------
 		COMMAND_ARGUMENT                                        :   out std_logic_vector(31 downto 0);
 		EVENT_NUMBER_SET                                        :   out std_logic;
+		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -281,11 +283,14 @@ begin
 		number_of_sent_events                          => internal_number_of_sent_events,
 		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR => internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR,
 		resynchronizing_with_header                    => internal_resynchronizing_with_header,
-		start_event_transfer                           => internal_start_event_transfer,
-		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
-		ERR_COUNT                                      => err_count_i,
+		-- commands -----------------------------------------------------------------
 		COMMAND_ARGUMENT                               => internal_COMMAND_ARGUMENT,
-		EVENT_NUMBER_SET                               => internal_EVENT_NUMBER_SET
+		EVENT_NUMBER_SET                               => internal_EVENT_NUMBER_SET,
+		REQUEST_A_GLOBAL_RESET                         => REQUEST_A_GLOBAL_RESET,
+		start_event_transfer                           => internal_start_event_transfer,
+		-----------------------------------------------------------------------------
+		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
+		ERR_COUNT                                      => err_count_i
 	);
 
 	aurora_module_i : entity work.Aurora_IP_Core_A
