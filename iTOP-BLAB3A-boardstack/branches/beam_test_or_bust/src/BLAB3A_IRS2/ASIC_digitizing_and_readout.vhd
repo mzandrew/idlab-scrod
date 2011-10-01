@@ -186,26 +186,28 @@ begin
 					internal_ASIC_WILK_RAMP_ACTIVE					<= '0';
 					internal_BLOCKRAM_WRITE_ENABLE					<= '0';
 					internal_DONE_DIGITIZING							<= '0';	
+					internal_CONTINUE_ANALOG_WRITING					<= '1';
 					if (TRIGGER_DIGITIZING = '1') then
-						--Send the signal to the sampling block to stop writing to analog memory
-						internal_CONTINUE_ANALOG_WRITING 			<= '0';
 						--Move to the next state where we might want to continue sampling 
 						--a bit after the trigger.
-						internal_STATE <= POST_TRIGGER_SAMPLING;
-						
+						internal_STATE <= POST_TRIGGER_SAMPLING;						
 						delay_counter := 0;
-					else
-						internal_CONTINUE_ANALOG_WRITING				<= '1';
 					end if;
 				when POST_TRIGGER_SAMPLING =>
-					if (delay_counter >= windows_to_sample_after_trigger) then
+					--After extra time to let the LAST_ADDRESS_WRITTEN bus settle, move to the next state
+					--Two cycles appears to be the minimum here.
+					if (delay_counter >= windows_to_sample_after_trigger + 2) then
 						internal_ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE <= '1';
-						internal_ASIC_STORAGE_TO_WILK_ADDRESS 			<= std_logic_vector(unsigned(LAST_ADDRESS_WRITTEN) - (windows_to_read_out - 1));
+						internal_ASIC_STORAGE_TO_WILK_ADDRESS 			<= std_logic_vector(unsigned(LAST_ADDRESS_WRITTEN) - to_unsigned(windows_to_read_out - 1,9));
 						internal_ASIC_STORAGE_TO_WILK_ENABLE 			<= '1';
 						asic_to_read_out 					:= 0;
 						windows_read_out 					:= 0;						
 						samples_read_out_this_window 	:= 0;
 						internal_STATE <= ARM_WILKINSON;
+					elsif (delay_counter >= windows_to_sample_after_trigger) then
+						--Send the signal to the sampling block to stop writing to analog memory
+						internal_CONTINUE_ANALOG_WRITING			<= '0';
+						delay_counter := delay_counter + 1;
 					else
 						delay_counter := delay_counter + 1;
 					end if;
@@ -245,19 +247,21 @@ begin
 					-- If we've read out 512 samples or more then we can move on to the next
 					-- ASIC, same window.
 					if ( samples_read_out_this_window >= 512 ) then
+						samples_read_out_this_window := 0;
 						asic_to_read_out := asic_to_read_out + 1;					
 						-- If we've already read 4 ASICs then we can move on to the next window,
 						-- starting again at asic 0.
 						if (asic_to_read_out >= asics_to_read_out) then
-							windows_read_out := windows_to_read_out + 1;
+							asic_to_read_out := 0;
+							windows_read_out := windows_read_out + 1;
 							-- If we've already read all windows, we're done
 							if (windows_read_out >= windows_to_read_out) then
+								windows_read_out := 0;
 								delay_counter := 0;
 								internal_STATE <= START_READOUT_TO_DAQ;
 							-- We haven't read out all windows yet.  Restart from ASIC 0 and
 							-- move to the next window and digitize.
 							else
-								asic_to_read_out := 0;
 								internal_ASIC_STORAGE_TO_WILK_ADDRESS(8 downto 0) <= std_logic_vector( unsigned(internal_ASIC_STORAGE_TO_WILK_ADDRESS(8 downto 0)) + 1);
 								delay_counter := 0;
 								internal_ASIC_DATA_BUS_OUTPUT_ENABLE <= '0';

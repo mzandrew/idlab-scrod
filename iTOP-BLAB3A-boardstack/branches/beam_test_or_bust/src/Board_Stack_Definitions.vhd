@@ -16,6 +16,10 @@ package Board_Stack_Definitions is
    type Column_Voltages is array(7 downto 0) of LTC2637_Voltages;
 	type Board_Stack_Voltages is array(3 downto 0) of Column_Voltages;
 
+	-- Address Conventions for the 
+	subtype TMP112_Address is std_logic_vector(1 downto 0);
+	constant TMP112_Address_R1	: TMP112_Address := "01"; --ADD0 pin tied high (2.5 V)
+
 	-- Address conventions for the board stack DACs
 	subtype LTC2637_Address is std_logic_vector(6 downto 0);
 	-- The following are the chosen address conventions

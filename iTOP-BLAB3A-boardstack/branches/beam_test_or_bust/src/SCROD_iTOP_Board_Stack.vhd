@@ -89,6 +89,10 @@ entity SCROD_iTOP_Board_Stack is
 				AsicOut_SAMPLING_TRACK_MODE_C2_R			: in std_logic_vector(3 downto 0);
 				AsicOut_SAMPLING_TRACK_MODE_C3_R			: in std_logic_vector(3 downto 0);				
 
+				--Interfaces for the temperature sensors
+				TMP_SCL	: out 	std_logic;
+				TMP_SDA	: inout  std_logic;
+
 				---General monitor and diagnostic
 				LEDS 					: out STD_LOGIC_VECTOR(15 downto 0);
 				MONITOR_INPUTS		: in STD_LOGIC_VECTOR(0 downto 0);
@@ -123,6 +127,9 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_DESIRED_DAC_VOLTAGES : Board_Stack_Voltages;
 	signal internal_CURRENT_DAC_VOLTAGES : Board_Stack_Voltages;
    ---------------------------------------------------------	
+	--Signals for interfacing to the temperature sensors-----
+	signal internal_TEMP_R1	: std_logic_vector(11 downto 0);
+	---------------------------------------------------------
 	---------ASIC feedback related signals-------------------
 	signal internal_FEEDBACK_WILKINSON_COUNTER_C_R		: Wilkinson_Rate_Counters_C_R;
 	signal internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R	: Wilkinson_Rate_DAC_C_R;
@@ -142,15 +149,17 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_DAQ_BUSY					: std_logic;
 	------------------------------------------------------------
 	--Temporary debugging signals----------------------------
-	signal internal_VIO_IN : std_logic_vector(255 downto 0);
-	signal internal_VIO_OUT : std_logic_vector(255 downto 0);
-	signal internal_TEST_DAC_COLUMN : std_logic_vector(1 downto 0);
-	signal internal_TEST_DAC_LOC	 : std_logic_vector(2 downto 0);
-	signal internal_TEST_DAC_CH	: std_logic_vector(2 downto 0);
-	signal internal_RESET_ALL_DACS : std_logic;
-	signal internal_WILK_FEEDBACK_ENABLE : std_logic;
-	signal internal_FEEDBACK_MONITOR_COLUMN : std_logic_vector(1 downto 0);
-	signal internal_FEEDBACK_MONITOR_ROW : std_logic_vector(1 downto 0);
+	signal internal_VIO_IN 								: std_logic_vector(255 downto 0);
+	signal internal_VIO_OUT 							: std_logic_vector(255 downto 0);
+	signal internal_TEST_DAC_COLUMN					: std_logic_vector(1 downto 0);
+	signal internal_TEST_DAC_LOC						: std_logic_vector(2 downto 0);
+	signal internal_TEST_DAC_CH						: std_logic_vector(2 downto 0);
+	signal internal_RESET_ALL_DACS 					: std_logic;
+	signal internal_WILK_FEEDBACK_ENABLE			: std_logic;
+	signal internal_FEEDBACK_MONITOR_COLUMN 		: std_logic_vector(1 downto 0);
+	signal internal_FEEDBACK_MONITOR_ROW 			: std_logic_vector(1 downto 0);
+	signal internal_SOFTWARE_TRIGGER					: std_logic;
+	signal internal_DUMMY_FTSW_TRIGGER21_SHIFTED : std_logic;
 	---------------------------------------------------------
 begin
 	-----Clocking and FTSW interface-------------------------
@@ -195,6 +204,16 @@ begin
 			SDA_C		  				=> DAC_SDA_C
 		);
 	---------------------------------------------------------
+	-----------Temperature sensors interface-------------------
+	map_temperature_sensors_interface : entity work.Temperature_Sensors_Interface
+	port map (
+		READ_TEMP_NOW 	=> internal_CLOCK_80Hz,
+		CLK_100kHz_MAX => internal_CLOCK_83kHz,
+		TMP_SCL 			=> TMP_SCL,	
+		TMP_SDA			=> TMP_SDA,	
+		TEMP_R1			=> internal_TEMP_R1
+	);
+	-----------------------------------------------------------
 	-----ASIC sampling and analog storage control------------
 	map_ASIC_sampling_control : entity work.ASIC_sampling_control
 		generic map (
@@ -245,7 +264,7 @@ begin
 			BLOCKRAM_READ_ADDRESS						=> internal_BLOCKRAM_READ_ADDRESS,
 			BLOCKRAM_READ_DATA							=> internal_BLOCKRAM_READ_DATA,
 			LAST_ADDRESS_WRITTEN 						=> internal_LAST_ADDRESS_WRITTEN,
-			TRIGGER_DIGITIZING							=> internal_FTSW_TRIGGER21_SHIFTED,
+			TRIGGER_DIGITIZING							=> (internal_FTSW_TRIGGER21_SHIFTED or internal_DUMMY_FTSW_TRIGGER21_SHIFTED),
 			CONTINUE_ANALOG_WRITING						=> internal_CONTINUE_ANALOG_WRITING,
 
 			DONE_DIGITIZING								=> internal_DONE_DIGITIZING,
@@ -258,7 +277,7 @@ begin
 		);
 	---------------------------------------------------------
 	--------ASIC feedback and monitoring loops---------------
-	map_ASIC_feedback_and_monitorin : entity work.Board_Stack_Feedback_and_Monitoring 
+	map_ASIC_feedback_and_monitoring : entity work.Board_Stack_Feedback_and_Monitoring 
 		port map (
 			AsicIn_MONITOR_TRIG								=> AsicIn_MONITOR_TRIG,
 			AsicOut_MONITOR_TRIG_C0_R						=> AsicOut_MONITOR_TRIG_C0_R,
@@ -280,7 +299,7 @@ begin
 			CLOCK_80Hz											=> internal_CLOCK_80Hz
 		);
 	-----------------------------------------------------------
-
+	
 	--Diagnostic outputs, monitors, LEDs, Chipscope Core, etc--
 	map_Chipscope_Core : entity work.Chipscope_Core
 		port map (
@@ -303,6 +322,25 @@ begin
 	internal_WILK_FEEDBACK_ENABLE <= internal_VIO_OUT(9);
 	internal_FEEDBACK_MONITOR_COLUMN <= internal_VIO_OUT(11 downto 10);
 	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(13 downto 12);
+	internal_DAQ_BUSY <= internal_VIO_OUT(14);
+	internal_SOFTWARE_TRIGGER <= internal_VIO_OUT(15);
+	
+	process(internal_CLOCK_SST)
+		variable trigger_seen : boolean := false;
+	begin
+		if (falling_edge(internal_CLOCK_SST)) then
+			if (internal_SOFTWARE_TRIGGER = '0') then
+				trigger_seen := false;
+				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
+			elsif (internal_SOFTWARE_TRIGGER = '1' and trigger_seen = false) then
+				trigger_seen := true;
+				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '1';
+			else
+				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
+			end if;
+		end if;
+	end process;
+	--
 	process(internal_CLOCK_80Hz) begin
 		if (rising_edge(internal_CLOCK_80Hz)) then
 			internal_VIO_IN(11 downto 0) <= internal_CURRENT_DAC_VOLTAGES( to_integer( unsigned(internal_TEST_DAC_COLUMN) ))
@@ -314,6 +352,8 @@ begin
 																											  ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
 		end if;
 	end process;
+	internal_VIO_IN(51 downto 40) <= internal_TEMP_R1;
+	internal_VIO_IN(52) <= internal_DONE_DIGITIZING;
 	--
 	process(internal_CLOCK_80Hz) begin
 		if (rising_edge(internal_CLOCK_80Hz)) then
