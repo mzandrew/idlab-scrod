@@ -349,9 +349,10 @@ begin
 		internal_CHIPSCOPE_ILA_SIGNALS(94 downto 79)	<= internal_BLOCKRAM_DATA_OUT;
 		internal_CHIPSCOPE_ILA_SIGNALS(103 downto 95)<= LAST_ADDRESS_WRITTEN;
 		internal_CHIPSCOPE_ILA_SIGNALS(104)				<= TRIGGER_DIGITIZING;
-		internal_CHIPSCOPE_ILA_SIGNALS(106 downto 105) 	<= BLOCKRAM_COLUMN_SELECT;
-		internal_CHIPSCOPE_ILA_SIGNALS(119 downto 107) 	<= BLOCKRAM_READ_ADDRESS;
-		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 120)	<= (others => '0');
+		internal_CHIPSCOPE_ILA_SIGNALS(106 downto 105) <= BLOCKRAM_COLUMN_SELECT;
+		internal_CHIPSCOPE_ILA_SIGNALS(119 downto 107) <= BLOCKRAM_READ_ADDRESS;
+		internal_CHIPSCOPE_ILA_SIGNALS(132 downto 120) <= internal_BLOCKRAM_WRITE_ADDRESS;
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 133) <= (others => '0');
 	end generate;
 	--Or connect up to ground if we don't want ILA
 	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate

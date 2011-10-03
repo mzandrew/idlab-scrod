@@ -43,9 +43,21 @@ package Board_Stack_Definitions is
 	---------------------------------------------------------------------------
 	-----------------ASIC FEEDBACK RELATED SIGNALS-----------------------------
 	type Wilkinson_Rate_Counters_Column_R	is array(3 downto 0) of std_logic_vector(15 downto 0);
+	type Wilkinson_Rate_Counters_C_R is array(3 downto 0) of Wilkinson_Rate_Counters_Column_R;	
 	type Wilkinson_Rate_DAC_Column_R is array(3 downto 0) of std_logic_vector(11 downto 0);
-	type Wilkinson_Rate_Counters_C_R is array(3 downto 0) of Wilkinson_Rate_Counters_Column_R;
 	type Wilkinson_Rate_DAC_C_R is array(3 downto 0) of Wilkinson_Rate_DAC_Column_R;
+	---------------------------------------------------------------------------
+	-----------------ASIC TRIGGER SIGNALS--------------------------------------
+	type ASIC_Trigger_Bits_R_CH is array(3 downto 0) of std_logic_vector(7 downto 0);
+	type ASIC_Trigger_Bits_C_R_CH is array(3 downto 0) of ASIC_Trigger_Bits_R_CH;
+	subtype ASIC_Scaler is std_logic_vector(15 downto 0);
+	type ASIC_Scalers_CH is array(7 downto 0) of ASIC_Scaler;
+	type ASIC_Scalers_R_CH is array(3 downto 0) of ASIC_Scalers_CH;
+	type ASIC_Scalers_C_R_CH is array(3 downto 0) of ASIC_Scalers_R_CH;
+	subtype ASIC_Trigger_Stream is std_logic_vector(15 downto 0);
+	type ASIC_Trigger_Stream_CH is array(7 downto 0) of ASIC_Trigger_Stream;
+	type ASIC_Trigger_Stream_R_CH is array(3 downto 0) of ASIC_Trigger_Stream_CH;
+	type ASIC_Trigger_Stream_C_R_CH is array(3 downto 0) of ASIC_Trigger_Stream_R_CH;
 	---------------------------------------------------------------------------
 	-----------------ASIC READOUT SIGNALS--------------------------------------
 	type ASIC_BLOCKRAM_DATA is array(3 downto 0) of std_logic_vector(15 downto 0);
