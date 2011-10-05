@@ -6,6 +6,8 @@ A thorough description of the electronics and system for 2011 cosmic / beam test
 
 =Hardware=
 
+A hardware setup guide is now available here: [http://idlab-scrod.googlecode.com/files/bPID_Electronics_Setup.pdf Hardware Setup Guide]
+
 ===board stack===
 
 A board stack consists of a SCROD, an interconnect board, four ASIC carrier boards, 16 ASIC daughtercards, a front-back board, a front-front board and an SL10_HV board.
