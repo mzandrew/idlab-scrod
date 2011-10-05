@@ -289,7 +289,7 @@ begin
 					if (delay_counter = read_to_ram_settling_time) then	
 						internal_BLOCKRAM_WRITE_ENABLE <= '1';
 						delay_counter := delay_counter + 1;
-					elsif (delay_counter > read_to_ram_settling_time) then
+					elsif (delay_counter > read_to_ram_settling_time + 1) then
 						internal_BLOCKRAM_WRITE_ENABLE <= '0';
 						internal_STATE <= INCREMENT_ADDRESSES;
 						delay_counter := 0;					
@@ -352,7 +352,13 @@ begin
 		internal_CHIPSCOPE_ILA_SIGNALS(106 downto 105) <= BLOCKRAM_COLUMN_SELECT;
 		internal_CHIPSCOPE_ILA_SIGNALS(119 downto 107) <= BLOCKRAM_READ_ADDRESS;
 		internal_CHIPSCOPE_ILA_SIGNALS(132 downto 120) <= internal_BLOCKRAM_WRITE_ADDRESS;
-		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 133) <= (others => '0');
+		internal_CHIPSCOPE_ILA_SIGNALS(133)				<= DAQ_BUSY;
+		internal_CHIPSCOPE_ILA_SIGNALS(149 downto 134) <= internal_BLOCKRAM_DATA_OUT_ALL(0);
+		internal_CHIPSCOPE_ILA_SIGNALS(165 downto 150) <= internal_BLOCKRAM_DATA_OUT_ALL(1);		
+		internal_CHIPSCOPE_ILA_SIGNALS(181 downto 166) <= internal_BLOCKRAM_DATA_OUT_ALL(2);
+		internal_CHIPSCOPE_ILA_SIGNALS(197 downto 182) <= internal_BLOCKRAM_DATA_OUT_ALL(3);
+		internal_CHIPSCOPE_ILA_SIGNALS(201 downto 198) <= internal_BLOCKRAM_READ_ENABLE_R;
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 202) <= (others => '0');
 	end generate;
 	--Or connect up to ground if we don't want ILA
 	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate
