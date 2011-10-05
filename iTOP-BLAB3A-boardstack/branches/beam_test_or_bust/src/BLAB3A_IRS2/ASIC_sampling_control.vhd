@@ -63,6 +63,7 @@ entity ASIC_sampling_control is
 		FIRST_ADDRESS_ALLOWED: in std_logic_vector(8 downto 0);
 		LAST_ADDRESS_ALLOWED	: in std_logic_vector(8 downto 0);
 		LAST_ADDRESS_WRITTEN : out std_logic_vector(8 downto 0);
+		FIRST_ADDRESS_WRITTEN : out std_logic_vector(8 downto 0);
 		AsicIn_SAMPLING_HOLD_MODE_C					: out	std_logic_vector(3 downto 0);
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS			: out	std_logic_vector(8 downto 0);
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	: out	std_logic;
@@ -74,6 +75,7 @@ end ASIC_sampling_control;
 
 architecture Behavioral of ASIC_sampling_control is
 	signal internal_LAST_ADDRESS_WRITTEN	: std_logic_vector(8 downto 0);
+	signal internal_FIRST_ADDRESS_WRITTEN 	: std_logic_vector(8 downto 0);
 	signal internal_CONTINUE_WRITING			: std_logic;
 	signal internal_FIRST_ADDRESS_ALLOWED	: std_logic_vector(8 downto 0);
 	signal internal_LAST_ADDRESS_ALLOWED	: std_logic_vector(8 downto 0);
@@ -88,6 +90,7 @@ begin
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1);
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	<= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
 	LAST_ADDRESS_WRITTEN 				<= internal_LAST_ADDRESS_WRITTEN;
+	FIRST_ADDRESS_WRITTEN				<= internal_FIRST_ADDRESS_WRITTEN;
 	internal_CONTINUE_WRITING			<= CONTINUE_WRITING;
 	internal_FIRST_ADDRESS_ALLOWED	<= FIRST_ADDRESS_ALLOWED;
 	internal_LAST_ADDRESS_ALLOWED		<= LAST_ADDRESS_ALLOWED;
@@ -210,6 +213,7 @@ begin
 			else
 				internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';
 				internal_LAST_ADDRESS_WRITTEN <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) & '1';
+				internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) & '1') - 3);
 			end if;
 		end if;
 	end process;

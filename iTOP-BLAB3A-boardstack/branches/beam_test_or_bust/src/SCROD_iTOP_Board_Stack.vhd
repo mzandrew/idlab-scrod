@@ -111,6 +111,19 @@ entity SCROD_iTOP_Board_Stack is
 				--Interfaces for the temperature sensors
 				TMP_SCL	: out 	std_logic;
 				TMP_SDA	: inout  std_logic;
+				
+				--Fiberoptic interface
+				Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P 					: in std_logic;
+				Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N 					: in std_logic;
+				FIBER_TRANSCEIVER_0_DISABLE_MODULE 								: out std_logic;
+				FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER 	: in std_logic;
+				FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER 	: in std_logic;
+				FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  	: in std_logic;
+				Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P  				: in std_logic;
+				Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N  				: in std_logic;
+				Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P 				: out std_logic;
+				Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N 				: out std_logic;
+				FIBER_TRANSCEIVER_1_DISABLE_MODULE 								: out std_logic;				
 
 				---General monitor and diagnostic
 				LEDS 					: out STD_LOGIC_VECTOR(15 downto 0);
@@ -154,6 +167,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	----Signals for ASIC sampling / analog storage-----------
 	signal internal_CONTINUE_ANALOG_WRITING	: std_logic;
 	signal internal_LAST_ADDRESS_WRITTEN		: std_logic_vector(8 downto 0);
+	signal internal_FIRST_ADDRESS_WRITTEN		: std_logic_vector(8 downto 0);
 	---------------------------------------------------------
 	----Signals for ASIC digitizing / readout <==> fiber interface
 	signal internal_DONE_DIGITIZING			: std_logic;
@@ -166,11 +180,18 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_ASIC_SCALERS_C_R_CH				: ASIC_Scalers_C_R_CH;
 	signal internal_ASIC_TRIGGER_STREAMS_C_R_CH 	: ASIC_Trigger_Stream_C_R_CH;
 	------------------------------------------------------------
-	--Signals that I expect will be added later but are now placeholders---
-	signal internal_CLOCK_DAQ_INTERFACE		: std_logic;
-	signal internal_DAQ_BUSY					: std_logic;
+	--Signals for the fiberoptic interface----------------------
+	signal internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs	: std_logic_vector(3 downto 0);
+	signal internal_GLOBAL_RESET_REQUESTED_BY_FIBER				: std_logic;
+	signal internal_CLOCK_DAQ_INTERFACE								: std_logic;
+	signal internal_DAQ_BUSY											: std_logic;
+	signal internal_GLOBAL_RESET										: std_logic;
+	signal internal_fiber_link_is_up									: std_logic;	
+	signal internal_should_not_automatically_try_to_keep_fiber_link_up : std_logic;
+	signal internal_DONE_BUILDING_A_QUARTER_EVENT				: std_logic;
 	------------------------------------------------------------
-	--Temporary debugging signals----------------------------
+	--Temporary(?) debugging signals----------------------------
+	signal internal_GLOBAL_RESET_REQUESTED_BY_VIO: std_logic;
 	signal internal_VIO_IN 								: std_logic_vector(255 downto 0);
 	signal internal_VIO_OUT 							: std_logic_vector(255 downto 0);
 	signal internal_TEST_DAC_COLUMN					: std_logic_vector(1 downto 0);
@@ -188,6 +209,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_TEST_SCALER_COLUMN				: std_logic_vector(1 downto 0);
 	signal internal_TEST_SCALER_CH					: std_logic_vector(2 downto 0);
 	signal internal_TEST_TRIG_THRESH					: std_logic_vector(11 downto 0);
+	signal internal_DAQ_BUSY_VIO						: std_logic;	
+	signal internal_ZERO_VECTOR_255_LONG			: std_logic_vector(255 downto 0) := (others => '0');
 	---------------------------------------------------------
 begin
 	-----Clocking and FTSW interface-------------------------
@@ -255,6 +278,7 @@ begin
 			FIRST_ADDRESS_ALLOWED	=> "000000000",
 			LAST_ADDRESS_ALLOWED		=> "111111111",
 			LAST_ADDRESS_WRITTEN 	=>	internal_LAST_ADDRESS_WRITTEN,
+			FIRST_ADDRESS_WRITTEN	=> internal_FIRST_ADDRESS_WRITTEN,
 			AsicIn_SAMPLING_HOLD_MODE_C					=> AsicIn_SAMPLING_HOLD_MODE_C,
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS			=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS,
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
@@ -296,7 +320,7 @@ begin
 			CONTINUE_ANALOG_WRITING						=> internal_CONTINUE_ANALOG_WRITING,
 
 			DONE_DIGITIZING								=> internal_DONE_DIGITIZING,
-			DAQ_BUSY											=> internal_DAQ_BUSY,
+			DAQ_BUSY											=> (internal_DAQ_BUSY or internal_DAQ_BUSY_VIO),
 			
 			CLOCK_SST										=> internal_CLOCK_SST,
 			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE,
@@ -358,6 +382,58 @@ begin
 			TRIGGER_STREAMS 	=> internal_ASIC_TRIGGER_STREAMS_C_R_CH
 		);
 	-----------------------------------------------------------
+	---------Fiberoptic readout interface----------------------
+	internal_GLOBAL_RESET <= (internal_GLOBAL_RESET_REQUESTED_BY_FIBER or internal_GLOBAL_RESET_REQUESTED_BY_VIO);
+	
+	FR : entity work.fiber_readout
+		generic map (
+			NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND    => 83, -- set to 83 for an 83kHz clock input (this is for the reset clock)
+			WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS           => WIDTH_OF_BLOCKRAM_DATA_BUS,
+			WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS        => WIDTH_OF_BLOCKRAM_ADDRESS_BUS,
+			NUMBER_OF_INPUT_BLOCK_RAMS                     => 2 -- 2^N block rams, not the raw number of them
+		)
+		port map (
+			RESET                                                   => internal_GLOBAL_RESET,
+			Aurora_RocketIO_GTP_MGT_101_RESET                       => internal_GLOBAL_RESET,
+			Aurora_RocketIO_GTP_MGT_101_initialization_clock        => internal_CLOCK_SST, --Originally set to 31.25 MHz in PDBF, trying 21.2 MHz here.
+			Aurora_RocketIO_GTP_MGT_101_reset_clock                 => internal_CLOCK_83kHz, -- make sure to update NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND if you change this
+			-- fiber optic dual clock input
+			Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P             => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P,
+			Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N             => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N,
+			-- fiber optic transceiver #101 lane 0 I/O
+			Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P             => Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P,
+			Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N             => Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N,
+			Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P            => Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P,
+			Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N            => Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N,
+			FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER => FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER,
+			FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER => FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER,
+			FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  => FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT,
+			FIBER_TRANSCEIVER_0_DISABLE_MODULE                      => FIBER_TRANSCEIVER_0_DISABLE_MODULE,
+			-- fiber optic transceiver #101 lane 1 I/O
+			FIBER_TRANSCEIVER_1_DISABLE_MODULE                      => FIBER_TRANSCEIVER_1_DISABLE_MODULE,
+			Aurora_78MHz_clock                                      => internal_CLOCK_DAQ_INTERFACE,
+			should_not_automatically_try_to_keep_fiber_link_up      => internal_should_not_automatically_try_to_keep_fiber_link_up,
+			fiber_link_is_up                                        => internal_fiber_link_is_up,
+			--------------------------------------------------------
+			Aurora_RocketIO_GTP_MGT_101_status_LEDs                 => internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs,
+			chipscope_ila                                           => open,
+			chipscope_vio_buttons                                   => internal_ZERO_VECTOR_255_LONG,
+			chipscope_vio_display                                   => open,
+			--------------------------------------------------------
+			TRIGGER                                                 => internal_DONE_DIGITIZING,
+			DONE_BUILDING_A_QUARTER_EVENT                           => internal_DONE_BUILDING_A_QUARTER_EVENT,
+			CURRENTLY_BUILDING_A_QUARTER_EVENT							  => internal_DAQ_BUSY,
+			-- commamds --------------------------------------------
+			REQUEST_A_GLOBAL_RESET                                  => internal_GLOBAL_RESET_REQUESTED_BY_FIBER,
+			--------------------------------------------------------
+			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
+			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,
+			INPUT_BLOCK_RAM_ADDRESS                                 => internal_BLOCKRAM_COLUMN_SELECT,
+--			INPUT_ADDRESS_BUS                                       => open,
+--			INPUT_BLOCK_RAM_ADDRESS                                 => open,			
+			ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      => internal_FIRST_ADDRESS_WRITTEN
+		);
+	-----------------------------------------------------------
 	
 	--Diagnostic outputs, monitors, LEDs, Chipscope Core, etc--
 	map_Chipscope_Core : entity work.Chipscope_Core
@@ -381,7 +457,7 @@ begin
 	internal_WILK_FEEDBACK_ENABLE <= internal_VIO_OUT(9);
 	internal_FEEDBACK_MONITOR_COLUMN <= internal_VIO_OUT(11 downto 10);
 	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(13 downto 12);
-	internal_DAQ_BUSY <= internal_VIO_OUT(14);
+	internal_DAQ_BUSY_VIO <= internal_VIO_OUT(14);
 	internal_SOFTWARE_TRIGGER <= internal_VIO_OUT(15);
 	internal_RESET_SCALERS <= internal_VIO_OUT(16);
 	internal_LATCH_SCALERS <= internal_VIO_OUT(17) and internal_CLOCK_80Hz;
@@ -389,7 +465,12 @@ begin
 	internal_TEST_SCALER_COLUMN <= internal_VIO_OUT(21 downto 20);
 	internal_TEST_SCALER_CH	<= internal_VIO_OUT(24 downto 22);
 	internal_TEST_TRIG_THRESH <= internal_VIO_OUT(36 downto 25);
-	
+	internal_GLOBAL_RESET_REQUESTED_BY_VIO <= internal_VIO_OUT(37);
+	internal_should_not_automatically_try_to_keep_fiber_link_up	<= internal_VIO_OUT(38);
+	--Debugging blockram issues
+--	internal_BLOCKRAM_READ_ADDRESS <= internal_VIO_OUT(51 downto 39);
+--	internal_BLOCKRAM_COLUMN_SELECT <= internal_VIO_OUT(53 downto 52);
+
 	process(internal_CLOCK_SST)
 		variable trigger_seen : boolean := false;
 	begin
@@ -425,6 +506,8 @@ begin
 	end process;
 	internal_VIO_IN(51 downto 40) <= internal_TEMP_R1;
 	internal_VIO_IN(52) <= internal_DONE_DIGITIZING;
+	internal_VIO_IN(85) <= internal_DAQ_BUSY;
+	internal_VIO_IN(101 downto 86) <= internal_BLOCKRAM_READ_DATA;
 	--
 	process(internal_CLOCK_80Hz) begin
 		if (rising_edge(internal_CLOCK_80Hz)) then
@@ -493,14 +576,19 @@ begin
 	end process;
 	--
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
-	internal_LEDS(0) <= internal_CLOCK_80Hz;
-	internal_LEDS(1) <= internal_CLOCK_83kHz;
-	internal_LEDS(2) <= internal_ASIC_TRIGGER_BITS_C_R_CH(0)(1)(0);
-	internal_LEDS(3) <= internal_ASIC_TRIGGER_BITS_C_R_CH(3)(1)(0);	
-	internal_LEDS(12 downto 4) <= (others => '0');
-	internal_LEDS(13) <= internal_USE_FTSW_CLOCK;
-	internal_LEDS(14) <= internal_FTSW_INTERFACE_READY;
-	internal_LEDS(15) <= internal_SAMPLING_CLOCKS_READY;
+	--First four LEDS show FTSW status (none green if not using FTSW, 0 and 1 should be green if using FTSW)
+	internal_LEDS(0) <= internal_USE_FTSW_CLOCK;
+	internal_LEDS(1) <= internal_FTSW_INTERFACE_READY;
+	internal_LEDS(3 downto 2) <= (others => '0');
+	--Second four show general clock status (4 5 6 should be green if clocks are working properly)
+	internal_LEDS(4) <= internal_SAMPLING_CLOCKS_READY;
+	internal_LEDS(5) <= internal_CLOCK_80Hz;
+	internal_LEDS(6) <= internal_CLOCK_83kHz;
+	internal_LEDS(7) <= '0';
+	--Third four LEDS are unused for now
+	internal_LEDS(11 downto 8) <= (others => '0');
+	--Last set of four LEDS are for fiberoptic status
+	internal_LEDS(15 downto 12) <= internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs;
 	LEDS <= internal_LEDS;
 	---------------------------------------------------------	
 
