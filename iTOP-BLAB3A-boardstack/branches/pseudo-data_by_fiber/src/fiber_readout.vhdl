@@ -48,6 +48,7 @@ entity fiber_readout is
 		-----------------------------------------------------------------------------
 		TRIGGER                                                 : in    std_logic;
 		DONE_BUILDING_A_QUARTER_EVENT                           :   out std_logic;
+		CURRENTLY_BUILDING_A_QUARTER_EVENT							  :   out std_logic;
 		-- commamds -----------------------------------------------------------------
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		-----------------------------------------------------------------------------
@@ -83,7 +84,8 @@ architecture behavioral of fiber_readout is
 	signal internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS : std_logic_vector(WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS-1 downto 0);
 	signal internal_QUARTER_EVENT_FIFO_WRITE_ENABLE    : std_logic;
 	signal internal_START_BUILDING_A_QUARTER_EVENT     : std_logic;
---	signal internal_DONE_BUILDING_A_QUARTER_EVENT      : std_logic;
+	signal internal_DONE_BUILDING_A_QUARTER_EVENT      : std_logic;
+	signal internal_CURRENTLY_BUILDING_A_QUARTER_EVENT : std_logic;
 	signal quarter_event_builder_enable : std_logic := '0';
 	signal quarter_event_fifo_read_enable : std_logic := '0';
 	signal quarter_event_fifo_is_empty    : std_logic;
@@ -152,13 +154,20 @@ begin
 		OUTPUT_ADDRESS_BUS                 => open,
 		OUTPUT_FIFO_WRITE_ENABLE           => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
 		START_BUILDING_A_QUARTER_EVENT     => internal_START_BUILDING_A_QUARTER_EVENT,
-		DONE_BUILDING_A_QUARTER_EVENT      => DONE_BUILDING_A_QUARTER_EVENT
+		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT
 	);
+	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= INPUT_DATA_BUS;
+	INPUT_ADDRESS_BUS <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
+	INPUT_BLOCK_RAM_ADDRESS <= internal_INPUT_BLOCK_RAM_ADDRESS;
+	Aurora_78MHz_clock <= internal_Aurora_78MHz_clock;
 --	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= x"1812"; -- upper four bits should be masked off elsewhere, so should see 0x0812
-	internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC <= "0" & x"59";
+--	internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC <= "0" & x"59";
+	internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC <= ADDRESS_OF_STARTING_WINDOW_IN_ASIC;
 	internal_START_BUILDING_A_QUARTER_EVENT <= quarter_event_builder_enable and TRIGGER;
 	quarter_event_builder_enable <= '1';
 --	quarter_event_builder_enable <= not transmit_disable;
+	DONE_BUILDING_A_QUARTER_EVENT <= internal_DONE_BUILDING_A_QUARTER_EVENT;
+	CURRENTLY_BUILDING_A_QUARTER_EVENT <= internal_CURRENTLY_BUILDING_A_QUARTER_EVENT;
 
 	QEF : entity work.quarter_event_fifo port map (
 		rst    => RESET,
@@ -179,5 +188,16 @@ begin
 	quarter_event_fifo_read_enable <= (not quarter_event_fifo_is_empty) and (not Aurora_lane0_transmit_destination_ready_active_low);
 	Aurora_lane0_transmit_source_ready_active_low <= not quarter_event_fifo_read_enable;
 	Aurora_lane0_transmit_data_bus <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
+
+	--Logic to generate the "busy" signal
+	process(internal_Aurora_78MHz_clock) begin
+		if (rising_edge(internal_Aurora_78MHz_clock)) then
+			if (TRIGGER = '1' and internal_CURRENTLY_BUILDING_A_QUARTER_EVENT = '0') then
+				internal_CURRENTLY_BUILDING_A_QUARTER_EVENT <= '1';
+			elsif (internal_DONE_BUILDING_A_QUARTER_EVENT = '1') then
+				internal_CURRENTLY_BUILDING_A_QUARTER_EVENT <= '0';
+			end if;
+		end if;
+	end process;
 
 end behavioral;
