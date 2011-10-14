@@ -232,6 +232,8 @@ begin
 							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";
 						elsif (internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
 							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";
+						elsif (internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET = '1') then
+							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";							
 						else
 							internal_OUTPUT_DATA_BUS <= origin_window;
 						end if;
@@ -325,12 +327,12 @@ begin
 					end if;
 				-----------------------------------------------------------------------------
 				when GET_TRIGGER_STREAM_DATA =>
-						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 						internal_OUTPUT_DATA_BUS <= ASIC_TRIGGER_STREAMS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)) + 1) & ASIC_TRIGGER_STREAMS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)));
 						packet_builder_state <= WRITE_TRIGGER_STREAM_DATA;
 				-----------------------------------------------------------------------------
 				when WRITE_TRIGGER_STREAM_DATA =>
-						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
 						word_counter        := word_counter + 1;
 						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
 						if (stream_and_scaler_counter_flattened = 126) then
@@ -342,12 +344,12 @@ begin
 						end if;
 				-----------------------------------------------------------------------------
 				when GET_SCALER_DATA =>
-						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 						internal_OUTPUT_DATA_BUS <= ASIC_SCALERS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)) + 1) & ASIC_SCALERS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)));
 						packet_builder_state <= WRITE_SCALER_DATA;
 				-----------------------------------------------------------------------------
 				when WRITE_SCALER_DATA =>
-						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
 						word_counter        := word_counter + 1;
 						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
 						if (stream_and_scaler_counter_flattened = 126) then
