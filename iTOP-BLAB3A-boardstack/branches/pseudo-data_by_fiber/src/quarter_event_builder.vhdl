@@ -242,6 +242,8 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	port (
 		RESET                              : in    std_logic;
 		CLOCK                              : in    std_logic;
+		COMMAND_ARGUMENT                   : in    std_logic_vector(31 downto 0);
+		EVENT_NUMBER_SET                   : in    std_logic;
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
@@ -282,10 +284,14 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 	signal fifo_read_enable : std_logic := '0';
 	signal fifo_should_be_read_now : std_logic := '0';
 	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC : std_logic_vector(8 downto 0) := "0" & x"64";
+	signal internal_COMMAND_ARGUMENT : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_EVENT_NUMBER_SET : std_logic := '0';
 begin
 	QEB : quarter_event_builder port map (
 		RESET                              => internal_RESET,
 		CLOCK                              => internal_CLOCK,
+		COMMAND_ARGUMENT                   => internal_COMMAND_ARGUMENT,
+		EVENT_NUMBER_SET                   => internal_EVENT_NUMBER_SET,
 		INPUT_DATA_BUS                     => internal_INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_INPUT_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,

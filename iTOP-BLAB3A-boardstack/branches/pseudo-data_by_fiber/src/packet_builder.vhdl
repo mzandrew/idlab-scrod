@@ -24,7 +24,7 @@ entity packet_builder is
 		PACKET_TYPE_EVENT_FOOTER                 : std_logic_vector(31 downto 0) := x"000F00DA";
 		WIDTH_OF_EVENT_NUMBER                    : integer := 32;
 		WIDTH_OF_PACKET_NUMBER                   : integer := 8;
-		INPUT_BLOCK_RAM_PHASE_OFFSET             : integer := 2;
+		INPUT_BLOCK_RAM_PHASE_OFFSET             : integer := 1;
 --		NUMBER_OF_WORDS_NEEDED_TO_PACK_8_SAMPLES : integer := 8;
 		NUMBER_OF_WORDS_NEEDED_TO_PACK_8_SAMPLES : integer := 4;
 --		NUMBER_OF_WORDS_NEEDED_TO_PACK_8_SAMPLES : integer := 3;
@@ -51,6 +51,8 @@ entity packet_builder is
 		THIS_PACKET_IS_A_QUARTER_EVENT_HEADER              : in    std_logic;
 		THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              : in    std_logic;
 		THIS_PACKET_IS_QUARTER_EVENT_MEAT                  : in    std_logic;
+--	Add Trigger Stream packet type here
+--		THIS_PACKET_IS_TRIGGER_DATA								: in    std_logic;
 		EVENT_NUMBER                                       : in    std_logic_vector(WIDTH_OF_EVENT_NUMBER-1       downto 0);
 		PACKET_NUMBER                                      : in    std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 		INPUT_BASE_ADDRESS                                 : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
@@ -83,13 +85,15 @@ architecture packet_builder_architecture of packet_builder is
 	type packet_builder_state_type is (IDLE,
 		ABOUT_TO_BUILD_A_PACKET, BUILD_THE_FIRST_PART_OF_A_PACKET, DONE_BUILDING_THE_FIRST_PART_OF_A_PACKET,
 		ABOUT_TO_FETCH_SOME_INPUT_DATA, FETCH_SOME_INPUT_DATA, PACK_DATA, WRITE_SOME_OUTPUT_DATA, WRITE_AN_ORIGIN_WINDOW_WORD,
+		WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET, 
 		WRITE_THE_LAST_PART_OF_A_PACKET, ALMOST_DONE_BUILDING_PACKET, DONE_BUILDING_PACKET);
 	signal packet_builder_state : packet_builder_state_type := IDLE;
-	signal ROW     : std_logic_vector(1 downto 0) := "01"; -- ASIC row # within board stack
-	signal COL     : std_logic_vector(1 downto 0) := "01"; -- ASIC column # within board stack
-	signal CHANNEL : std_logic_vector(2 downto 0) := "001"; -- channel # within ASIC
-	signal WINDOW  : std_logic_vector(8 downto 0) := "000000001"; -- 64 sample waveform window within analog memory in ASIC
-	signal origin_window : std_logic_vector(31 downto 0) := x"11335577";
+	signal ROW     : std_logic_vector(1 downto 0) := "00"; -- ASIC row # within board stack
+	signal COL     : std_logic_vector(1 downto 0) := "00"; -- ASIC column # within board stack
+	signal CHANNEL : std_logic_vector(2 downto 0) := "000"; -- channel # within ASIC
+	signal WINDOW  : std_logic_vector(8 downto 0) := "000000000"; -- 64 sample waveform window within analog memory in ASIC
+	signal origin_window : std_logic_vector(31 downto 0) := x"00000000";
+	signal FLATTENED_BLOCK_RAM_ADDRESS_COUNTER : std_logic_vector(8 downto 0) := (others => '0');
 begin
 	internal_CLOCK     <= CLOCK;
 	internal_RESET     <= RESET;
@@ -101,6 +105,13 @@ begin
 	PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           <= internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET;
 	PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET;
 	OUTPUT_FIFO_WRITE_ENABLE <= internal_OUTPUT_FIFO_WRITE_ENABLE;
+
+	CHANNEL <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(2 downto 0);
+	ROW <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(4 downto 3);
+	WINDOW <= std_logic_vector( unsigned(FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(6 downto 5)) + unsigned(ADDRESS_OF_STARTING_WINDOW_IN_ASIC) );
+	COL <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(8 downto 7);
+	internal_INPUT_BLOCK_RAM_ADDRESS <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(8 downto 7);	
+	
 	process (internal_CLOCK, internal_RESET)
 		constant HEADER_INDEX                       : integer := 0;
 		constant PACKET_SIZE_IN_WORDS_INDEX         : integer := 1;
@@ -131,12 +142,9 @@ begin
 		end if;
 		if (internal_RESET = '1') then
 			packet_builder_state <= IDLE;
---			internal_INPUT_ADDRESS_BUS       <= (others => '0');
-			internal_INPUT_ADDRESS_BUS       <= "0" & x"033";
-			internal_INPUT_BLOCK_RAM_ADDRESS <= "00";
+			internal_INPUT_ADDRESS_BUS       <= (others => '0');
 			internal_OUTPUT_DATA_BUS    <= (others => '0');
 			internal_OUTPUT_ADDRESS_BUS <= (others => '0');
---			internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 			internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= '0';
 			internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                <= '0';
 			internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           <= '0';
@@ -144,10 +152,7 @@ begin
 			packet_sample_counter := 0;
 			eight_sample_counter := 0;
 			internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
-			ROW     <= "10";
-			COL     <= "10";
-			CHANNEL <= "010";
-			WINDOW  <= "000000010";
+			FLATTENED_BLOCK_RAM_ADDRESS_COUNTER <= (others => '0');
 		elsif rising_edge(internal_CLOCK) then
 			internal_START_BUILDING_A_PACKET <= START_BUILDING_A_PACKET;
 			case packet_builder_state is
@@ -167,18 +172,13 @@ begin
 				when ABOUT_TO_BUILD_A_PACKET =>
 					packet_sample_counter := 0;
 					word_counter := 0;
-					ROW     <= "11";
-					COL     <= "11";
-					CHANNEL <= "011";
-					WINDOW <= internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC;
 					internal_EVENT_NUMBER        <= EVENT_NUMBER;
 					internal_PACKET_NUMBER       <= PACKET_NUMBER;
 --					internal_INPUT_BASE_ADDRESS  <= INPUT_BASE_ADDRESS;
 --					internal_OUTPUT_BASE_ADDRESS <= OUTPUT_BASE_ADDRESS;
-					internal_INPUT_ADDRESS_BUS  <= INPUT_BASE_ADDRESS;
-					internal_OUTPUT_ADDRESS_BUS <= OUTPUT_BASE_ADDRESS;
+--					internal_INPUT_ADDRESS_BUS  <= INPUT_BASE_ADDRESS;
+--					internal_OUTPUT_ADDRESS_BUS <= OUTPUT_BASE_ADDRESS;
 					internal_PACKET_BUILDER_IS_BUILDING_A_PACKET <= '1';
-					internal_INPUT_BLOCK_RAM_ADDRESS <= "00";
 					packet_builder_state <= BUILD_THE_FIRST_PART_OF_A_PACKET;
 				when BUILD_THE_FIRST_PART_OF_A_PACKET =>
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
@@ -226,7 +226,12 @@ begin
 				when DONE_BUILDING_THE_FIRST_PART_OF_A_PACKET =>
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
-					packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
+					if (internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER = '1' or internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
+						internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
+						packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
+					elsif (internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT = '1') then
+						packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
+					end if;
 					window_sample_counter := 0;
 				when ABOUT_TO_FETCH_SOME_INPUT_DATA =>
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '0'; -- for when it comes here from WRITE_AN_ORIGIN_WINDOW_WORD
@@ -234,7 +239,7 @@ begin
 					block_ram_phase_counter := 0;
 					packet_builder_state <= FETCH_SOME_INPUT_DATA;
 				when FETCH_SOME_INPUT_DATA =>
-					if (block_ram_phase_counter < INPUT_BLOCK_RAM_PHASE_OFFSET) then -- block_ram_phase_counter = 0,1,2
+					if (block_ram_phase_counter < INPUT_BLOCK_RAM_PHASE_OFFSET) then -- block_ram_phase_counter = 0
 						internal_INPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_INPUT_ADDRESS_BUS) + 1);
 						block_ram_phase_counter := block_ram_phase_counter + 1;
 					elsif (eight_sample_counter < 8) then -- eight_sample_counter = 0,1,2,3,4,5,6,7
@@ -271,14 +276,13 @@ begin
 					else -- output_word_counter = 4
 						if (packet_sample_counter < NUMBER_OF_SAMPLES_IN_A_PACKET) then
 							if (window_sample_counter = 64) then
---								WINDOW <= std_logic_vector(unsigned(WINDOW) + 1);
-								CHANNEL <= std_logic_vector(unsigned(CHANNEL) + 1);
+								FLATTENED_BLOCK_RAM_ADDRESS_COUNTER <= std_logic_vector( unsigned(FLATTENED_BLOCK_RAM_ADDRESS_COUNTER) + 1 );
 								packet_builder_state <= WRITE_AN_ORIGIN_WINDOW_WORD;
---								internal_INPUT_BLOCK_RAM_ADDRESS <= "00";
 							else
 								packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
 							end if;
 						else
+							FLATTENED_BLOCK_RAM_ADDRESS_COUNTER <= std_logic_vector( unsigned(FLATTENED_BLOCK_RAM_ADDRESS_COUNTER) + 1 );						
 							packet_builder_state <= WRITE_THE_LAST_PART_OF_A_PACKET;
 						end if;
 					end if;
@@ -300,6 +304,17 @@ begin
 						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
 						packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
 					end if;
+				-----------------------------------------------------------------------------
+				when WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET =>
+					internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
+					if (word_counter <= FOOTER_INDEX) then
+						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
+					end if;
+					if (word_counter = SCROD_REV_AND_ID_INDEX - 1) then
+						packet_builder_state <= WRITE_THE_LAST_PART_OF_A_PACKET;
+					end if;
+					word_counter := word_counter + 1;
 				-----------------------------------------------------------------------------
 				when WRITE_THE_LAST_PART_OF_A_PACKET => -- word_counter = 137, 138, 139, 140
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
