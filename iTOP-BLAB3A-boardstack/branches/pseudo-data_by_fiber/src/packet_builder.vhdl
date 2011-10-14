@@ -1,8 +1,10 @@
 -- 2011-08-11 to 2011-08-13 mza
 -----------------------------------------------------------------------------
 library ieee;
-use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+use work.Board_Stack_Definitions.ALL;
 -----------------------------------------------------------------------------
 entity packet_builder is
 	generic (
@@ -20,6 +22,7 @@ entity packet_builder is
 		CURRENT_PROTOCOL_FREEZE_DATE             : std_logic_vector(31 downto 0) := x"20110901";
 		PACKET_TYPE_EVENT_HEADER                 : std_logic_vector(31 downto 0) := x"0000EADA";
 		PACKET_TYPE_COFFEE                       : std_logic_vector(31 downto 0) := x"00c0ffee";
+		PACKET_TYPE_TRIGGER_SCALER_DATA          : std_logic_vector(31 downto 0) := x"ce11b10c";
 		PACKET_RESERVED_WORD                     : std_logic_vector(31 downto 0) := x"99999999";
 		PACKET_TYPE_EVENT_FOOTER                 : std_logic_vector(31 downto 0) := x"000F00DA";
 		WIDTH_OF_EVENT_NUMBER                    : integer := 32;
@@ -51,12 +54,13 @@ entity packet_builder is
 		THIS_PACKET_IS_A_QUARTER_EVENT_HEADER              : in    std_logic;
 		THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              : in    std_logic;
 		THIS_PACKET_IS_QUARTER_EVENT_MEAT                  : in    std_logic;
---	Add Trigger Stream packet type here
---		THIS_PACKET_IS_TRIGGER_DATA								: in    std_logic;
+		THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET        : in    std_logic;
 		EVENT_NUMBER                                       : in    std_logic_vector(WIDTH_OF_EVENT_NUMBER-1       downto 0);
 		PACKET_NUMBER                                      : in    std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 		INPUT_BASE_ADDRESS                                 : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
-		OUTPUT_BASE_ADDRESS                                : in    std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0)		
+		OUTPUT_BASE_ADDRESS                                : in    std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
+		ASIC_SCALERS                                       : in    ASIC_Scalers_C_R_CH;
+		ASIC_TRIGGER_STREAMS                               : in    ASIC_Trigger_Stream_C_R_CH			
 	);
 end packet_builder;
 -----------------------------------------------------------------------------
@@ -64,15 +68,16 @@ architecture packet_builder_architecture of packet_builder is
 	signal internal_RESET                                              : std_logic;
 	signal internal_CLOCK                                              : std_logic;
 	signal internal_INPUT_DATA_BUS                                     : std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
-	signal internal_INPUT_ADDRESS_BUS                                  : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0) := "0" & x"003";
-	signal internal_INPUT_BLOCK_RAM_ADDRESS                            : std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0) := "00";
-	signal internal_OUTPUT_DATA_BUS                                    : std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0) := x"45455656";
-	signal internal_OUTPUT_ADDRESS_BUS                                 : std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0) := '0' & x"3434";
+	signal internal_INPUT_ADDRESS_BUS                                  : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0) := (others => '0');
+	signal internal_INPUT_BLOCK_RAM_ADDRESS                            : std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0) := (others => '0');
+	signal internal_OUTPUT_DATA_BUS                                    : std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0) := (others => '0');
+	signal internal_OUTPUT_ADDRESS_BUS                                 : std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0) := (others => '0');
 	signal internal_OUTPUT_FIFO_WRITE_ENABLE                           : std_logic := '0';
 	signal internal_START_BUILDING_A_PACKET                            : std_logic;
 	signal internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER              : std_logic;
 	signal internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              : std_logic;
 	signal internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT                  : std_logic;
+	signal internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET			 : std_logic;
 	signal internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET : std_logic := '0';
 	signal internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                : std_logic := '0';
 	signal internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           : std_logic := '0';
@@ -80,12 +85,13 @@ architecture packet_builder_architecture of packet_builder is
 	signal internal_PACKET_NUMBER                                      : std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 --	signal internal_INPUT_BASE_ADDRESS                                 : std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 --	signal internal_OUTPUT_BASE_ADDRESS                                : std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
-	signal CHECKSUM                                                    : std_logic_vector(31 downto 0) := x"01237654";
-	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : std_logic_vector(8 downto 0) := "1" & x"5a";
+	signal CHECKSUM                                                    : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : std_logic_vector(8 downto 0) := (others => '0');
 	type packet_builder_state_type is (IDLE,
 		ABOUT_TO_BUILD_A_PACKET, BUILD_THE_FIRST_PART_OF_A_PACKET, DONE_BUILDING_THE_FIRST_PART_OF_A_PACKET,
 		ABOUT_TO_FETCH_SOME_INPUT_DATA, FETCH_SOME_INPUT_DATA, PACK_DATA, WRITE_SOME_OUTPUT_DATA, WRITE_AN_ORIGIN_WINDOW_WORD,
 		WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET, 
+		GET_TRIGGER_STREAM_DATA, WRITE_TRIGGER_STREAM_DATA, GET_SCALER_DATA, WRITE_SCALER_DATA,
 		WRITE_THE_LAST_PART_OF_A_PACKET, ALMOST_DONE_BUILDING_PACKET, DONE_BUILDING_PACKET);
 	signal packet_builder_state : packet_builder_state_type := IDLE;
 	signal ROW     : std_logic_vector(1 downto 0) := "00"; -- ASIC row # within board stack
@@ -135,6 +141,8 @@ begin
 		variable window_sample_counter : integer range 0 to 256 := 0; -- # of samples in a window (64)
 		variable output_word_counter : integer range 0 to 16 := 0;
 		variable block_ram_phase_counter : integer range 0 to 10 := 0;
+		variable stream_and_scaler_counter_flattened : unsigned(6 downto 0) := (others => '0');
+		variable temporary_data_word : std_logic_vector(31 downto 0);
 		-----------------------------------------------------------------------------
 	begin
 		if falling_edge(internal_CLOCK) then
@@ -151,6 +159,7 @@ begin
 			word_counter := 0;
 			packet_sample_counter := 0;
 			eight_sample_counter := 0;
+			stream_and_scaler_counter_flattened := (others => '0');
 			internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 			FLATTENED_BLOCK_RAM_ADDRESS_COUNTER <= (others => '0');
 		elsif rising_edge(internal_CLOCK) then
@@ -160,6 +169,7 @@ begin
 					internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER <= THIS_PACKET_IS_A_QUARTER_EVENT_HEADER;
 					internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER <= THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER;
 					internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT     <= THIS_PACKET_IS_QUARTER_EVENT_MEAT;
+					internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET <= THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET;
 					internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= '0';
 					internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                <= '0';
 					internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           <= '0';
@@ -185,7 +195,11 @@ begin
 					internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= '0';
 				-----------------------------------------------------------------------------
 					if (word_counter = 0) then
-						CHECKSUM <= std_logic_vector(unsigned(FOOTER) + unsigned(SCROD_REVISION & SCROD_ID)); -- there's nothing valid on the OUTPUT_DATA_BUS the first time through, so we might as well start with the words that come too late at the end...
+					--For some reason the following line doesn't work after adding Board_Stack_Definitions
+--						CHECKSUM <= std_logic_vector(unsigned(FOOTER) + unsigned(SCROD_REVISION & SCROD_ID)); -- there's nothing valid on the OUTPUT_DATA_BUS the first time through, so we might as well start with the words that come too late at the end...
+					--The following is a crappy workaround for the above.
+						temporary_data_word := SCROD_REVISION & SCROD_ID;
+						CHECKSUM <= std_logic_vector(unsigned(FOOTER) + unsigned(temporary_data_word));
 					else
 						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
 						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS)); -- grabs the previous word
@@ -204,6 +218,8 @@ begin
 							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_COFFEE;
 						elsif (internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
 							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_EVENT_FOOTER;
+						elsif (internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET = '1') then
+							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_TRIGGER_SCALER_DATA;
 						else
 							--internal_OUTPUT_DATA_BUS <= (others => '0');
 							internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD; -- should never get here
@@ -229,6 +245,9 @@ begin
 					if (internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER = '1' or internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
 						internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
 						packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
+					elsif (internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET = '1') then
+						stream_and_scaler_counter_flattened := (others => '0');
+						packet_builder_state <= GET_TRIGGER_STREAM_DATA;
 					elsif (internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT = '1') then
 						packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
 					end if;
@@ -305,9 +324,44 @@ begin
 						packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
 					end if;
 				-----------------------------------------------------------------------------
+				when GET_TRIGGER_STREAM_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+						internal_OUTPUT_DATA_BUS <= ASIC_TRIGGER_STREAMS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)) + 1) & ASIC_TRIGGER_STREAMS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)));
+						packet_builder_state <= WRITE_TRIGGER_STREAM_DATA;
+				-----------------------------------------------------------------------------
+				when WRITE_TRIGGER_STREAM_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+						word_counter        := word_counter + 1;
+						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
+						if (stream_and_scaler_counter_flattened = 126) then
+							stream_and_scaler_counter_flattened := (others => '0');
+							packet_builder_state <= GET_SCALER_DATA;
+						else
+							stream_and_scaler_counter_flattened := stream_and_scaler_counter_flattened + 2;						
+							packet_builder_state <= GET_TRIGGER_STREAM_DATA;							
+						end if;
+				-----------------------------------------------------------------------------
+				when GET_SCALER_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+						internal_OUTPUT_DATA_BUS <= ASIC_SCALERS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)) + 1) & ASIC_SCALERS(to_integer(stream_and_scaler_counter_flattened(6 downto 5)))(to_integer(stream_and_scaler_counter_flattened(4 downto 3)))(to_integer(stream_and_scaler_counter_flattened(2 downto 0)));
+						packet_builder_state <= WRITE_SCALER_DATA;
+				-----------------------------------------------------------------------------
+				when WRITE_SCALER_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+						word_counter        := word_counter + 1;
+						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
+						if (stream_and_scaler_counter_flattened = 126) then
+							stream_and_scaler_counter_flattened := (others => '0');
+							packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
+						else
+							stream_and_scaler_counter_flattened := stream_and_scaler_counter_flattened + 2;						
+							packet_builder_state <= GET_SCALER_DATA;							
+						end if;
+				-----------------------------------------------------------------------------
 				when WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET =>
+					internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
-					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
+					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(PACKET_RESERVED_WORD));
 					if (word_counter <= FOOTER_INDEX) then
 						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
 					end if;

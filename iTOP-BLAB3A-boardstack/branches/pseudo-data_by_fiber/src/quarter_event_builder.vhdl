@@ -3,6 +3,7 @@
 library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
+use work.Board_Stack_Definitions.ALL;
 -----------------------------------------------------------------------------
 entity quarter_event_builder is
 	generic (
@@ -33,7 +34,10 @@ entity quarter_event_builder is
 		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
 		START_BUILDING_A_QUARTER_EVENT     : in    std_logic;
-		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic
+		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic;
+		--Trigger stream and scaler data to pass down to packet builder
+		ASIC_SCALERS                       : in    ASIC_Scalers_C_R_CH;
+		ASIC_TRIGGER_STREAMS               : in    ASIC_Trigger_Stream_C_R_CH		
 	);
 end quarter_event_builder;
 -----------------------------------------------------------------------------
@@ -60,10 +64,13 @@ architecture quarter_event_builder_architecture of quarter_event_builder is
 		THIS_PACKET_IS_A_QUARTER_EVENT_HEADER              : in    std_logic;
 		THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              : in    std_logic;
 		THIS_PACKET_IS_QUARTER_EVENT_MEAT                  : in    std_logic;
+		THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET        : in    std_logic;
 		EVENT_NUMBER                                       : in    std_logic_vector(WIDTH_OF_EVENT_NUMBER-1       downto 0);
 		PACKET_NUMBER                                      : in    std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 		INPUT_BASE_ADDRESS                                 : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
-		OUTPUT_BASE_ADDRESS                                : in    std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0)
+		OUTPUT_BASE_ADDRESS                                : in    std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
+		ASIC_SCALERS                                       : in    ASIC_Scalers_C_R_CH;
+		ASIC_TRIGGER_STREAMS                               : in    ASIC_Trigger_Stream_C_R_CH
 	);
 	end component;
 	signal internal_RESET                                              : std_logic;
@@ -73,6 +80,7 @@ architecture quarter_event_builder_architecture of quarter_event_builder is
 	signal internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER_PACKET       : std_logic;
 	signal internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER_PACKET       : std_logic;
 	signal internal_THIS_PACKET_IS_A_QUARTER_EVENT_MEAT_PACKET         : std_logic;
+	signal internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET        : std_logic;
 	signal internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET : std_logic;
 	signal internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                : std_logic;
 	signal internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           : std_logic;
@@ -86,6 +94,7 @@ architecture quarter_event_builder_architecture of quarter_event_builder is
 	type quarter_event_builder_state_type is (IDLE,
 		BUILD_A_QUARTER_EVENT_HEADER_PACKET, DONE_BUILDING_A_QUARTER_EVENT_HEADER_PACKET,
 		BUILD_A_QUARTER_EVENT_MEAT_PACKET, DONE_BUILDING_A_QUARTER_EVENT_MEAT_PACKET,
+		BUILD_A_TRIGGER_SCALER_DATA_PACKET, DONE_BUILDING_A_TRIGGER_SCALER_DATA_PACKET,
 		BUILD_A_QUARTER_EVENT_FOOTER_PACKET, DONE_BUILDING_A_QUARTER_EVENT_FOOTER_PACKET,
 		ALMOST_DONE_BUILDING_QUARTER_EVENT, DONE_BUILDING_QUARTER_EVENT);
 	signal quarter_event_builder_state : quarter_event_builder_state_type := IDLE;
@@ -104,13 +113,16 @@ begin
 		THIS_PACKET_IS_A_QUARTER_EVENT_HEADER              => internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER_PACKET,
 		THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              => internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER_PACKET,
 		THIS_PACKET_IS_QUARTER_EVENT_MEAT                  => internal_THIS_PACKET_IS_A_QUARTER_EVENT_MEAT_PACKET,
+		THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET        => internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET,
 		PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET => internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET,
 		PACKET_BUILDER_IS_BUILDING_A_PACKET                => internal_PACKET_BUILDER_IS_BUILDING_A_PACKET,
 		PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           => internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET,
 		EVENT_NUMBER                                       => internal_EVENT_NUMBER,
 		PACKET_NUMBER                                      => internal_PACKET_NUMBER,
 		INPUT_BASE_ADDRESS                                 => internal_INPUT_BASE_ADDRESS,
-		OUTPUT_BASE_ADDRESS                                => internal_OUTPUT_BASE_ADDRESS
+		OUTPUT_BASE_ADDRESS                                => internal_OUTPUT_BASE_ADDRESS,
+		ASIC_SCALERS                                       => ASIC_SCALERS,
+		ASIC_TRIGGER_STREAMS                               => ASIC_TRIGGER_STREAMS
 	);
 	internal_CLOCK <= CLOCK;
 	internal_RESET <= RESET;
@@ -123,6 +135,7 @@ begin
 			internal_START_BUILDING_A_PACKET                      <= '0';
 			internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER_PACKET <= '0';
 			internal_THIS_PACKET_IS_A_QUARTER_EVENT_MEAT_PACKET   <= '0';
+			internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET  <= '0';
 			internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER_PACKET <= '0';
 			internal_EVENT_NUMBER        <= (others => '0');
 			internal_PACKET_NUMBER       <= (others => '0');
@@ -182,12 +195,36 @@ begin
 					if (internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET = '0') then
 						current_packet_number := current_packet_number + 1;
 						internal_PACKET_NUMBER <= std_logic_vector(to_unsigned(current_packet_number, WIDTH_OF_PACKET_NUMBER));
-						if (current_packet_number < NUMBER_OF_PACKETS_IN_AN_EVENT - 1) then
+						if (current_packet_number < NUMBER_OF_PACKETS_IN_AN_EVENT - 3) then -- The 3 here includes the header packet, the trigger stream packet, housekeeping packet
 							quarter_event_builder_state <= BUILD_A_QUARTER_EVENT_MEAT_PACKET;
+						else
+							quarter_event_builder_state <= BUILD_A_TRIGGER_SCALER_DATA_PACKET;
+						end if;
+					end if;
+				when BUILD_A_TRIGGER_SCALER_DATA_PACKET =>
+					if ((internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET or internal_PACKET_BUILDER_IS_BUILDING_A_PACKET or internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET) = '0') then
+						internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET  <= '1';
+						internal_START_BUILDING_A_PACKET                      <= '1';
+					else
+						-- de-assert control signals and then wait here for a while until it's done...
+						internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET  <= '0';
+						internal_START_BUILDING_A_PACKET                      <= '0';
+						if (internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET = '1') then
+							quarter_event_builder_state <= DONE_BUILDING_A_TRIGGER_SCALER_DATA_PACKET;
+						end if;
+					end if;
+				when DONE_BUILDING_A_TRIGGER_SCALER_DATA_PACKET =>
+					if (internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET = '0') then
+						current_packet_number := current_packet_number + 1;
+						internal_PACKET_NUMBER <= std_logic_vector(to_unsigned(current_packet_number, WIDTH_OF_PACKET_NUMBER));
+						if (current_packet_number < NUMBER_OF_PACKETS_IN_AN_EVENT - 1) then 
+							quarter_event_builder_state <= BUILD_A_TRIGGER_SCALER_DATA_PACKET;
 						else
 							quarter_event_builder_state <= BUILD_A_QUARTER_EVENT_FOOTER_PACKET;
 						end if;
 					end if;
+--				when BUILD_A_HOUSEKEEPING_PACKET =>
+--				when DONE_BUILDING_A_HOUSEKEEPING_PACKET =>
 				when BUILD_A_QUARTER_EVENT_FOOTER_PACKET =>
 					if ((internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET or internal_PACKET_BUILDER_IS_BUILDING_A_PACKET or internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET) = '0') then
 						internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER_PACKET <= '1';
