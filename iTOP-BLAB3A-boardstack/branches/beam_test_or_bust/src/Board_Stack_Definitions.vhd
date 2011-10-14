@@ -16,7 +16,7 @@ package Board_Stack_Definitions is
    type Column_Voltages is array(7 downto 0) of LTC2637_Voltages;
 	type Board_Stack_Voltages is array(3 downto 0) of Column_Voltages;
 
-	-- Address Conventions for the 
+	-- Address Conventions for the temperature sensors
 	subtype TMP112_Address is std_logic_vector(1 downto 0);
 	constant TMP112_Address_R1	: TMP112_Address := "01"; --ADD0 pin tied high (2.5 V)
 
