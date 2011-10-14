@@ -431,7 +431,10 @@ begin
 			INPUT_BLOCK_RAM_ADDRESS                                 => internal_BLOCKRAM_COLUMN_SELECT,
 --			INPUT_ADDRESS_BUS                                       => open,
 --			INPUT_BLOCK_RAM_ADDRESS                                 => open,			
-			ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      => internal_FIRST_ADDRESS_WRITTEN
+			ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      => internal_FIRST_ADDRESS_WRITTEN,
+			--------------------------------------------------------
+			ASIC_SCALERS                                            => internal_ASIC_SCALERS_C_R_CH,
+			ASIC_TRIGGER_STREAMS                                    => internal_ASIC_TRIGGER_STREAMS_C_R_CH
 		);
 	-----------------------------------------------------------
 	
