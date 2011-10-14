@@ -7,6 +7,8 @@ use IEEE.NUMERIC_STD.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
 
+use work.Board_Stack_Definitions.ALL;
+
 entity fiber_readout is
 	generic (
 		CURRENT_PROTOCOL_FREEZE_DATE                   : std_logic_vector(31 downto 0) := x"20110910";
@@ -55,7 +57,10 @@ entity fiber_readout is
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
 		INPUT_BLOCK_RAM_ADDRESS                                 :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
-		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      : in    std_logic_vector(8 downto 0)
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      : in    std_logic_vector(8 downto 0);
+		-----------------------------------------------------------------------------
+		ASIC_SCALERS                                            : in    ASIC_Scalers_C_R_CH;
+		ASIC_TRIGGER_STREAMS                                    : in    ASIC_Trigger_Stream_C_R_CH
 	);
 end fiber_readout;
 
@@ -154,7 +159,9 @@ begin
 		OUTPUT_ADDRESS_BUS                 => open,
 		OUTPUT_FIFO_WRITE_ENABLE           => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
 		START_BUILDING_A_QUARTER_EVENT     => internal_START_BUILDING_A_QUARTER_EVENT,
-		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT
+		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT,
+		ASIC_SCALERS                       => ASIC_SCALERS,
+		ASIC_TRIGGER_STREAMS               => ASIC_TRIGGER_STREAMS
 	);
 	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= INPUT_DATA_BUS;
 	INPUT_ADDRESS_BUS <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
