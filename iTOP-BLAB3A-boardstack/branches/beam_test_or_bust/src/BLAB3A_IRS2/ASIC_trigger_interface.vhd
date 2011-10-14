@@ -62,7 +62,7 @@ begin
 	
 	gen_ASIC_trigger_stream_C : for i in 0 to 3 generate
 		gen_ASIC_trigger_stream_R : for j in 0 to 3 generate
-			gen_ASIC_trigger_stream_CH : for k in 0 to 3 generate
+			gen_ASIC_trigger_stream_CH : for k in 0 to 7 generate
 				map_trigger_stream_for_ASIC_C_R_CH : entity work.trigger_stream
 					PORT MAP (
 						TRIGGER_BIT 		=> TRIGGER_BITS(i)(j)(k),
