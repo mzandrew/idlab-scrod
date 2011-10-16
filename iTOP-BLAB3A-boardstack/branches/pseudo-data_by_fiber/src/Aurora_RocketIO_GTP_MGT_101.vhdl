@@ -6,6 +6,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
+use work.Board_Stack_Definitions.all;
 
 entity Aurora_RocketIO_GTP_MGT_101 is
 	generic (
@@ -43,6 +44,7 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		COMMAND_ARGUMENT                                        :   out std_logic_vector(31 downto 0);
 		EVENT_NUMBER_SET                                        :   out std_logic;
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
+		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -287,6 +289,7 @@ begin
 		COMMAND_ARGUMENT                               => internal_COMMAND_ARGUMENT,
 		EVENT_NUMBER_SET                               => internal_EVENT_NUMBER_SET,
 		REQUEST_A_GLOBAL_RESET                         => REQUEST_A_GLOBAL_RESET,
+		DESIRED_DAC_SETTINGS                           => DESIRED_DAC_SETTINGS,
 		start_event_transfer                           => internal_start_event_transfer,
 		-----------------------------------------------------------------------------
 		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
