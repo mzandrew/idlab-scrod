@@ -53,6 +53,7 @@ entity fiber_readout is
 		CURRENTLY_BUILDING_A_QUARTER_EVENT							  :   out std_logic;
 		-- commamds -----------------------------------------------------------------
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
+		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
@@ -135,6 +136,7 @@ begin
 		COMMAND_ARGUMENT                                        => internal_COMMAND_ARGUMENT,
 		EVENT_NUMBER_SET                                        => internal_EVENT_NUMBER_SET,
 		REQUEST_A_GLOBAL_RESET                                  => REQUEST_A_GLOBAL_RESET,
+		DESIRED_DAC_SETTINGS                                    => DESIRED_DAC_SETTINGS,
 		-----------------------------------------------------------------------------
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
