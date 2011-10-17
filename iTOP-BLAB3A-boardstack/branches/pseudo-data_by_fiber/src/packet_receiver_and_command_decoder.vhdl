@@ -102,15 +102,15 @@ begin
 	start_event_transfer               <= internal_start_event_transfer;
 	----------------------------------------------------------------------------------
 	process (USER_CLK, RX_SRC_RDY_N)
-		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 128 := 125;
+		constant COMMAND_PACKET_OFFSET                    : integer                :=   5;
+		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 255 := 133; -- 140 - 1*(head, size, date, type, scrod, check, foot)
+		type command_word_type is array(NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY-1 downto 0) of unsigned(31 downto 0);
+		variable command_word              : command_word_type;
+		variable command_word_counter      : integer range 0 to NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY; -- to_integer(EXPECTED_PACKET_SIZE);
 		variable packet_size               : unsigned(15 downto 0);
 		variable remaining_words_in_packet : unsigned(15 downto 0);
 		variable protocol_date             : unsigned(31 downto 0);
---		variable values_read               : integer range 0 to 255 := 0; ???
 		variable value                     : unsigned(31 downto 0);
-		type command_word_type is array(NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY-1 downto 0) of unsigned(31 downto 0);
-		variable command_word              : command_word_type;
-		variable command_word_counter      : integer range 0 to to_integer(EXPECTED_PACKET_SIZE);
 		variable revision_and_id           : unsigned(31 downto 0);
 		variable revision                  : unsigned(15 downto 0);
 		variable id                        : unsigned(15 downto 0);
@@ -119,7 +119,10 @@ begin
 		variable footer                    : unsigned(31 downto 0);
 		variable timeout_waiting_for_acknowledge_counter  : unsigned(31 downto 0);
 		constant NUMBER_OF_CYCLES_TO_WAIT_FOR_ACKNOWLEDGE : unsigned(31 downto 0) := x"00000100";
-		constant COMMAND_PACKET_OFFSET : integer := 3;
+		variable m : integer range 0 to 255 := 0;
+		variable n : integer range 0 to 255 := 0;
+		variable o : integer range 0 to 255 := 0;
+		variable p : integer range 0 to 255 := 0;
 	begin
 		if (RESET = '1') then
 			PACKET_RECEIVER_STATE    <= WAITING_FOR_HEADER;
@@ -266,10 +269,94 @@ begin
 						elsif (command_word(0) = x"33333333") then
 							internal_REQUEST_A_GLOBAL_RESET   <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"1bac2dac") then
+						elsif (command_word(0) = x"4bac2dac") then -- set all DACs to argument #1
 							for i in 0 to 3 loop
 								for j in 0 to 3 loop
-									--Rev B channel mappings
+									--IRS2_DC revB channel mappings
+									--DAC0 : "DAC1" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_01
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_23
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJP
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJN
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- VBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_45
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_67
+									--DAC1 : "DAC2" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGTHREF
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- ISEL
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- SBBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- PUBIAS
+--									if (internal_WILK_FEEDBACK_ENABLE = '1') then
+--										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+--									else
+										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= std_logic_vector(command_word(1)(11 downto 0)); --VDLY
+--									end if;
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- CMPBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- PAD_G									
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- WBIAS
+								end loop;
+							end loop;
+						elsif (command_word(0) = x"3bac2dac") then -- set all DACs to zeroes
+							for i in 0 to 3 loop
+								for j in 0 to 3 loop
+									--IRS2_DC revB channel mappings
+									--DAC0 : "DAC1" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"000"; -- TRIG_THRESH_01
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"000"; -- TRIG_THRESH_23
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"000"; -- VADJP
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"000"; -- VADJN
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"000"; -- TRGBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"000"; -- VBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"000"; -- TRIG_THRESH_45
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"000"; -- TRIG_THRESH_67
+									--DAC1 : "DAC2" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"000"; -- ISEL
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"000"; -- SBBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"000"; -- PUBIAS
+--									if (internal_WILK_FEEDBACK_ENABLE = '1') then
+--										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+--									else
+										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"000"; --VDLY
+--									end if;
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"000"; -- CMPBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"000"; -- PAD_G									
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"000"; -- WBIAS
+								end loop;
+							end loop;
+						elsif (command_word(0) = x"2bac2dac") then -- set all DACs to zero except vbias and pad_g (spare)
+							for i in 0 to 3 loop
+								for j in 0 to 3 loop
+									--IRS2_DC revB channel mappings
+									--DAC0 : "DAC1" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"000"; -- TRIG_THRESH_01
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"000"; -- TRIG_THRESH_23
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"000"; -- VADJP
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"000"; -- VADJN
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"000"; -- TRGBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"44C"; -- VBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"000"; -- TRIG_THRESH_45
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"000"; -- TRIG_THRESH_67
+									--DAC1 : "DAC2" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"000"; -- ISEL
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"000"; -- SBBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"000"; -- PUBIAS
+--									if (internal_WILK_FEEDBACK_ENABLE = '1') then
+--										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+--									else
+										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"000"; --VDLY
+--									end if;
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"000"; -- CMPBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"44c"; -- PAD_G									
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"000"; -- WBIAS
+								end loop;
+							end loop;
+						elsif (command_word(0) = x"1bac2dac") then -- set all DACs to nominal built-in values
+							for i in 0 to 3 loop
+								for j in 0 to 3 loop
+									--IRS2_DC revB channel mappings
 									--DAC0 : "DAC1" on schematic
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"76C"; -- TRIG_THRESH_01
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"76C"; -- TRIG_THRESH_23
@@ -294,11 +381,15 @@ begin
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"578"; -- WBIAS
 								end loop;
 							end loop;
-						elsif (command_word(0) = x"0bac2dac") then
-							--Rev B channel mappings
+						elsif (command_word(0) = x"0bac2dac") then -- set all DACs to arbitrary given values
+							-- IRS2_DC revB channel mappings
 							for j in 6 to 13 loop -- TRGbias values
-								DESIRED_DAC_SETTINGS( (j-6)/2 )( ((j-6) mod 2)*4)(4)    <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
-								DESIRED_DAC_SETTINGS( (j-6)/2 )( ((j-6) mod 2)*4+2)(4)  <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+								m := (j-6) / 2;                 -- 0, 0, 1, 1, 2, 2, 3, 3
+								n := 4 * ((j-6) mod 2);         -- 0, 4, 0, 4, 0, 4, 0, 4
+								o := n + 2;                     -- 2, 6, 2, 6, 2, 6, 2, 6
+								p := j - COMMAND_PACKET_OFFSET; -- 1, 2, 3, 4, 5, 6, 7, 8
+								DESIRED_DAC_SETTINGS(m)(n)(4) <= std_logic_vector(command_word(p)(11 downto  0));
+								DESIRED_DAC_SETTINGS(m)(o)(4) <= std_logic_vector(command_word(p)(27 downto 16));
 							end loop;
 							for j in 14 to 45 loop -- TRGthreshold
 								DESIRED_DAC_SETTINGS( (j-14)/8 )( ((j-14)/2*2) mod 8 )( ((j-14) mod 2) * 6 )     <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
@@ -313,7 +404,7 @@ begin
 								DESIRED_DAC_SETTINGS( (j-54)/2 )( ((j-54) mod 2)*4+2)(2) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 62 to 69 loop -- VadjN values
-								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4)(3)    <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
+								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4)(3)   <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
 								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4+2)(3) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 70 to 77 loop -- Vbias values
