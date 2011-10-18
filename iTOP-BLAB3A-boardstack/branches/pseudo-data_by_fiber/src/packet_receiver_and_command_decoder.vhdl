@@ -297,62 +297,65 @@ begin
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- WBIAS
 								end loop;
 							end loop;
-						elsif (command_word(0) = x"3bac2dac") then -- set all DACs to zeroes
-							for i in 0 to 3 loop
-								for j in 0 to 3 loop
-									--IRS2_DC revB channel mappings
-									--DAC0 : "DAC1" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"000"; -- TRIG_THRESH_01
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"000"; -- TRIG_THRESH_23
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"000"; -- VADJP
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"000"; -- VADJN
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"000"; -- TRGBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"000"; -- VBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"000"; -- TRIG_THRESH_45
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"000"; -- TRIG_THRESH_67
-									--DAC1 : "DAC2" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"000"; -- ISEL
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"000"; -- SBBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"000"; -- PUBIAS
---									if (internal_WILK_FEEDBACK_ENABLE = '1') then
---										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---									else
-										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"000"; --VDLY
---									end if;
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"000"; -- CMPBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"000"; -- PAD_G									
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"000"; -- WBIAS
-								end loop;
-							end loop;
-						elsif (command_word(0) = x"2bac2dac") then -- set all DACs to zero except vbias and pad_g (spare)
-							for i in 0 to 3 loop
-								for j in 0 to 3 loop
-									--IRS2_DC revB channel mappings
-									--DAC0 : "DAC1" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"000"; -- TRIG_THRESH_01
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"000"; -- TRIG_THRESH_23
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"000"; -- VADJP
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"000"; -- VADJN
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"000"; -- TRGBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"44C"; -- VBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"000"; -- TRIG_THRESH_45
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"000"; -- TRIG_THRESH_67
-									--DAC1 : "DAC2" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"000"; -- ISEL
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"000"; -- SBBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"000"; -- PUBIAS
---									if (internal_WILK_FEEDBACK_ENABLE = '1') then
---										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---									else
-										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"000"; --VDLY
---									end if;
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"000"; -- CMPBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"44c"; -- PAD_G									
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"000"; -- WBIAS
-								end loop;
-							end loop;
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+--						elsif (command_word(0) = x"3bac2dac") then -- set all DACs to zeroes
+--							for i in 0 to 3 loop
+--								for j in 0 to 3 loop
+--									--IRS2_DC revB channel mappings
+--									--DAC0 : "DAC1" on schematic
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"000"; -- TRIG_THRESH_01
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"000"; -- TRIG_THRESH_23
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"000"; -- VADJP
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"000"; -- VADJN
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"000"; -- TRGBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"000"; -- VBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"000"; -- TRIG_THRESH_45
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"000"; -- TRIG_THRESH_67
+--									--DAC1 : "DAC2" on schematic
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"000"; -- ISEL
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"000"; -- SBBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"000"; -- PUBIAS
+----									if (internal_WILK_FEEDBACK_ENABLE = '1') then
+----										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+----									else
+--										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"000"; --VDLY
+----									end if;
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"000"; -- CMPBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"000"; -- PAD_G									
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"000"; -- WBIAS
+--								end loop;
+--							end loop;
+--							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+--						elsif (command_word(0) = x"2bac2dac") then -- set all DACs to zero except vbias and pad_g (spare)
+--							for i in 0 to 3 loop
+--								for j in 0 to 3 loop
+--									--IRS2_DC revB channel mappings
+--									--DAC0 : "DAC1" on schematic
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"000"; -- TRIG_THRESH_01
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"000"; -- TRIG_THRESH_23
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"000"; -- VADJP
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"000"; -- VADJN
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"000"; -- TRGBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"44C"; -- VBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"000"; -- TRIG_THRESH_45
+--									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"000"; -- TRIG_THRESH_67
+--									--DAC1 : "DAC2" on schematic
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"000"; -- ISEL
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"000"; -- SBBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"000"; -- PUBIAS
+----									if (internal_WILK_FEEDBACK_ENABLE = '1') then
+----										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+----									else
+--										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"000"; --VDLY
+----									end if;
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"000"; -- CMPBIAS
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"44c"; -- PAD_G									
+--									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"000"; -- WBIAS
+--								end loop;
+--							end loop;
+--							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"1bac2dac") then -- set all DACs to nominal built-in values
 							for i in 0 to 3 loop
 								for j in 0 to 3 loop
@@ -381,6 +384,7 @@ begin
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"578"; -- WBIAS
 								end loop;
 							end loop;
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"0bac2dac") then -- set all DACs to arbitrary given values
 							-- IRS2_DC revB channel mappings
 							for j in 6 to 13 loop -- TRGbias values
@@ -435,7 +439,6 @@ begin
 								DESIRED_DAC_SETTINGS( (j-118)/2 )( ((j-118) mod 2)*4+1)(0) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
 								DESIRED_DAC_SETTINGS( (j-118)/2 )( ((j-118) mod 2)*4+3)(0) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));							
 							end loop;							
-
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						else
 							internal_ERROR_COUNT <= std_logic_vector(unsigned(internal_ERROR_COUNT) + 1);
@@ -457,13 +460,13 @@ begin
 						internal_COMMAND_ARGUMENT         <= (others => '0');
 						internal_EVENT_NUMBER_SET         <= '0';
 						internal_REQUEST_A_GLOBAL_RESET   <= '0';
-						for i in 0 to 3 loop
-							for j in 0 to 7 loop
-								for k in 0 to 7 loop
-									DESIRED_DAC_SETTINGS(i)(j)(k) <= x"001";
-								end loop;
-							end loop;
-						end loop;
+--						for i in 0 to 3 loop
+--							for j in 0 to 7 loop
+--								for k in 0 to 7 loop
+--									DESIRED_DAC_SETTINGS(i)(j)(k) <= x"001";
+--								end loop;
+--							end loop;
+--						end loop;
 						internal_start_event_transfer     <= '0';
 						COMMAND_PROCESSING_STATE          <= WAITING_TO_PROCESS_COMMAND;
 					when others => 
