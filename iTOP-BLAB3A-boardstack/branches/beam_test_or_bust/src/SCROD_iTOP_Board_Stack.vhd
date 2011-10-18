@@ -134,6 +134,7 @@ end SCROD_iTOP_Board_Stack;
 architecture Behavioral of SCROD_iTOP_Board_Stack is
 
 	--------SIGNAL DEFINITIONS-------------------------------
+	signal internal_LEDS_ENABLED					: std_logic := '0';
 	signal internal_LEDS        					: std_logic_vector(15 downto 0);
 	signal internal_MONITOR_INPUTS				: std_logic_vector(0 downto 0);	
 	signal internal_CHIPSCOPE_CONTROL0 			: std_logic_vector(35 downto 0);
@@ -593,7 +594,14 @@ begin
 	internal_LEDS(11 downto 8) <= (others => '0');
 	--Last set of four LEDS are for fiberoptic status
 	internal_LEDS(15 downto 12) <= internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs;
-	LEDS <= internal_LEDS;
+	process (internal_LEDS_ENABLED)
+	begin
+		if (internal_LEDS_ENABLED = '1') then
+			LEDS <= internal_LEDS;
+		else
+			LEDS <= (others => '0');
+		end if;
+	end process;
 	---------------------------------------------------------	
 
 end Behavioral;
