@@ -71,6 +71,14 @@ For the files that don't belong in the repository that show up with an annoying 
 svn propset svn:ignore "*" ise-project/
 }}}
 Which ignore all files not specifically added to the repository in that directory (it acts recursively).
+To add specific files/directories, they must be listed one file or filespec per line (on the command-line, do this with ctrl-enter):
+{{{
+svn propset svn:ignore "work
+bin
+mypackets
+logdir
+" .
+}}}
 
 ===reintegrating a branch into the trunk===
 
