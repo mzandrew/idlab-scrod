@@ -44,6 +44,7 @@ entity packet_receiver_and_command_interpreter is
 		REQUEST_A_GLOBAL_RESET             :   out std_logic;
 		DESIRED_DAC_SETTINGS               :   out Board_Stack_Voltages;
 		start_event_transfer               :   out std_logic
+		--RESET_SCALER_COUNTERS              :   out std_logic
 		----------------------------------------------------------------------------------
 );
 end packet_receiver_and_command_interpreter;
@@ -76,6 +77,7 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	signal internal_REQUEST_A_GLOBAL_RESET             : std_logic := '0';
 	signal internal_start_event_transfer               : std_logic;
+	--signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	----------------------------------------------------------------------------------
 	signal internal_ERROR_COUNT                        : std_logic_vector(7 downto 0)  := x"00";
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
@@ -100,6 +102,7 @@ begin
 	EVENT_NUMBER_SET                   <= internal_EVENT_NUMBER_SET;
 	REQUEST_A_GLOBAL_RESET             <= internal_REQUEST_A_GLOBAL_RESET;
 	start_event_transfer               <= internal_start_event_transfer;
+--	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
 	----------------------------------------------------------------------------------
 	process (USER_CLK, RX_SRC_RDY_N)
 		constant COMMAND_PACKET_OFFSET                    : integer                :=   5;
@@ -125,8 +128,6 @@ begin
 		variable p : integer range 0 to 255 := 0;
 	begin
 		if (RESET = '1') then
-			PACKET_RECEIVER_STATE    <= WAITING_FOR_HEADER;
-			COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
 			internal_resynchronizing_with_header   <= '0';
 			internal_WRONG_PACKET_TYPE_COUNTER     <= (others => '0');
 			internal_WRONG_PACKET_SIZE_COUNTER     <= (others => '0');
@@ -142,15 +143,10 @@ begin
 			internal_COMMAND_ARGUMENT         <= (others => '0');
 			internal_EVENT_NUMBER_SET         <= '0';
 			internal_REQUEST_A_GLOBAL_RESET   <= '0';
-			for i in 0 to 3 loop
-				for j in 0 to 7 loop
-					for k in 0 to 7 loop
-						DESIRED_DAC_SETTINGS(i)(j)(k) <= x"001";
-					end loop;
-				end loop;
-			end loop;
 			internal_start_event_transfer     <= '0';
 			----------------------------------------------------------------------------------
+			PACKET_RECEIVER_STATE    <= WAITING_FOR_HEADER;
+			COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
 --		elsif (CHANNEL_UP = '0') then
 		elsif (rising_edge(USER_CLK)) then
 			-- this only receives packets when internal_RX_SRC_RDY_N = '0'
@@ -299,34 +295,7 @@ begin
 							end loop;
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"1bac2dac") then -- set all DACs to nominal built-in values
-							for i in 0 to 3 loop
-								for j in 0 to 3 loop
-									--IRS2_DC revB channel mappings
-									--DAC0 : "DAC1" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"76C"; -- TRIG_THRESH_01
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"76C"; -- TRIG_THRESH_23
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"C9E"; -- VADJP
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"42E"; -- VADJN
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"3E8"; -- TRGBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"44C"; -- VBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"76C"; -- TRIG_THRESH_45
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= x"76C"; -- TRIG_THRESH_67
-									--DAC1 : "DAC2" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"7D0"; -- ISEL
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"640"; -- SBBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"CE4"; -- PUBIAS
---									if (internal_WILK_FEEDBACK_ENABLE = '1') then
---										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---									else
-										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"AF0"; --VDLY
---									end if;
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"384"; -- CMPBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"7FF"; -- PAD_G									
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"578"; -- WBIAS
-								end loop;
-							end loop;
-							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+							COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
 						elsif (command_word(0) = x"0bac2dac") then -- set all DACs to arbitrary given values
 							-- IRS2_DC revB channel mappings
 							for j in 6 to 13 loop -- TRGbias values
