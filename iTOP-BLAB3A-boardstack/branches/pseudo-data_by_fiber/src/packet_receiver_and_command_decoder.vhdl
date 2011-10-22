@@ -256,18 +256,35 @@ begin
 				case COMMAND_PROCESSING_STATE is
 					when WAITING_TO_PROCESS_COMMAND =>
 					when PROCESS_COMMAND =>
-						if    (command_word(0) = x"33333333") then -- when Lt. Comm. Data was stuck in a time loop, seeing that things that should be random were occuring with the number 3 preferentially allowed him to realize the correct course of action and get out of the indefinite loop
+						if    (command_word(0) = x"33333333") then -- global reset -- when Lt. Comm. Data was stuck in a time loop, seeing that things that should be random were occuring with the number 3 preferentially allowed him to realize the correct course of action and get out of the indefinite loop
 							internal_REQUEST_A_GLOBAL_RESET   <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"e0000000") then -- e for event and all zeroes for the usual desire of resetting event numbers to zero before a run
+						elsif (command_word(0) = x"e0000000") then -- set event number -- e for event and all zeroes for the usual desire of resetting event numbers to zero before a run
 							internal_EVENT_NUMBER_SET <= '1';
 							internal_COMMAND_ARGUMENT <= std_logic_vector(command_word(1));
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"01001500") then -- right ascension and declination of Pisces constellation (and fish have scales)
+						elsif (command_word(0) = x"01001500") then -- reset scaler counters -- right ascension and declination of Pisces constellation (and fish have scales)
 							internal_RESET_SCALER_COUNTERS <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"19321965") then -- birth / death years of Roy Rogers' horse, Trigger
+						elsif (command_word(0) = x"19321965") then -- trigger readout -- birth / death years of Roy Rogers' horse, Trigger
 							--internal_start_event_transfer <= '1';
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"eeeee01a") then -- set trigger thresholds -- "eee-oh-lay" is the call of a male wood thrush
+							for i in 0 to 3 loop
+								for j in 0 to 3 loop
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_01
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_23
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_45
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_67
+								end loop;
+							end loop;
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"5555b1a5") then -- set Vbiases all to the same value
+							for i in 0 to 3 loop
+								for j in 0 to 3 loop
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- VBIAS
+								end loop;
+							end loop;
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"0bac2dac") then -- back to DAC - set all DACs to arbitrary given values
 							-- IRS2_DC revB channel mappings
