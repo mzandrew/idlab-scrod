@@ -45,7 +45,7 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		EVENT_NUMBER_SET                                        :   out std_logic;
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
-		--RESET_SCALER_COUNTERS                                   :   out std_logic;
+		RESET_SCALER_COUNTERS                                   :   out std_logic;
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -292,7 +292,7 @@ begin
 		REQUEST_A_GLOBAL_RESET                         => REQUEST_A_GLOBAL_RESET,
 		DESIRED_DAC_SETTINGS                           => DESIRED_DAC_SETTINGS,
 		start_event_transfer                           => internal_start_event_transfer,
-		--RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
+		RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
 		-----------------------------------------------------------------------------
 		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
 		ERR_COUNT                                      => err_count_i
