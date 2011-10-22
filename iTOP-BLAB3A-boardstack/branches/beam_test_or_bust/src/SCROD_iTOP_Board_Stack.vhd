@@ -191,6 +191,9 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_should_not_automatically_try_to_keep_fiber_link_up : std_logic;
 	signal internal_DONE_BUILDING_A_QUARTER_EVENT				: std_logic;
 	------------------------------------------------------------
+	--Signals corresponding to commands-------------------------
+	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
+	------------------------------------------------------------
 	--Temporary(?) debugging signals----------------------------
 	signal internal_GLOBAL_RESET_REQUESTED_BY_VIO: std_logic;
 	signal internal_VIO_IN 								: std_logic_vector(255 downto 0);
@@ -427,6 +430,7 @@ begin
 			-- commamds --------------------------------------------
 			REQUEST_A_GLOBAL_RESET                                  => internal_GLOBAL_RESET_REQUESTED_BY_FIBER,
 			DESIRED_DAC_SETTINGS                                    => internal_DESIRED_DAC_VOLTAGES,
+			RESET_SCALER_COUNTERS                                   => internal_RESET_SCALER_COUNTERS,
 			--------------------------------------------------------
 			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
 			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,
@@ -464,7 +468,7 @@ begin
 	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(13 downto 12);
 	internal_DAQ_BUSY_VIO <= internal_VIO_OUT(14);
 	internal_SOFTWARE_TRIGGER <= internal_VIO_OUT(15);
-	internal_RESET_SCALERS <= internal_VIO_OUT(16);
+	internal_RESET_SCALERS <= internal_RESET_SCALER_COUNTERS or internal_VIO_OUT(16);
 	internal_LATCH_SCALERS <= internal_VIO_OUT(17) and internal_CLOCK_80Hz;
 	internal_TEST_SCALER_ROW <= internal_VIO_OUT(19 downto 18);
 	internal_TEST_SCALER_COLUMN <= internal_VIO_OUT(21 downto 20);

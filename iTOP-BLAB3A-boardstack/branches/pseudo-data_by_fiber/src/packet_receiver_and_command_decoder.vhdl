@@ -43,8 +43,8 @@ entity packet_receiver_and_command_interpreter is
 		EVENT_NUMBER_SET                   :   out std_logic;
 		REQUEST_A_GLOBAL_RESET             :   out std_logic;
 		DESIRED_DAC_SETTINGS               :   out Board_Stack_Voltages;
-		start_event_transfer               :   out std_logic
-		--RESET_SCALER_COUNTERS              :   out std_logic
+		start_event_transfer               :   out std_logic;
+		RESET_SCALER_COUNTERS              :   out std_logic
 		----------------------------------------------------------------------------------
 );
 end packet_receiver_and_command_interpreter;
@@ -77,7 +77,7 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	signal internal_REQUEST_A_GLOBAL_RESET             : std_logic := '0';
 	signal internal_start_event_transfer               : std_logic;
-	--signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
+	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	----------------------------------------------------------------------------------
 	signal internal_ERROR_COUNT                        : std_logic_vector(7 downto 0)  := x"00";
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
@@ -102,7 +102,7 @@ begin
 	EVENT_NUMBER_SET                   <= internal_EVENT_NUMBER_SET;
 	REQUEST_A_GLOBAL_RESET             <= internal_REQUEST_A_GLOBAL_RESET;
 	start_event_transfer               <= internal_start_event_transfer;
---	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
+	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
 	----------------------------------------------------------------------------------
 	process (USER_CLK, RX_SRC_RDY_N)
 		constant COMMAND_PACKET_OFFSET                    : integer                :=   5;
@@ -144,6 +144,7 @@ begin
 			internal_EVENT_NUMBER_SET         <= '0';
 			internal_REQUEST_A_GLOBAL_RESET   <= '0';
 			internal_start_event_transfer     <= '0';
+			internal_RESET_SCALER_COUNTERS    <= '0';
 			----------------------------------------------------------------------------------
 			PACKET_RECEIVER_STATE    <= WAITING_FOR_HEADER;
 			COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
@@ -255,48 +256,20 @@ begin
 				case COMMAND_PROCESSING_STATE is
 					when WAITING_TO_PROCESS_COMMAND =>
 					when PROCESS_COMMAND =>
-						if (command_word(0) = x"b01dface") then
-							internal_start_event_transfer <= '1';
+						if    (command_word(0) = x"33333333") then -- when Lt. Comm. Data was stuck in a time loop, seeing that things that should be random were occuring with the number 3 preferentially allowed him to realize the correct course of action and get out of the indefinite loop
+							internal_REQUEST_A_GLOBAL_RESET   <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"e0000000") then
+						elsif (command_word(0) = x"e0000000") then -- e for event and all zeroes for the usual desire of resetting event numbers to zero before a run
 							internal_EVENT_NUMBER_SET <= '1';
 							internal_COMMAND_ARGUMENT <= std_logic_vector(command_word(1));
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"33333333") then
-							internal_REQUEST_A_GLOBAL_RESET   <= '1';
+						elsif (command_word(0) = x"01001500") then -- right ascension and declination of Pisces constellation (and fish have scales)
+							internal_RESET_SCALER_COUNTERS <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"4bac2dac") then -- set all DACs to argument #1
-							for i in 0 to 3 loop
-								for j in 0 to 3 loop
-									--IRS2_DC revB channel mappings
-									--DAC0 : "DAC1" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_01
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_23
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJP
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJN
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- VBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_45
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_67
-									--DAC1 : "DAC2" on schematic
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGTHREF
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- ISEL
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- SBBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- PUBIAS
---									if (internal_WILK_FEEDBACK_ENABLE = '1') then
---										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---									else
-										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= std_logic_vector(command_word(1)(11 downto 0)); --VDLY
---									end if;
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- CMPBIAS
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- PAD_G									
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- WBIAS
-								end loop;
-							end loop;
+						elsif (command_word(0) = x"19321965") then -- birth / death years of Roy Rogers' horse, Trigger
+							--internal_start_event_transfer <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"1bac2dac") then -- set all DACs to nominal built-in values
-							COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
-						elsif (command_word(0) = x"0bac2dac") then -- set all DACs to arbitrary given values
+						elsif (command_word(0) = x"0bac2dac") then -- back to DAC - set all DACs to arbitrary given values
 							-- IRS2_DC revB channel mappings
 							for j in 6 to 13 loop -- TRGbias values
 								m := (j-6) / 2;                 -- 0, 0, 1, 1, 2, 2, 3, 3
@@ -351,6 +324,37 @@ begin
 								DESIRED_DAC_SETTINGS( (j-118)/2 )( ((j-118) mod 2)*4+3)(0) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));							
 							end loop;							
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"1bac2dac") then -- set all DACs to nominal built-in values
+							COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
+						elsif (command_word(0) = x"4bac2dac") then -- set all DACs to argument #1
+							for i in 0 to 3 loop
+								for j in 0 to 3 loop
+									--IRS2_DC revB channel mappings
+									--DAC0 : "DAC1" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_01
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_23
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJP
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJN
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- VBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_45
+									DESIRED_DAC_SETTINGS(i)(j*2+0)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_67
+									--DAC1 : "DAC2" on schematic
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGTHREF
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- ISEL
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- SBBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- PUBIAS
+--									if (internal_WILK_FEEDBACK_ENABLE = '1') then
+--										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+--									else
+										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= std_logic_vector(command_word(1)(11 downto 0)); --VDLY
+--									end if;
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- CMPBIAS
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- PAD_G									
+									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- WBIAS
+								end loop;
+							end loop;
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						else
 							internal_ERROR_COUNT <= std_logic_vector(unsigned(internal_ERROR_COUNT) + 1);
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
@@ -401,6 +405,7 @@ begin
 						internal_EVENT_NUMBER_SET         <= '0';
 						internal_REQUEST_A_GLOBAL_RESET   <= '0';
 						internal_start_event_transfer     <= '0';
+						internal_RESET_SCALER_COUNTERS    <= '0';
 						COMMAND_PROCESSING_STATE          <= WAITING_TO_PROCESS_COMMAND;
 					when others => 
 --						internal_UNKNOWN_ERROR_COUNTER <= std_logic_vector(unsigned(internal_UNKNOWN_ERROR_COUNTER) + 1);
