@@ -24,7 +24,7 @@ entity packet_receiver_and_command_interpreter is
 		-- System Interface
 		USER_CLK        : in  std_logic;
 		RESET           : in  std_logic;
-		CHANNEL_UP      : in  std_logic;
+--		CHANNEL_UP      : in  std_logic;
 		WRONG_PACKET_SIZE_COUNTER          :   out std_logic_vector(31 downto 0);
 		WRONG_PACKET_TYPE_COUNTER          :   out std_logic_vector(31 downto 0);
 		WRONG_PROTOCOL_FREEZE_DATE_COUNTER :   out std_logic_vector(31 downto 0);
@@ -36,16 +36,18 @@ entity packet_receiver_and_command_interpreter is
 		number_of_sent_events              :   out std_logic_vector(31 downto 0);
 		NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR :   out std_logic_vector(31 downto 0);
 		resynchronizing_with_header        :   out std_logic;
-		acknowledge_execution_of_command   : in    std_logic;
-		ERR_COUNT                          :   out std_logic_vector(7 downto 0);
 		-- commands ----------------------------------------------------------------------
 		COMMAND_ARGUMENT                   :   out std_logic_vector(31 downto 0);
 		EVENT_NUMBER_SET                   :   out std_logic;
 		REQUEST_A_GLOBAL_RESET             :   out std_logic;
 		DESIRED_DAC_SETTINGS               :   out Board_Stack_Voltages;
 		start_event_transfer               :   out std_logic;
-		RESET_SCALER_COUNTERS              :   out std_logic
+		RESET_SCALER_COUNTERS              :   out std_logic;
+		ASIC_START_WINDOW                  :   out std_logic_vector(8 downto 0);
+		ASIC_END_WINDOW                    :   out std_logic_vector(8 downto 0);
 		----------------------------------------------------------------------------------
+		acknowledge_execution_of_command   : in    std_logic;
+		ERR_COUNT                          :   out std_logic_vector(7 downto 0)
 );
 end packet_receiver_and_command_interpreter;
 
@@ -78,6 +80,8 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_REQUEST_A_GLOBAL_RESET             : std_logic := '0';
 	signal internal_start_event_transfer               : std_logic;
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
+	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
 	----------------------------------------------------------------------------------
 	signal internal_ERROR_COUNT                        : std_logic_vector(7 downto 0)  := x"00";
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
@@ -103,8 +107,10 @@ begin
 	REQUEST_A_GLOBAL_RESET             <= internal_REQUEST_A_GLOBAL_RESET;
 	start_event_transfer               <= internal_start_event_transfer;
 	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
+	ASIC_START_WINDOW                  <= internal_ASIC_START_WINDOW;
+	ASIC_END_WINDOW                    <= internal_ASIC_END_WINDOW;
 	----------------------------------------------------------------------------------
-	process (USER_CLK, RX_SRC_RDY_N)
+	process (RESET, USER_CLK, RX_SRC_RDY_N)
 		constant COMMAND_PACKET_OFFSET                    : integer                :=   5;
 		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 255 := 133; -- 140 - 1*(head, size, date, type, scrod, check, foot)
 		type command_word_type is array(NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY-1 downto 0) of unsigned(31 downto 0);
@@ -145,6 +151,16 @@ begin
 			internal_REQUEST_A_GLOBAL_RESET   <= '0';
 			internal_start_event_transfer     <= '0';
 			internal_RESET_SCALER_COUNTERS    <= '0';
+			internal_ASIC_START_WINDOW        <= (others => '0');
+			internal_ASIC_END_WINDOW          <= (others => '1');
+			-- the following will be good when the fiber transceiver reset logic is finally working right:
+--			for i in 0 to 3 loop
+--				for j in 0 to 7 loop
+--					for k in 0 to 7 loop
+--						DESIRED_DAC_SETTINGS(i)(j)(k) <= x"001"; -- this should cause the DACs to go silent during reset, but after reset is deaserted, they should come back to nominal values
+--					end loop;
+--				end loop;
+--			end loop;
 			----------------------------------------------------------------------------------
 			PACKET_RECEIVER_STATE    <= WAITING_FOR_HEADER;
 			COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
@@ -259,15 +275,12 @@ begin
 						if    (command_word(0) = x"33333333") then -- global reset -- when Lt. Comm. Data was stuck in a time loop, seeing that things that should be random were occuring with the number 3 preferentially allowed him to realize the correct course of action and get out of the indefinite loop
 							internal_REQUEST_A_GLOBAL_RESET   <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"e0000000") then -- set event number -- e for event and all zeroes for the usual desire of resetting event numbers to zero before a run
-							internal_EVENT_NUMBER_SET <= '1';
-							internal_COMMAND_ARGUMENT <= std_logic_vector(command_word(1));
-							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"01001500") then -- reset scaler counters -- right ascension and declination of Pisces constellation (and fish have scales)
 							internal_RESET_SCALER_COUNTERS <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						elsif (command_word(0) = x"19321965") then -- trigger readout -- birth / death years of Roy Rogers' horse, Trigger
-							--internal_start_event_transfer <= '1';
+						elsif (command_word(0) = x"e0000000") then -- set event number -- e for event and all zeroes for the usual desire of resetting event numbers to zero before a run
+							internal_EVENT_NUMBER_SET <= '1';
+							internal_COMMAND_ARGUMENT <= std_logic_vector(command_word(1));
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"eeeee01a") then -- set trigger thresholds -- "eee-oh-lay" is the call of a male wood thrush
 							for i in 0 to 3 loop
@@ -372,7 +385,16 @@ begin
 								end loop;
 							end loop;
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
-						else
+						elsif (command_word(0) = x"000001ff") then -- set starting window in ASIC's analog storage array
+							internal_ASIC_START_WINDOW <= std_logic_vector(command_word(1)(8 downto 0));
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"000101ff") then -- set ending window in ASIC's analog storage array
+							internal_ASIC_END_WINDOW <= std_logic_vector(command_word(1)(8 downto 0));
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"19321965") then -- trigger readout -- birth / death years of Roy Rogers' horse, Trigger
+							--internal_start_event_transfer <= '1';
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						else -- unsupported command encountered
 							internal_ERROR_COUNT <= std_logic_vector(unsigned(internal_ERROR_COUNT) + 1);
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 						end if;

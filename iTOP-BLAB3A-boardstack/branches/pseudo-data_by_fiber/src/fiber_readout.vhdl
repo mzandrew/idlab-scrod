@@ -55,6 +55,8 @@ entity fiber_readout is
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
+		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
+		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
@@ -79,7 +81,7 @@ architecture behavioral of fiber_readout is
 -----------------------------------------------------------------------------
 --	signal should_not_automatically_try_to_keep_fiber_link_up : std_logic;
 --	signal fiber_link_is_up                                   : std_logic;
-	signal Aurora_data_link_reset                             : std_logic;
+	signal Aurora_data_link_reset                             : std_logic := '0';
 	signal internal_Aurora_78MHz_clock                        : std_logic;
 --	signal Aurora_RocketIO_GTP_MGT_101_status_LEDs            : std_logic_vector(3 downto 0);
 -----------------------------------------------------------------------------
@@ -139,6 +141,8 @@ begin
 		REQUEST_A_GLOBAL_RESET                                  => REQUEST_A_GLOBAL_RESET,
 		DESIRED_DAC_SETTINGS                                    => DESIRED_DAC_SETTINGS,
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
+		ASIC_START_WINDOW                                       => ASIC_START_WINDOW,
+		ASIC_END_WINDOW                                         => ASIC_END_WINDOW,
 		-----------------------------------------------------------------------------
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
@@ -179,6 +183,7 @@ begin
 --	quarter_event_builder_enable <= not transmit_disable;
 	DONE_BUILDING_A_QUARTER_EVENT <= internal_DONE_BUILDING_A_QUARTER_EVENT;
 	CURRENTLY_BUILDING_A_QUARTER_EVENT <= internal_CURRENTLY_BUILDING_A_QUARTER_EVENT;
+	Aurora_data_link_reset <= RESET;
 
 	QEF : entity work.quarter_event_fifo port map (
 		rst    => RESET,
