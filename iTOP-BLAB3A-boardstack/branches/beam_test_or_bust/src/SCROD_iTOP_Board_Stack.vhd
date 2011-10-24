@@ -193,6 +193,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	------------------------------------------------------------
 	--Signals corresponding to commands-------------------------
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
+	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
 	------------------------------------------------------------
 	--Temporary(?) debugging signals----------------------------
 	signal internal_GLOBAL_RESET_REQUESTED_BY_VIO: std_logic;
@@ -279,8 +281,8 @@ begin
 			CLOCK_SST					=> internal_CLOCK_SST,
 			CLOCK_SSP					=> internal_CLOCK_SSP,
 			CLOCK_WRITE_STROBE		=> internal_CLOCK_WRITE_STROBE,
-			FIRST_ADDRESS_ALLOWED	=> "000000000",
-			LAST_ADDRESS_ALLOWED		=> "111111111",
+			FIRST_ADDRESS_ALLOWED	=> internal_ASIC_START_WINDOW,
+			LAST_ADDRESS_ALLOWED		=> internal_ASIC_END_WINDOW,
 			LAST_ADDRESS_WRITTEN 	=>	internal_LAST_ADDRESS_WRITTEN,
 			FIRST_ADDRESS_WRITTEN	=> internal_FIRST_ADDRESS_WRITTEN,
 			AsicIn_SAMPLING_HOLD_MODE_C					=> AsicIn_SAMPLING_HOLD_MODE_C,
@@ -319,7 +321,7 @@ begin
 			BLOCKRAM_COLUMN_SELECT						=> internal_BLOCKRAM_COLUMN_SELECT,
 			BLOCKRAM_READ_ADDRESS						=> internal_BLOCKRAM_READ_ADDRESS,
 			BLOCKRAM_READ_DATA							=> internal_BLOCKRAM_READ_DATA,
-			LAST_ADDRESS_WRITTEN 						=> internal_LAST_ADDRESS_WRITTEN,
+			LAST_ADDRESS_WRITTEN 						=> internal_LAST_ADDRESS_WRITTEN, 
 			TRIGGER_DIGITIZING							=> (internal_FTSW_TRIGGER21_SHIFTED or internal_DUMMY_FTSW_TRIGGER21_SHIFTED),
 			CONTINUE_ANALOG_WRITING						=> internal_CONTINUE_ANALOG_WRITING,
 
@@ -431,6 +433,8 @@ begin
 			REQUEST_A_GLOBAL_RESET                                  => internal_GLOBAL_RESET_REQUESTED_BY_FIBER,
 			DESIRED_DAC_SETTINGS                                    => internal_DESIRED_DAC_VOLTAGES,
 			RESET_SCALER_COUNTERS                                   => internal_RESET_SCALER_COUNTERS,
+			ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
+			ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
 			--------------------------------------------------------
 			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
 			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,
@@ -479,6 +483,7 @@ begin
 	--Debugging blockram issues
 --	internal_BLOCKRAM_READ_ADDRESS <= internal_VIO_OUT(51 downto 39);
 --	internal_BLOCKRAM_COLUMN_SELECT <= internal_VIO_OUT(53 downto 52);
+	internal_LEDS_ENABLED <= internal_VIO_OUT(54);
 
 	process(internal_CLOCK_SST)
 		variable trigger_seen : boolean := false;
@@ -517,6 +522,7 @@ begin
 	internal_VIO_IN(52) <= internal_DONE_DIGITIZING;
 	internal_VIO_IN(85) <= internal_DAQ_BUSY;
 	internal_VIO_IN(101 downto 86) <= internal_BLOCKRAM_READ_DATA;
+	internal_VIO_IN(255 downto 102) <= (others => '0');
 	--
 --	process(internal_CLOCK_80Hz) begin
 --		if (rising_edge(internal_CLOCK_80Hz)) then
@@ -598,7 +604,7 @@ begin
 	internal_LEDS(11 downto 8) <= (others => '0');
 	--Last set of four LEDS are for fiberoptic status
 	internal_LEDS(15 downto 12) <= internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs;
-	process (internal_LEDS_ENABLED)
+	process (internal_LEDS_ENABLED, internal_LEDS)
 	begin
 		if (internal_LEDS_ENABLED = '1') then
 			LEDS <= internal_LEDS;

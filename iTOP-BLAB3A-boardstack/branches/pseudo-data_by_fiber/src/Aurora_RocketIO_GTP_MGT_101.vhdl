@@ -46,6 +46,8 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
+		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
+		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -131,7 +133,7 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header        : std_logic;
 	signal internal_start_event_transfer               : std_logic;
-	signal internal_acknowledge_execution_of_command   : std_logic;
+	signal internal_acknowledge_execution_of_command   : std_logic := '0';
 	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0) := x"00000000";
 	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	-----------------------------------------------------------------------------
@@ -151,6 +153,7 @@ begin
 	internal_Aurora_RocketIO_GTP_MGT_101_reset_clock       <= Aurora_RocketIO_GTP_MGT_101_reset_clock;
 	not_lane_up_i                                          <= not lane_up_i;
 	-----------------------------------------------------------------------------
+	fiber_link_is_up <= internal_fiber_link_is_up;
 	internal_status_LEDs(0) <= internal_fiber_link_is_up;
 	internal_status_LEDs(1) <= fiber_link_should_be_up;
 	internal_status_LEDs(2) <= FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER;
@@ -168,7 +171,7 @@ begin
 	reset_i                        <= system_reset_i or RESET;
 	status_LEDs                    <= internal_status_LEDs;
 
-	process(internal_Aurora_RocketIO_GTP_MGT_101_reset_clock, RESET, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
+	process(internal_Aurora_RocketIO_GTP_MGT_101_reset_clock, RESET, should_not_automatically_try_to_keep_fiber_link_up, fiber_link_should_be_up, internal_fiber_link_is_up, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
 		variable internal_COUNTER                                       : integer range 0 to 1000000 := 0;
 		constant number_of_cycles_to_keep_fiber_transceiver_powered_off : integer := 2 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
 		constant number_of_cycles_to_wait_for_transceiver_to_power_on   : integer := 300 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
@@ -274,7 +277,7 @@ begin
 		-- System Interface
 		USER_CLK        =>  internal_Aurora_78MHz_clock,   
 		RESET           =>  reset_i,
-		CHANNEL_UP      =>  channel_up_i,
+--		CHANNEL_UP      =>  channel_up_i,
 		WRONG_PACKET_SIZE_COUNTER                      => internal_WRONG_PACKET_SIZE_COUNTER,
 		WRONG_PACKET_TYPE_COUNTER                      => internal_WRONG_PACKET_TYPE_COUNTER,
 		WRONG_PROTOCOL_FREEZE_DATE_COUNTER             => internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER,
@@ -293,6 +296,8 @@ begin
 		DESIRED_DAC_SETTINGS                           => DESIRED_DAC_SETTINGS,
 		start_event_transfer                           => internal_start_event_transfer,
 		RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
+		ASIC_START_WINDOW                              => ASIC_START_WINDOW,
+		ASIC_END_WINDOW                                => ASIC_END_WINDOW,
 		-----------------------------------------------------------------------------
 		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
 		ERR_COUNT                                      => err_count_i
