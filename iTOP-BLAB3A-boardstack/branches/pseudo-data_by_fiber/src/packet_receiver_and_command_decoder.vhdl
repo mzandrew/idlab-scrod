@@ -41,13 +41,13 @@ entity packet_receiver_and_command_interpreter is
 		EVENT_NUMBER_SET                   :   out std_logic;
 		REQUEST_A_GLOBAL_RESET             :   out std_logic;
 		DESIRED_DAC_SETTINGS               :   out Board_Stack_Voltages;
-		start_event_transfer               :   out std_logic;
+		SOFT_TRIGGER_FROM_FIBER            :   out std_logic;
 		RESET_SCALER_COUNTERS              :   out std_logic;
 		ASIC_START_WINDOW                  :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                    :   out std_logic_vector(8 downto 0);
 		----------------------------------------------------------------------------------
 		acknowledge_execution_of_command   : in    std_logic;
-		ERR_COUNT                          :   out std_logic_vector(7 downto 0)
+		UNKNOWN_COMMAND_RECEIVED_COUNTER   :   out std_logic_vector(7 downto 0)
 );
 end packet_receiver_and_command_interpreter;
 
@@ -78,16 +78,16 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0);
 	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	signal internal_REQUEST_A_GLOBAL_RESET             : std_logic := '0';
-	signal internal_start_event_transfer               : std_logic;
+	signal internal_SOFT_TRIGGER_FROM_FIBER            : std_logic := '0';
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
 	----------------------------------------------------------------------------------
-	signal internal_ERROR_COUNT                        : std_logic_vector(7 downto 0)  := x"00";
+	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER   : std_logic_vector(31 downto 0);
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
 	signal COMMAND_PROCESSING_STATE                    : COMMAND_PROCESSING_STATE_TYPE := RESET_DAC_VALUES_TO_NOMINAL;
 begin
-	ERR_COUNT                          <= internal_ERROR_COUNT;
+	UNKNOWN_COMMAND_RECEIVED_COUNTER   <= internal_UNKNOWN_COMMAND_RECEIVED_COUNTER(7 downto 0);
 	internal_RX_D                      <= RX_D;
 	internal_RX_SRC_RDY_N              <= RX_SRC_RDY_N;
 	WRONG_PACKET_TYPE_COUNTER          <= internal_WRONG_PACKET_TYPE_COUNTER;
@@ -105,7 +105,7 @@ begin
 	COMMAND_ARGUMENT                   <= internal_COMMAND_ARGUMENT;
 	EVENT_NUMBER_SET                   <= internal_EVENT_NUMBER_SET;
 	REQUEST_A_GLOBAL_RESET             <= internal_REQUEST_A_GLOBAL_RESET;
-	start_event_transfer               <= internal_start_event_transfer;
+	SOFT_TRIGGER_FROM_FIBER            <= internal_SOFT_TRIGGER_FROM_FIBER;
 	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
 	ASIC_START_WINDOW                  <= internal_ASIC_START_WINDOW;
 	ASIC_END_WINDOW                    <= internal_ASIC_END_WINDOW;
@@ -134,22 +134,23 @@ begin
 		variable p : integer range 0 to 255 := 0;
 	begin
 		if (RESET = '1') then
-			internal_resynchronizing_with_header   <= '0';
-			internal_WRONG_PACKET_TYPE_COUNTER     <= (others => '0');
-			internal_WRONG_PACKET_SIZE_COUNTER     <= (others => '0');
+			internal_UNKNOWN_COMMAND_RECEIVED_COUNTER   <= (others => '0');
+			internal_resynchronizing_with_header        <= '0';
+			internal_WRONG_PACKET_TYPE_COUNTER          <= (others => '0');
+			internal_WRONG_PACKET_SIZE_COUNTER          <= (others => '0');
 			internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= (others => '0');
-			internal_WRONG_SCROD_ADDRESSED_COUNTER <= (others => '0');
-			internal_WRONG_CHECKSUM_COUNTER        <= (others => '0');
-			internal_WRONG_FOOTER_COUNTER          <= (others => '0');
-			internal_UNKNOWN_ERROR_COUNTER         <= (others => '0');
-			internal_number_of_sent_events         <= (others => '0');
+			internal_WRONG_SCROD_ADDRESSED_COUNTER      <= (others => '0');
+			internal_WRONG_CHECKSUM_COUNTER             <= (others => '0');
+			internal_WRONG_FOOTER_COUNTER               <= (others => '0');
+			internal_UNKNOWN_ERROR_COUNTER              <= (others => '0');
+			internal_number_of_sent_events              <= (others => '0');
 			internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= (others => '0');
-			internal_MISSING_ACKNOWLEDGEMENT_COUNTER <= (others => '0');
+			internal_MISSING_ACKNOWLEDGEMENT_COUNTER    <= (others => '0');
 			-- commands ----------------------------------------------------------------------
 			internal_COMMAND_ARGUMENT         <= (others => '0');
 			internal_EVENT_NUMBER_SET         <= '0';
 			internal_REQUEST_A_GLOBAL_RESET   <= '0';
-			internal_start_event_transfer     <= '0';
+			internal_SOFT_TRIGGER_FROM_FIBER  <= '0';
 			internal_RESET_SCALER_COUNTERS    <= '0';
 			internal_ASIC_START_WINDOW        <= (others => '0');
 			internal_ASIC_END_WINDOW          <= (others => '1');
@@ -272,6 +273,7 @@ begin
 				case COMMAND_PROCESSING_STATE is
 					when WAITING_TO_PROCESS_COMMAND =>
 					when PROCESS_COMMAND =>
+						--  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
 						if    (command_word(0) = x"33333333") then -- global reset -- when Lt. Comm. Data was stuck in a time loop, seeing that things that should be random were occuring with the number 3 preferentially allowed him to realize the correct course of action and get out of the indefinite loop
 							internal_REQUEST_A_GLOBAL_RESET   <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
@@ -392,14 +394,15 @@ begin
 							internal_ASIC_END_WINDOW <= std_logic_vector(command_word(1)(8 downto 0));
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"19321965") then -- trigger readout -- birth / death years of Roy Rogers' horse, Trigger
-							--internal_start_event_transfer <= '1';
+--							internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
+							internal_SOFT_TRIGGER_FROM_FIBER <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						--  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
 						else -- unsupported command encountered
-							internal_ERROR_COUNT <= std_logic_vector(unsigned(internal_ERROR_COUNT) + 1);
+							internal_UNKNOWN_COMMAND_RECEIVED_COUNTER <= std_logic_vector(unsigned(internal_UNKNOWN_COMMAND_RECEIVED_COUNTER) + 1);
 							COMMAND_PROCESSING_STATE <= WAITING_TO_PROCESS_COMMAND;
 						end if;
 					when WAITING_FOR_COMMAND_EXECUTION =>
---						internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
 						timeout_waiting_for_acknowledge_counter := NUMBER_OF_CYCLES_TO_WAIT_FOR_ACKNOWLEDGE;
 						COMMAND_PROCESSING_STATE <= WAITING_FOR_ACKNOWLEDGE;
 					when WAITING_FOR_ACKNOWLEDGE =>
@@ -443,10 +446,10 @@ begin
 						internal_COMMAND_ARGUMENT         <= (others => '0');
 						internal_EVENT_NUMBER_SET         <= '0';
 						internal_REQUEST_A_GLOBAL_RESET   <= '0';
-						internal_start_event_transfer     <= '0';
+						internal_SOFT_TRIGGER_FROM_FIBER  <= '0';
 						internal_RESET_SCALER_COUNTERS    <= '0';
 						COMMAND_PROCESSING_STATE          <= WAITING_TO_PROCESS_COMMAND;
-					when others => 
+					when others =>
 --						internal_UNKNOWN_ERROR_COUNTER <= std_logic_vector(unsigned(internal_UNKNOWN_ERROR_COUNTER) + 1);
 						COMMAND_PROCESSING_STATE <= CLEAR_ALL_SIGNALS;
 				end case;

@@ -190,8 +190,10 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_fiber_link_is_up									: std_logic;	
 	signal internal_should_not_automatically_try_to_keep_fiber_link_up : std_logic;
 	signal internal_DONE_BUILDING_A_QUARTER_EVENT				: std_logic;
+	signal internal_chipscope_vio_display                    : std_logic_vector(255 downto 0);
 	------------------------------------------------------------
 	--Signals corresponding to commands-------------------------
+	signal internal_SOFT_TRIGGER_FROM_FIBER            : std_logic := '0';
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
@@ -424,7 +426,7 @@ begin
 			Aurora_RocketIO_GTP_MGT_101_status_LEDs                 => internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 			chipscope_ila                                           => open,
 			chipscope_vio_buttons                                   => internal_ZERO_VECTOR_255_LONG,
-			chipscope_vio_display                                   => open,
+			chipscope_vio_display                                   => internal_chipscope_vio_display,
 			--------------------------------------------------------
 			TRIGGER                                                 => internal_DONE_DIGITIZING,
 			DONE_BUILDING_A_QUARTER_EVENT                           => internal_DONE_BUILDING_A_QUARTER_EVENT,
@@ -432,6 +434,7 @@ begin
 			-- commamds --------------------------------------------
 			REQUEST_A_GLOBAL_RESET                                  => internal_GLOBAL_RESET_REQUESTED_BY_FIBER,
 			DESIRED_DAC_SETTINGS                                    => internal_DESIRED_DAC_VOLTAGES,
+			SOFT_TRIGGER_FROM_FIBER                                 => internal_SOFT_TRIGGER_FROM_FIBER,
 			RESET_SCALER_COUNTERS                                   => internal_RESET_SCALER_COUNTERS,
 			ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
 			ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
@@ -471,7 +474,7 @@ begin
 	internal_FEEDBACK_MONITOR_COLUMN <= internal_VIO_OUT(11 downto 10);
 	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(13 downto 12);
 	internal_DAQ_BUSY_VIO <= internal_VIO_OUT(14);
-	internal_SOFTWARE_TRIGGER <= internal_VIO_OUT(15);
+	internal_SOFTWARE_TRIGGER <= internal_SOFT_TRIGGER_FROM_FIBER or internal_VIO_OUT(15);
 	internal_RESET_SCALERS <= internal_RESET_SCALER_COUNTERS or internal_VIO_OUT(16);
 	internal_LATCH_SCALERS <= internal_VIO_OUT(17) and internal_CLOCK_80Hz;
 	internal_TEST_SCALER_ROW <= internal_VIO_OUT(19 downto 18);
@@ -522,7 +525,8 @@ begin
 	internal_VIO_IN(52) <= internal_DONE_DIGITIZING;
 	internal_VIO_IN(85) <= internal_DAQ_BUSY;
 	internal_VIO_IN(101 downto 86) <= internal_BLOCKRAM_READ_DATA;
-	internal_VIO_IN(255 downto 102) <= (others => '0');
+	internal_VIO_IN(109 downto 102) <= internal_chipscope_vio_display(7 downto 0);
+	internal_VIO_IN(255 downto 110) <= (others => '0');
 	--
 --	process(internal_CLOCK_80Hz) begin
 --		if (rising_edge(internal_CLOCK_80Hz)) then

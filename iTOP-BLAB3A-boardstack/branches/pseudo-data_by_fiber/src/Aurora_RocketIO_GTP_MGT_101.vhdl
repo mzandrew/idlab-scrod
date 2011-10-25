@@ -45,10 +45,12 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		EVENT_NUMBER_SET                                        :   out std_logic;
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
+		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
 		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
+		UNKNOWN_COMMAND_RECEIVED_COUNTER                        :   out std_logic_vector(7 downto 0);
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
 		chipscope_vio_buttons                                   : in    std_logic_vector(255 downto 0);
@@ -80,8 +82,6 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	-- Parameter Declarations --
 	constant DLY : time := 1 ns;
 	-- External Register Declarations --
-	signal HARD_ERR_Buffer    : std_logic;
-	signal SOFT_ERR_Buffer    : std_logic;
 	signal LANE_UP_Buffer     : std_logic;
 	signal CHANNEL_UP_Buffer  : std_logic;
 	-- Internal Register Declarations --
@@ -109,8 +109,7 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	signal gtpclkout_i        : std_logic;
 	signal buf_gtpclkout_i    : std_logic;
 	--Frame check signals -------------------------------------------------------
-	signal err_count_i      : std_logic_vector(0 to 7);
-	signal ERR_COUNT_Buffer : std_logic_vector(0 to 7);
+--	signal ERR_COUNT_Buffer : std_logic_vector(0 to 7);
 	-----------------------------------------------------------------------------
 	attribute ASYNC_REG        : string;
 	attribute ASYNC_REG of tx_lock_i  : signal is "TRUE";
@@ -132,7 +131,6 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	signal internal_number_of_sent_events              : std_logic_vector(31 downto 0);
 	signal internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR : std_logic_vector(31 downto 0);
 	signal internal_resynchronizing_with_header        : std_logic;
-	signal internal_start_event_transfer               : std_logic;
 	signal internal_acknowledge_execution_of_command   : std_logic := '0';
 	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0) := x"00000000";
 	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
@@ -144,6 +142,7 @@ architecture behavioral of Aurora_RocketIO_GTP_MGT_101 is
 	signal internal_Aurora_lane0_transmit_source_ready_active_low : std_logic;
 	signal internal_Aurora_lane0_receive_source_ready_active_low : std_logic;
 	-----------------------------------------------------------------------------
+	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER   : std_logic_vector(7 downto 0);
 begin
 	IBUFDS_i : IBUFDS port map (I => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P, IB => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N, O => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left);
 	Aurora_78MHz_clock                                     <= internal_Aurora_78MHz_clock;
@@ -167,7 +166,8 @@ begin
 	chipscope_vio_display          <= internal_chipscope_vio_display;
 	internal_chipscope_vio_buttons <= chipscope_vio_buttons;
 	internal_chipscope_ila         <= (others => '0');
-	internal_chipscope_vio_display <= (others => '0');
+	internal_chipscope_vio_display(7 downto 0) <= internal_UNKNOWN_COMMAND_RECEIVED_COUNTER;
+	internal_chipscope_vio_display(255 downto 8) <= (others => '0');
 	reset_i                        <= system_reset_i or RESET;
 	status_LEDs                    <= internal_status_LEDs;
 
@@ -227,14 +227,10 @@ begin
 		end if;
 	end process;
 
-    -- Register User I/O --
     -- Register User Outputs from core.
 	process (internal_Aurora_78MHz_clock)
 	begin
 		if rising_edge(internal_Aurora_78MHz_clock) then
-			HARD_ERR_Buffer    <= hard_err_i;
-			SOFT_ERR_Buffer    <= soft_err_i;
-			ERR_COUNT_Buffer   <= err_count_i;
 			LANE_UP_Buffer     <= lane_up_i;
 			CHANNEL_UP_Buffer  <= channel_up_i;
 		end if;
@@ -294,13 +290,13 @@ begin
 		EVENT_NUMBER_SET                               => internal_EVENT_NUMBER_SET,
 		REQUEST_A_GLOBAL_RESET                         => REQUEST_A_GLOBAL_RESET,
 		DESIRED_DAC_SETTINGS                           => DESIRED_DAC_SETTINGS,
-		start_event_transfer                           => internal_start_event_transfer,
+		SOFT_TRIGGER_FROM_FIBER                        => SOFT_TRIGGER_FROM_FIBER,
 		RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                              => ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                => ASIC_END_WINDOW,
 		-----------------------------------------------------------------------------
 		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
-		ERR_COUNT                                      => err_count_i
+		UNKNOWN_COMMAND_RECEIVED_COUNTER               => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER
 	);
 
 	aurora_module_i : entity work.Aurora_IP_Core_A

@@ -54,6 +54,7 @@ entity fiber_readout is
 		-- commamds -----------------------------------------------------------------
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
+		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
 		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
@@ -106,6 +107,7 @@ architecture behavioral of fiber_readout is
 	signal Aurora_lane0_receive_data_bus                      : std_logic_vector(0 to 31);
 	signal Aurora_lane0_receive_source_ready_active_low       : std_logic;
 -----------------------------------------------------------------------------
+	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER      : std_logic_vector(7 downto 0);
 begin
 	Aurora_data_link : entity work.Aurora_RocketIO_GTP_MGT_101
 	generic map (
@@ -140,10 +142,12 @@ begin
 		EVENT_NUMBER_SET                                        => internal_EVENT_NUMBER_SET,
 		REQUEST_A_GLOBAL_RESET                                  => REQUEST_A_GLOBAL_RESET,
 		DESIRED_DAC_SETTINGS                                    => DESIRED_DAC_SETTINGS,
+		SOFT_TRIGGER_FROM_FIBER                                 => SOFT_TRIGGER_FROM_FIBER,
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                                       => ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                         => ASIC_END_WINDOW,
 		-----------------------------------------------------------------------------
+		UNKNOWN_COMMAND_RECEIVED_COUNTER                        => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER,
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
 		chipscope_vio_buttons                                   => chipscope_vio_buttons,
