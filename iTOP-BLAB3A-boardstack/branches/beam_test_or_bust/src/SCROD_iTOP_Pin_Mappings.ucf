@@ -347,6 +347,7 @@ NET LEDS<13>	LOC = "a22"  | IOSTANDARD = LVCMOS33;
 NET LEDS<14>	LOC = "g19"  | IOSTANDARD = LVCMOS33;
 NET LEDS<15>	LOC = "f19"  | IOSTANDARD = LVCMOS33;
 NET MONITOR_INPUTS<0>	LOC = "J2" | IOSTANDARD = LVCMOS25 | PULLUP;
+NET MONITOR_OUTPUTS<0>	LOC = "M10" | IOSTANDARD = LVCMOS25;
 
 #Timing constraints
 NET map_clocking_and_ftsw_interface/map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
