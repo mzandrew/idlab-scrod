@@ -19,7 +19,8 @@ entity quarter_event_builder is
 		NUMBER_OF_WORDS_IN_A_PACKET                 : integer := 140;
 		NUMBER_OF_PACKETS_IN_AN_EVENT               : integer := 132;
 		WIDTH_OF_EVENT_NUMBER                       : integer := 32;
-		WIDTH_OF_PACKET_NUMBER                      : integer := 8
+		WIDTH_OF_PACKET_NUMBER                      : integer := 8;
+		LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC : integer := 9
 	);
 	port (
 		RESET                              : in    std_logic;
@@ -29,7 +30,9 @@ entity quarter_event_builder is
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1           downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1        downto 0);
 		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1        downto 0);
-		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
+		ASIC_START_WINDOW                  : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
+		ASIC_END_WINDOW                    : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
 		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		OUTPUT_FIFO_WRITE_ENABLE           :   out std_logic;
@@ -42,6 +45,7 @@ entity quarter_event_builder is
 end quarter_event_builder;
 -----------------------------------------------------------------------------
 architecture quarter_event_builder_architecture of quarter_event_builder is
+	-- this should be removed in favor of the entity work notation:
 	component packet_builder
 	generic (
 		NUMBER_OF_PACKETS_IN_AN_EVENT : integer := NUMBER_OF_PACKETS_IN_AN_EVENT;
@@ -53,7 +57,9 @@ architecture quarter_event_builder_architecture of quarter_event_builder is
 		INPUT_DATA_BUS                                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 		INPUT_BLOCK_RAM_ADDRESS                            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
-		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : in    std_logic_vector(8 downto 0);
+		ASIC_START_WINDOW                                  : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
+		ASIC_END_WINDOW                                    : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
+		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
 		OUTPUT_DATA_BUS                                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		OUTPUT_FIFO_WRITE_ENABLE                           :   out std_logic;
@@ -105,6 +111,8 @@ begin
 		INPUT_DATA_BUS                                     => INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS                                  => INPUT_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS                            => INPUT_BLOCK_RAM_ADDRESS,
+		ASIC_START_WINDOW                                  => ASIC_START_WINDOW,
+		ASIC_END_WINDOW                                    => ASIC_END_WINDOW,
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 => ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                                    => OUTPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS                                 => OUTPUT_ADDRESS_BUS,
@@ -284,6 +292,8 @@ architecture quarter_event_builder_testbench_architecture of quarter_event_build
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 		INPUT_BLOCK_RAM_ADDRESS            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
+		ASIC_START_WINDOW                  : in    std_logic_vector(8 downto 0);
+		ASIC_END_WINDOW                    : in    std_logic_vector(8 downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC : in    std_logic_vector(8 downto 0);
 		OUTPUT_DATA_BUS                    :   out std_logic_vector(WIDTH_OF_OUTPUT_DATA_BUS-1    downto 0);
 		OUTPUT_ADDRESS_BUS                 :   out std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
@@ -332,6 +342,8 @@ begin
 		INPUT_DATA_BUS                     => internal_INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_INPUT_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,
+		ASIC_START_WINDOW                  => (others => '0'),
+		ASIC_END_WINDOW                    => (others => '1'),
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                    => internal_OUTPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS                 => internal_OUTPUT_ADDRESS_BUS,

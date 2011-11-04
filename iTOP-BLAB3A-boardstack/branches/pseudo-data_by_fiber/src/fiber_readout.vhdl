@@ -56,12 +56,12 @@ entity fiber_readout is
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
-		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
-		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
 		INPUT_BLOCK_RAM_ADDRESS                                 :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
+		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
+		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      : in    std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
 		ASIC_SCALERS                                            : in    ASIC_Scalers_C_R_CH;
@@ -108,6 +108,8 @@ architecture behavioral of fiber_readout is
 	signal Aurora_lane0_receive_source_ready_active_low       : std_logic;
 -----------------------------------------------------------------------------
 	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER      : std_logic_vector(7 downto 0);
+	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
 begin
 	Aurora_data_link : entity work.Aurora_RocketIO_GTP_MGT_101
 	generic map (
@@ -144,8 +146,8 @@ begin
 		DESIRED_DAC_SETTINGS                                    => DESIRED_DAC_SETTINGS,
 		SOFT_TRIGGER_FROM_FIBER                                 => SOFT_TRIGGER_FROM_FIBER,
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
-		ASIC_START_WINDOW                                       => ASIC_START_WINDOW,
-		ASIC_END_WINDOW                                         => ASIC_END_WINDOW,
+		ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
+		ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
 		-----------------------------------------------------------------------------
 		UNKNOWN_COMMAND_RECEIVED_COUNTER                        => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER,
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
@@ -166,6 +168,8 @@ begin
 		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
 		INPUT_ADDRESS_BUS                  => internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS            => internal_INPUT_BLOCK_RAM_ADDRESS,
+		ASIC_START_WINDOW                  => internal_ASIC_START_WINDOW,
+		ASIC_END_WINDOW                    => internal_ASIC_END_WINDOW,
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC => internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC,
 		OUTPUT_DATA_BUS                    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
 		OUTPUT_ADDRESS_BUS                 => open,
