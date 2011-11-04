@@ -107,7 +107,10 @@ begin
 		internal_CHIPSCOPE_ILA_SIGNALS(9) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
 		internal_CHIPSCOPE_ILA_SIGNALS(10) <= internal_CONTINUE_WRITING;
 		internal_CHIPSCOPE_ILA_SIGNALS(19 downto 11) <= internal_LAST_ADDRESS_WRITTEN;
-		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 20) <= (others => '0');
+		internal_CHIPSCOPE_ILA_SIGNALS(28 downto 20) <= internal_FIRST_ADDRESS_WRITTEN;
+		internal_CHIPSCOPE_ILA_SIGNALS(37 downto 29) <= internal_FIRST_ADDRESS_ALLOWED;
+		internal_CHIPSCOPE_ILA_SIGNALS(46 downto 38) <= internal_LAST_ADDRESS_ALLOWED;
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 47) <= (others => '0');
 	end generate;
 	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate
 		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 0) <= (others => '0');
@@ -201,7 +204,10 @@ begin
 	---------------------------------------------------------
 
 	--Control the flow of writing to new blocks
-	process(CLOCK_SST) begin
+	process(CLOCK_SST) 
+		variable last_written : unsigned(8 downto 0) := (others => '0');
+		variable underage     : unsigned(8 downto 0) := (others => '0');
+	begin
 		if falling_edge(CLOCK_SST) then
 			if (internal_CONTINUE_WRITING = '1') then
 				internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
@@ -211,9 +217,15 @@ begin
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) <= std_logic_vector( unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1)) + 1 );
 				end if;
 			else
-				internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';
+				internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';				
 				internal_LAST_ADDRESS_WRITTEN <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) & '1';
-				internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) & '1') - 3);
+				last_written := unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1)) & '1';
+				if (last_written >= unsigned(internal_FIRST_ADDRESS_ALLOWED) + 3) then				
+					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(last_written - 3);
+				else
+					underage := last_written - unsigned(internal_FIRST_ADDRESS_ALLOWED);
+					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(unsigned(internal_LAST_ADDRESS_ALLOWED) - underage);
+				end if;
 			end if;
 		end if;
 	end process;

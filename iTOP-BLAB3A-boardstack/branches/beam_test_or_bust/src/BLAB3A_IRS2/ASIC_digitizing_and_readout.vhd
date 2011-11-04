@@ -58,7 +58,10 @@ entity ASIC_digitizing_and_readout is
 				BLOCKRAM_COLUMN_SELECT						: in std_logic_vector(1 downto 0);
 				BLOCKRAM_READ_ADDRESS						: in std_logic_vector(WIDTH_OF_BLOCKRAM_ADDRESS_BUS-1 downto 0);
 				BLOCKRAM_READ_DATA							: out std_logic_vector(WIDTH_OF_BLOCKRAM_DATA_BUS-1 downto 0);
+				FIRST_ADDRESS_WRITTEN 						: in std_logic_vector(8 downto 0);				
 				LAST_ADDRESS_WRITTEN 						: in std_logic_vector(8 downto 0);
+				FIRST_ALLOWED_ADDRESS                  : in std_logic_vector(8 downto 0);
+				LAST_ALLOWED_ADDRESS                   : in std_logic_vector(8 downto 0);				
 				TRIGGER_DIGITIZING							: in std_logic;
 				CONTINUE_ANALOG_WRITING						: out std_logic;
 				
@@ -198,7 +201,7 @@ begin
 					--Two cycles appears to be the minimum here.
 					if (delay_counter >= windows_to_sample_after_trigger + 2) then
 						internal_ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE <= '1';
-						internal_ASIC_STORAGE_TO_WILK_ADDRESS 			<= std_logic_vector(unsigned(LAST_ADDRESS_WRITTEN) - to_unsigned(windows_to_read_out - 1,9));
+						internal_ASIC_STORAGE_TO_WILK_ADDRESS 			<= FIRST_ADDRESS_WRITTEN;
 						internal_ASIC_STORAGE_TO_WILK_ENABLE 			<= '1';
 						asic_to_read_out 					:= 0;
 						windows_read_out 					:= 0;						
@@ -262,7 +265,11 @@ begin
 							-- We haven't read out all windows yet.  Restart from ASIC 0 and
 							-- move to the next window and digitize.
 							else
-								internal_ASIC_STORAGE_TO_WILK_ADDRESS(8 downto 0) <= std_logic_vector( unsigned(internal_ASIC_STORAGE_TO_WILK_ADDRESS(8 downto 0)) + 1);
+								if ( unsigned(internal_ASIC_STORAGE_TO_WILK_ADDRESS) < unsigned(LAST_ALLOWED_ADDRESS) ) then
+									internal_ASIC_STORAGE_TO_WILK_ADDRESS <= std_logic_vector( unsigned(internal_ASIC_STORAGE_TO_WILK_ADDRESS(8 downto 0)) + 1);
+								else
+									internal_ASIC_STORAGE_TO_WILK_ADDRESS <= FIRST_ALLOWED_ADDRESS;								
+								end if;
 								delay_counter := 0;
 								internal_ASIC_DATA_BUS_OUTPUT_ENABLE <= '0';
 								internal_ASIC_WILK_COUNTER_RESET <= '1';
@@ -348,17 +355,18 @@ begin
 		internal_CHIPSCOPE_ILA_SIGNALS(78)				<= internal_DONE_DIGITIZING;
 		internal_CHIPSCOPE_ILA_SIGNALS(94 downto 79)	<= internal_BLOCKRAM_DATA_OUT;
 		internal_CHIPSCOPE_ILA_SIGNALS(103 downto 95)<= LAST_ADDRESS_WRITTEN;
-		internal_CHIPSCOPE_ILA_SIGNALS(104)				<= TRIGGER_DIGITIZING;
+		internal_CHIPSCOPE_ILA_SIGNALS(104)          <= TRIGGER_DIGITIZING;
 		internal_CHIPSCOPE_ILA_SIGNALS(106 downto 105) <= BLOCKRAM_COLUMN_SELECT;
 		internal_CHIPSCOPE_ILA_SIGNALS(119 downto 107) <= BLOCKRAM_READ_ADDRESS;
 		internal_CHIPSCOPE_ILA_SIGNALS(132 downto 120) <= internal_BLOCKRAM_WRITE_ADDRESS;
-		internal_CHIPSCOPE_ILA_SIGNALS(133)				<= DAQ_BUSY;
+		internal_CHIPSCOPE_ILA_SIGNALS(133)            <= DAQ_BUSY;
 		internal_CHIPSCOPE_ILA_SIGNALS(149 downto 134) <= internal_BLOCKRAM_DATA_OUT_ALL(0);
 		internal_CHIPSCOPE_ILA_SIGNALS(165 downto 150) <= internal_BLOCKRAM_DATA_OUT_ALL(1);		
 		internal_CHIPSCOPE_ILA_SIGNALS(181 downto 166) <= internal_BLOCKRAM_DATA_OUT_ALL(2);
 		internal_CHIPSCOPE_ILA_SIGNALS(197 downto 182) <= internal_BLOCKRAM_DATA_OUT_ALL(3);
 		internal_CHIPSCOPE_ILA_SIGNALS(201 downto 198) <= internal_BLOCKRAM_READ_ENABLE_R;
-		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 202) <= (others => '0');
+		internal_CHIPSCOPE_ILA_SIGNALS(210 downto 202) <= FIRST_ADDRESS_WRITTEN;
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 211) <= (others => '0');
 	end generate;
 	--Or connect up to ground if we don't want ILA
 	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate

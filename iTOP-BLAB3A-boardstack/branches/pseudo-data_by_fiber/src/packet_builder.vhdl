@@ -118,7 +118,7 @@ begin
 
 	CHANNEL <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(2 downto 0);
 	ROW <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(4 downto 3);
-	WINDOW <= std_logic_vector( unsigned(internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC) + unsigned(FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(6 downto 5)) );
+--	WINDOW <= std_logic_vector( unsigned(internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC) + unsigned(FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(6 downto 5)) );
 	COL <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(8 downto 7);
 	internal_INPUT_BLOCK_RAM_ADDRESS <= FLATTENED_BLOCK_RAM_ADDRESS_COUNTER(8 downto 7);	
 	
@@ -150,8 +150,8 @@ begin
 		-----------------------------------------------------------------------------
 		variable current_window : unsigned(9 downto 0);
 		variable overage        : unsigned(9 downto 0);
-		variable start_window   : unsigned(8 downto 0);
-		variable end_window     : unsigned(8 downto 0);
+		variable start_window   : unsigned(9 downto 0);
+		variable end_window     : unsigned(9 downto 0);
 	begin
 		if falling_edge(internal_CLOCK) then
 			internal_INPUT_DATA_BUS <= INPUT_DATA_BUS;
@@ -190,8 +190,8 @@ begin
 						packet_builder_state <= ABOUT_TO_BUILD_A_PACKET;
 					end if;
 				when ABOUT_TO_BUILD_A_PACKET =>
-					start_window := unsigned(internal_ASIC_START_WINDOW);
-					end_window   := unsigned(internal_ASIC_END_WINDOW);
+					start_window := "0" & unsigned(internal_ASIC_START_WINDOW);
+					end_window   := "0" & unsigned(internal_ASIC_END_WINDOW);
 					packet_sample_counter := 0;
 					word_counter := 0;
 					internal_EVENT_NUMBER        <= EVENT_NUMBER;
@@ -340,7 +340,7 @@ begin
 						end if;
 					elsif (window_sample_counter = 67) then
 						window_sample_counter := 68;
-						--WINDOW <= std_logic_vector(current_window(8 downto 0));
+						WINDOW <= std_logic_vector(current_window(8 downto 0));
 					elsif (window_sample_counter = 68) then
 						window_sample_counter := 0;
 						origin_window <= "00" & ROW & "00" & COL & internal_PACKET_NUMBER & "0" & CHANNEL & "000" & WINDOW;
