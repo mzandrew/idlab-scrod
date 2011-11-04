@@ -192,6 +192,8 @@ begin
 	DONE_BUILDING_A_QUARTER_EVENT <= internal_DONE_BUILDING_A_QUARTER_EVENT;
 	CURRENTLY_BUILDING_A_QUARTER_EVENT <= internal_CURRENTLY_BUILDING_A_QUARTER_EVENT;
 	Aurora_data_link_reset <= RESET;
+	ASIC_START_WINDOW <= internal_ASIC_START_WINDOW;
+	ASIC_END_WINDOW <= internal_ASIC_END_WINDOW;
 
 	QEF : entity work.quarter_event_fifo port map (
 		rst    => RESET,

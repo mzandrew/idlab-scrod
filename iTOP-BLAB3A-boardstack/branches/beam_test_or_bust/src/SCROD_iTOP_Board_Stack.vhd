@@ -279,7 +279,7 @@ begin
 	-----ASIC sampling and analog storage control------------
 	map_ASIC_sampling_control : entity work.ASIC_sampling_control
 		generic map (
-			use_chipscope_ila			=> false
+			use_chipscope_ila			=> true
 		)
 		port map (
 			CONTINUE_WRITING			=> internal_CONTINUE_ANALOG_WRITING,
@@ -295,6 +295,7 @@ begin
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
 			AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		=> AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C,
 			AsicIn_SAMPLING_TRACK_MODE_C					=> AsicIn_SAMPLING_TRACK_MODE_C,
+--			CHIPSCOPE_CONTROL                         => internal_CHIPSCOPE_CONTROL0
 			CHIPSCOPE_CONTROL									=> open
 		);
 	---------------------------------------------------------
@@ -303,7 +304,7 @@ begin
 		generic map (
 			WIDTH_OF_BLOCKRAM_DATA_BUS		=> WIDTH_OF_BLOCKRAM_DATA_BUS,
 			WIDTH_OF_BLOCKRAM_ADDRESS_BUS => WIDTH_OF_BLOCKRAM_ADDRESS_BUS,	
-			use_chipscope_ila					=> true
+			use_chipscope_ila					=> false
 		)
 		port map (
 			AsicIn_DATA_BUS_CHANNEL_ADDRESS			=> AsicIn_DATA_BUS_CHANNEL_ADDRESS,
@@ -326,7 +327,10 @@ begin
 			BLOCKRAM_COLUMN_SELECT						=> internal_BLOCKRAM_COLUMN_SELECT,
 			BLOCKRAM_READ_ADDRESS						=> internal_BLOCKRAM_READ_ADDRESS,
 			BLOCKRAM_READ_DATA							=> internal_BLOCKRAM_READ_DATA,
+			FIRST_ADDRESS_WRITTEN 						=> internal_FIRST_ADDRESS_WRITTEN,				
 			LAST_ADDRESS_WRITTEN 						=> internal_LAST_ADDRESS_WRITTEN, 
+			FIRST_ALLOWED_ADDRESS                  => internal_ASIC_START_WINDOW,
+			LAST_ALLOWED_ADDRESS                   => internal_ASIC_END_WINDOW,
 			TRIGGER_DIGITIZING							=> (internal_FTSW_TRIGGER21_SHIFTED or internal_DUMMY_FTSW_TRIGGER21_SHIFTED),
 			CONTINUE_ANALOG_WRITING						=> internal_CONTINUE_ANALOG_WRITING,
 
@@ -337,6 +341,7 @@ begin
 			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE,
 			
 			CHIPSCOPE_CONTROL								=> internal_CHIPSCOPE_CONTROL0
+--			CHIPSCOPE_CONTROL                      => open
 		);
 	---------------------------------------------------------
 	--------ASIC feedback and monitoring loops---------------
@@ -530,73 +535,7 @@ begin
 	internal_VIO_IN(101 downto 86) <= internal_BLOCKRAM_READ_DATA;
 	internal_VIO_IN(109 downto 102) <= internal_chipscope_vio_display(7 downto 0);
 	internal_VIO_IN(255 downto 110) <= (others => '0');
-	--
---	process(internal_CLOCK_80Hz) begin
---		if (rising_edge(internal_CLOCK_80Hz)) then
---			if (internal_RESET_ALL_DACS = '1') then
---				for i in 0 to 3 loop 
---					for j in 0 to 7 loop
---						for k in 0 to 7 loop
---							internal_DESIRED_DAC_VOLTAGES(i)(j)(k) <= x"001";
---						end loop;
---					end loop;
---				end loop;
---			else
---				for i in 0 to 3 loop
---					for j in 0 to 3 loop 
-----						--Rev A channel mappings
-----						--DAC0 : "DAC1" on schematic
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(0) <= x"C9E"; -- VADJP
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(1) <= x"42E"; -- VADJN
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(2) <= x"000"; -- TRGTHREF
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(3) <= x"7D0"; -- ISEL
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(4) <= x"578"; -- WBIAS
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(5) <= x"3E8"; -- TRGBIAS
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(6) <= x"44C"; -- VBIAS
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(7) <= x"3E8"; -- TRIG_THRESH
-----						--DAC1 : "DAC2" on schematic
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(0) <= x"640"; -- SBBIAS
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(1) <= x"CE4"; -- PUBIAS
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(2) <= x"384"; -- CMPBIAS
-----						if (internal_WILK_FEEDBACK_ENABLE = '1') then
-----							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
-----						else
-----							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= x"AF0"; -- VDLY
-----						end if;						
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= x"000"; -- PAD_E
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(5) <= x"000"; -- unconnected
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(6) <= x"7FF"; -- PAD_G
-----						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(7) <= x"000"; -- unconnected
---
---						--Rev B channel mappings
---						--DAC0 : "DAC1" on schematic
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(0) <= internal_TEST_TRIG_THRESH; -- TRIG_THRESH_01
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(1) <= internal_TEST_TRIG_THRESH; -- TRIG_THRESH_23
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(2) <= x"C9E"; -- VADJP
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(3) <= x"42E"; -- VADJN
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(4) <= x"3E8"; -- TRGBIAS
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(5) <= x"44C"; -- VBIAS
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(6) <= internal_TEST_TRIG_THRESH; -- TRIG_THRESH_45
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+0)(7) <= internal_TEST_TRIG_THRESH; -- TRIG_THRESH_67
---						--DAC1 : "DAC2" on schematic
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(0) <= x"000"; -- TRGTHREF
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(1) <= x"7D0"; -- ISEL
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(2) <= x"640"; -- SBBIAS
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(3) <= x"CE4"; -- PUBIAS
---						if (internal_WILK_FEEDBACK_ENABLE = '1') then
---							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---						else
---							internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(4) <= x"AF0"; --VDLY
---						end if;
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(5) <= x"384"; -- CMPBIAS
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(6) <= x"7FF"; -- PAD_G
---						internal_DESIRED_DAC_VOLTAGES(i)(j*2+1)(7) <= x"578"; -- WBIAS
---					end loop;
---				end loop;
---			end if;
---		end if;
---	end process;
-	--
+
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
 	--First four LEDS show FTSW status (none green if not using FTSW, 0 and 1 should be green if using FTSW)
 	internal_LEDS(0) <= internal_USE_FTSW_CLOCK;
