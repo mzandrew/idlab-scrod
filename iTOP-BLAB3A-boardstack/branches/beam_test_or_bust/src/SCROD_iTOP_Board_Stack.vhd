@@ -24,8 +24,9 @@ use work.Board_Stack_Definitions.ALL;
 
 entity SCROD_iTOP_Board_Stack is
 	Generic (
-				WIDTH_OF_BLOCKRAM_DATA_BUS		: integer := 16;
-				WIDTH_OF_BLOCKRAM_ADDRESS_BUS : integer := 13
+		WIDTH_OF_BLOCKRAM_DATA_BUS		                   : integer := 16;
+		WIDTH_OF_BLOCKRAM_ADDRESS_BUS                    : integer := 13;
+		LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC : integer :=  9
 	);
    Port ( 
 				--On board differential oscillator pins
@@ -127,6 +128,7 @@ entity SCROD_iTOP_Board_Stack is
 
 				---General monitor and diagnostic
 				LEDS 					: out STD_LOGIC_VECTOR(15 downto 0);
+				MONITOR_OUTPUTS	: out STD_LOGIC_VECTOR(0 downto 0);
 				MONITOR_INPUTS		: in STD_LOGIC_VECTOR(0 downto 0)
 			);
 end SCROD_iTOP_Board_Stack;
@@ -223,6 +225,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 begin
 	-----Clocking and FTSW interface-------------------------
 	internal_USE_FTSW_CLOCK <= not(internal_MONITOR_INPUTS(0));
+	MONITOR_OUTPUTS(0) <= internal_FTSW_TRIGGER21_SHIFTED;
 	---------
 	map_clocking_and_ftsw_interface : entity work.clocking_and_ftsw_interface
 		port map (
