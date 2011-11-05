@@ -111,20 +111,20 @@ begin
 			case DAC_STATE is
 				when SEARCHING_FOR_UPDATES =>
 					internal_DAC_STATE_MONITOR	<= "000";
-					if (internal_INTENDED_DAC_VALUES(dac_address)(dac_channel) /= internal_CURRENT_DAC_VALUES(dac_address)(dac_channel)) then
+--					if (internal_INTENDED_DAC_VALUES(dac_address)(dac_channel) /= internal_CURRENT_DAC_VALUES(dac_address)(dac_channel)) then
 						DAC_STATE <= SETTING_UP_UPDATES;
-					else 
-						if (dac_channel < dac_channels - 1) then
-							dac_channel := dac_channel + 1;
-						else
-							dac_channel := 0;
-							if (dac_address < dac_addresses - 1) then
-								dac_address := dac_address + 1;
-							else
-								dac_address := 0;
-							end if;
-						end if;
-					end if;
+--					else 
+--						if (dac_channel < dac_channels - 1) then
+--							dac_channel := dac_channel + 1;
+--						else
+--							dac_channel := 0;
+--							if (dac_address < dac_addresses - 1) then
+--								dac_address := dac_address + 1;
+--							else
+--								dac_address := 0;
+--							end if;
+--						end if;
+--					end if;
 				when SETTING_UP_UPDATES =>
 					internal_DAC_STATE_MONITOR	<= "001";
 					case dac_address is

@@ -73,9 +73,10 @@ SDA <= internal_SDA;
 UPDATING <= internal_UPDATING;
 UPDATE_SUCCEEDED <= internal_UPDATE_SUCCEEDED;
 
-internal_DAC_BYTE1 <= COMMAND & CHANNEL;
-internal_DAC_BYTE2 <= DAC_VALUE(11 downto 4);
-internal_DAC_BYTE3 <= DAC_VALUE(3 downto 0) & x"0";
+--Moved this below so that these bytes are registered on a clock edge at the beginning of the update cycle
+--internal_DAC_BYTE1 <= COMMAND & CHANNEL;
+--internal_DAC_BYTE2 <= DAC_VALUE(11 downto 4);
+--internal_DAC_BYTE3 <= DAC_VALUE(3 downto 0) & x"0";
 
 process(IIC_CLK, UPDATE) 
 	variable bit_counter  : integer range 0 to 15;
@@ -87,6 +88,9 @@ begin
 	if (rising_edge(IIC_CLK)) then
 		if (UPDATE = '1' and internal_UPDATING = '0') then
 			internal_UPDATING <= '1';
+			internal_DAC_BYTE1 <= COMMAND & CHANNEL;
+			internal_DAC_BYTE2 <= DAC_VALUE(11 downto 4);
+			internal_DAC_BYTE3 <= DAC_VALUE(3 downto 0) & x"0";
 		else
 			case IIC_STATE is
 				when IDLE =>
