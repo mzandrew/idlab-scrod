@@ -282,7 +282,7 @@ begin
 	-----ASIC sampling and analog storage control------------
 	map_ASIC_sampling_control : entity work.ASIC_sampling_control
 		generic map (
-			use_chipscope_ila			=> true
+			use_chipscope_ila			=> false
 		)
 		port map (
 			CONTINUE_WRITING			=> internal_CONTINUE_ANALOG_WRITING,
@@ -307,7 +307,7 @@ begin
 		generic map (
 			WIDTH_OF_BLOCKRAM_DATA_BUS		=> WIDTH_OF_BLOCKRAM_DATA_BUS,
 			WIDTH_OF_BLOCKRAM_ADDRESS_BUS => WIDTH_OF_BLOCKRAM_ADDRESS_BUS,	
-			use_chipscope_ila					=> false
+			use_chipscope_ila					=> true
 		)
 		port map (
 			AsicIn_DATA_BUS_CHANNEL_ADDRESS			=> AsicIn_DATA_BUS_CHANNEL_ADDRESS,
@@ -520,22 +520,28 @@ begin
 		end if;
 	end process;
 	--
-	process(internal_CLOCK_80Hz) begin
-		if (rising_edge(internal_CLOCK_80Hz)) then
-			internal_VIO_IN(11 downto 0) <= internal_CURRENT_DAC_VOLTAGES( to_integer( unsigned(internal_TEST_DAC_COLUMN) ))
-																							 ( to_integer( unsigned(internal_TEST_DAC_LOC) ))
-																							 ( to_integer( unsigned(internal_TEST_DAC_CH) ) );
-			internal_VIO_IN(27 downto 12) <= internal_FEEDBACK_WILKINSON_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
-																											( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
-			internal_VIO_IN(39 downto 28) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
-																											  ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
-			internal_VIO_IN(68 downto 53) <= internal_ASIC_SCALERS_C_R_CH( to_integer( unsigned(internal_TEST_SCALER_COLUMN) ))
-																							 ( to_integer( unsigned(internal_TEST_SCALER_ROW) ))
-																							 ( to_integer( unsigned(internal_TEST_SCALER_CH) ));
-			internal_VIO_IN(84 downto 69) <= internal_ASIC_TRIGGER_STREAMS_C_R_CH( to_integer( unsigned(internal_TEST_SCALER_COLUMN) ))
-																										( to_integer( unsigned(internal_TEST_SCALER_ROW) ))
-																										( to_integer( unsigned(internal_TEST_SCALER_CH) ));
-		end if;
+	process(internal_TEST_DAC_COLUMN, internal_TEST_DAC_LOC, internal_TEST_DAC_CH, internal_CURRENT_DAC_VOLTAGES) begin
+		internal_VIO_IN(11 downto 0) <= internal_CURRENT_DAC_VOLTAGES( to_integer( unsigned(internal_TEST_DAC_COLUMN) ))
+																						 ( to_integer( unsigned(internal_TEST_DAC_LOC) ))
+																						 ( to_integer( unsigned(internal_TEST_DAC_CH) ) );
+	end process;
+	process(internal_FEEDBACK_MONITOR_COLUMN, internal_FEEDBACK_MONITOR_ROW, internal_FEEDBACK_WILKINSON_COUNTER_C_R) begin	
+		internal_VIO_IN(27 downto 12) <= internal_FEEDBACK_WILKINSON_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+																										( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+	end process;
+	process(internal_FEEDBACK_MONITOR_COLUMN, internal_FEEDBACK_MONITOR_ROW, internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R) begin		
+		internal_VIO_IN(39 downto 28) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+																										  ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+	end process;
+	process(internal_TEST_SCALER_COLUMN, internal_TEST_SCALER_ROW, internal_TEST_SCALER_CH, internal_ASIC_SCALERS_C_R_CH) begin
+		internal_VIO_IN(68 downto 53) <= internal_ASIC_SCALERS_C_R_CH( to_integer( unsigned(internal_TEST_SCALER_COLUMN) ))
+																						 ( to_integer( unsigned(internal_TEST_SCALER_ROW) ))
+																						 ( to_integer( unsigned(internal_TEST_SCALER_CH) ));
+	end process;
+	process(internal_TEST_SCALER_COLUMN, internal_TEST_SCALER_ROW, internal_TEST_SCALER_CH, internal_ASIC_TRIGGER_STREAMS_C_R_CH) begin
+		internal_VIO_IN(84 downto 69) <= internal_ASIC_TRIGGER_STREAMS_C_R_CH( to_integer( unsigned(internal_TEST_SCALER_COLUMN) ))
+																									( to_integer( unsigned(internal_TEST_SCALER_ROW) ))
+																									( to_integer( unsigned(internal_TEST_SCALER_CH) ));
 	end process;
 	internal_VIO_IN(51 downto 40) <= internal_TEMP_R1;
 	internal_VIO_IN(52) <= internal_DONE_DIGITIZING;
