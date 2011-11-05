@@ -185,6 +185,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_ASIC_TRIGGER_BITS_C_R_CH		: ASIC_Trigger_Bits_C_R_CH;
 	signal internal_ASIC_SCALERS_C_R_CH				: ASIC_Scalers_C_R_CH;
 	signal internal_ASIC_TRIGGER_STREAMS_C_R_CH 	: ASIC_Trigger_Stream_C_R_CH;
+	signal internal_LATCH_SCALERS						: std_logic;	
+	signal internal_RESET_SCALERS						: std_logic;
 	------------------------------------------------------------
 	--Signals for the fiberoptic interface----------------------
 	signal internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs	: std_logic_vector(3 downto 0);
@@ -210,18 +212,13 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_TEST_DAC_COLUMN					: std_logic_vector(1 downto 0);
 	signal internal_TEST_DAC_LOC						: std_logic_vector(2 downto 0);
 	signal internal_TEST_DAC_CH						: std_logic_vector(2 downto 0);
-	signal internal_RESET_ALL_DACS 					: std_logic;
-	signal internal_WILK_FEEDBACK_ENABLE			: std_logic;
 	signal internal_FEEDBACK_MONITOR_COLUMN 		: std_logic_vector(1 downto 0);
 	signal internal_FEEDBACK_MONITOR_ROW 			: std_logic_vector(1 downto 0);
 	signal internal_SOFTWARE_TRIGGER					: std_logic;
 	signal internal_DUMMY_FTSW_TRIGGER21_SHIFTED : std_logic;
-	signal internal_RESET_SCALERS						: std_logic;
-	signal internal_LATCH_SCALERS						: std_logic;
 	signal internal_TEST_SCALER_ROW					: std_logic_vector(1 downto 0);
 	signal internal_TEST_SCALER_COLUMN				: std_logic_vector(1 downto 0);
 	signal internal_TEST_SCALER_CH					: std_logic_vector(2 downto 0);
-	signal internal_TEST_TRIG_THRESH					: std_logic_vector(11 downto 0);
 	signal internal_DAQ_BUSY_VIO						: std_logic;	
 	signal internal_ZERO_VECTOR_255_LONG			: std_logic_vector(255 downto 0) := (others => '0');
 	---------------------------------------------------------
@@ -445,6 +442,7 @@ begin
 			-- commands --------------------------------------------
 			REQUEST_A_GLOBAL_RESET                                  => internal_GLOBAL_RESET_REQUESTED_BY_FIBER,
 			DESIRED_DAC_SETTINGS                                    => internal_DESIRED_DAC_VOLTAGES,
+			CURRENT_DAC_SETTINGS                                    => internal_CURRENT_DAC_VOLTAGES,
 			SOFT_TRIGGER_FROM_FIBER                                 => internal_SOFT_TRIGGER_FROM_FIBER,
 			RESET_SCALER_COUNTERS                                   => internal_RESET_SCALER_COUNTERS,
 			ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
@@ -452,8 +450,6 @@ begin
 			SAMPLING_RATE_FEEDBACK_GOAL                             => internal_SAMPLING_RATE_FEEDBACK_GOAL,
 			WILKINSON_RATE_FEEDBACK_GOAL                            => internal_WILKINSON_RATE_FEEDBACK_GOAL,
 			TRIGGER_WIDTH_FEEDBACK_GOAL                             => internal_TRIGGER_WIDTH_FEEDBACK_GOAL,
-			--------------------------------------------------------
-			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 			--------------------------------------------------------
 			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
 			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,
@@ -463,7 +459,15 @@ begin
 			ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      => internal_FIRST_ADDRESS_WRITTEN,
 			--------------------------------------------------------
 			ASIC_SCALERS                                            => internal_ASIC_SCALERS_C_R_CH,
-			ASIC_TRIGGER_STREAMS                                    => internal_ASIC_TRIGGER_STREAMS_C_R_CH
+			ASIC_TRIGGER_STREAMS                                    => internal_ASIC_TRIGGER_STREAMS_C_R_CH,
+			TEMPERATURE_R1                                          => internal_TEMP_R1,
+			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
+			SAMPLING_RATE_FEEDBACK_GOAL                             => open,
+			WILKINSON_RATE_FEEDBACK_GOAL                            => open,
+			TRIGGER_WIDTH_FEEDBACK_GOAL                             => open,
+			SAMPLING_RATE_FEEDBACK_ENABLE                           => open,
+			WILKINSON_RATE_FEEDBACK_ENABLE                          => open,
+			TRIGGER_WIDTH_FEEDBACK_ENABLE                           => open			
 		);
 	-----------------------------------------------------------
 	
@@ -482,27 +486,22 @@ begin
 			SYNC_OUT => internal_VIO_OUT		
 		);	
 	--
-	internal_RESET_ALL_DACS <= internal_VIO_OUT(0);
-	internal_TEST_DAC_COLUMN <= internal_VIO_OUT(2 downto 1);
-	internal_TEST_DAC_LOC <= internal_VIO_OUT(5 downto 3);
-	internal_TEST_DAC_CH <= internal_VIO_OUT(8 downto 6);
-	internal_WILK_FEEDBACK_ENABLE <= internal_VIO_OUT(9);
-	internal_FEEDBACK_MONITOR_COLUMN <= internal_VIO_OUT(11 downto 10);
-	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(13 downto 12);
-	internal_DAQ_BUSY_VIO <= internal_VIO_OUT(14);
-	internal_SOFTWARE_TRIGGER <= internal_SOFT_TRIGGER_FROM_FIBER or internal_VIO_OUT(15);
-	internal_RESET_SCALERS <= internal_RESET_SCALER_COUNTERS or internal_VIO_OUT(16);
-	internal_LATCH_SCALERS <= internal_VIO_OUT(17) and internal_CLOCK_80Hz;
-	internal_TEST_SCALER_ROW <= internal_VIO_OUT(19 downto 18);
-	internal_TEST_SCALER_COLUMN <= internal_VIO_OUT(21 downto 20);
-	internal_TEST_SCALER_CH	<= internal_VIO_OUT(24 downto 22);
-	internal_TEST_TRIG_THRESH <= internal_VIO_OUT(36 downto 25);
-	internal_GLOBAL_RESET_REQUESTED_BY_VIO <= internal_VIO_OUT(37);
-	internal_should_not_automatically_try_to_keep_fiber_link_up	<= internal_VIO_OUT(38);
-	--Debugging blockram issues
---	internal_BLOCKRAM_READ_ADDRESS <= internal_VIO_OUT(51 downto 39);
---	internal_BLOCKRAM_COLUMN_SELECT <= internal_VIO_OUT(53 downto 52);
-	internal_LEDS_ENABLED <= internal_VIO_OUT(54);
+	internal_LATCH_SCALERS <= internal_CLOCK_80Hz;
+	--
+	internal_TEST_DAC_COLUMN <= internal_VIO_OUT(1 downto 0);
+	internal_TEST_DAC_LOC <= internal_VIO_OUT(4 downto 2);
+	internal_TEST_DAC_CH <= internal_VIO_OUT(7 downto 5);
+	internal_FEEDBACK_MONITOR_COLUMN <= internal_VIO_OUT(9 downto 8);
+	internal_FEEDBACK_MONITOR_ROW <= internal_VIO_OUT(11 downto 10);
+	internal_DAQ_BUSY_VIO <= internal_VIO_OUT(12);	
+	internal_SOFTWARE_TRIGGER <= internal_SOFT_TRIGGER_FROM_FIBER or internal_VIO_OUT(13);
+	internal_RESET_SCALERS <= internal_RESET_SCALER_COUNTERS or internal_VIO_OUT(14);
+	internal_TEST_SCALER_ROW <= internal_VIO_OUT(16 downto 15);
+	internal_TEST_SCALER_COLUMN <= internal_VIO_OUT(18 downto 17);
+	internal_TEST_SCALER_CH	<= internal_VIO_OUT(21 downto 19);
+	internal_GLOBAL_RESET_REQUESTED_BY_VIO <= internal_VIO_OUT(22);
+	internal_should_not_automatically_try_to_keep_fiber_link_up	<= internal_VIO_OUT(23);
+	internal_LEDS_ENABLED <= internal_VIO_OUT(24);
 
 	process(internal_CLOCK_SST)
 		variable trigger_seen : boolean := false;

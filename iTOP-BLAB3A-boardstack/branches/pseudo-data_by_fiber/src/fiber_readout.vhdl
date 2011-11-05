@@ -54,16 +54,9 @@ entity fiber_readout is
 		-- commamds -----------------------------------------------------------------
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
+		CURRENT_DAC_SETTINGS                                    : in    Board_Stack_Voltages;
 		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
-		SAMPLING_RATE_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
-		WILKINSON_RATE_FEEDBACK_GOAL                            :   out std_logic_vector(31 downto 0);
-		TRIGGER_WIDTH_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
---		SAMPLING_RATE_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
---		WILKINSON_RATE_FEEDBACK_ENABLE                          :   out std_logic_vector(15 downto 0);
---		TRIGGER_WIDTH_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
-		-----------------------------------------------------------------------------
-		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
@@ -73,7 +66,16 @@ entity fiber_readout is
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      : in    std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
 		ASIC_SCALERS                                            : in    ASIC_Scalers_C_R_CH;
-		ASIC_TRIGGER_STREAMS                                    : in    ASIC_Trigger_Stream_C_R_CH
+		ASIC_TRIGGER_STREAMS                                    : in    ASIC_Trigger_Stream_C_R_CH;
+		-----------------------------------------------------------------------------
+		TEMPERATURE_R1                                          : in    std_logic_vector(11 downto 0);
+		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
+		SAMPLING_RATE_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
+		WILKINSON_RATE_FEEDBACK_GOAL                            :   out std_logic_vector(31 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
+		SAMPLING_RATE_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
+		WILKINSON_RATE_FEEDBACK_ENABLE                          :   out std_logic_vector(15 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0)
 	);
 end fiber_readout;
 
@@ -122,6 +124,9 @@ architecture behavioral of fiber_readout is
 	signal internal_SAMPLING_RATE_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_WILKINSON_RATE_FEEDBACK_ENABLE     : std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
+	signal internal_SAMPLING_RATE_FEEDBACK_GOAL        : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_WILKINSON_RATE_FEEDBACK_GOAL       : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_TRIGGER_WIDTH_FEEDBACK_GOAL        : std_logic_vector(31 downto 0) := (others => '0');
 	-----------------------------------------------------------------------------
 begin
 	Aurora_data_link : entity work.Aurora_RocketIO_GTP_MGT_101
@@ -161,9 +166,9 @@ begin
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
-		SAMPLING_RATE_FEEDBACK_GOAL                             => SAMPLING_RATE_FEEDBACK_GOAL,
-		WILKINSON_RATE_FEEDBACK_GOAL                            => WILKINSON_RATE_FEEDBACK_GOAL,
-		TRIGGER_WIDTH_FEEDBACK_GOAL                             => TRIGGER_WIDTH_FEEDBACK_GOAL,
+		SAMPLING_RATE_FEEDBACK_GOAL                             => internal_SAMPLING_RATE_FEEDBACK_GOAL,
+		WILKINSON_RATE_FEEDBACK_GOAL                            => internal_WILKINSON_RATE_FEEDBACK_GOAL,
+		TRIGGER_WIDTH_FEEDBACK_GOAL                             => internal_TRIGGER_WIDTH_FEEDBACK_GOAL,
 		SAMPLING_RATE_FEEDBACK_ENABLE                           => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
 		WILKINSON_RATE_FEEDBACK_ENABLE                          => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
 		TRIGGER_WIDTH_FEEDBACK_ENABLE                           => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
@@ -197,7 +202,15 @@ begin
 		START_BUILDING_A_QUARTER_EVENT     => internal_START_BUILDING_A_QUARTER_EVENT,
 		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT,
 		ASIC_SCALERS                       => ASIC_SCALERS,
-		ASIC_TRIGGER_STREAMS               => ASIC_TRIGGER_STREAMS
+		ASIC_TRIGGER_STREAMS               => ASIC_TRIGGER_STREAMS,
+		TEMPERATURE_R1                     => TEMPERATURE_R1,
+		SAMPLING_RATE_FEEDBACK_GOAL        => internal_SAMPLING_RATE_FEEDBACK_GOAL,
+		WILKINSON_RATE_FEEDBACK_GOAL       => internal_WILKINSON_RATE_FEEDBACK_GOAL,
+		TRIGGER_WIDTH_FEEDBACK_GOAL        => internal_TRIGGER_WIDTH_FEEDBACK_GOAL,
+		SAMPLING_RATE_FEEDBACK_ENABLE      => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
+		WILKINSON_RATE_FEEDBACK_ENABLE     => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
+		TRIGGER_WIDTH_FEEDBACK_ENABLE      => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
+		CURRENT_DAC_SETTINGS               => CURRENT_DAC_SETTINGS
 	);
 	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= INPUT_DATA_BUS;
 	INPUT_ADDRESS_BUS <= internal_ASIC_DATA_BLOCKRAM_ADDRESS_BUS;
@@ -214,6 +227,12 @@ begin
 	Aurora_data_link_reset <= RESET;
 	ASIC_START_WINDOW <= internal_ASIC_START_WINDOW;
 	ASIC_END_WINDOW <= internal_ASIC_END_WINDOW;
+	SAMPLING_RATE_FEEDBACK_GOAL    <= internal_SAMPLING_RATE_FEEDBACK_GOAL;
+	WILKINSON_RATE_FEEDBACK_GOAL   <= internal_WILKINSON_RATE_FEEDBACK_GOAL;
+	TRIGGER_WIDTH_FEEDBACK_GOAL    <= internal_TRIGGER_WIDTH_FEEDBACK_GOAL;
+	SAMPLING_RATE_FEEDBACK_ENABLE  <= internal_SAMPLING_RATE_FEEDBACK_ENABLE;
+	WILKINSON_RATE_FEEDBACK_ENABLE <= internal_WILKINSON_RATE_FEEDBACK_ENABLE;
+	TRIGGER_WIDTH_FEEDBACK_ENABLE  <= internal_TRIGGER_WIDTH_FEEDBACK_ENABLE;
 
 	QEF : entity work.quarter_event_fifo port map (
 		rst    => RESET,

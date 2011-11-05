@@ -23,6 +23,7 @@ entity packet_builder is
 		PACKET_TYPE_EVENT_HEADER                 : std_logic_vector(31 downto 0) := x"0000EADA";
 		PACKET_TYPE_COFFEE                       : std_logic_vector(31 downto 0) := x"00c0ffee";
 		PACKET_TYPE_TRIGGER_SCALER_DATA          : std_logic_vector(31 downto 0) := x"ce11b10c";
+		PACKET_TYPE_HOUSEKEEPING                 : std_logic_vector(31 downto 0) := x"000ab0de";
 		PACKET_RESERVED_WORD                     : std_logic_vector(31 downto 0) := x"99999999";
 		PACKET_TYPE_EVENT_FOOTER                 : std_logic_vector(31 downto 0) := x"000F00DA";
 		WIDTH_OF_EVENT_NUMBER                    : integer := 32;
@@ -57,12 +58,21 @@ entity packet_builder is
 		THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              : in    std_logic;
 		THIS_PACKET_IS_QUARTER_EVENT_MEAT                  : in    std_logic;
 		THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET        : in    std_logic;
+		THIS_PACKET_IS_A_HOUSEKEEPING_PACKET               : in    std_logic;
 		EVENT_NUMBER                                       : in    std_logic_vector(WIDTH_OF_EVENT_NUMBER-1       downto 0);
 		PACKET_NUMBER                                      : in    std_logic_vector(WIDTH_OF_PACKET_NUMBER-1      downto 0);
 		INPUT_BASE_ADDRESS                                 : in    std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1  downto 0);
 		OUTPUT_BASE_ADDRESS                                : in    std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		ASIC_SCALERS                                       : in    ASIC_Scalers_C_R_CH;
-		ASIC_TRIGGER_STREAMS                               : in    ASIC_Trigger_Stream_C_R_CH			
+		ASIC_TRIGGER_STREAMS                               : in    ASIC_Trigger_Stream_C_R_CH;
+		TEMPERATURE_R1                                     : in    std_logic_vector(11 downto 0);
+		SAMPLING_RATE_FEEDBACK_GOAL                        : in    std_logic_vector(31 downto 0);
+		WILKINSON_RATE_FEEDBACK_GOAL                       : in    std_logic_vector(31 downto 0);     
+		TRIGGER_WIDTH_FEEDBACK_GOAL                        : in    std_logic_vector(31 downto 0);     
+		SAMPLING_RATE_FEEDBACK_ENABLE                      : in    std_logic_vector(15 downto 0);     
+		WILKINSON_RATE_FEEDBACK_ENABLE                     : in    std_logic_vector(15 downto 0);     
+		TRIGGER_WIDTH_FEEDBACK_ENABLE                      : in    std_logic_vector(15 downto 0);     
+		CURRENT_DAC_SETTINGS                               : in    Board_Stack_Voltages		
 	);
 end packet_builder;
 -----------------------------------------------------------------------------
@@ -80,6 +90,7 @@ architecture packet_builder_architecture of packet_builder is
 	signal internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER              : std_logic;
 	signal internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT                  : std_logic;
 	signal internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET			 : std_logic;
+	signal internal_THIS_PACKET_IS_A_HOUSEKEEPING_PACKET               : std_logic;
 	signal internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET : std_logic := '0';
 	signal internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                : std_logic := '0';
 	signal internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           : std_logic := '0';
@@ -94,6 +105,7 @@ architecture packet_builder_architecture of packet_builder is
 		ABOUT_TO_FETCH_SOME_INPUT_DATA, FETCH_SOME_INPUT_DATA, PACK_DATA, WRITE_SOME_OUTPUT_DATA, WRITE_AN_ORIGIN_WINDOW_WORD,
 		WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET, 
 		GET_TRIGGER_STREAM_DATA, WRITE_TRIGGER_STREAM_DATA, GET_SCALER_DATA, WRITE_SCALER_DATA,
+		GET_HOUSEKEEPING_DATA, WRITE_HOUSEKEEPING_DATA,
 		WRITE_THE_LAST_PART_OF_A_PACKET, ALMOST_DONE_BUILDING_PACKET, DONE_BUILDING_PACKET);
 	signal packet_builder_state : packet_builder_state_type := IDLE;
 	signal ROW     : std_logic_vector(1 downto 0) := "00"; -- ASIC row # within board stack
@@ -152,6 +164,8 @@ begin
 		variable overage        : unsigned(9 downto 0);
 		variable start_window   : unsigned(9 downto 0);
 		variable end_window     : unsigned(9 downto 0);
+		-----------------------------------------------------------------------------
+		variable m : integer range 0 to NUMBER_OF_WORDS_IN_A_PACKET := 0;
 	begin
 		if falling_edge(internal_CLOCK) then
 			internal_INPUT_DATA_BUS <= INPUT_DATA_BUS;
@@ -178,6 +192,7 @@ begin
 					internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER <= THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER;
 					internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT     <= THIS_PACKET_IS_QUARTER_EVENT_MEAT;
 					internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET <= THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET;
+					internal_THIS_PACKET_IS_A_HOUSEKEEPING_PACKET  <= THIS_PACKET_IS_A_HOUSEKEEPING_PACKET;
 					internal_PACKET_BUILDER_IS_GOING_TO_START_BUILDING_A_PACKET <= '0';
 					internal_PACKET_BUILDER_IS_BUILDING_A_PACKET                <= '0';
 					internal_PACKET_BUILDER_IS_DONE_BUILDING_A_PACKET           <= '0';
@@ -232,6 +247,8 @@ begin
 							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_EVENT_FOOTER;
 						elsif (internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET = '1') then
 							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_TRIGGER_SCALER_DATA;
+						elsif (internal_THIS_PACKET_IS_A_HOUSEKEEPING_PACKET = '1') then
+							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_HOUSEKEEPING;
 						else
 							--internal_OUTPUT_DATA_BUS <= (others => '0');
 							internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD; -- should never get here
@@ -246,6 +263,8 @@ begin
 							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";
 						elsif (internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET = '1') then
 							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";							
+						elsif (internal_THIS_PACKET_IS_A_HOUSEKEEPING_PACKET = '1') then
+							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";
 						else
 							internal_OUTPUT_DATA_BUS <= origin_window;
 						end if;
@@ -264,6 +283,8 @@ begin
 						packet_builder_state <= GET_TRIGGER_STREAM_DATA;
 					elsif (internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT = '1') then
 						packet_builder_state <= ABOUT_TO_FETCH_SOME_INPUT_DATA;
+					elsif (internal_THIS_PACKET_IS_A_HOUSEKEEPING_PACKET = '1') then
+						packet_builder_state <= GET_HOUSEKEEPING_DATA;
 					end if;
 					window_sample_counter := 0;
 				when ABOUT_TO_FETCH_SOME_INPUT_DATA =>
@@ -385,6 +406,62 @@ begin
 						else
 							stream_and_scaler_counter_flattened := stream_and_scaler_counter_flattened + 2;						
 							packet_builder_state <= GET_SCALER_DATA;							
+						end if;
+				-----------------------------------------------------------------------------
+				when GET_HOUSEKEEPING_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+						m := word_counter;
+						if    (word_counter >=   6 and word_counter <=  13) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-6)/2 )( 4*((m-6) mod 2)+2 )(4) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-6)/2 )( 4*((m-6) mod 2)   )(4);
+						elsif (word_counter >=  14 and word_counter <=  45) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6+1 ) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6   );
+						elsif (word_counter >=  46 and word_counter <=  53) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+3 )(7) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+1 )(7);
+						elsif (word_counter >=  54 and word_counter <=  61) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)+2 )(2) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)   )(2);
+						elsif (word_counter >=  62 and word_counter <=  69) then						
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)+2 )(3) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)   )(3);
+						elsif (word_counter >=  70 and word_counter <=  77) then	
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)+2 )(5) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)   )(5);
+						elsif (word_counter >=  78 and word_counter <=  85) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-78)/2 )( 4*((m-78) mod 2)+3 )(2) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-78)/2 )( 4*((m-78) mod 2)+1 )(2);
+						elsif (word_counter >=  86 and word_counter <=  93) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+3 )(1) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+1 )(1);
+						elsif (word_counter >=  94 and word_counter <= 101) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+3 )(4) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+1 )(4);						
+						elsif (word_counter >= 102 and word_counter <= 109) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-102)/2 )( 4*((m-102) mod 2)+3 )(5) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-102)/2 )( 4*((m-102) mod 2)+1 )(5);
+						elsif (word_counter >= 110 and word_counter <= 117) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+3 )(3) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+1 )(3);
+						elsif (word_counter >= 118 and word_counter <= 125) then	
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-118)/2 )( 4*((m-118) mod 2)+3 )(0) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-118)/2 )( 4*((m-118) mod 2)+1 )(0);
+						elsif (word_counter  = 126) then
+							internal_OUTPUT_DATA_BUS <= x"0000" & x"0" & TEMPERATURE_R1;
+						else
+							internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
+						end if;
+						packet_builder_state <= WRITE_HOUSEKEEPING_DATA;
+				-----------------------------------------------------------------------------
+				when WRITE_HOUSEKEEPING_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+						word_counter        := word_counter + 1;
+						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
+						if (word_counter = 127) then
+							packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
+						else
+							packet_builder_state <= GET_HOUSEKEEPING_DATA;
 						end if;
 				-----------------------------------------------------------------------------
 				when WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET =>
