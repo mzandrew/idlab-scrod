@@ -45,7 +45,14 @@ entity packet_receiver_and_command_interpreter is
 		RESET_SCALER_COUNTERS              :   out std_logic;
 		ASIC_START_WINDOW                  :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                    :   out std_logic_vector(8 downto 0);
+		SAMPLING_RATE_FEEDBACK_GOAL        :   out std_logic_vector(31 downto 0);
+		WILKINSON_RATE_FEEDBACK_GOAL       :   out std_logic_vector(31 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_GOAL        :   out std_logic_vector(31 downto 0);
+		SAMPLING_RATE_FEEDBACK_ENABLE      :   out std_logic_vector(15 downto 0);
+		WILKINSON_RATE_FEEDBACK_ENABLE     :   out std_logic_vector(15 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_ENABLE      :   out std_logic_vector(15 downto 0);
 		----------------------------------------------------------------------------------
+		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE : in    Wilkinson_Rate_DAC_C_R;
 		acknowledge_execution_of_command   : in    std_logic;
 		UNKNOWN_COMMAND_RECEIVED_COUNTER   :   out std_logic_vector(7 downto 0)
 );
@@ -82,7 +89,14 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
+	signal internal_SAMPLING_RATE_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
+	signal internal_WILKINSON_RATE_FEEDBACK_GOAL       : std_logic_vector(31 downto 0);
+	signal internal_TRIGGER_WIDTH_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
+	signal internal_SAMPLING_RATE_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
+	signal internal_WILKINSON_RATE_FEEDBACK_ENABLE     : std_logic_vector(15 downto 0) := (others => '0');
+	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
 	----------------------------------------------------------------------------------
+	signal DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE : Wilkinson_Rate_DAC_C_R;
 	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER   : std_logic_vector(31 downto 0);
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
 	signal COMMAND_PROCESSING_STATE                    : COMMAND_PROCESSING_STATE_TYPE := RESET_DAC_VALUES_TO_NOMINAL;
@@ -109,6 +123,28 @@ begin
 	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
 	ASIC_START_WINDOW                  <= internal_ASIC_START_WINDOW;
 	ASIC_END_WINDOW                    <= internal_ASIC_END_WINDOW;
+	SAMPLING_RATE_FEEDBACK_GOAL        <= internal_SAMPLING_RATE_FEEDBACK_GOAL;
+	WILKINSON_RATE_FEEDBACK_GOAL       <= internal_WILKINSON_RATE_FEEDBACK_GOAL;
+	TRIGGER_WIDTH_FEEDBACK_GOAL        <= internal_TRIGGER_WIDTH_FEEDBACK_GOAL;
+	SAMPLING_RATE_FEEDBACK_ENABLE      <= internal_SAMPLING_RATE_FEEDBACK_ENABLE;
+	WILKINSON_RATE_FEEDBACK_ENABLE     <= internal_WILKINSON_RATE_FEEDBACK_ENABLE;
+	TRIGGER_WIDTH_FEEDBACK_ENABLE      <= internal_TRIGGER_WIDTH_FEEDBACK_ENABLE;
+	----------------------------------------------------------------------------------
+	process (internal_WILKINSON_RATE_FEEDBACK_ENABLE, DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE, DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE)
+	begin
+--	if (internal_WILK_FEEDBACK_ENABLE = '1') then
+--		DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
+--	else
+		for i in 0 to 3 loop
+			for j in 0 to 3 loop
+				if (internal_WILKINSON_RATE_FEEDBACK_ENABLE(4*i+j) = '1') then -- this line is where the bug is
+					DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE(i)(j); --VDLY
+				else
+					DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE(i)(j); --VDLY
+				end if;
+			end loop;
+		end loop;
+	end process;
 	----------------------------------------------------------------------------------
 	process (RESET, USER_CLK, RX_SRC_RDY_N)
 		constant COMMAND_PACKET_OFFSET                    : integer                :=   5;
@@ -162,6 +198,12 @@ begin
 --					end loop;
 --				end loop;
 --			end loop;
+			internal_SAMPLING_RATE_FEEDBACK_GOAL    <= x"00000410";
+			internal_WILKINSON_RATE_FEEDBACK_GOAL   <= x"00000666";
+			internal_TRIGGER_WIDTH_FEEDBACK_GOAL    <= x"00000777";
+			internal_SAMPLING_RATE_FEEDBACK_ENABLE  <= (others => '0');
+			internal_WILKINSON_RATE_FEEDBACK_ENABLE <= (others => '0');
+			internal_TRIGGER_WIDTH_FEEDBACK_ENABLE  <= (others => '0');
 			----------------------------------------------------------------------------------
 			PACKET_RECEIVER_STATE    <= WAITING_FOR_HEADER;
 			COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
@@ -340,8 +382,10 @@ begin
 								DESIRED_DAC_SETTINGS( (j-86)/2 )( ((j-86) mod 2)*4+3)(1) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 94 to 101 loop -- Vdly values
-								DESIRED_DAC_SETTINGS( (j-94)/2 )( ((j-94) mod 2)*4+1)(4) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
-								DESIRED_DAC_SETTINGS( (j-94)/2 )( ((j-94) mod 2)*4+3)(4) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE( (j-94)/2 )( 2*((j-94) mod 2)+0 ) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0)); -- here is the other pair of bugs
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE( (j-94)/2 )( 2*((j-94) mod 2)+1 ) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+--								DESIRED_DAC_SETTINGS( (j-94)/2 )( ((j-94) mod 2)*4+1)(4) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
+--								DESIRED_DAC_SETTINGS( (j-94)/2 )( ((j-94) mod 2)*4+3)(4) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 102 to 109 loop -- CMPbias values
 								DESIRED_DAC_SETTINGS( (j-102)/2 )( ((j-102) mod 2)*4+1)(5) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
@@ -376,16 +420,20 @@ begin
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- ISEL
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- SBBIAS
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- PUBIAS
---									if (internal_WILK_FEEDBACK_ENABLE = '1') then
---										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---									else
-										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= std_logic_vector(command_word(1)(11 downto 0)); --VDLY
---									end if;
+									DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE(i)(j) <= std_logic_vector(command_word(1)(11 downto 0)); --VDLY
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- CMPBIAS
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- PAD_G									
 									DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= std_logic_vector(command_word(1)(11 downto 0)); -- WBIAS
 								end loop;
 							end loop;
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"feedbacc") then -- feedback control - enables and set goals of feedback loops
+							internal_SAMPLING_RATE_FEEDBACK_GOAL    <= std_logic_vector(command_word(1));
+							internal_WILKINSON_RATE_FEEDBACK_GOAL   <= std_logic_vector(command_word(2));
+							internal_TRIGGER_WIDTH_FEEDBACK_GOAL    <= std_logic_vector(command_word(3));
+							internal_SAMPLING_RATE_FEEDBACK_ENABLE  <= std_logic_vector(command_word(4)(15 downto 0));
+							internal_WILKINSON_RATE_FEEDBACK_ENABLE <= std_logic_vector(command_word(5)(15 downto 0));
+							internal_TRIGGER_WIDTH_FEEDBACK_ENABLE  <= std_logic_vector(command_word(6)(15 downto 0));
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"000001ff") then -- set starting window in ASIC's analog storage array
 							internal_ASIC_START_WINDOW <= std_logic_vector(command_word(1)(8 downto 0));
@@ -414,6 +462,9 @@ begin
 							COMMAND_PROCESSING_STATE <= CLEAR_ALL_SIGNALS;
 						end if;
 					when RESET_DAC_VALUES_TO_NOMINAL =>
+						internal_SAMPLING_RATE_FEEDBACK_ENABLE  <= (others => '0');
+						internal_WILKINSON_RATE_FEEDBACK_ENABLE <= (others => '0');
+						internal_TRIGGER_WIDTH_FEEDBACK_ENABLE  <= (others => '0');
 						for i in 0 to 3 loop
 							for j in 0 to 3 loop
 								--IRS2_DC revB channel mappings
@@ -431,11 +482,7 @@ begin
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(1) <= x"7D0"; -- ISEL
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(2) <= x"640"; -- SBBIAS
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(3) <= x"CE4"; -- PUBIAS
---									if (internal_WILK_FEEDBACK_ENABLE = '1') then
---										DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R(i)(j);
---									else
-									DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= x"AF0"; --VDLY
---									end if;
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE(i)(j) <= x"AF0"; --VDLY
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"384"; -- CMPBIAS
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"7FF"; -- PAD_G									
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"578"; -- WBIAS

@@ -56,6 +56,14 @@ entity fiber_readout is
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
+		SAMPLING_RATE_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
+		WILKINSON_RATE_FEEDBACK_GOAL                            :   out std_logic_vector(31 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
+--		SAMPLING_RATE_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
+--		WILKINSON_RATE_FEEDBACK_ENABLE                          :   out std_logic_vector(15 downto 0);
+--		TRIGGER_WIDTH_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
+		-----------------------------------------------------------------------------
+		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
@@ -77,8 +85,6 @@ use UNISIM.VComponents.all;
 
 architecture behavioral of fiber_readout is
 	signal trigger_acknowledge : std_logic;
-	signal internal_COMMAND_ARGUMENT : std_logic_vector(31 downto 0) := x"00000000";
-	signal internal_EVENT_NUMBER_SET : std_logic := '0';
 -----------------------------------------------------------------------------
 --	signal should_not_automatically_try_to_keep_fiber_link_up : std_logic;
 --	signal fiber_link_is_up                                   : std_logic;
@@ -106,10 +112,17 @@ architecture behavioral of fiber_readout is
 	-- Stream RX Interface ------------------------------------------------------
 	signal Aurora_lane0_receive_data_bus                      : std_logic_vector(0 to 31);
 	signal Aurora_lane0_receive_source_ready_active_low       : std_logic;
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER      : std_logic_vector(7 downto 0);
-	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
-	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
+	-- commands: ----------------------------------------------------------------
+	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_EVENT_NUMBER_SET                   : std_logic                     := '0';
+	signal internal_ASIC_START_WINDOW                  : std_logic_vector( 8 downto 0) := (others => '0');
+	signal internal_ASIC_END_WINDOW                    : std_logic_vector( 8 downto 0) := (others => '1');
+	signal internal_SAMPLING_RATE_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
+	signal internal_WILKINSON_RATE_FEEDBACK_ENABLE     : std_logic_vector(15 downto 0) := (others => '0');
+	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
+	-----------------------------------------------------------------------------
 begin
 	Aurora_data_link : entity work.Aurora_RocketIO_GTP_MGT_101
 	generic map (
@@ -148,7 +161,14 @@ begin
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
+		SAMPLING_RATE_FEEDBACK_GOAL                             => SAMPLING_RATE_FEEDBACK_GOAL,
+		WILKINSON_RATE_FEEDBACK_GOAL                            => WILKINSON_RATE_FEEDBACK_GOAL,
+		TRIGGER_WIDTH_FEEDBACK_GOAL                             => TRIGGER_WIDTH_FEEDBACK_GOAL,
+		SAMPLING_RATE_FEEDBACK_ENABLE                           => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
+		WILKINSON_RATE_FEEDBACK_ENABLE                          => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
+		TRIGGER_WIDTH_FEEDBACK_ENABLE                           => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
 		-----------------------------------------------------------------------------
+		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 		UNKNOWN_COMMAND_RECEIVED_COUNTER                        => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER,
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,
