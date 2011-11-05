@@ -166,6 +166,9 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	---------ASIC feedback related signals-------------------
 	signal internal_FEEDBACK_WILKINSON_COUNTER_C_R		: Wilkinson_Rate_Counters_C_R;
 	signal internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R	: Wilkinson_Rate_DAC_C_R;
+	signal internal_SAMPLING_RATE_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
+	signal internal_WILKINSON_RATE_FEEDBACK_GOAL       : std_logic_vector(31 downto 0);
+	signal internal_TRIGGER_WIDTH_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
 	---------------------------------------------------------
 	----Signals for ASIC sampling / analog storage-----------
 	signal internal_CONTINUE_ANALOG_WRITING	: std_logic;
@@ -439,13 +442,18 @@ begin
 			TRIGGER                                                 => internal_DONE_DIGITIZING,
 			DONE_BUILDING_A_QUARTER_EVENT                           => internal_DONE_BUILDING_A_QUARTER_EVENT,
 			CURRENTLY_BUILDING_A_QUARTER_EVENT							  => internal_DAQ_BUSY,
-			-- commamds --------------------------------------------
+			-- commands --------------------------------------------
 			REQUEST_A_GLOBAL_RESET                                  => internal_GLOBAL_RESET_REQUESTED_BY_FIBER,
 			DESIRED_DAC_SETTINGS                                    => internal_DESIRED_DAC_VOLTAGES,
 			SOFT_TRIGGER_FROM_FIBER                                 => internal_SOFT_TRIGGER_FROM_FIBER,
 			RESET_SCALER_COUNTERS                                   => internal_RESET_SCALER_COUNTERS,
 			ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
 			ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
+			SAMPLING_RATE_FEEDBACK_GOAL                             => internal_SAMPLING_RATE_FEEDBACK_GOAL,
+			WILKINSON_RATE_FEEDBACK_GOAL                            => internal_WILKINSON_RATE_FEEDBACK_GOAL,
+			TRIGGER_WIDTH_FEEDBACK_GOAL                             => internal_TRIGGER_WIDTH_FEEDBACK_GOAL,
+			--------------------------------------------------------
+			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 			--------------------------------------------------------
 			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
 			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,

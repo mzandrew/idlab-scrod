@@ -49,7 +49,14 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
 		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
+		SAMPLING_RATE_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
+		WILKINSON_RATE_FEEDBACK_GOAL                            :   out std_logic_vector(31 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
+		SAMPLING_RATE_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
+		WILKINSON_RATE_FEEDBACK_ENABLE                          :   out std_logic_vector(15 downto 0);
+		TRIGGER_WIDTH_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
 		-----------------------------------------------------------------------------
+		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
 		UNKNOWN_COMMAND_RECEIVED_COUNTER                        :   out std_logic_vector(7 downto 0);
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -294,7 +301,14 @@ begin
 		RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                              => ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                => ASIC_END_WINDOW,
+		SAMPLING_RATE_FEEDBACK_GOAL                    => SAMPLING_RATE_FEEDBACK_GOAL,
+		WILKINSON_RATE_FEEDBACK_GOAL                   => WILKINSON_RATE_FEEDBACK_GOAL,
+		TRIGGER_WIDTH_FEEDBACK_GOAL                    => TRIGGER_WIDTH_FEEDBACK_GOAL,
+		SAMPLING_RATE_FEEDBACK_ENABLE                  => SAMPLING_RATE_FEEDBACK_ENABLE,
+		WILKINSON_RATE_FEEDBACK_ENABLE                 => WILKINSON_RATE_FEEDBACK_ENABLE,
+		TRIGGER_WIDTH_FEEDBACK_ENABLE                  => TRIGGER_WIDTH_FEEDBACK_ENABLE,
 		-----------------------------------------------------------------------------
+		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE => FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
 		UNKNOWN_COMMAND_RECEIVED_COUNTER               => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER
 	);
