@@ -52,12 +52,13 @@ AND
 
  ****************************************************************************/
 
-module CTRL_LOOP_PRCO(ENABLE, xCLR_ALL, xREFRESH_CLK, xTST_OUT, xPRCO_INT, xPROVDD/*, xDBGVEC*/);
+module CTRL_LOOP_PRCO(ENABLE, xCLR_ALL, xREFRESH_CLK, xTST_OUT, xPRCO_INT, xPROVDD, TARGET_COUNT/*, xDBGVEC*/);
 
 	input ENABLE;					// control loop enabled if set to 1
 	input xCLR_ALL;				// reset signal for counters?
 	input xREFRESH_CLK;			// refresh update clock, set in RCO_MAIN -- typ 100Hz
 	input xTST_OUT;				// output from test Wilkinson counter (13th bit), typ. ~120-200kHz
+	input  [15:0] TARGET_COUNT;// the target we're trying to hit with the counters
 	output [15:0] xPRCO_INT;	// last counter setting (passed to USB MESS)
 	output [11:0] xPROVDD;		// DAC setting for Wilkinson clock control
 //	output [31:0] xDBGVEC;		// DEBUG signals only! 
@@ -65,21 +66,21 @@ module CTRL_LOOP_PRCO(ENABLE, xCLR_ALL, xREFRESH_CLK, xTST_OUT, xPRCO_INT, xPROV
 	reg	[15:0] xPRCO_INT;
 	reg	[11:0] xPROVDD;
 	wire	[15:0] tst_counter;
+	reg   [15:0] last_counter;
 	reg	toolow, toohigh;
 	
 	//////////////////////////////////////////////////////////////////////////
 	// configuration parameters are set here
 
-	parameter MIN_PROVDD = 12'h000;		// upper/lower limits on PRCO output values
+//	parameter MIN_PROVDD = 12'h000;		// upper/lower limits on PRCO output values
+	parameter MIN_PROVDD = 12'h3E8;		// upper/lower limits on PRCO output values
 	parameter MAX_PROVDD = 12'hFFF;
 	
 	//parameter INITIAL_VALUE = 12'h46C;	// initial ADC output to fall within limits set below		
 	parameter INITIAL_VALUE = 12'd3000;	// initial ADC output to fall within limits set below	
 
-//	parameter MIN_LIMIT = 20'd1800;		// low TST_OUT count limit
-//	parameter MAX_LIMIT = 20'd1816;		// upper TST_OUT count limit
-	parameter MIN_LIMIT = 20'd1040;		// low TST_OUT count limit
-	parameter MAX_LIMIT = 20'd1042;		// upper TST_OUT count limit
+//	parameter MIN_LIMIT = 20'd1040;		// low TST_OUT count limit
+//	parameter MAX_LIMIT = 20'd1042;		// upper TST_OUT count limit
 
 	//////////////////////////////////////////////////////////////////////////
 /*
@@ -114,24 +115,37 @@ module CTRL_LOOP_PRCO(ENABLE, xCLR_ALL, xREFRESH_CLK, xTST_OUT, xPRCO_INT, xPROV
 			xPROVDD <= INITIAL_VALUE;
 		
 		else begin
-			toolow  <= (tst_counter < MIN_LIMIT);
-			toohigh <= (tst_counter > MAX_LIMIT);
+			last_counter <= tst_counter;
+//			toolow  <= (tst_counter < MIN_LIMIT);
+//			toohigh <= (tst_counter > MAX_LIMIT);
+			toolow  <= (last_counter < TARGET_COUNT);
+			toohigh <= (last_counter > TARGET_COUNT);
 
 			case ({ENABLE,toolow,toohigh})
-				3'b101: begin
-					if (xPROVDD > MIN_PROVDD)
+				3'b101: 
+					if (xPROVDD > MIN_PROVDD) begin
 						xPROVDD <= xPROVDD - 12'h001;			// decrease DAC output
-				end
+					end
 
 				3'b110:	// too low
-					if (xPROVDD < MAX_PROVDD)
+					if (xPROVDD < MAX_PROVDD) begin
 						xPROVDD <= xPROVDD + 12'h001;			// increase DAC output
+					end
+			
+				3'b000: // enable is off
+					xPROVDD <= INITIAL_VALUE;
+				3'b001: // enable is off
+					xPROVDD <= INITIAL_VALUE;
+				3'b010: // enable is off
+					xPROVDD <= INITIAL_VALUE;
+				3'b011: // enable is off
+					xPROVDD <= INITIAL_VALUE;
 
 				default:	; // do nothing if not enabled (0xx), within window (100), or invalid (x11)
 							  //		ensures all case statements covered
 			endcase
 
-			xPRCO_INT <= tst_counter;
+			xPRCO_INT <= last_counter;
 //			xPRCO_INT <= tst_counter[15:0];	// record bits 0 to 15 (lower 16) of last counter value
 //			xPRCO_INT <= tst_counter[19:4];	// record bits 4 to 19 (upper 16) of last counter value
 		end

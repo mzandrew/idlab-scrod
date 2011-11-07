@@ -40,6 +40,8 @@ entity Wilkinson_Monitoring is
 				AsicOut_MONITOR_WILK_COUNTER_C2_R			: in std_logic_vector(3 downto 0);
 				AsicOut_MONITOR_WILK_COUNTER_C3_R			: in std_logic_vector(3 downto 0);				
 
+				FEEDBACK_WILKINSON_ENABLE                 : in std_logic_vector(15 downto 0);
+				FEEDBACK_WILKINSON_GOAL                   : in std_logic_vector(31 downto 0);
 				FEEDBACK_WILKINSON_COUNTER_C_R				: out Wilkinson_Rate_Counters_C_R;
 				FEEDBACK_WILKINSON_DAC_VALUE_C_R				: out Wilkinson_Rate_DAC_C_R;
 				
@@ -65,39 +67,43 @@ begin
 	map_Wilk_Control_Loop_GEN : for i in 0 to 3 generate
 		map_Wilk_Control_Loop_C0_R : entity work.CTRL_LOOP_PRCO
 			port map(
-				ENABLE => '1',
+				ENABLE => FEEDBACK_WILKINSON_ENABLE(0 + i),
 				xCLR_ALL => '0',
 				xREFRESH_CLK => CLOCK_80Hz,
 				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C0_R(i),
 				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(0)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(0)(i)
+				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(0)(i),
+				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
 			);
 		map_Wilk_Control_Loop_C1_R : entity work.CTRL_LOOP_PRCO
 			port map(
-				ENABLE => '1',
+				ENABLE => FEEDBACK_WILKINSON_ENABLE(4 + i),
 				xCLR_ALL => '0',
 				xREFRESH_CLK => CLOCK_80Hz,
 				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C1_R(i),
 				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(1)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(1)(i)
+				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(1)(i),
+				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
 			);
 		map_Wilk_Control_Loop_C2_R : entity work.CTRL_LOOP_PRCO
 			port map(
-				ENABLE => '1',
+				ENABLE => FEEDBACK_WILKINSON_ENABLE(8 + i),
 				xCLR_ALL => '0',
 				xREFRESH_CLK => CLOCK_80Hz,
 				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C2_R(i),
 				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(2)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(2)(i)
+				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(2)(i),
+				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
 			);			
 		map_Wilk_Control_Loop_C3_R : entity work.CTRL_LOOP_PRCO
 			port map(
-				ENABLE => '1',
+				ENABLE => FEEDBACK_WILKINSON_ENABLE(12 + i),
 				xCLR_ALL => '0',
 				xREFRESH_CLK => CLOCK_80Hz,
 				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C3_R(i),
 				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(3)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(3)(i)
+				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(3)(i),
+				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
 			);			
 	end generate;
 
