@@ -46,6 +46,8 @@ entity Board_Stack_Feedback_and_Monitoring is
 				AsicOut_MONITOR_WILK_COUNTER_C2_R			: in std_logic_vector(3 downto 0);
 				AsicOut_MONITOR_WILK_COUNTER_C3_R			: in std_logic_vector(3 downto 0);
 				
+				FEEDBACK_WILKINSON_ENABLE                 : in std_logic_vector(15 downto 0);
+				FEEDBACK_WILKINSON_GOAL                   : in std_logic_vector(31 downto 0);
 				FEEDBACK_WILKINSON_COUNTER_C_R				: out Wilkinson_Rate_Counters_C_R;
 				FEEDBACK_WILKINSON_DAC_VALUE_C_R				: out Wilkinson_Rate_DAC_C_R;
 				
@@ -64,6 +66,8 @@ begin
 				AsicOut_MONITOR_WILK_COUNTER_C1_R			=> AsicOut_MONITOR_WILK_COUNTER_C1_R,
 				AsicOut_MONITOR_WILK_COUNTER_C2_R			=> AsicOut_MONITOR_WILK_COUNTER_C2_R,
 				AsicOut_MONITOR_WILK_COUNTER_C3_R			=> AsicOut_MONITOR_WILK_COUNTER_C3_R,
+				FEEDBACK_WILKINSON_ENABLE                 => FEEDBACK_WILKINSON_ENABLE,
+				FEEDBACK_WILKINSON_GOAL                   => FEEDBACK_WILKINSON_GOAL,
 				FEEDBACK_WILKINSON_COUNTER_C_R				=> FEEDBACK_WILKINSON_COUNTER_C_R,
 				FEEDBACK_WILKINSON_DAC_VALUE_C_R				=> FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 				CLOCK_80Hz											=> CLOCK_80Hz

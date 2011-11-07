@@ -169,6 +169,9 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_SAMPLING_RATE_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
 	signal internal_WILKINSON_RATE_FEEDBACK_GOAL       : std_logic_vector(31 downto 0);
 	signal internal_TRIGGER_WIDTH_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
+	signal internal_SAMPLING_RATE_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0);
+	signal internal_WILKINSON_RATE_FEEDBACK_ENABLE     : std_logic_vector(15 downto 0);
+	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0);
 	---------------------------------------------------------
 	----Signals for ASIC sampling / analog storage-----------
 	signal internal_CONTINUE_ANALOG_WRITING	: std_logic;
@@ -362,6 +365,8 @@ begin
 			AsicOut_MONITOR_WILK_COUNTER_C1_R			=> AsicOut_MONITOR_WILK_COUNTER_C1_R,
 			AsicOut_MONITOR_WILK_COUNTER_C2_R			=> AsicOut_MONITOR_WILK_COUNTER_C2_R,
 			AsicOut_MONITOR_WILK_COUNTER_C3_R			=> AsicOut_MONITOR_WILK_COUNTER_C3_R,
+			FEEDBACK_WILKINSON_ENABLE                 => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
+			FEEDBACK_WILKINSON_GOAL                   => internal_WILKINSON_RATE_FEEDBACK_GOAL,
 			FEEDBACK_WILKINSON_COUNTER_C_R				=> internal_FEEDBACK_WILKINSON_COUNTER_C_R,
 			FEEDBACK_WILKINSON_DAC_VALUE_C_R				=> internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 			CLOCK_80Hz											=> internal_CLOCK_80Hz
@@ -450,6 +455,9 @@ begin
 			SAMPLING_RATE_FEEDBACK_GOAL                             => internal_SAMPLING_RATE_FEEDBACK_GOAL,
 			WILKINSON_RATE_FEEDBACK_GOAL                            => internal_WILKINSON_RATE_FEEDBACK_GOAL,
 			TRIGGER_WIDTH_FEEDBACK_GOAL                             => internal_TRIGGER_WIDTH_FEEDBACK_GOAL,
+			SAMPLING_RATE_FEEDBACK_ENABLE                           => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
+			WILKINSON_RATE_FEEDBACK_ENABLE                          => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
+			TRIGGER_WIDTH_FEEDBACK_ENABLE                           => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
 			--------------------------------------------------------
 			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
 			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,
@@ -461,13 +469,7 @@ begin
 			ASIC_SCALERS                                            => internal_ASIC_SCALERS_C_R_CH,
 			ASIC_TRIGGER_STREAMS                                    => internal_ASIC_TRIGGER_STREAMS_C_R_CH,
 			TEMPERATURE_R1                                          => internal_TEMP_R1,
-			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
-			SAMPLING_RATE_FEEDBACK_GOAL                             => open,
-			WILKINSON_RATE_FEEDBACK_GOAL                            => open,
-			TRIGGER_WIDTH_FEEDBACK_GOAL                             => open,
-			SAMPLING_RATE_FEEDBACK_ENABLE                           => open,
-			WILKINSON_RATE_FEEDBACK_ENABLE                          => open,
-			TRIGGER_WIDTH_FEEDBACK_ENABLE                           => open			
+			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R
 		);
 	-----------------------------------------------------------
 	

@@ -151,7 +151,7 @@ begin
 					internal_DAC_STATE_MONITOR	<= "011";
 					if (internal_UPDATING = '0') then
 						if (internal_UPDATE_SUCCEEDED = '1') then
-							internal_CURRENT_DAC_VALUES(dac_address)(dac_channel) <= INTENDED_DAC_VALUES(dac_address)(dac_channel);
+							internal_CURRENT_DAC_VALUES(dac_address)(dac_channel) <= internal_DAC_VALUE;
 						end if;
 						if (dac_channel < dac_channels - 1) then
 							dac_channel := dac_channel + 1;
