@@ -209,6 +209,10 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
 	------------------------------------------------------------
 	--Temporary(?) debugging signals----------------------------
+	signal internal_TRIGGER_VETO                 : std_logic := '0';
+	signal internal_CLEAR_TRIGGER_VETO           : std_logic := '0';
+	signal internal_TRIGGER_TO_USE               : std_logic := '0';
+	signal internal_DAQ_BUSY_TO_USE              : std_logic := '0';
 	signal internal_GLOBAL_RESET_REQUESTED_BY_VIO: std_logic;
 	signal internal_VIO_IN 								: std_logic_vector(255 downto 0);
 	signal internal_VIO_OUT 							: std_logic_vector(255 downto 0);
@@ -303,6 +307,9 @@ begin
 		);
 	---------------------------------------------------------
 	--------ASIC digitizing and readout----------------------
+	internal_TRIGGER_TO_USE  <= (internal_FTSW_TRIGGER21_SHIFTED or internal_DUMMY_FTSW_TRIGGER21_SHIFTED) and not (internal_TRIGGER_VETO);
+	internal_DAQ_BUSY_TO_USE <= (internal_DAQ_BUSY or internal_DAQ_BUSY_VIO);
+
 	map_ASIC_digitizing_and_readout : entity work.ASIC_digitizing_and_readout
 		generic map (
 			WIDTH_OF_BLOCKRAM_DATA_BUS		=> WIDTH_OF_BLOCKRAM_DATA_BUS,
@@ -334,11 +341,11 @@ begin
 			LAST_ADDRESS_WRITTEN 						=> internal_LAST_ADDRESS_WRITTEN, 
 			FIRST_ALLOWED_ADDRESS                  => internal_ASIC_START_WINDOW,
 			LAST_ALLOWED_ADDRESS                   => internal_ASIC_END_WINDOW,
-			TRIGGER_DIGITIZING							=> (internal_FTSW_TRIGGER21_SHIFTED or internal_DUMMY_FTSW_TRIGGER21_SHIFTED),
+			TRIGGER_DIGITIZING							=> internal_TRIGGER_TO_USE,
 			CONTINUE_ANALOG_WRITING						=> internal_CONTINUE_ANALOG_WRITING,
 
 			DONE_DIGITIZING								=> internal_DONE_DIGITIZING,
-			DAQ_BUSY											=> (internal_DAQ_BUSY or internal_DAQ_BUSY_VIO),
+			DAQ_BUSY											=> internal_DAQ_BUSY_TO_USE,
 			
 			CLOCK_SST										=> internal_CLOCK_SST,
 			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE,
@@ -458,6 +465,7 @@ begin
 			SAMPLING_RATE_FEEDBACK_ENABLE                           => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
 			WILKINSON_RATE_FEEDBACK_ENABLE                          => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
 			TRIGGER_WIDTH_FEEDBACK_ENABLE                           => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
+			CLEAR_TRIGGER_VETO                                      => internal_CLEAR_TRIGGER_VETO,
 			--------------------------------------------------------
 			INPUT_DATA_BUS                                          => internal_BLOCKRAM_READ_DATA,
 			INPUT_ADDRESS_BUS                                       => internal_BLOCKRAM_READ_ADDRESS,
@@ -518,6 +526,14 @@ begin
 			else
 				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
 			end if;
+		end if;
+	end process;
+   --
+	process(internal_TRIGGER_TO_USE) begin
+		if (internal_CLEAR_TRIGGER_VETO = '1') then
+			internal_TRIGGER_VETO <= '0';
+		elsif (rising_edge(internal_TRIGGER_TO_USE)) then
+			internal_TRIGGER_VETO <= '1';
 		end if;
 	end process;
 	--

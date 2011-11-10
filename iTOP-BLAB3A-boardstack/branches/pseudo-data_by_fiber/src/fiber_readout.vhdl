@@ -57,6 +57,7 @@ entity fiber_readout is
 		CURRENT_DAC_SETTINGS                                    : in    Board_Stack_Voltages;
 		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
+		CLEAR_TRIGGER_VETO                                      :   out std_logic;
 		-----------------------------------------------------------------------------
 		INPUT_DATA_BUS                                          : in    std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS-1     downto 0);
 		INPUT_ADDRESS_BUS                                       :   out std_logic_vector(WIDTH_OF_ASIC_DATA_BLOCKRAM_ADDRESS_BUS-1  downto 0);
@@ -172,6 +173,7 @@ begin
 		SAMPLING_RATE_FEEDBACK_ENABLE                           => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
 		WILKINSON_RATE_FEEDBACK_ENABLE                          => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
 		TRIGGER_WIDTH_FEEDBACK_ENABLE                           => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
+		CLEAR_TRIGGER_VETO                                      => CLEAR_TRIGGER_VETO,
 		-----------------------------------------------------------------------------
 		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 		UNKNOWN_COMMAND_RECEIVED_COUNTER                        => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER,

@@ -46,6 +46,7 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		REQUEST_A_GLOBAL_RESET                                  :   out std_logic;
 		DESIRED_DAC_SETTINGS                                    :   out Board_Stack_Voltages;
 		SOFT_TRIGGER_FROM_FIBER                                 :   out std_logic;
+		CLEAR_TRIGGER_VETO                                      :   out std_logic;
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
 		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
@@ -298,6 +299,7 @@ begin
 		REQUEST_A_GLOBAL_RESET                         => REQUEST_A_GLOBAL_RESET,
 		DESIRED_DAC_SETTINGS                           => DESIRED_DAC_SETTINGS,
 		SOFT_TRIGGER_FROM_FIBER                        => SOFT_TRIGGER_FROM_FIBER,
+		CLEAR_TRIGGER_VETO                             => CLEAR_TRIGGER_VETO,
 		RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                              => ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                => ASIC_END_WINDOW,
