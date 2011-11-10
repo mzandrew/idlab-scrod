@@ -64,48 +64,92 @@ begin
 	--Create the instances of the Wilkinson feedback.  The enable will be 
 	--tied high here.  The multiplexing between user selectable DAC values
 	--and feedback control DAC values is done in the DAC block.
+--	map_Wilk_Control_Loop_GEN : for i in 0 to 3 generate
+--		map_Wilk_Control_Loop_C0_R : entity work.CTRL_LOOP_PRCO
+--			port map(
+--				ENABLE => FEEDBACK_WILKINSON_ENABLE(0 + i),
+--				xCLR_ALL => '0',
+--				xREFRESH_CLK => CLOCK_80Hz,
+--				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C0_R(i),
+--				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(0)(i),
+--				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(0)(i),
+--				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+--			);
+--		map_Wilk_Control_Loop_C1_R : entity work.CTRL_LOOP_PRCO
+--			port map(
+--				ENABLE => FEEDBACK_WILKINSON_ENABLE(4 + i),
+--				xCLR_ALL => '0',
+--				xREFRESH_CLK => CLOCK_80Hz,
+--				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C1_R(i),
+--				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(1)(i),
+--				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(1)(i),
+--				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+--			);
+--		map_Wilk_Control_Loop_C2_R : entity work.CTRL_LOOP_PRCO
+--			port map(
+--				ENABLE => FEEDBACK_WILKINSON_ENABLE(8 + i),
+--				xCLR_ALL => '0',
+--				xREFRESH_CLK => CLOCK_80Hz,
+--				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C2_R(i),
+--				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(2)(i),
+--				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(2)(i),
+--				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+--			);			
+--		map_Wilk_Control_Loop_C3_R : entity work.CTRL_LOOP_PRCO
+--			port map(
+--				ENABLE => FEEDBACK_WILKINSON_ENABLE(12 + i),
+--				xCLR_ALL => '0',
+--				xREFRESH_CLK => CLOCK_80Hz,
+--				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C3_R(i),
+--				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(3)(i),
+--				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(3)(i),
+--				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+--			);			
+--	end generate;
+
 	map_Wilk_Control_Loop_GEN : for i in 0 to 3 generate
-		map_Wilk_Control_Loop_C0_R : entity work.CTRL_LOOP_PRCO
+		map_Wilk_Control_Loop_C0_R : entity work.Wilkinson_Feedback_Loop
 			port map(
-				ENABLE => FEEDBACK_WILKINSON_ENABLE(0 + i),
-				xCLR_ALL => '0',
-				xREFRESH_CLK => CLOCK_80Hz,
-				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C0_R(i),
-				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(0)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(0)(i),
-				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(0 + i),
+				RESET_FEEDBACK       => '0',
+				REFRESH_CLOCK        => CLOCK_80Hz,
+				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C0_R(i),
+				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
+				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(0)(i),
+				DESIRED_DAC_VALUE    => FEEDBACK_WILKINSON_DAC_VALUE_C_R(0)(i)
 			);
-		map_Wilk_Control_Loop_C1_R : entity work.CTRL_LOOP_PRCO
+		map_Wilk_Control_Loop_C1_R : entity work.Wilkinson_Feedback_Loop
 			port map(
-				ENABLE => FEEDBACK_WILKINSON_ENABLE(4 + i),
-				xCLR_ALL => '0',
-				xREFRESH_CLK => CLOCK_80Hz,
-				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C1_R(i),
-				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(1)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(1)(i),
-				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(4 + i),
+				RESET_FEEDBACK       => '0',
+				REFRESH_CLOCK        => CLOCK_80Hz,
+				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C1_R(i),
+				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
+				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(1)(i),
+				DESIRED_DAC_VALUE    => FEEDBACK_WILKINSON_DAC_VALUE_C_R(1)(i)
 			);
-		map_Wilk_Control_Loop_C2_R : entity work.CTRL_LOOP_PRCO
+		map_Wilk_Control_Loop_C2_R : entity work.Wilkinson_Feedback_Loop
 			port map(
-				ENABLE => FEEDBACK_WILKINSON_ENABLE(8 + i),
-				xCLR_ALL => '0',
-				xREFRESH_CLK => CLOCK_80Hz,
-				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C2_R(i),
-				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(2)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(2)(i),
-				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(8 + i),
+				RESET_FEEDBACK       => '0',
+				REFRESH_CLOCK        => CLOCK_80Hz,
+				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C2_R(i),
+				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
+				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(2)(i),
+				DESIRED_DAC_VALUE    => FEEDBACK_WILKINSON_DAC_VALUE_C_R(2)(i)
 			);			
-		map_Wilk_Control_Loop_C3_R : entity work.CTRL_LOOP_PRCO
+		map_Wilk_Control_Loop_C3_R : entity work.Wilkinson_Feedback_Loop
 			port map(
-				ENABLE => FEEDBACK_WILKINSON_ENABLE(12 + i),
-				xCLR_ALL => '0',
-				xREFRESH_CLK => CLOCK_80Hz,
-				xTST_OUT => AsicOut_MONITOR_WILK_COUNTER_C3_R(i),
-				xPRCO_INT => FEEDBACK_WILKINSON_COUNTER_C_R(3)(i),
-				xPROVDD => FEEDBACK_WILKINSON_DAC_VALUE_C_R(3)(i),
-				TARGET_COUNT => FEEDBACK_WILKINSON_GOAL(15 downto 0)
+				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(12 + i),
+				RESET_FEEDBACK       => '0',
+				REFRESH_CLOCK        => CLOCK_80Hz,
+				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C3_R(i),
+				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
+				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(3)(i),
+				DESIRED_DAC_VALUE    => FEEDBACK_WILKINSON_DAC_VALUE_C_R(3)(i)
 			);			
 	end generate;
+
 
 end Behavioral;
 

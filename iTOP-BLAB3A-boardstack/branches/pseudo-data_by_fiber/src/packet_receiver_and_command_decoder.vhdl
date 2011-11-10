@@ -42,6 +42,7 @@ entity packet_receiver_and_command_interpreter is
 		REQUEST_A_GLOBAL_RESET             :   out std_logic;
 		DESIRED_DAC_SETTINGS               :   out Board_Stack_Voltages;
 		SOFT_TRIGGER_FROM_FIBER            :   out std_logic;
+		CLEAR_TRIGGER_VETO                 :   out std_logic;
 		RESET_SCALER_COUNTERS              :   out std_logic;
 		ASIC_START_WINDOW                  :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                    :   out std_logic_vector(8 downto 0);
@@ -86,6 +87,7 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_EVENT_NUMBER_SET                   : std_logic := '0';
 	signal internal_REQUEST_A_GLOBAL_RESET             : std_logic := '0';
 	signal internal_SOFT_TRIGGER_FROM_FIBER            : std_logic := '0';
+	signal internal_CLEAR_TRIGGER_VETO                 : std_logic := '0';
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
@@ -120,6 +122,7 @@ begin
 	EVENT_NUMBER_SET                   <= internal_EVENT_NUMBER_SET;
 	REQUEST_A_GLOBAL_RESET             <= internal_REQUEST_A_GLOBAL_RESET;
 	SOFT_TRIGGER_FROM_FIBER            <= internal_SOFT_TRIGGER_FROM_FIBER;
+	CLEAR_TRIGGER_VETO                 <= internal_CLEAR_TRIGGER_VETO;
 	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
 	ASIC_START_WINDOW                  <= internal_ASIC_START_WINDOW;
 	ASIC_END_WINDOW                    <= internal_ASIC_END_WINDOW;
@@ -444,6 +447,9 @@ begin
 						elsif (command_word(0) = x"19321965") then -- trigger readout -- birth / death years of Roy Rogers' horse, Trigger
 --							internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
 							internal_SOFT_TRIGGER_FROM_FIBER <= '1';
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"0000C1EA") then -- trigger veto clear
+							internal_CLEAR_TRIGGER_VETO <= '1';
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						--  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
 						else -- unsupported command encountered
