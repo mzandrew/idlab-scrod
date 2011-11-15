@@ -28,7 +28,26 @@ A fully populated board stack requires 4V @ 6A through a 4 pin molex connector.
 
 ===subversion repository===
 
-The subversion repository for [http://code.google.com/p/idlab-scrod/source/checkout idlab-scrod] has instructions on checking out a copy of a subversion repository.  If you want to keep up-to-date on the firmware or build it yourself, you need to checkout the repository.
+If you want to keep up-to-date on the firmware or build it yourself, you need to checkout a copy of the subversion repository.  The following are command-line instructions on how to do so:
+
+{{{
+mkdir idlab-scrod
+cd idlab-scrod
+svn checkout http://idlab-scrod.googlecode.com/svn/iTOP-BLAB3A-boardstack/branches
+}}}
+
+The main .xise project file is in "idlab-scrod/branches/beam_test_or_bust/ise-project/" and is called, "beam_test_or_bust.xise".
+
+Some .xco files must be re-added to the project after opening it in Xilinx ISE (they are in "idlab-scrod/branches/beam_test_or_bust/ise-project/ipcore_dir/" and "idlab-scrod/branches/pseudo-data_by_fiber/ise-project/ipcore_dir/"), and "ip cores" must be regenerated or the compilation will fail.
+
+All current code (for 2011 beam-test) lies in "branches/beam_test_or_bust" and "branches/pseudo-data_by_fiber".
+
+To keep up-to-date with the latest changes, run the following from the "idlab-scrod/branches" directory:
+{{{
+svn update
+}}}
+
+After running "svn update", you must recompile the project (although .xco files need not be re-added and ip cores need not be regenerated).
 
 ===JTAG programmer===
 
