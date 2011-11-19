@@ -40,6 +40,7 @@ entity fiber_readout is
 		-- fiber optic transceiver #101 lane 1 I/O
 		FIBER_TRANSCEIVER_1_DISABLE_MODULE                      :   out std_logic;
 		Aurora_78MHz_clock                                      :   out std_logic;
+		QEB_AND_PB_CLOCK                                        : in    std_logic;
 		should_not_automatically_try_to_keep_fiber_link_up      : in    std_logic;
 		fiber_link_is_up                                        :   out std_logic;
 		-----------------------------------------------------------------------------
@@ -189,7 +190,8 @@ begin
 	)
 	port map (
 		RESET                              => RESET,
-		CLOCK                              => internal_Aurora_78MHz_clock,
+--		CLOCK                              => internal_Aurora_78MHz_clock,
+		CLOCK                              => QEB_AND_PB_CLOCK,
 		COMMAND_ARGUMENT                   => internal_COMMAND_ARGUMENT,
 		EVENT_NUMBER_SET                   => internal_EVENT_NUMBER_SET,
 		INPUT_DATA_BUS                     => internal_ASIC_DATA_BLOCKRAM_DATA_BUS,
@@ -238,7 +240,8 @@ begin
 
 	QEF : entity work.quarter_event_fifo port map (
 		rst    => RESET,
-		wr_clk => internal_Aurora_78MHz_clock,
+--		wr_clk => internal_Aurora_78MHz_clock,
+		wr_clk => QEB_AND_PB_CLOCK,
 		rd_clk => internal_Aurora_78MHz_clock,
 		din    => internal_QUARTER_EVENT_FIFO_INPUT_DATA_BUS,
 		wr_en  => internal_QUARTER_EVENT_FIFO_WRITE_ENABLE,
@@ -257,8 +260,10 @@ begin
 	Aurora_lane0_transmit_data_bus <= internal_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS;
 
 	--Logic to generate the "busy" signal
-	process(internal_Aurora_78MHz_clock) begin
-		if (rising_edge(internal_Aurora_78MHz_clock)) then
+--	process(internal_Aurora_78MHz_clock) begin
+--		if (rising_edge(internal_Aurora_78MHz_clock)) then
+	process(QEB_AND_PB_CLOCK) begin
+		if (rising_edge(QEB_AND_PB_CLOCK)) then
 			if (TRIGGER = '1' and internal_CURRENTLY_BUILDING_A_QUARTER_EVENT = '0') then
 				internal_CURRENTLY_BUILDING_A_QUARTER_EVENT <= '1';
 			elsif (internal_DONE_BUILDING_A_QUARTER_EVENT = '1') then

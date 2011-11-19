@@ -501,6 +501,7 @@ begin
 						internal_REQUEST_A_GLOBAL_RESET   <= '0';
 						internal_SOFT_TRIGGER_FROM_FIBER  <= '0';
 						internal_RESET_SCALER_COUNTERS    <= '0';
+						internal_CLEAR_TRIGGER_VETO       <= '0';
 						COMMAND_PROCESSING_STATE          <= WAITING_TO_PROCESS_COMMAND;
 					when others =>
 --						internal_UNKNOWN_ERROR_COUNTER <= std_logic_vector(unsigned(internal_UNKNOWN_ERROR_COUNTER) + 1);

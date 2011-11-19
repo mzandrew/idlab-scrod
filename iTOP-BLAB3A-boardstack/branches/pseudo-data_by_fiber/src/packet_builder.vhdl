@@ -166,6 +166,7 @@ begin
 		variable end_window     : unsigned(9 downto 0);
 		-----------------------------------------------------------------------------
 		variable m : integer range 0 to NUMBER_OF_WORDS_IN_A_PACKET := 0;
+		variable should_increment_blockram_address : boolean := false;
 	begin
 		if falling_edge(internal_CLOCK) then
 			internal_INPUT_DATA_BUS <= INPUT_DATA_BUS;
@@ -241,6 +242,8 @@ begin
 					elsif (word_counter = PACKET_TYPE_INDEX) then
 						if (internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER = '1') then
 							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_EVENT_HEADER;
+							current_window(9 downto 0) := "0" & unsigned(internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC); --2011-11-12 Kurtis: Added to make sure we always start at the beginning
+							FLATTENED_BLOCK_RAM_ADDRESS_COUNTER <= (others => '0');  --2011-11-12 Kurtis: Added to reset this once per event
 						elsif (internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT = '1') then
 							internal_OUTPUT_DATA_BUS <= PACKET_TYPE_COFFEE;
 						elsif (internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
@@ -255,7 +258,14 @@ begin
 						end if;
 					elsif (word_counter = EVENT_NUMBER_INDEX) then
 						internal_OUTPUT_DATA_BUS <= internal_EVENT_NUMBER;
-						origin_window <= "00" & ROW & "00" & COL & internal_PACKET_NUMBER & "0" & CHANNEL & "000" & WINDOW; -- calculate before it's needed
+--						origin_window <= "00" & ROW & "00" & COL & internal_PACKET_NUMBER & "0" & CHANNEL & "000" & WINDOW; -- calculate before it's needed
+						if (internal_THIS_PACKET_IS_QUARTER_EVENT_MEAT = '1') then
+							window_sample_counter := 64;
+							--The following line is a bit of a shitty workaround since we now have a different path through the state machine for C0FFEE packets vs. all other packets
+							CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_EVENT_NUMBER) + unsigned(internal_OUTPUT_DATA_BUS));
+							should_increment_blockram_address := false;
+							packet_builder_state <= WRITE_AN_ORIGIN_WINDOW_WORD;
+						end if;
 					elsif (word_counter = PACKET_NUMBER_INDEX) then
 						if (internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER = '1') then
 							internal_OUTPUT_DATA_BUS <= x"00" & internal_PACKET_NUMBER & x"0000";
@@ -348,6 +358,7 @@ begin
 					packet_builder_state <= PACK_DATA;
 				when WRITE_AN_ORIGIN_WINDOW_WORD =>
 					if (window_sample_counter = 64) then
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 						window_sample_counter := 65;
 						current_window(9 downto 0) := "0" & unsigned(internal_ADDRESS_OF_STARTING_WINDOW_IN_ASIC);
 					elsif (window_sample_counter = 65) then
@@ -367,7 +378,11 @@ begin
 						origin_window <= "00" & ROW & "00" & COL & internal_PACKET_NUMBER & "0" & CHANNEL & "000" & WINDOW;
 					else
 						internal_OUTPUT_DATA_BUS <= origin_window;
-						internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
+						if (should_increment_blockram_address) then
+							internal_OUTPUT_ADDRESS_BUS <= std_logic_vector(unsigned(internal_OUTPUT_ADDRESS_BUS) + 1);
+						else
+							should_increment_blockram_address := true;
+						end if;
 						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(origin_window));
 						word_counter := word_counter + 1;
 						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
