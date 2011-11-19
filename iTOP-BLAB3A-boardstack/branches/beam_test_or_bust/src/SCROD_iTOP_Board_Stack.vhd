@@ -440,6 +440,7 @@ begin
 			-- fiber optic transceiver #101 lane 1 I/O
 			FIBER_TRANSCEIVER_1_DISABLE_MODULE                      => FIBER_TRANSCEIVER_1_DISABLE_MODULE,
 			Aurora_78MHz_clock                                      => internal_CLOCK_DAQ_INTERFACE,
+			QEB_AND_PB_CLOCK                                        => internal_CLOCK_SSP,
 			should_not_automatically_try_to_keep_fiber_link_up      => internal_should_not_automatically_try_to_keep_fiber_link_up,
 			fiber_link_is_up                                        => internal_fiber_link_is_up,
 			--------------------------------------------------------
@@ -529,10 +530,10 @@ begin
 		end if;
 	end process;
    --
-	process(internal_TRIGGER_TO_USE) begin
+	process(internal_TRIGGER_TO_USE, internal_CLOCK_127MHz) begin
 		if (internal_CLEAR_TRIGGER_VETO = '1') then
 			internal_TRIGGER_VETO <= '0';
-		elsif (rising_edge(internal_TRIGGER_TO_USE)) then
+		elsif (falling_edge(internal_TRIGGER_TO_USE)) then
 			internal_TRIGGER_VETO <= '1';
 		end if;
 	end process;
@@ -565,7 +566,10 @@ begin
 	internal_VIO_IN(85) <= internal_DAQ_BUSY;
 	internal_VIO_IN(101 downto 86) <= internal_BLOCKRAM_READ_DATA;
 	internal_VIO_IN(109 downto 102) <= internal_chipscope_vio_display(7 downto 0);
-	internal_VIO_IN(255 downto 110) <= (others => '0');
+	internal_VIO_IN(110) <= internal_TRIGGER_TO_USE;
+	internal_VIO_IN(111) <= internal_TRIGGER_VETO;
+	internal_VIO_IN(112) <= internal_CLEAR_TRIGGER_VETO;
+	internal_VIO_IN(255 downto 113) <= (others => '0');
 
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
 	--First four LEDS show FTSW status (none green if not using FTSW, 0 and 1 should be green if using FTSW)
