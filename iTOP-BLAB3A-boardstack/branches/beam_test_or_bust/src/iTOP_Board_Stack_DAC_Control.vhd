@@ -111,20 +111,20 @@ begin
 			case DAC_STATE is
 				when SEARCHING_FOR_UPDATES =>
 					internal_DAC_STATE_MONITOR	<= "000";
---					if (internal_INTENDED_DAC_VALUES(dac_address)(dac_channel) /= internal_CURRENT_DAC_VALUES(dac_address)(dac_channel)) then
+					if (internal_INTENDED_DAC_VALUES(dac_address)(dac_channel) /= internal_CURRENT_DAC_VALUES(dac_address)(dac_channel)) then
 						DAC_STATE <= SETTING_UP_UPDATES;
---					else 
---						if (dac_channel < dac_channels - 1) then
---							dac_channel := dac_channel + 1;
---						else
---							dac_channel := 0;
---							if (dac_address < dac_addresses - 1) then
---								dac_address := dac_address + 1;
---							else
---								dac_address := 0;
---							end if;
---						end if;
---					end if;
+					else 
+						if (dac_channel < dac_channels - 1) then
+							dac_channel := dac_channel + 1;
+						else
+							dac_channel := 0;
+							if (dac_address < dac_addresses - 1) then
+								dac_address := dac_address + 1;
+							else
+								dac_address := 0;
+							end if;
+						end if;
+					end if;
 				when SETTING_UP_UPDATES =>
 					internal_DAC_STATE_MONITOR	<= "001";
 					case dac_address is
@@ -186,29 +186,86 @@ use IEEE.NUMERIC_STD.ALL;
 use work.Board_Stack_Definitions.ALL;
 
 entity iTOP_Board_Stack_DAC_Control is
+	Generic (
+				use_chipscope_ila					: boolean := false
+	);
 	Port ( 
 		INTENDED_DAC_VALUES	: in Board_Stack_Voltages;
 		CURRENT_DAC_VALUES 	: out Board_Stack_Voltages;
 		CLK_100kHz_MAX      	: in  std_logic;
       SCL_C 		  			: out std_logic_vector(3 downto 0);
-		SDA_C		  				: inout std_logic_vector(3 downto 0)
+		SDA_C		  				: inout std_logic_vector(3 downto 0);
+
+		CHIPSCOPE_CONTROL    : inout std_logic_vector(35 downto 0)
 	);
 end iTOP_Board_Stack_DAC_Control;
 
 architecture Behavioral of iTOP_Board_Stack_DAC_Control is
-
+	signal internal_CHIPSCOPE_ILA_SIGNALS    : std_logic_vector(255 downto 0);	
+	signal internal_INTENDED_DAC_VALUES      : Board_Stack_Voltages;
+	signal internal_CURRENT_DAC_VALUES       : Board_Stack_Voltages;
+	signal internal_SCL_C                    : std_logic_vector(3 downto 0);
+	signal internal_SDA_C                    : std_logic_vector(3 downto 0);
 begin
+	internal_INTENDED_DAC_VALUES <= INTENDED_DAC_VALUES;
+	CURRENT_DAC_VALUES           <= internal_CURRENT_DAC_VALUES;
+	SDA_C                        <= internal_SDA_C;
+	SCL_C                        <= internal_SCL_C;
+
 	map_DAC_Control_COL_GEN : for i in 0 to 3 generate
 		map_DAC_Control_COL : entity work.Board_Stack_Column_DAC_Control
 			port map (
-				INTENDED_DAC_VALUES	=> INTENDED_DAC_VALUES(i),
-				CURRENT_DAC_VALUES	=> CURRENT_DAC_VALUES(i),
+				INTENDED_DAC_VALUES	=> internal_INTENDED_DAC_VALUES(i),
+				CURRENT_DAC_VALUES	=> internal_CURRENT_DAC_VALUES(i),
 				IIC_CLK					=> CLK_100kHz_MAX,
-				SCL						=> SCL_C(i),
-				SDA						=> SDA_C(i),
+				SCL						=> internal_SCL_C(i),
+				SDA						=> internal_SDA_C(i),
 				STATE_MONITOR			=> open
 			);
 	end generate;
+
+	-----------------------------------------------------------------
+	-----Diagnostic access through ILA-------------------------------
+	-----------------------------------------------------------------
+	--Diagnostic access through ILA----------------
+	gen_Chipscope_ILA : if (use_chipscope_ila = true) generate
+		map_Chipscope_ILA : entity work.Chipscope_ILA
+			port map (
+				CONTROL => CHIPSCOPE_CONTROL,
+				CLK => CLK_100kHz_MAX,
+				TRIG0 => internal_CHIPSCOPE_ILA_SIGNALS 
+			);
+		internal_CHIPSCOPE_ILA_SIGNALS(11 downto 0 ) <= internal_INTENDED_DAC_VALUES(0)(1)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(23 downto 12) <= internal_CURRENT_DAC_VALUES(0)(1)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(35 downto 24) <= internal_INTENDED_DAC_VALUES(0)(3)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(47 downto 36) <= internal_CURRENT_DAC_VALUES(0)(3)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(59 downto 48) <= internal_INTENDED_DAC_VALUES(0)(5)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(71 downto 60) <= internal_CURRENT_DAC_VALUES(0)(5)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(83 downto 72) <= internal_INTENDED_DAC_VALUES(0)(7)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(95 downto 84) <= internal_CURRENT_DAC_VALUES(0)(7)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(96) <= internal_SCL_C(0);
+		internal_CHIPSCOPE_ILA_SIGNALS(97) <= internal_SDA_C(0);
+
+		internal_CHIPSCOPE_ILA_SIGNALS(109 downto 98 ) <= internal_INTENDED_DAC_VALUES(1)(1)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(121 downto 110) <= internal_CURRENT_DAC_VALUES(1)(1)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(133 downto 122)  <= internal_INTENDED_DAC_VALUES(1)(3)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(145 downto 134)  <= internal_CURRENT_DAC_VALUES(1)(3)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(157 downto 146)  <= internal_INTENDED_DAC_VALUES(1)(5)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(169 downto 158)  <= internal_CURRENT_DAC_VALUES(1)(5)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(181 downto 170)  <= internal_INTENDED_DAC_VALUES(1)(7)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(193 downto 182)  <= internal_CURRENT_DAC_VALUES(1)(7)(4);
+		internal_CHIPSCOPE_ILA_SIGNALS(194) <= internal_SCL_C(1);
+		internal_CHIPSCOPE_ILA_SIGNALS(195) <= internal_SDA_C(1);
+
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 196) <= (others => '0');
+	end generate;
+	--Or connect up to ground if we don't want ILA
+	nogen_Chipscope_ILA : if (use_chipscope_ila = false) generate
+		internal_CHIPSCOPE_ILA_SIGNALS(255 downto 0) <= (others => '0');
+		CHIPSCOPE_CONTROL <= (others => 'Z');
+	end generate;
+	----------------------------------------------	
+
 end Behavioral;
 
 

@@ -119,6 +119,7 @@ architecture behavioral of fiber_readout is
 	-----------------------------------------------------------------------------
 	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER      : std_logic_vector(7 downto 0);
 	-- commands: ----------------------------------------------------------------
+	signal internal_DESIRED_DAC_SETTINGS               : Board_Stack_Voltages;
 	signal internal_COMMAND_ARGUMENT                   : std_logic_vector(31 downto 0) := (others => '0');
 	signal internal_EVENT_NUMBER_SET                   : std_logic                     := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector( 8 downto 0) := (others => '0');
@@ -163,7 +164,7 @@ begin
 		COMMAND_ARGUMENT                                        => internal_COMMAND_ARGUMENT,
 		EVENT_NUMBER_SET                                        => internal_EVENT_NUMBER_SET,
 		REQUEST_A_GLOBAL_RESET                                  => REQUEST_A_GLOBAL_RESET,
-		DESIRED_DAC_SETTINGS                                    => DESIRED_DAC_SETTINGS,
+		DESIRED_DAC_SETTINGS                                    => internal_DESIRED_DAC_SETTINGS,
 		SOFT_TRIGGER_FROM_FIBER                                 => SOFT_TRIGGER_FROM_FIBER,
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
@@ -214,6 +215,7 @@ begin
 		SAMPLING_RATE_FEEDBACK_ENABLE      => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
 		WILKINSON_RATE_FEEDBACK_ENABLE     => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
 		TRIGGER_WIDTH_FEEDBACK_ENABLE      => internal_TRIGGER_WIDTH_FEEDBACK_ENABLE,
+		DESIRED_DAC_SETTINGS               => internal_DESIRED_DAC_SETTINGS,
 		CURRENT_DAC_SETTINGS               => CURRENT_DAC_SETTINGS
 	);
 	internal_ASIC_DATA_BLOCKRAM_DATA_BUS <= INPUT_DATA_BUS;
@@ -237,6 +239,7 @@ begin
 	SAMPLING_RATE_FEEDBACK_ENABLE  <= internal_SAMPLING_RATE_FEEDBACK_ENABLE;
 	WILKINSON_RATE_FEEDBACK_ENABLE <= internal_WILKINSON_RATE_FEEDBACK_ENABLE;
 	TRIGGER_WIDTH_FEEDBACK_ENABLE  <= internal_TRIGGER_WIDTH_FEEDBACK_ENABLE;
+	DESIRED_DAC_SETTINGS <= internal_DESIRED_DAC_SETTINGS;
 
 	QEF : entity work.quarter_event_fifo port map (
 		rst    => RESET,
