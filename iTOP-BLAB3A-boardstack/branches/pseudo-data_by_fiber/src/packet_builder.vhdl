@@ -72,6 +72,7 @@ entity packet_builder is
 		SAMPLING_RATE_FEEDBACK_ENABLE                      : in    std_logic_vector(15 downto 0);     
 		WILKINSON_RATE_FEEDBACK_ENABLE                     : in    std_logic_vector(15 downto 0);     
 		TRIGGER_WIDTH_FEEDBACK_ENABLE                      : in    std_logic_vector(15 downto 0);     
+		DESIRED_DAC_SETTINGS                               : in    Board_Stack_Voltages;
 		CURRENT_DAC_SETTINGS                               : in    Board_Stack_Voltages		
 	);
 end packet_builder;
@@ -426,40 +427,131 @@ begin
 				when GET_HOUSEKEEPING_DATA =>
 						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 						m := word_counter;
-						if    (word_counter >=   6 and word_counter <=  13) then
+						if    (word_counter >=   6 and word_counter <=  13) then --TRGbias
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-6)/2 )( 4*((m-6) mod 2)+2 )(4) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-6)/2 )( 4*((m-6) mod 2)   )(4);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-6)/2 )( 4*((m-6) mod 2)+2 )(4) & 
 							                            x"0" & CURRENT_DAC_SETTINGS( (m-6)/2 )( 4*((m-6) mod 2)   )(4);
-						elsif (word_counter >=  14 and word_counter <=  45) then
-							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6+1 ) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6   );
-						elsif (word_counter >=  46 and word_counter <=  53) then
+
+--						elsif (word_counter >=  14 and word_counter <=  45) then --TRGthresh
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6+1 ) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6   );
+--							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6+1 ) & 
+--							                            x"0" & CURRENT_DAC_SETTINGS( (m-14)/8 )( ((m-14)/2*2) mod 8 )( ((m-14) mod 2)*6   );
+-- This is the brute force way to do this mapping, since we've had problems with the above.
+						elsif (word_counter = 14) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(0)(1) & x"0" & CURRENT_DAC_SETTINGS(0)(0)(0);
+						elsif (word_counter = 15) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(0)(7) & x"0" & CURRENT_DAC_SETTINGS(0)(0)(6);
+						elsif (word_counter = 16) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(2)(1) & x"0" & CURRENT_DAC_SETTINGS(0)(2)(0);
+						elsif (word_counter = 17) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(2)(7) & x"0" & CURRENT_DAC_SETTINGS(0)(2)(6);
+						elsif (word_counter = 18) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(4)(1) & x"0" & CURRENT_DAC_SETTINGS(0)(4)(0);
+						elsif (word_counter = 19) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(4)(7) & x"0" & CURRENT_DAC_SETTINGS(0)(4)(6);
+						elsif (word_counter = 20) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(6)(1) & x"0" & CURRENT_DAC_SETTINGS(0)(6)(0);
+						elsif (word_counter = 21) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(0)(6)(7) & x"0" & CURRENT_DAC_SETTINGS(0)(6)(6);
+						elsif (word_counter = 22) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(0)(1) & x"0" & CURRENT_DAC_SETTINGS(1)(0)(0);
+						elsif (word_counter = 23) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(0)(7) & x"0" & CURRENT_DAC_SETTINGS(1)(0)(6);
+						elsif (word_counter = 24) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(2)(1) & x"0" & CURRENT_DAC_SETTINGS(1)(2)(0);
+						elsif (word_counter = 25) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(2)(7) & x"0" & CURRENT_DAC_SETTINGS(1)(2)(6);
+						elsif (word_counter = 26) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(4)(1) & x"0" & CURRENT_DAC_SETTINGS(1)(4)(0);
+						elsif (word_counter = 27) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(4)(7) & x"0" & CURRENT_DAC_SETTINGS(1)(4)(6);
+						elsif (word_counter = 28) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(6)(1) & x"0" & CURRENT_DAC_SETTINGS(1)(6)(0);
+						elsif (word_counter = 29) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(1)(6)(7) & x"0" & CURRENT_DAC_SETTINGS(1)(6)(6);
+						elsif (word_counter = 30) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(0)(1) & x"0" & CURRENT_DAC_SETTINGS(2)(0)(0);
+						elsif (word_counter = 31) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(0)(7) & x"0" & CURRENT_DAC_SETTINGS(2)(0)(6);
+						elsif (word_counter = 32) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(2)(1) & x"0" & CURRENT_DAC_SETTINGS(2)(2)(0);
+						elsif (word_counter = 33) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(2)(7) & x"0" & CURRENT_DAC_SETTINGS(2)(2)(6);
+						elsif (word_counter = 34) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(4)(1) & x"0" & CURRENT_DAC_SETTINGS(2)(4)(0);
+						elsif (word_counter = 35) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(4)(7) & x"0" & CURRENT_DAC_SETTINGS(2)(4)(6);
+						elsif (word_counter = 36) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(6)(1) & x"0" & CURRENT_DAC_SETTINGS(2)(6)(0);
+						elsif (word_counter = 37) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(2)(6)(7) & x"0" & CURRENT_DAC_SETTINGS(2)(6)(6);
+						elsif (word_counter = 38) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(0)(1) & x"0" & CURRENT_DAC_SETTINGS(3)(0)(0);
+						elsif (word_counter = 39) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(0)(7) & x"0" & CURRENT_DAC_SETTINGS(3)(0)(6);
+						elsif (word_counter = 40) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(2)(1) & x"0" & CURRENT_DAC_SETTINGS(3)(2)(0);
+						elsif (word_counter = 41) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(2)(7) & x"0" & CURRENT_DAC_SETTINGS(3)(2)(6);
+						elsif (word_counter = 42) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(4)(1) & x"0" & CURRENT_DAC_SETTINGS(3)(4)(0);
+						elsif (word_counter = 43) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(4)(7) & x"0" & CURRENT_DAC_SETTINGS(3)(4)(6);
+						elsif (word_counter = 44) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(6)(1) & x"0" & CURRENT_DAC_SETTINGS(3)(6)(0);
+						elsif (word_counter = 45) then
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS(3)(6)(7) & x"0" & CURRENT_DAC_SETTINGS(3)(6)(6);
+
+						elsif (word_counter >=  46 and word_counter <=  53) then --Wbias
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+3 )(7) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+1 )(7);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+3 )(7) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+1 )(7);
-						elsif (word_counter >=  54 and word_counter <=  61) then
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-46)/2 )( 4*((m-46) mod 2)+1 )(7);																 
+						elsif (word_counter >=  54 and word_counter <=  61) then --VadjP
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)+2 )(2) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)   )(2);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)+2 )(2) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)   )(2);
-						elsif (word_counter >=  62 and word_counter <=  69) then						
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-54)/2 )( 4*((m-54) mod 2)   )(2);																 
+						elsif (word_counter >=  62 and word_counter <=  69) then	--VadjN					
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)+2 )(3) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)   )(3);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)+2 )(3) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)   )(3);
-						elsif (word_counter >=  70 and word_counter <=  77) then	
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-62)/2 )( 4*((m-62) mod 2)   )(3);																 
+						elsif (word_counter >=  70 and word_counter <=  77) then	--Vbias
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)+2 )(5) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)   )(5);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)+2 )(5) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)   )(5);
-						elsif (word_counter >=  78 and word_counter <=  85) then
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)   )(5);																 
+						elsif (word_counter >=  78 and word_counter <=  85) then --SBbias
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-78)/2 )( 4*((m-78) mod 2)+3 )(2) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-78)/2 )( 4*((m-78) mod 2)+1 )(2);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-78)/2 )( 4*((m-78) mod 2)+3 )(2) & 
 							                            x"0" & CURRENT_DAC_SETTINGS( (m-78)/2 )( 4*((m-78) mod 2)+1 )(2);
-						elsif (word_counter >=  86 and word_counter <=  93) then
-							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+3 )(1) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+1 )(1);
-						elsif (word_counter >=  94 and word_counter <= 101) then
+						elsif (word_counter >=  86 and word_counter <=  93) then --Isel
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+3 )(1) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+1 )(1);
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)+2 )(5) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)   )(5);
+						elsif (word_counter >=  94 and word_counter <= 101) then --Vdly
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+3 )(4) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+1 )(4);						
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+3 )(4) & 
 							                            x"0" & CURRENT_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+1 )(4);						
-						elsif (word_counter >= 102 and word_counter <= 109) then
+						elsif (word_counter >= 102 and word_counter <= 109) then --CMPbias
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-102)/2 )( 4*((m-102) mod 2)+3 )(5) & 
 							                            x"0" & CURRENT_DAC_SETTINGS( (m-102)/2 )( 4*((m-102) mod 2)+1 )(5);
-						elsif (word_counter >= 110 and word_counter <= 117) then
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-102)/2 )( 4*((m-102) mod 2)+3 )(5) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-102)/2 )( 4*((m-102) mod 2)+1 )(5);																 
+						elsif (word_counter >= 110 and word_counter <= 117) then --PUbias
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+3 )(3) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+1 )(3);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+3 )(3) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+1 )(3);
-						elsif (word_counter >= 118 and word_counter <= 125) then	
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-110)/2 )( 4*((m-110) mod 2)+1 )(3);																 
+						elsif (word_counter >= 118 and word_counter <= 125) then	--TRGthreshref
+--							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-118)/2 )( 4*((m-118) mod 2)+3 )(0) & 
+--							                            x"0" & DESIRED_DAC_SETTINGS( (m-118)/2 )( 4*((m-118) mod 2)+1 )(0);
 							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-118)/2 )( 4*((m-118) mod 2)+3 )(0) & 
 							                            x"0" & CURRENT_DAC_SETTINGS( (m-118)/2 )( 4*((m-118) mod 2)+1 )(0);
 						elsif (word_counter  = 126) then

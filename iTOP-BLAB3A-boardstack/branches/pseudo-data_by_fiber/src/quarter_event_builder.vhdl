@@ -49,6 +49,7 @@ entity quarter_event_builder is
 		SAMPLING_RATE_FEEDBACK_ENABLE      : in    std_logic_vector(15 downto 0);     
 		WILKINSON_RATE_FEEDBACK_ENABLE     : in    std_logic_vector(15 downto 0);     
 		TRIGGER_WIDTH_FEEDBACK_ENABLE      : in    std_logic_vector(15 downto 0);     
+		DESIRED_DAC_SETTINGS               : in    Board_Stack_Voltages;
 		CURRENT_DAC_SETTINGS               : in    Board_Stack_Voltages
 	);
 end quarter_event_builder;
@@ -121,6 +122,7 @@ begin
 		SAMPLING_RATE_FEEDBACK_ENABLE                      => SAMPLING_RATE_FEEDBACK_ENABLE,
 		WILKINSON_RATE_FEEDBACK_ENABLE                     => WILKINSON_RATE_FEEDBACK_ENABLE,
 		TRIGGER_WIDTH_FEEDBACK_ENABLE                      => TRIGGER_WIDTH_FEEDBACK_ENABLE,
+		DESIRED_DAC_SETTINGS                               => DESIRED_DAC_SETTINGS,
 		CURRENT_DAC_SETTINGS                               => CURRENT_DAC_SETTINGS		
 	);
 	internal_CLOCK <= CLOCK;

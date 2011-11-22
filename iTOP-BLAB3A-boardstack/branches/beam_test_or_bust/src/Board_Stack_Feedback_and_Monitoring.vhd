@@ -51,7 +51,8 @@ entity Board_Stack_Feedback_and_Monitoring is
 				FEEDBACK_WILKINSON_COUNTER_C_R				: out Wilkinson_Rate_Counters_C_R;
 				FEEDBACK_WILKINSON_DAC_VALUE_C_R				: out Wilkinson_Rate_DAC_C_R;
 				
-				CLOCK_80Hz											: in std_logic
+				CLOCK_80Hz											: in std_logic;
+				DAC_SYNC_CLOCK                            : in std_logic
 				);
 end Board_Stack_Feedback_and_Monitoring;
 
@@ -70,7 +71,8 @@ begin
 				FEEDBACK_WILKINSON_GOAL                   => FEEDBACK_WILKINSON_GOAL,
 				FEEDBACK_WILKINSON_COUNTER_C_R				=> FEEDBACK_WILKINSON_COUNTER_C_R,
 				FEEDBACK_WILKINSON_DAC_VALUE_C_R				=> FEEDBACK_WILKINSON_DAC_VALUE_C_R,
-				CLOCK_80Hz											=> CLOCK_80Hz
+				CLOCK_80Hz											=> CLOCK_80Hz,
+				DAC_SYNC_CLOCK                            => DAC_SYNC_CLOCK
 		);
 end Behavioral;
 

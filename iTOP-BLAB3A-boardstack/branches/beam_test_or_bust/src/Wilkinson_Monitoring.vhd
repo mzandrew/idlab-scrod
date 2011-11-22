@@ -45,7 +45,8 @@ entity Wilkinson_Monitoring is
 				FEEDBACK_WILKINSON_COUNTER_C_R				: out Wilkinson_Rate_Counters_C_R;
 				FEEDBACK_WILKINSON_DAC_VALUE_C_R				: out Wilkinson_Rate_DAC_C_R;
 				
-				CLOCK_80Hz											: in std_logic
+				CLOCK_80Hz											: in std_logic;
+				DAC_SYNC_CLOCK                            : in std_logic
 				);
 end Wilkinson_Monitoring;
 
@@ -107,12 +108,14 @@ begin
 --			);			
 --	end generate;
 
+	--Switched out the above blocks for a "safer" VHDL version below which runs at a reduced duty cycle but with race conditions eliminated... at least, that was the intention.
 	map_Wilk_Control_Loop_GEN : for i in 0 to 3 generate
 		map_Wilk_Control_Loop_C0_R : entity work.Wilkinson_Feedback_Loop
 			port map(
 				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(0 + i),
 				RESET_FEEDBACK       => '0',
 				REFRESH_CLOCK        => CLOCK_80Hz,
+				DAC_SYNC_CLOCK       => DAC_SYNC_CLOCK,
 				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C0_R(i),
 				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
 				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(0)(i),
@@ -123,6 +126,7 @@ begin
 				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(4 + i),
 				RESET_FEEDBACK       => '0',
 				REFRESH_CLOCK        => CLOCK_80Hz,
+				DAC_SYNC_CLOCK       => DAC_SYNC_CLOCK,
 				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C1_R(i),
 				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
 				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(1)(i),
@@ -133,6 +137,7 @@ begin
 				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(8 + i),
 				RESET_FEEDBACK       => '0',
 				REFRESH_CLOCK        => CLOCK_80Hz,
+				DAC_SYNC_CLOCK       => DAC_SYNC_CLOCK,
 				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C2_R(i),
 				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
 				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(2)(i),
@@ -143,6 +148,7 @@ begin
 				ENABLE_FEEDBACK      => FEEDBACK_WILKINSON_ENABLE(12 + i),
 				RESET_FEEDBACK       => '0',
 				REFRESH_CLOCK        => CLOCK_80Hz,
+				DAC_SYNC_CLOCK       => DAC_SYNC_CLOCK,
 				WILK_MONITOR_BIT     => AsicOut_MONITOR_WILK_COUNTER_C3_R(i),
 				DESIRED_COUNT_VALUE  => FEEDBACK_WILKINSON_GOAL(15 downto 0),
 				CURRENT_COUNT_VALUE  => FEEDBACK_WILKINSON_COUNTER_C_R(3)(i),

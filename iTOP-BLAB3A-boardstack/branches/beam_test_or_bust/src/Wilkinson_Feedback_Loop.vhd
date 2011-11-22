@@ -33,7 +33,8 @@ entity Wilkinson_Feedback_Loop is
 	Port (
 				ENABLE_FEEDBACK     : in std_logic;
 				RESET_FEEDBACK      : in std_logic;
-				REFRESH_CLOCK       : in std_logic;
+				REFRESH_CLOCK       : in std_logic; --One period of this clock defines how long we count Wilkinson rate pulses
+				DAC_SYNC_CLOCK      : in std_logic; --This clock should be the same that is used for setting DACs, and should be used to avoid race conditions on setting the desired DAC values
 				WILK_MONITOR_BIT    : in std_logic;
 				DESIRED_COUNT_VALUE : in std_logic_vector(15 downto 0);
 				CURRENT_COUNT_VALUE : out std_logic_vector(15 downto 0);
@@ -49,8 +50,8 @@ architecture Behavioral of Wilkinson_Feedback_Loop is
 	signal internal_COUNTER_VALUE         : unsigned(15 downto 0);
 	signal internal_COUNTER_VALUE_LATCHED : unsigned(15 downto 0);
 	signal internal_DESIRED_DAC_VALUE     : unsigned(11 downto 0) := x"7D0";
+	signal internal_DESIRED_DAC_VALUE_VALID : std_logic := '1';
 begin
-	DESIRED_DAC_VALUE <= std_logic_vector(internal_DESIRED_DAC_VALUE);
 	CURRENT_COUNT_VALUE <= std_logic_vector(internal_COUNTER_VALUE_LATCHED);
 
 	process(REFRESH_CLOCK)
@@ -61,19 +62,23 @@ begin
 		if (rising_edge(REFRESH_CLOCK)) then
 			case internal_STATE is
 				when MONITORING =>
+					internal_DESIRED_DAC_VALUE_VALID <= '1';
 					internal_COUNTER_ENABLE <= '1';
 					internal_COUNTER_CLEAR  <= '0';
 					internal_STATE <= SETTLING;
 				when SETTLING =>
+					internal_DESIRED_DAC_VALUE_VALID <= '1';
 					internal_COUNTER_ENABLE <= '0';
 					internal_COUNTER_CLEAR  <= '0';
 					internal_STATE <= LATCHING;
 				when LATCHING =>
+					internal_DESIRED_DAC_VALUE_VALID <= '1';
 					internal_COUNTER_ENABLE <= '0';
 					internal_COUNTER_CLEAR  <= '0';
 					internal_COUNTER_VALUE_LATCHED <= internal_COUNTER_VALUE;
 					internal_STATE <= CLEARING_AND_ADJUSTING;
 				when CLEARING_AND_ADJUSTING =>
+					internal_DESIRED_DAC_VALUE_VALID <= '0';
 					internal_COUNTER_ENABLE <= '0';
 					internal_COUNTER_CLEAR  <= '1';
 					if (ENABLE_FEEDBACK = '0') then
@@ -102,6 +107,14 @@ begin
 			internal_COUNTER_VALUE <= (others => '0');
 		elsif ( internal_COUNTER_ENABLE = '1' and rising_edge(WILK_MONITOR_BIT) ) then
 			internal_COUNTER_VALUE <= internal_COUNTER_VALUE + 1;
+		end if;
+	end process;
+
+	process(DAC_SYNC_CLOCK) begin
+		if (rising_edge(DAC_SYNC_CLOCK)) then
+			if (internal_DESIRED_DAC_VALUE_VALID = '1') then
+				DESIRED_DAC_VALUE <= std_logic_vector(internal_DESIRED_DAC_VALUE);
+			end if;
 		end if;
 	end process;
 
