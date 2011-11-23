@@ -267,7 +267,7 @@ begin
 	-----Control for external DACs on each daughter card-----
 	map_iTOP_Board_Stack_DAC_Control : entity work.iTOP_Board_Stack_DAC_Control
 		generic map (
-			use_chipscope_ila    => false
+			use_chipscope_ila    => true
 		)
 		port map ( 
 			INTENDED_DAC_VALUES	=> internal_DESIRED_DAC_VOLTAGES,
@@ -275,8 +275,8 @@ begin
 			CLK_100kHz_MAX      	=> internal_CLOCK_83kHz,
 			SCL_C 		  			=> DAC_SCL_C,
 			SDA_C		  				=> DAC_SDA_C,
-			CHIPSCOPE_CONTROL    => open
---			CHIPSCOPE_CONTROL    => internal_CHIPSCOPE_CONTROL0
+--			CHIPSCOPE_CONTROL    => open
+			CHIPSCOPE_CONTROL    => internal_CHIPSCOPE_CONTROL0
 		);
 	---------------------------------------------------------
 	-----------Temperature sensors interface-------------------
@@ -321,7 +321,7 @@ begin
 		generic map (
 			WIDTH_OF_BLOCKRAM_DATA_BUS		=> WIDTH_OF_BLOCKRAM_DATA_BUS,
 			WIDTH_OF_BLOCKRAM_ADDRESS_BUS => WIDTH_OF_BLOCKRAM_ADDRESS_BUS,	
-			use_chipscope_ila					=> true
+			use_chipscope_ila					=> false
 		)
 		port map (
 			AsicIn_DATA_BUS_CHANNEL_ADDRESS			=> AsicIn_DATA_BUS_CHANNEL_ADDRESS,
@@ -357,8 +357,8 @@ begin
 			CLOCK_SST										=> internal_CLOCK_SST,
 			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE,
 			
-			CHIPSCOPE_CONTROL								=> internal_CHIPSCOPE_CONTROL0
---			CHIPSCOPE_CONTROL                      => open
+--			CHIPSCOPE_CONTROL								=> internal_CHIPSCOPE_CONTROL0
+			CHIPSCOPE_CONTROL                      => open
 		);
 	---------------------------------------------------------
 	--------ASIC feedback and monitoring loops---------------
