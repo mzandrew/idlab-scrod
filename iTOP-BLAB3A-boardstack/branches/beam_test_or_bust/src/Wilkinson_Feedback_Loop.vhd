@@ -44,12 +44,12 @@ end Wilkinson_Feedback_Loop;
 
 architecture Behavioral of Wilkinson_Feedback_Loop is
 	type STATE_TYPE is ( MONITORING, SETTLING, LATCHING, CLEARING_AND_ADJUSTING );
-	signal internal_STATE                 : STATE_TYPE := MONITORING;
-	signal internal_COUNTER_ENABLE        : std_logic := '0';
-	signal internal_COUNTER_CLEAR         : std_logic := '0';
-	signal internal_COUNTER_VALUE         : unsigned(15 downto 0);
-	signal internal_COUNTER_VALUE_LATCHED : unsigned(15 downto 0);
-	signal internal_DESIRED_DAC_VALUE     : unsigned(11 downto 0) := x"7D0";
+	signal internal_STATE                  : STATE_TYPE := MONITORING;
+	signal internal_COUNTER_ENABLE         : std_logic := '0';
+	signal internal_COUNTER_CLEAR          : std_logic := '0';
+	signal internal_COUNTER_VALUE          : unsigned(15 downto 0);
+	signal internal_COUNTER_VALUE_LATCHED  : unsigned(15 downto 0);
+	signal internal_DESIRED_DAC_VALUE      : unsigned(11 downto 0) := x"7D0";
 	signal internal_DESIRED_DAC_VALUE_VALID : std_logic := '1';
 begin
 	CURRENT_COUNT_VALUE <= std_logic_vector(internal_COUNTER_VALUE_LATCHED);
@@ -72,7 +72,7 @@ begin
 					internal_COUNTER_CLEAR  <= '0';
 					internal_STATE <= LATCHING;
 				when LATCHING =>
-					internal_DESIRED_DAC_VALUE_VALID <= '1';
+					internal_DESIRED_DAC_VALUE_VALID <= '0';
 					internal_COUNTER_ENABLE <= '0';
 					internal_COUNTER_CLEAR  <= '0';
 					internal_COUNTER_VALUE_LATCHED <= internal_COUNTER_VALUE;
@@ -113,7 +113,7 @@ begin
 	process(DAC_SYNC_CLOCK) begin
 		if (rising_edge(DAC_SYNC_CLOCK)) then
 			if (internal_DESIRED_DAC_VALUE_VALID = '1') then
-				DESIRED_DAC_VALUE <= std_logic_vector(internal_DESIRED_DAC_VALUE);
+					DESIRED_DAC_VALUE <= std_logic_vector(internal_DESIRED_DAC_VALUE);
 			end if;
 		end if;
 	end process;
