@@ -65,6 +65,7 @@ entity fiber_readout is
 		INPUT_BLOCK_RAM_ADDRESS                                 :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1  downto 0);
 		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
+		WINDOWS_TO_LOOK_BACK                                    :   out std_logic_vector(8 downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                      : in    std_logic_vector(8 downto 0);
 		-----------------------------------------------------------------------------
 		ASIC_SCALERS                                            : in    ASIC_Scalers_C_R_CH;
@@ -124,6 +125,7 @@ architecture behavioral of fiber_readout is
 	signal internal_EVENT_NUMBER_SET                   : std_logic                     := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector( 8 downto 0) := (others => '0');
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector( 8 downto 0) := (others => '1');
+	signal internal_WINDOWS_TO_LOOK_BACK               : std_logic_vector( 8 downto 0) := "000000100";
 	signal internal_SAMPLING_RATE_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_WILKINSON_RATE_FEEDBACK_ENABLE     : std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
@@ -169,6 +171,7 @@ begin
 		RESET_SCALER_COUNTERS                                   => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                                       => internal_ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                         => internal_ASIC_END_WINDOW,
+		WINDOWS_TO_LOOK_BACK                                    => internal_WINDOWS_TO_LOOK_BACK,
 		SAMPLING_RATE_FEEDBACK_GOAL                             => internal_SAMPLING_RATE_FEEDBACK_GOAL,
 		WILKINSON_RATE_FEEDBACK_GOAL                            => internal_WILKINSON_RATE_FEEDBACK_GOAL,
 		TRIGGER_WIDTH_FEEDBACK_GOAL                             => internal_TRIGGER_WIDTH_FEEDBACK_GOAL,
@@ -233,6 +236,7 @@ begin
 	Aurora_data_link_reset <= RESET;
 	ASIC_START_WINDOW <= internal_ASIC_START_WINDOW;
 	ASIC_END_WINDOW <= internal_ASIC_END_WINDOW;
+	WINDOWS_TO_LOOK_BACK <= internal_WINDOWS_TO_LOOK_BACK;
 	SAMPLING_RATE_FEEDBACK_GOAL    <= internal_SAMPLING_RATE_FEEDBACK_GOAL;
 	WILKINSON_RATE_FEEDBACK_GOAL   <= internal_WILKINSON_RATE_FEEDBACK_GOAL;
 	TRIGGER_WIDTH_FEEDBACK_GOAL    <= internal_TRIGGER_WIDTH_FEEDBACK_GOAL;

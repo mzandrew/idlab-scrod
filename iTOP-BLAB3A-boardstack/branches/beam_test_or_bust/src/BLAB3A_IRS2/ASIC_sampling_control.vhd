@@ -11,7 +11,7 @@
 --		CLOCK_WRITE_STROBE - input - performs the write from sampling to storage
 --		FIRST_ADDRESS_ALLOWED - input bus, 8-wide - the lowest address that will be written to
 --		LAST_ADDRESS_ALLOWED	- input bus, 8-wide - the highest address that will be written to
---		LAST_ADDRESS_WRITTEN - output but, 8-wide - 
+--		LAST_ADDRESS_WRITTEN - output bus, 8-wide - the last address that was written to after a trigger
 --		AsicIn_SAMPLING_HOLD_MODE_C - output bus, 4-wide - signals to ASICs, 1 per column (SST)
 --		AsicIn_SAMPLING_TO_STORAGE_ADDRESS - output bus, 8-wide - address to all ASICs
 --		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	- output - same for all ASICs
@@ -56,44 +56,47 @@ entity ASIC_sampling_control is
 		use_chipscope_ila		: boolean := false
 	);
 	Port (
-		CONTINUE_WRITING		: in std_logic;
-		CLOCK_SST				: in std_logic;
-		CLOCK_SSP				: in std_logic;
-		CLOCK_WRITE_STROBE	: in std_logic;
-		FIRST_ADDRESS_ALLOWED: in std_logic_vector(8 downto 0);
-		LAST_ADDRESS_ALLOWED	: in std_logic_vector(8 downto 0);
-		LAST_ADDRESS_WRITTEN : out std_logic_vector(8 downto 0);
-		FIRST_ADDRESS_WRITTEN : out std_logic_vector(8 downto 0);
-		AsicIn_SAMPLING_HOLD_MODE_C					: out	std_logic_vector(3 downto 0);
-		AsicIn_SAMPLING_TO_STORAGE_ADDRESS			: out	std_logic_vector(8 downto 0);
-		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	: out	std_logic;
-		AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		: out	std_logic_vector(3 downto 0);
-		AsicIn_SAMPLING_TRACK_MODE_C					: out	std_logic_vector(3 downto 0);
-		CHIPSCOPE_CONTROL		: inout std_logic_vector(35 downto 0)
+		CONTINUE_WRITING                          : in std_logic;
+		CLOCK_SST                                 : in std_logic;
+		CLOCK_SSP                                 : in std_logic;
+		CLOCK_WRITE_STROBE                        : in std_logic;
+		FIRST_ADDRESS_ALLOWED                     : in std_logic_vector(8 downto 0);
+		LAST_ADDRESS_ALLOWED                      : in std_logic_vector(8 downto 0);
+		WINDOWS_TO_LOOK_BACK                      : in std_logic_vector(8 downto 0);		
+		LAST_ADDRESS_WRITTEN                      : out std_logic_vector(8 downto 0);
+		FIRST_ADDRESS_WRITTEN                     : out std_logic_vector(8 downto 0);
+		AsicIn_SAMPLING_HOLD_MODE_C               : out	std_logic_vector(3 downto 0);
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : out	std_logic_vector(8 downto 0);
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out	std_logic;
+		AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C     : out	std_logic_vector(3 downto 0);
+		AsicIn_SAMPLING_TRACK_MODE_C              : out	std_logic_vector(3 downto 0);
+		CHIPSCOPE_CONTROL                         : inout std_logic_vector(35 downto 0)
 	);
 end ASIC_sampling_control;
 
 architecture Behavioral of ASIC_sampling_control is
-	signal internal_LAST_ADDRESS_WRITTEN	: std_logic_vector(8 downto 0);
-	signal internal_FIRST_ADDRESS_WRITTEN 	: std_logic_vector(8 downto 0);
-	signal internal_CONTINUE_WRITING			: std_logic;
-	signal internal_FIRST_ADDRESS_ALLOWED	: std_logic_vector(8 downto 0);
-	signal internal_LAST_ADDRESS_ALLOWED	: std_logic_vector(8 downto 0);
-	signal internal_AsicIn_SAMPLING_HOLD_MODE_C						: std_logic_vector(3 downto 0);
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS				: std_logic_vector(8 downto 0);
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	: std_logic;
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C			: std_logic_vector(3 downto 0);
-	signal internal_AsicIn_SAMPLING_TRACK_MODE_C						: std_logic_vector(3 downto 0);
-	signal internal_CHIPSCOPE_ILA_SIGNALS	: std_logic_vector(255 downto 0);
+	signal internal_LAST_ADDRESS_WRITTEN                      : std_logic_vector(8 downto 0);
+	signal internal_FIRST_ADDRESS_WRITTEN                     : std_logic_vector(8 downto 0);
+	signal internal_CONTINUE_WRITING                          : std_logic;
+	signal internal_FIRST_ADDRESS_ALLOWED                     : std_logic_vector(8 downto 0);
+	signal internal_LAST_ADDRESS_ALLOWED                      : std_logic_vector(8 downto 0);
+	signal internal_AsicIn_SAMPLING_HOLD_MODE_C               : std_logic_vector(3 downto 0);
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : std_logic_vector(8 downto 0);
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : std_logic;
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C     : std_logic_vector(3 downto 0);
+	signal internal_AsicIn_SAMPLING_TRACK_MODE_C              : std_logic_vector(3 downto 0);
+	signal internal_CHIPSCOPE_ILA_SIGNALS                     : std_logic_vector(255 downto 0);
+	signal internal_WINDOWS_TO_LOOK_BACK                      : unsigned(8 downto 0);
 
 begin
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1);
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	<= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
-	LAST_ADDRESS_WRITTEN 				<= internal_LAST_ADDRESS_WRITTEN;
-	FIRST_ADDRESS_WRITTEN				<= internal_FIRST_ADDRESS_WRITTEN;
-	internal_CONTINUE_WRITING			<= CONTINUE_WRITING;
-	internal_FIRST_ADDRESS_ALLOWED	<= FIRST_ADDRESS_ALLOWED;
-	internal_LAST_ADDRESS_ALLOWED		<= LAST_ADDRESS_ALLOWED;
+	LAST_ADDRESS_WRITTEN             <= internal_LAST_ADDRESS_WRITTEN;
+	FIRST_ADDRESS_WRITTEN            <= internal_FIRST_ADDRESS_WRITTEN;
+	internal_CONTINUE_WRITING        <= CONTINUE_WRITING;
+	internal_FIRST_ADDRESS_ALLOWED   <= FIRST_ADDRESS_ALLOWED;
+	internal_LAST_ADDRESS_ALLOWED    <= LAST_ADDRESS_ALLOWED;
+	internal_WINDOWS_TO_LOOK_BACK    <= unsigned(WINDOWS_TO_LOOK_BACK);
 	
 	--Diagnostic access through ILA----------------
 	gen_Chipscope_ILA : if (use_chipscope_ila = true) generate
@@ -220,11 +223,19 @@ begin
 				internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';				
 				internal_LAST_ADDRESS_WRITTEN <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1) & '1';
 				last_written := unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS(8 downto 1)) & '1';
-				if (last_written >= unsigned(internal_FIRST_ADDRESS_ALLOWED) + 3) then				
-					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(last_written - 3);
+-- This is the original version that enforced a lookback of 3
+--				if (last_written >= unsigned(internal_FIRST_ADDRESS_ALLOWED) + 3) then				
+--					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(last_written - 3);
+--				else
+--					underage := last_written - unsigned(internal_FIRST_ADDRESS_ALLOWED);
+--					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(unsigned(internal_LAST_ADDRESS_ALLOWED) - underage);
+--				end if;
+-- This is the new version that allows a variable lookback
+				if (last_written >= unsigned(internal_FIRST_ADDRESS_ALLOWED) + (internal_WINDOWS_TO_LOOK_BACK - 1) ) then				
+					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(last_written - (internal_WINDOWS_TO_LOOK_BACK - 1) );
 				else
-					underage := last_written - unsigned(internal_FIRST_ADDRESS_ALLOWED);
-					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(unsigned(internal_LAST_ADDRESS_ALLOWED) - underage);
+					underage := (internal_WINDOWS_TO_LOOK_BACK)-(last_written - unsigned(internal_FIRST_ADDRESS_ALLOWED));
+					internal_FIRST_ADDRESS_WRITTEN <= std_logic_vector(unsigned(internal_LAST_ADDRESS_ALLOWED) - underage + 2);
 				end if;
 			end if;
 		end if;
