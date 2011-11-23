@@ -50,6 +50,7 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		RESET_SCALER_COUNTERS                                   :   out std_logic;
 		ASIC_START_WINDOW                                       :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                                         :   out std_logic_vector(8 downto 0);
+		WINDOWS_TO_LOOK_BACK                                    :   out std_logic_vector(8 downto 0);
 		SAMPLING_RATE_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
 		WILKINSON_RATE_FEEDBACK_GOAL                            :   out std_logic_vector(31 downto 0);
 		TRIGGER_WIDTH_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
@@ -305,6 +306,7 @@ begin
 		RESET_SCALER_COUNTERS                          => RESET_SCALER_COUNTERS,
 		ASIC_START_WINDOW                              => ASIC_START_WINDOW,
 		ASIC_END_WINDOW                                => ASIC_END_WINDOW,
+		WINDOWS_TO_LOOK_BACK                           => WINDOWS_TO_LOOK_BACK,
 		SAMPLING_RATE_FEEDBACK_GOAL                    => SAMPLING_RATE_FEEDBACK_GOAL,
 		WILKINSON_RATE_FEEDBACK_GOAL                   => WILKINSON_RATE_FEEDBACK_GOAL,
 		TRIGGER_WIDTH_FEEDBACK_GOAL                    => TRIGGER_WIDTH_FEEDBACK_GOAL,

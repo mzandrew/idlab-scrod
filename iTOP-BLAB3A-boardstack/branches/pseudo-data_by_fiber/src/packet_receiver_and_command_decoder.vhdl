@@ -46,6 +46,7 @@ entity packet_receiver_and_command_interpreter is
 		RESET_SCALER_COUNTERS              :   out std_logic;
 		ASIC_START_WINDOW                  :   out std_logic_vector(8 downto 0);
 		ASIC_END_WINDOW                    :   out std_logic_vector(8 downto 0);
+		WINDOWS_TO_LOOK_BACK               :   out std_logic_vector(8 downto 0);
 		SAMPLING_RATE_FEEDBACK_GOAL        :   out std_logic_vector(31 downto 0);
 		WILKINSON_RATE_FEEDBACK_GOAL       :   out std_logic_vector(31 downto 0);
 		TRIGGER_WIDTH_FEEDBACK_GOAL        :   out std_logic_vector(31 downto 0);
@@ -91,6 +92,7 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
 	signal internal_ASIC_START_WINDOW                  : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_ASIC_END_WINDOW                    : std_logic_vector(8 downto 0) := (others => '1');
+	signal internal_WINDOWS_TO_LOOK_BACK               : std_logic_vector(8 downto 0) := "000000100";
 	signal internal_SAMPLING_RATE_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
 	signal internal_WILKINSON_RATE_FEEDBACK_GOAL       : std_logic_vector(31 downto 0);
 	signal internal_TRIGGER_WIDTH_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
@@ -126,6 +128,7 @@ begin
 	RESET_SCALER_COUNTERS              <= internal_RESET_SCALER_COUNTERS;
 	ASIC_START_WINDOW                  <= internal_ASIC_START_WINDOW;
 	ASIC_END_WINDOW                    <= internal_ASIC_END_WINDOW;
+	WINDOWS_TO_LOOK_BACK               <= internal_WINDOWS_TO_LOOK_BACK;
 	SAMPLING_RATE_FEEDBACK_GOAL        <= internal_SAMPLING_RATE_FEEDBACK_GOAL;
 	WILKINSON_RATE_FEEDBACK_GOAL       <= internal_WILKINSON_RATE_FEEDBACK_GOAL;
 	TRIGGER_WIDTH_FEEDBACK_GOAL        <= internal_TRIGGER_WIDTH_FEEDBACK_GOAL;
@@ -193,6 +196,7 @@ begin
 			internal_RESET_SCALER_COUNTERS    <= '0';
 			internal_ASIC_START_WINDOW        <= (others => '0');
 			internal_ASIC_END_WINDOW          <= (others => '1');
+			internal_WINDOWS_TO_LOOK_BACK     <= "000000100";
 			-- the following will be good when the fiber transceiver reset logic is finally working right:
 --			for i in 0 to 3 loop
 --				for j in 0 to 7 loop
@@ -509,6 +513,9 @@ begin
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"000101ff") then -- set ending window in ASIC's analog storage array
 							internal_ASIC_END_WINDOW <= std_logic_vector(command_word(1)(8 downto 0));
+							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
+						elsif (command_word(0) = x"0100cbac") then 
+						   internal_WINDOWS_TO_LOOK_BACK <= std_logic_vector(command_word(1)(8 downto 0));
 							COMMAND_PROCESSING_STATE <= WAITING_FOR_COMMAND_EXECUTION;
 						elsif (command_word(0) = x"19321965") then -- trigger readout -- birth / death years of Roy Rogers' horse, Trigger
 --							internal_number_of_sent_events <= std_logic_vector(unsigned(internal_number_of_sent_events) + 1);
