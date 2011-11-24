@@ -254,6 +254,10 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="176"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
     </file>
+    <file xil_pn:name="../src/ctrl_loop_smpl_scheduler.v" xil_pn:type="FILE_VERILOG">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="176"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
+    </file>
     <file xil_pn:name="../../pseudo-data_by_fiber/ise-project/ipcore_dir/quarter_event_fifo.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
