@@ -149,6 +149,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	
 	signal internal_CLOCK_127MHz					: std_logic;
 	signal internal_CLOCK_SSP 						: std_logic;
+	signal internal_CLOCK_SSP_UNBUFFERED      : std_logic;
 	signal internal_CLOCK_SST 						: std_logic;	
 	signal internal_CLOCK_WRITE_STROBE			: std_logic;
 	signal internal_CLOCK_4xSST					: std_logic;
@@ -166,6 +167,9 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	---------ASIC feedback related signals-------------------
 	signal internal_FEEDBACK_WILKINSON_COUNTER_C_R		: Wilkinson_Rate_Counters_C_R;
 	signal internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R	: Wilkinson_Rate_DAC_C_R;
+	signal internal_FEEDBACK_SAMPLING_RATE_COUNTER_C_R : Sampling_Rate_Counters_C_R;
+	signal internal_FEEDBACK_SAMPLING_RATE_VADJP_C_R   : Sampling_Rate_DAC_C_R;
+	signal internal_FEEDBACK_SAMPLING_RATE_VADJN_C_R   : Sampling_Rate_DAC_C_R;	
 	signal internal_SAMPLING_RATE_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
 	signal internal_WILKINSON_RATE_FEEDBACK_GOAL       : std_logic_vector(31 downto 0);
 	signal internal_TRIGGER_WIDTH_FEEDBACK_GOAL        : std_logic_vector(31 downto 0);
@@ -257,6 +261,7 @@ begin
 			CLOCK_127MHz			=> internal_CLOCK_127MHz,
 			CLOCK_SST				=> internal_CLOCK_SST,
 			CLOCK_SSP				=> internal_CLOCK_SSP,
+			CLOCK_SSP_UNBUFFERED => internal_CLOCK_SSP_UNBUFFERED,
 			CLOCK_WRITE_STROBE 	=> internal_CLOCK_WRITE_STROBE,
 			CLOCK_4xSST				=> internal_CLOCK_4xSST,
 			CLOCK_83kHz				=> internal_CLOCK_83kHz,
@@ -364,26 +369,31 @@ begin
 	--------ASIC feedback and monitoring loops---------------
 	map_ASIC_feedback_and_monitoring : entity work.Board_Stack_Feedback_and_Monitoring 
 		port map (
-			AsicIn_MONITOR_TRIG								=> AsicIn_MONITOR_TRIG,
-			AsicOut_MONITOR_TRIG_C0_R						=> AsicOut_MONITOR_TRIG_C0_R,
-			AsicOut_MONITOR_TRIG_C1_R						=> AsicOut_MONITOR_TRIG_C1_R,
-			AsicOut_MONITOR_TRIG_C2_R						=> AsicOut_MONITOR_TRIG_C2_R,
-			AsicOut_MONITOR_TRIG_C3_R						=> AsicOut_MONITOR_TRIG_C3_R,
-			AsicOut_SAMPLING_TRACK_MODE_C0_R				=> AsicOut_SAMPLING_TRACK_MODE_C0_R,
-			AsicOut_SAMPLING_TRACK_MODE_C1_R				=> AsicOut_SAMPLING_TRACK_MODE_C1_R,
-			AsicOut_SAMPLING_TRACK_MODE_C2_R				=> AsicOut_SAMPLING_TRACK_MODE_C2_R,
-			AsicOut_SAMPLING_TRACK_MODE_C3_R				=> AsicOut_SAMPLING_TRACK_MODE_C3_R,
-			AsicIn_MONITOR_WILK_COUNTER_RESET			=> AsicIn_MONITOR_WILK_COUNTER_RESET,
-			AsicIn_MONITOR_WILK_COUNTER_START			=> AsicIn_MONITOR_WILK_COUNTER_START,
-			AsicOut_MONITOR_WILK_COUNTER_C0_R			=> AsicOut_MONITOR_WILK_COUNTER_C0_R,
-			AsicOut_MONITOR_WILK_COUNTER_C1_R			=> AsicOut_MONITOR_WILK_COUNTER_C1_R,
-			AsicOut_MONITOR_WILK_COUNTER_C2_R			=> AsicOut_MONITOR_WILK_COUNTER_C2_R,
-			AsicOut_MONITOR_WILK_COUNTER_C3_R			=> AsicOut_MONITOR_WILK_COUNTER_C3_R,
+			AsicIn_MONITOR_TRIG                       => AsicIn_MONITOR_TRIG,
+			AsicOut_MONITOR_TRIG_C0_R                 => AsicOut_MONITOR_TRIG_C0_R,
+			AsicOut_MONITOR_TRIG_C1_R                 => AsicOut_MONITOR_TRIG_C1_R,
+			AsicOut_MONITOR_TRIG_C2_R                 => AsicOut_MONITOR_TRIG_C2_R,
+			AsicOut_MONITOR_TRIG_C3_R                 => AsicOut_MONITOR_TRIG_C3_R,
+			AsicIn_SAMPLING_TRACK_MODE                => internal_CLOCK_SSP_UNBUFFERED,
+			AsicOut_SAMPLING_TRACK_MODE_C0_R          => AsicOut_SAMPLING_TRACK_MODE_C0_R,
+			AsicOut_SAMPLING_TRACK_MODE_C1_R          => AsicOut_SAMPLING_TRACK_MODE_C1_R,
+			AsicOut_SAMPLING_TRACK_MODE_C2_R          => AsicOut_SAMPLING_TRACK_MODE_C2_R,
+			AsicOut_SAMPLING_TRACK_MODE_C3_R          => AsicOut_SAMPLING_TRACK_MODE_C3_R,
+			FEEDBACK_SAMPLING_RATE_ENABLE             => internal_SAMPLING_RATE_FEEDBACK_ENABLE,
+			FEEDBACK_SAMPLING_RATE_COUNTER_C_R        => internal_FEEDBACK_SAMPLING_RATE_COUNTER_C_R,
+			FEEDBACK_SAMPLING_RATE_VADJP_C_R          => internal_FEEDBACK_SAMPLING_RATE_VADJP_C_R,
+			FEEDBACK_SAMPLING_RATE_VADJN_C_R          => internal_FEEDBACK_SAMPLING_RATE_VADJN_C_R,
+			AsicIn_MONITOR_WILK_COUNTER_RESET         => AsicIn_MONITOR_WILK_COUNTER_RESET,
+			AsicIn_MONITOR_WILK_COUNTER_START         => AsicIn_MONITOR_WILK_COUNTER_START,
+			AsicOut_MONITOR_WILK_COUNTER_C0_R         => AsicOut_MONITOR_WILK_COUNTER_C0_R,
+			AsicOut_MONITOR_WILK_COUNTER_C1_R         => AsicOut_MONITOR_WILK_COUNTER_C1_R,
+			AsicOut_MONITOR_WILK_COUNTER_C2_R         => AsicOut_MONITOR_WILK_COUNTER_C2_R,
+			AsicOut_MONITOR_WILK_COUNTER_C3_R         => AsicOut_MONITOR_WILK_COUNTER_C3_R,
 			FEEDBACK_WILKINSON_ENABLE                 => internal_WILKINSON_RATE_FEEDBACK_ENABLE,
 			FEEDBACK_WILKINSON_GOAL                   => internal_WILKINSON_RATE_FEEDBACK_GOAL,
-			FEEDBACK_WILKINSON_COUNTER_C_R				=> internal_FEEDBACK_WILKINSON_COUNTER_C_R,
-			FEEDBACK_WILKINSON_DAC_VALUE_C_R				=> internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
-			CLOCK_80Hz											=> internal_CLOCK_80Hz,
+			FEEDBACK_WILKINSON_COUNTER_C_R            => internal_FEEDBACK_WILKINSON_COUNTER_C_R,
+			FEEDBACK_WILKINSON_DAC_VALUE_C_R          => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
+			CLOCK_80Hz                                => internal_CLOCK_80Hz,
 			DAC_SYNC_CLOCK                            => internal_CLOCK_83kHz
 		);
 	-----------------------------------------------------------
@@ -555,10 +565,16 @@ begin
 	process(internal_FEEDBACK_MONITOR_COLUMN, internal_FEEDBACK_MONITOR_ROW, internal_FEEDBACK_WILKINSON_COUNTER_C_R) begin	
 		internal_VIO_IN(27 downto 12) <= internal_FEEDBACK_WILKINSON_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
 																										( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
-	end process;
+		internal_VIO_IN(128 downto 113) <= internal_FEEDBACK_SAMPLING_RATE_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+                                                                                    ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+	end process;                                                                     
 	process(internal_FEEDBACK_MONITOR_COLUMN, internal_FEEDBACK_MONITOR_ROW, internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R) begin		
 		internal_VIO_IN(39 downto 28) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
 																										  ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+		internal_VIO_IN(140 downto 129) <= internal_FEEDBACK_SAMPLING_RATE_VADJP_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+																										    ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
+		internal_VIO_IN(152 downto 141) <= internal_FEEDBACK_SAMPLING_RATE_VADJN_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
+																										    ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));																										  
 	end process;
 	process(internal_TEST_SCALER_COLUMN, internal_TEST_SCALER_ROW, internal_TEST_SCALER_CH, internal_ASIC_SCALERS_C_R_CH) begin
 		internal_VIO_IN(68 downto 53) <= internal_ASIC_SCALERS_C_R_CH( to_integer( unsigned(internal_TEST_SCALER_COLUMN) ))
@@ -578,7 +594,7 @@ begin
 	internal_VIO_IN(110) <= internal_TRIGGER_TO_USE;
 	internal_VIO_IN(111) <= internal_TRIGGER_VETO;
 	internal_VIO_IN(112) <= internal_CLEAR_TRIGGER_VETO;
-	internal_VIO_IN(255 downto 113) <= (others => '0');
+	internal_VIO_IN(255 downto 153) <= (others => '0');
 
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
 	--First four LEDS show FTSW status (none green if not using FTSW, 0 and 1 should be green if using FTSW)

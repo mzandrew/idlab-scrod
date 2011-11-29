@@ -51,13 +51,14 @@ entity clocking_and_ftsw_interface is
 				FTSW_INTERFACE_READY : out std_logic;
 				SAMPLING_CLOCKS_READY : out std_logic;
 				--Clock outputs 
-				CLOCK_127MHz		: out std_logic; --This clock is on a BUFG
-				CLOCK_SST			: out std_logic; --This clock is on a BUFG
-				CLOCK_SSP			: out std_logic; --NOT explicitly on a BUFG
-				CLOCK_WRITE_STROBE : out std_logic;--NOT explicitly on a BUFG
-				CLOCK_4xSST			: out std_logic; --NOT explicitly on a BUFG
-				CLOCK_83kHz			: out std_logic; --This clock is on a BUFG
-				CLOCK_80Hz			: out std_logic;
+				CLOCK_127MHz		   : out std_logic; --This clock is on a BUFG
+				CLOCK_SST			   : out std_logic; --This clock is on a BUFG
+				CLOCK_SSP			   : out std_logic; --NOT explicitly on a BUFG
+				CLOCK_SSP_UNBUFFERED : out std_logic;
+				CLOCK_WRITE_STROBE   : out std_logic;--NOT explicitly on a BUFG
+				CLOCK_4xSST			   : out std_logic; --NOT explicitly on a BUFG
+				CLOCK_83kHz			   : out std_logic; --This clock is on a BUFG
+				CLOCK_80Hz			   : out std_logic;
 				--Trigger outputs
 				FTSW_TRIGGER21_SHIFTED : out std_logic
 			);
@@ -88,6 +89,7 @@ architecture Behavioral of clocking_and_ftsw_interface is
 	signal internal_RESET_SAMPLING_CLOCK_GEN : std_logic;
 	signal internal_SAMPLING_CLOCKS_READY	  : std_logic;
 
+	signal internal_CLOCK_SSP_UNBUFFERED : std_logic;
 	signal internal_CLOCK_SSP 				: std_logic;
 	signal internal_CLOCK_SST 				: std_logic;	
 	signal internal_CLOCK_WRITE_STROBE	: std_logic;
@@ -99,6 +101,7 @@ begin
 	CLOCK_127MHz <= internal_CLOCK_127MHz;
 	CLOCK_SST	 <= internal_CLOCK_SST;
 	CLOCK_SSP 	 <= internal_CLOCK_SSP;
+	CLOCK_SSP_UNBUFFERED <= internal_CLOCK_SSP_UNBUFFERED;
 	CLOCK_WRITE_STROBE <= internal_CLOCK_WRITE_STROBE;
 	CLOCK_4xSST  <= internal_CLOCK_4xSST;
 	CLOCK_83kHz  <= internal_CLOCK_83kHz;
@@ -155,12 +158,13 @@ begin
 					 S  => internal_USE_FTSW_CLOCK);
 	---------------------------------------------------------
 	map_sampling_clock_gen : entity work.sampling_clock_gen
-		port map (	CLK_IN1  => internal_CLOCK_SST,
-						CLK_OUT1 => internal_CLOCK_SSP,
-						CLK_OUT2 => internal_CLOCK_WRITE_STROBE,
-						CLK_OUT3 => internal_CLOCK_4xSST,
-						RESET 	=> internal_RESET_SAMPLING_CLOCK_GEN,
-						LOCKED	=> internal_SAMPLING_CLOCKS_READY);
+		port map (	CLK_IN1             => internal_CLOCK_SST,
+						CLK_OUT1            => internal_CLOCK_SSP,
+						CLK_OUT1_UNBUFFERED => internal_CLOCK_SSP_UNBUFFERED,
+						CLK_OUT2            => internal_CLOCK_WRITE_STROBE,
+						CLK_OUT3            => internal_CLOCK_4xSST,
+						RESET 	           => internal_RESET_SAMPLING_CLOCK_GEN,
+						LOCKED	           => internal_SAMPLING_CLOCKS_READY);
 	---------------------------------------------------------
 	-----------Process to control the reset logic to the PLLs
 	process (internal_USE_FTSW_CLOCK, internal_BOARD_CLOCK_DCM_LOCKED, internal_FTSW_INTERFACE_READY) begin

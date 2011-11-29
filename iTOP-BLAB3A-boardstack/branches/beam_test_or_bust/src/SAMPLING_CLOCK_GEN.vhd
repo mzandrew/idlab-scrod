@@ -33,9 +33,10 @@ port
  (-- Clock in ports
   CLK_IN1           : in     std_logic;
   -- Clock out ports
-  CLK_OUT1          : out    std_logic;
-  CLK_OUT2          : out    std_logic;
-  CLK_OUT3			  : out    std_logic;
+  CLK_OUT1            : out    std_logic;
+  CLK_OUT1_UNBUFFERED : out    std_logic;
+  CLK_OUT2            : out    std_logic;
+  CLK_OUT3			    : out    std_logic;
   -- Status and control signals
   RESET             : in     std_logic;
   LOCKED            : out    std_logic
@@ -121,6 +122,7 @@ begin
   port map
    (O   => CLK_OUT1,
     I   => clkout0);
+CLK_OUT1_UNBUFFERED <= clkout0;
 
 --  CLK_OUT2 <= clkout1;
   clkout2_buf : BUFG
