@@ -47,6 +47,9 @@ package Board_Stack_Definitions is
 	type Wilkinson_Rate_Counters_C_R is array(3 downto 0) of Wilkinson_Rate_Counters_Column_R;	
 	type Wilkinson_Rate_DAC_Column_R is array(3 downto 0) of std_logic_vector(11 downto 0);
 	type Wilkinson_Rate_DAC_C_R is array(3 downto 0) of Wilkinson_Rate_DAC_Column_R;
+	--Reusing "Wilkinson Rate" definitions since they're actually rather generic
+	type Sampling_Rate_DAC_C_R is array(3 downto 0) of Wilkinson_Rate_DAC_Column_R;
+	type Sampling_Rate_Counters_C_R is array(3 downto 0) of Wilkinson_Rate_Counters_Column_R;	
 	---------------------------------------------------------------------------
 	-----------------ASIC TRIGGER SIGNALS--------------------------------------
 	type ASIC_Trigger_Bits_R_CH is array(3 downto 0) of std_logic_vector(7 downto 0);
