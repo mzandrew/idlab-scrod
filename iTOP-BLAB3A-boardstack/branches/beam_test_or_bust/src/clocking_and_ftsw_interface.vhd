@@ -25,7 +25,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -48,14 +48,15 @@ entity clocking_and_ftsw_interface is
 				--Inputs from the user/board
 				USE_FTSW_CLOCK		: in std_logic;
 				--Status outputs
-				FTSW_INTERFACE_READY : out std_logic;
+				FTSW_INTERFACE_READY  : out std_logic;
+				FTSW_INTERFACE_STABLE : out std_logic;
 				SAMPLING_CLOCKS_READY : out std_logic;
 				--Clock outputs 
 				CLOCK_127MHz		   : out std_logic; --This clock is on a BUFG
 				CLOCK_SST			   : out std_logic; --This clock is on a BUFG
-				CLOCK_SSP			   : out std_logic; --NOT explicitly on a BUFG
-				CLOCK_SSP_UNBUFFERED : out std_logic;
-				CLOCK_WRITE_STROBE   : out std_logic;--NOT explicitly on a BUFG
+				CLOCK_SSP			   : out std_logic; --This clock is on a BUFG
+				CLOCK_SSP_UNBUFFERED : out std_logic; --This clock is the unbuffered version of above
+				CLOCK_WRITE_STROBE   : out std_logic; --NOT explicitly on a BUFG
 				CLOCK_4xSST			   : out std_logic; --NOT explicitly on a BUFG
 				CLOCK_83kHz			   : out std_logic; --This clock is on a BUFG
 				CLOCK_80Hz			   : out std_logic;
@@ -94,6 +95,10 @@ architecture Behavioral of clocking_and_ftsw_interface is
 	signal internal_CLOCK_SST 				: std_logic;	
 	signal internal_CLOCK_WRITE_STROBE	: std_logic;
 	signal internal_CLOCK_4xSST			: std_logic;
+	
+	-------FTSW Stability signals----------------------------
+	signal internal_FTSW_STABILITY_COUNTER : unsigned(26 downto 0) := (others => '0');
+	signal internal_FTSW_IS_STABLE         : std_logic := '0';
    ---------------------------------------------------------	
 
 begin
@@ -107,11 +112,12 @@ begin
 	CLOCK_83kHz  <= internal_CLOCK_83kHz;
 	CLOCK_80Hz   <= internal_CLOCK_80Hz;
 	FTSW_INTERFACE_READY <= internal_FTSW_INTERFACE_READY;
+	FTSW_INTERFACE_STABLE <= internal_FTSW_IS_STABLE;	
 	SAMPLING_CLOCKS_READY <= internal_SAMPLING_CLOCKS_READY;
 	FTSW_TRIGGER21_SHIFTED <= internal_FTSW_TRIGGER21_SHIFTED;
 	internal_USE_FTSW_CLOCK <= USE_FTSW_CLOCK;
    -----------------------------------------------------------------
-	internal_CLOCK_SST <= internal_CLOCK_21MHz;	
+	internal_CLOCK_SST <= internal_CLOCK_21MHz;
    ----Map out the interface signals--------------------------------
 	map_FTSW_interface: entity work.bpid
     port map (
@@ -208,6 +214,20 @@ begin
 	process (internal_CLOCK_21MHz) begin
 		if (falling_edge(internal_CLOCK_21MHz)) then
 			internal_FTSW_TRIGGER21_SHIFTED <= internal_FTSW_TRIGGER21;
+		end if;
+	end process;
+
+	--Check for long term stability of the FTSW clock
+	process (internal_BOARD_CLOCK_250MHz, internal_FTSW_INTERFACE_READY) begin
+		if (internal_FTSW_INTERFACE_READY = '0') then
+			internal_FTSW_STABILITY_COUNTER(26 downto 0) <= (others => '0');
+			internal_FTSW_IS_STABLE <= '0';
+		elsif (rising_edge(internal_BOARD_CLOCK_250MHz)) then
+			if (internal_FTSW_STABILITY_COUNTER(26) = '1') then
+				internal_FTSW_IS_STABLE <= '1';
+			else
+				internal_FTSW_STABILITY_COUNTER <= internal_FTSW_STABILITY_COUNTER + 1;
+			end if;
 		end if;
 	end process;
 

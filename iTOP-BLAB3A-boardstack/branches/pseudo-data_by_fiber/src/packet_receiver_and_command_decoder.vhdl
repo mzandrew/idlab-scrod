@@ -55,6 +55,8 @@ entity packet_receiver_and_command_interpreter is
 		TRIGGER_WIDTH_FEEDBACK_ENABLE      :   out std_logic_vector(15 downto 0);
 		----------------------------------------------------------------------------------
 		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE : in    Wilkinson_Rate_DAC_C_R;
+		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJP  : in    Sampling_Rate_DAC_C_R;
+		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJN  : in    Sampling_Rate_DAC_C_R;
 		acknowledge_execution_of_command   : in    std_logic;
 		UNKNOWN_COMMAND_RECEIVED_COUNTER   :   out std_logic_vector(7 downto 0)
 );
@@ -101,6 +103,8 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0) := (others => '0');
 	----------------------------------------------------------------------------------
 	signal DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE : Wilkinson_Rate_DAC_C_R;
+	signal DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJP  : Sampling_Rate_DAC_C_R;
+	signal DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJN  : Sampling_Rate_DAC_C_R;
 	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER   : std_logic_vector(31 downto 0);
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
 	signal COMMAND_PROCESSING_STATE                    : COMMAND_PROCESSING_STATE_TYPE := RESET_DAC_VALUES_TO_NOMINAL;
@@ -147,6 +151,13 @@ begin
 					DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE(i)(j); --VDLY
 				else
 					DESIRED_DAC_SETTINGS(i)(j*2+1)(4) <= DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE(i)(j); --VDLY
+				end if;
+				if (internal_SAMPLING_RATE_FEEDBACK_ENABLE(4*i+j) = '1') then
+					DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJP(i)(j); -- VadjP
+					DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJN(i)(j); -- VadjN
+				else 
+					DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJP(i)(j); -- VadjP
+					DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJN(i)(j); -- VadjN
 				end if;
 			end loop;
 		end loop;
@@ -435,12 +446,16 @@ begin
 								DESIRED_DAC_SETTINGS( (j-46)/2 )( ((j-46) mod 2)*4+3)(7) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 54 to 61 loop -- VadjP values
-								DESIRED_DAC_SETTINGS( (j-54)/2 )( ((j-54) mod 2)*4)(2)   <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
-								DESIRED_DAC_SETTINGS( (j-54)/2 )( ((j-54) mod 2)*4+2)(2) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJP( (j-54)/2 )( 2*((j-54) mod 2) + 0 ) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJP( (j-54)/2 )( 2*((j-54) mod 2) + 1 ) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+--								DESIRED_DAC_SETTINGS( (j-54)/2 )( ((j-54) mod 2)*4)(2)   <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
+--								DESIRED_DAC_SETTINGS( (j-54)/2 )( ((j-54) mod 2)*4+2)(2) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 62 to 69 loop -- VadjN values
-								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4)(3)   <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
-								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4+2)(3) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJN( (j-62)/2 )( 2*((j-62) mod 2) + 0 ) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJN( (j-62)/2 )( 2*((j-62) mod 2) + 1 ) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
+--								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4)(3)   <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
+--								DESIRED_DAC_SETTINGS( (j-62)/2 )( ((j-62) mod 2)*4+2)(3) <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(27 downto 16));
 							end loop;
 							for j in 70 to 77 loop -- Vbias values
 								DESIRED_DAC_SETTINGS( (j-70)/2 )( ((j-70) mod 2)*4 )(5)    <= std_logic_vector(command_word( j-COMMAND_PACKET_OFFSET)(11 downto  0));
@@ -482,8 +497,8 @@ begin
 									--DAC0 : "DAC1" on schematic
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_01
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_23
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJP
-									DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJN
+									DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJP(i)(j) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJP
+									DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJN(i)(j) <= std_logic_vector(command_word(1)(11 downto 0)); -- VADJN
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRGBIAS
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= std_logic_vector(command_word(1)(11 downto 0)); -- VBIAS
 									DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= std_logic_vector(command_word(1)(11 downto 0)); -- TRIG_THRESH_45
@@ -550,8 +565,8 @@ begin
 								--DAC0 : "DAC1" on schematic
 								DESIRED_DAC_SETTINGS(i)(j*2+0)(0) <= x"76C"; -- TRIG_THRESH_01
 								DESIRED_DAC_SETTINGS(i)(j*2+0)(1) <= x"76C"; -- TRIG_THRESH_23
-								DESIRED_DAC_SETTINGS(i)(j*2+0)(2) <= x"C9E"; -- VADJP
-								DESIRED_DAC_SETTINGS(i)(j*2+0)(3) <= x"42E"; -- VADJN
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJP(i)(j) <= x"C9E"; -- VADJP
+								DESIRED_DAC_SETTING_FROM_FIBER_FOR_SAMPLING_RATE_VADJN(i)(j) <= x"42E"; -- VADJN
 								DESIRED_DAC_SETTINGS(i)(j*2+0)(4) <= x"3E8"; -- TRGBIAS
 								DESIRED_DAC_SETTINGS(i)(j*2+0)(5) <= x"44C"; -- VBIAS
 								DESIRED_DAC_SETTINGS(i)(j*2+0)(6) <= x"76C"; -- TRIG_THRESH_45

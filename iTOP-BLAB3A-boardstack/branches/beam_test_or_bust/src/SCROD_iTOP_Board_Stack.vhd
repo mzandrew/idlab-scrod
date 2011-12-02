@@ -136,27 +136,28 @@ end SCROD_iTOP_Board_Stack;
 architecture Behavioral of SCROD_iTOP_Board_Stack is
 
 	--------SIGNAL DEFINITIONS-------------------------------
-	signal internal_LEDS_ENABLED					: std_logic := '0';
-	signal internal_LEDS        					: std_logic_vector(15 downto 0);
-	signal internal_MONITOR_INPUTS				: std_logic_vector(0 downto 0);	
-	signal internal_CHIPSCOPE_CONTROL0 			: std_logic_vector(35 downto 0);
-	signal internal_CHIPSCOPE_CONTROL1 			: std_logic_vector(35 downto 0);
+	signal internal_LEDS_ENABLED              : std_logic := '0';
+	signal internal_LEDS                      : std_logic_vector(15 downto 0);
+	signal internal_MONITOR_INPUTS            : std_logic_vector(0 downto 0);	
+	signal internal_CHIPSCOPE_CONTROL0        : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_CONTROL1        : std_logic_vector(35 downto 0);
 	--------Signals for the clocking and FTSW interface------
-	signal internal_USE_FTSW_CLOCK				: std_logic;
-	signal internal_FTSW_INTERFACE_READY		: std_logic;
-	signal internal_RESET_SAMPLING_CLOCK_GEN	: std_logic;
-	signal internal_SAMPLING_CLOCKS_READY		: std_logic;
+	signal internal_USE_FTSW_CLOCK            : std_logic;
+	signal internal_FTSW_INTERFACE_READY      : std_logic;
+	signal internal_FTSW_INTERFACE_STABLE     : std_logic;
+	signal internal_RESET_SAMPLING_CLOCK_GEN  : std_logic;
+	signal internal_SAMPLING_CLOCKS_READY     : std_logic;
 	
-	signal internal_CLOCK_127MHz					: std_logic;
-	signal internal_CLOCK_SSP 						: std_logic;
+	signal internal_CLOCK_127MHz              : std_logic;
+	signal internal_CLOCK_SSP                 : std_logic;
 	signal internal_CLOCK_SSP_UNBUFFERED      : std_logic;
-	signal internal_CLOCK_SST 						: std_logic;	
-	signal internal_CLOCK_WRITE_STROBE			: std_logic;
-	signal internal_CLOCK_4xSST					: std_logic;
-	signal internal_CLOCK_83kHz					: std_logic;
-	signal internal_CLOCK_80Hz						: std_logic;
+	signal internal_CLOCK_SST                 : std_logic;	
+	signal internal_CLOCK_WRITE_STROBE        : std_logic;
+	signal internal_CLOCK_4xSST               : std_logic;
+	signal internal_CLOCK_83kHz               : std_logic;
+	signal internal_CLOCK_80Hz                : std_logic;
 	
-	signal internal_FTSW_TRIGGER21_SHIFTED 	: std_logic;
+	signal internal_FTSW_TRIGGER21_SHIFTED    : std_logic;
 	---------Signals for DAC interface-----------------------
 	signal internal_DESIRED_DAC_VOLTAGES : Board_Stack_Voltages;
 	signal internal_CURRENT_DAC_VOLTAGES : Board_Stack_Voltages;
@@ -178,32 +179,33 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_TRIGGER_WIDTH_FEEDBACK_ENABLE      : std_logic_vector(15 downto 0);
 	---------------------------------------------------------
 	----Signals for ASIC sampling / analog storage-----------
-	signal internal_CONTINUE_ANALOG_WRITING	: std_logic;
-	signal internal_LAST_ADDRESS_WRITTEN		: std_logic_vector(8 downto 0);
-	signal internal_FIRST_ADDRESS_WRITTEN		: std_logic_vector(8 downto 0);
+	signal internal_CONTINUE_ANALOG_WRITING   : std_logic;
+	signal internal_LAST_ADDRESS_WRITTEN      : std_logic_vector(8 downto 0);
+	signal internal_FIRST_ADDRESS_WRITTEN     : std_logic_vector(8 downto 0);
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS : std_logic_vector(8 downto 0);
 	---------------------------------------------------------
 	----Signals for ASIC digitizing / readout <==> fiber interface
-	signal internal_DONE_DIGITIZING			: std_logic;
-	signal internal_BLOCKRAM_COLUMN_SELECT	: std_logic_vector(1 downto 0);
-	signal internal_BLOCKRAM_READ_ADDRESS	: std_logic_vector(WIDTH_OF_BLOCKRAM_ADDRESS_BUS-1	downto 0); 
-	signal internal_BLOCKRAM_READ_DATA		: std_logic_vector(WIDTH_OF_BLOCKRAM_DATA_BUS-1		downto 0);
+	signal internal_DONE_DIGITIZING        : std_logic;
+	signal internal_BLOCKRAM_COLUMN_SELECT : std_logic_vector(1 downto 0);
+	signal internal_BLOCKRAM_READ_ADDRESS  : std_logic_vector(WIDTH_OF_BLOCKRAM_ADDRESS_BUS-1	downto 0); 
+	signal internal_BLOCKRAM_READ_DATA     : std_logic_vector(WIDTH_OF_BLOCKRAM_DATA_BUS-1		downto 0);
 	------------------------------------------------------------
 	----Signals for the ASIC trigger interface------------------
-	signal internal_ASIC_TRIGGER_BITS_C_R_CH		: ASIC_Trigger_Bits_C_R_CH;
-	signal internal_ASIC_SCALERS_C_R_CH				: ASIC_Scalers_C_R_CH;
-	signal internal_ASIC_TRIGGER_STREAMS_C_R_CH 	: ASIC_Trigger_Stream_C_R_CH;
-	signal internal_LATCH_SCALERS						: std_logic;	
-	signal internal_RESET_SCALERS						: std_logic;
+	signal internal_ASIC_TRIGGER_BITS_C_R_CH     : ASIC_Trigger_Bits_C_R_CH;
+	signal internal_ASIC_SCALERS_C_R_CH          : ASIC_Scalers_C_R_CH;
+	signal internal_ASIC_TRIGGER_STREAMS_C_R_CH  : ASIC_Trigger_Stream_C_R_CH;
+	signal internal_LATCH_SCALERS                : std_logic;	
+	signal internal_RESET_SCALERS                : std_logic;
 	------------------------------------------------------------
 	--Signals for the fiberoptic interface----------------------
-	signal internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs	: std_logic_vector(3 downto 0);
-	signal internal_GLOBAL_RESET_REQUESTED_BY_FIBER				: std_logic;
-	signal internal_CLOCK_DAQ_INTERFACE								: std_logic;
-	signal internal_DAQ_BUSY											: std_logic;
-	signal internal_GLOBAL_RESET										: std_logic;
-	signal internal_fiber_link_is_up									: std_logic;	
+	signal internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs  : std_logic_vector(3 downto 0);
+	signal internal_GLOBAL_RESET_REQUESTED_BY_FIBER          : std_logic;
+	signal internal_CLOCK_DAQ_INTERFACE                      : std_logic;
+	signal internal_DAQ_BUSY                                 : std_logic;
+	signal internal_GLOBAL_RESET                             : std_logic;
+	signal internal_fiber_link_is_up                         : std_logic;	
 	signal internal_should_not_automatically_try_to_keep_fiber_link_up : std_logic;
-	signal internal_DONE_BUILDING_A_QUARTER_EVENT				: std_logic;
+	signal internal_DONE_BUILDING_A_QUARTER_EVENT            : std_logic;
 	signal internal_chipscope_vio_display                    : std_logic_vector(255 downto 0);
 	------------------------------------------------------------
 	--Signals corresponding to commands-------------------------
@@ -237,7 +239,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 begin
 	-----Clocking and FTSW interface-------------------------
 	internal_USE_FTSW_CLOCK <= not(internal_MONITOR_INPUTS(0));
-	MONITOR_OUTPUTS(0) <= internal_FTSW_TRIGGER21_SHIFTED;
+	MONITOR_OUTPUTS(0) <= internal_TRIGGER_TO_USE;
 	---------
 	map_clocking_and_ftsw_interface : entity work.clocking_and_ftsw_interface
 		port map (
@@ -256,6 +258,7 @@ begin
 			USE_FTSW_CLOCK			=> internal_USE_FTSW_CLOCK,
 			--Status outputs
 			FTSW_INTERFACE_READY 	=> internal_FTSW_INTERFACE_READY,
+			FTSW_INTERFACE_STABLE   => internal_FTSW_INTERFACE_STABLE,
 			SAMPLING_CLOCKS_READY 	=> internal_SAMPLING_CLOCKS_READY,
 			--Clock outputs 
 			CLOCK_127MHz			=> internal_CLOCK_127MHz,
@@ -272,7 +275,7 @@ begin
 	-----Control for external DACs on each daughter card-----
 	map_iTOP_Board_Stack_DAC_Control : entity work.iTOP_Board_Stack_DAC_Control
 		generic map (
-			use_chipscope_ila    => true
+			use_chipscope_ila    => false
 		)
 		port map ( 
 			INTENDED_DAC_VALUES	=> internal_DESIRED_DAC_VOLTAGES,
@@ -280,8 +283,8 @@ begin
 			CLK_100kHz_MAX      	=> internal_CLOCK_83kHz,
 			SCL_C 		  			=> DAC_SCL_C,
 			SDA_C		  				=> DAC_SDA_C,
---			CHIPSCOPE_CONTROL    => open
-			CHIPSCOPE_CONTROL    => internal_CHIPSCOPE_CONTROL0
+			CHIPSCOPE_CONTROL    => open
+--			CHIPSCOPE_CONTROL    => internal_CHIPSCOPE_CONTROL0
 		);
 	---------------------------------------------------------
 	-----------Temperature sensors interface-------------------
@@ -295,6 +298,8 @@ begin
 	);
 	-----------------------------------------------------------
 	-----ASIC sampling and analog storage control------------
+	AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS;
+	-----
 	map_ASIC_sampling_control : entity work.ASIC_sampling_control
 		generic map (
 			use_chipscope_ila			=> false
@@ -310,7 +315,7 @@ begin
 			LAST_ADDRESS_WRITTEN 	=>	internal_LAST_ADDRESS_WRITTEN,
 			FIRST_ADDRESS_WRITTEN	=> internal_FIRST_ADDRESS_WRITTEN,
 			AsicIn_SAMPLING_HOLD_MODE_C					=> AsicIn_SAMPLING_HOLD_MODE_C,
-			AsicIn_SAMPLING_TO_STORAGE_ADDRESS			=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS,
+			AsicIn_SAMPLING_TO_STORAGE_ADDRESS			=> internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS,
 			AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE	=> AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
 			AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C		=> AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C,
 			AsicIn_SAMPLING_TRACK_MODE_C					=> AsicIn_SAMPLING_TRACK_MODE_C,
@@ -319,7 +324,7 @@ begin
 		);
 	---------------------------------------------------------
 	--------ASIC digitizing and readout----------------------
-	internal_TRIGGER_TO_USE  <= (internal_FTSW_TRIGGER21_SHIFTED or internal_DUMMY_FTSW_TRIGGER21_SHIFTED) and not (internal_TRIGGER_VETO);
+	internal_TRIGGER_TO_USE  <= ((internal_FTSW_TRIGGER21_SHIFTED and internal_FTSW_INTERFACE_STABLE) or internal_DUMMY_FTSW_TRIGGER21_SHIFTED) and not (internal_TRIGGER_VETO);
 	internal_DAQ_BUSY_TO_USE <= (internal_DAQ_BUSY or internal_DAQ_BUSY_VIO);
 
 	map_ASIC_digitizing_and_readout : entity work.ASIC_digitizing_and_readout
@@ -362,8 +367,8 @@ begin
 			CLOCK_SST										=> internal_CLOCK_SST,
 			CLOCK_DAQ_INTERFACE							=> internal_CLOCK_DAQ_INTERFACE,
 			
---			CHIPSCOPE_CONTROL								=> internal_CHIPSCOPE_CONTROL0
-			CHIPSCOPE_CONTROL                      => open
+			CHIPSCOPE_CONTROL								=> internal_CHIPSCOPE_CONTROL0
+--			CHIPSCOPE_CONTROL                      => open
 		);
 	---------------------------------------------------------
 	--------ASIC feedback and monitoring loops---------------
@@ -419,13 +424,15 @@ begin
 
 	map_ASIC_trigger_interface : entity work.ASIC_trigger_interface
 		port map (
-			TRIGGER_BITS		=> internal_ASIC_TRIGGER_BITS_C_R_CH,
-			RESET_SCALERS		=> internal_RESET_SCALERS,
-			LATCH_SCALERS		=> internal_LATCH_SCALERS,
-			SCALERS				=> internal_ASIC_SCALERS_C_R_CH,			
-			CLOCK_4xSST			=> internal_CLOCK_4xSST,
-			CONTINUE_WRITING 	=> internal_CONTINUE_ANALOG_WRITING,
-			TRIGGER_STREAMS 	=> internal_ASIC_TRIGGER_STREAMS_C_R_CH
+			TRIGGER_BITS                        => internal_ASIC_TRIGGER_BITS_C_R_CH,
+			RESET_SCALERS                       => internal_RESET_SCALERS,
+			LATCH_SCALERS                       => internal_LATCH_SCALERS,
+			SCALERS                             => internal_ASIC_SCALERS_C_R_CH,
+			CLOCK_4xSST                         => internal_CLOCK_4xSST,
+			CLOCK_SST                           => internal_CLOCK_SST,
+			CONTINUE_WRITING                    => internal_CONTINUE_ANALOG_WRITING,
+			WINDOWS_TO_LOOK_BACK                => internal_WINDOWS_TO_LOOK_BACK,
+			TRIGGER_STREAMS                     => internal_ASIC_TRIGGER_STREAMS_C_R_CH
 		);
 	-----------------------------------------------------------
 	---------Fiberoptic readout interface----------------------
@@ -497,7 +504,9 @@ begin
 			ASIC_SCALERS                                            => internal_ASIC_SCALERS_C_R_CH,
 			ASIC_TRIGGER_STREAMS                                    => internal_ASIC_TRIGGER_STREAMS_C_R_CH,
 			TEMPERATURE_R1                                          => internal_TEMP_R1,
-			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R
+			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
+			FEEDBACK_VADJP_DAC_VALUE_C_R                            => internal_FEEDBACK_SAMPLING_RATE_VADJP_C_R,
+			FEEDBACK_VADJN_DAC_VALUE_C_R                            => internal_FEEDBACK_SAMPLING_RATE_VADJN_C_R
 		);
 	-----------------------------------------------------------
 	
@@ -535,16 +544,24 @@ begin
 
 	process(internal_CLOCK_SST)
 		variable trigger_seen : boolean := false;
+		variable post_trigger_counter : integer range 0 to 511 := 0;
 	begin
 		if (falling_edge(internal_CLOCK_SST)) then
 			if (internal_SOFTWARE_TRIGGER = '0') then
 				trigger_seen := false;
+				post_trigger_counter := 0;
 				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
 			elsif (internal_SOFTWARE_TRIGGER = '1' and trigger_seen = false) then
 				trigger_seen := true;
-				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '1';
 			else
-				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
+				if (post_trigger_counter < 4) then
+					post_trigger_counter := post_trigger_counter + 1;
+				elsif (post_trigger_counter < 8) then
+					internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '1';
+					post_trigger_counter := post_trigger_counter + 1;
+				else
+					internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
+				end if;
 			end if;
 		end if;
 	end process;
@@ -599,7 +616,7 @@ begin
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
 	--First four LEDS show FTSW status (none green if not using FTSW, 0 and 1 should be green if using FTSW)
 	internal_LEDS(0) <= internal_USE_FTSW_CLOCK;
-	internal_LEDS(1) <= internal_FTSW_INTERFACE_READY;
+	internal_LEDS(1) <= internal_FTSW_INTERFACE_STABLE;
 	internal_LEDS(3 downto 2) <= (others => '0');
 	--Second four show general clock status (4 5 6 should be green if clocks are working properly)
 	internal_LEDS(4) <= internal_SAMPLING_CLOCKS_READY;
