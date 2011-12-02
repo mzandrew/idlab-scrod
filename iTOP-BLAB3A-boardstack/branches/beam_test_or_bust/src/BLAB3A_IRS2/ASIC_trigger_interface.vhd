@@ -32,13 +32,16 @@ use IEEE.STD_LOGIC_1164.ALL;
 use work.Board_Stack_Definitions.ALL;
 
 entity ASIC_trigger_interface is
-    Port ( TRIGGER_BITS			: in  ASIC_Trigger_Bits_C_R_CH;
-			  RESET_SCALERS		: in 	std_logic;
-			  LATCH_SCALERS		: in 	std_logic;
-           SCALERS 				: out ASIC_Scalers_C_R_CH;
-			  CLOCK_4xSST			: in	std_logic;
-			  CONTINUE_WRITING	: in 	std_logic;
-			  TRIGGER_STREAMS		: out ASIC_Trigger_Stream_C_R_CH
+    Port (
+				TRIGGER_BITS                        : in  ASIC_Trigger_Bits_C_R_CH;
+				RESET_SCALERS                       : in  std_logic;
+				LATCH_SCALERS                       : in  std_logic;
+				SCALERS                             : out ASIC_Scalers_C_R_CH;
+				CLOCK_4xSST                         : in  std_logic;
+				CLOCK_SST                           : in  std_logic;
+				CONTINUE_WRITING                    : in  std_logic;
+				WINDOWS_TO_LOOK_BACK                : in  std_logic_vector(8 downto 0);
+				TRIGGER_STREAMS                     : out ASIC_Trigger_Stream_C_R_CH
 	);	
 end ASIC_trigger_interface;
 
@@ -65,10 +68,12 @@ begin
 			gen_ASIC_trigger_stream_CH : for k in 0 to 7 generate
 				map_trigger_stream_for_ASIC_C_R_CH : entity work.trigger_stream
 					PORT MAP (
-						TRIGGER_BIT 		=> TRIGGER_BITS(i)(j)(k),
-						CLOCK_4xSST			=> CLOCK_4xSST,
-						CONTINUE_WRITING	=> CONTINUE_WRITING,
-						STREAM_OUT 			=> TRIGGER_STREAMS(i)(j)(k)
+						TRIGGER_BIT                         => TRIGGER_BITS(i)(j)(k),
+						CLOCK_4xSST                         => CLOCK_4xSST,
+						CLOCK_SST                           => CLOCK_SST,
+						CONTINUE_WRITING                    => CONTINUE_WRITING,
+						STREAM_OUT                          => TRIGGER_STREAMS(i)(j)(k),
+						WINDOWS_TO_LOOK_BACK                => WINDOWS_TO_LOOK_BACK
 				);	
 			end generate;
 		end generate;

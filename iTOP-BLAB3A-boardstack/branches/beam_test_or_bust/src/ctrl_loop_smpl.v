@@ -150,7 +150,7 @@ module CTRL_LOOP_SMPL(ENABLE, CLR_ALL, PULSEDET_CLK, REFRESH_CLK, SSP_IN, SSP_OU
 
 	// provide latched "last delta count" to USB
 	always @ (posedge REFRESH_CLK) begin
-		SMPL_INT <= { 13'h00000, fastclk_counter };	//delta;
+		SMPL_INT <= delta[19:4];	//delta;
 	end
 
 	initial begin
@@ -224,8 +224,8 @@ module CTRL_LOOP_SMPL(ENABLE, CLR_ALL, PULSEDET_CLK, REFRESH_CLK, SSP_IN, SSP_OU
 	wire updown_vadjn =  toohigh & !toolow;
 	
 
-	UPDOWN12INIT vadjn(VADJN, updown_vadjn, hold_vadjn, CLR_ALL, REFRESH_CLK, INITIAL_VADJN);
-	UPDOWN12INIT vadjp(VADJP, updown_vadjp, hold_vadjp, CLR_ALL, REFRESH_CLK, INITIAL_VADJP);
+	UPDOWN12INIT vadjn(VADJN, updown_vadjn, hold_vadjn, CLR_ALL || hold_nopulses, REFRESH_CLK, INITIAL_VADJN);
+	UPDOWN12INIT vadjp(VADJP, updown_vadjp, hold_vadjp, CLR_ALL || hold_nopulses, REFRESH_CLK, INITIAL_VADJP);
 
 endmodule
 

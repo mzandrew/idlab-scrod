@@ -73,6 +73,8 @@ entity fiber_readout is
 		-----------------------------------------------------------------------------
 		TEMPERATURE_R1                                          : in    std_logic_vector(11 downto 0);
 		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
+		FEEDBACK_VADJP_DAC_VALUE_C_R                            : in    Sampling_Rate_DAC_C_R;
+		FEEDBACK_VADJN_DAC_VALUE_C_R                            : in    Sampling_Rate_DAC_C_R;
 		SAMPLING_RATE_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
 		WILKINSON_RATE_FEEDBACK_GOAL                            :   out std_logic_vector(31 downto 0);
 		TRIGGER_WIDTH_FEEDBACK_GOAL                             :   out std_logic_vector(31 downto 0);
@@ -181,6 +183,8 @@ begin
 		CLEAR_TRIGGER_VETO                                      => CLEAR_TRIGGER_VETO,
 		-----------------------------------------------------------------------------
 		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => FEEDBACK_WILKINSON_DAC_VALUE_C_R,
+		FEEDBACK_VADJP_DAC_VALUE_C_R                            => FEEDBACK_VADJP_DAC_VALUE_C_R,
+		FEEDBACK_VADJN_DAC_VALUE_C_R                            => FEEDBACK_VADJN_DAC_VALUE_C_R,
 		UNKNOWN_COMMAND_RECEIVED_COUNTER                        => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER,
 		status_LEDs                                             => Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 		chipscope_ila                                           => open,

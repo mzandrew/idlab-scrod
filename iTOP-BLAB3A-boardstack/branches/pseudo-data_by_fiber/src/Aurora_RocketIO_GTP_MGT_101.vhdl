@@ -59,6 +59,8 @@ entity Aurora_RocketIO_GTP_MGT_101 is
 		TRIGGER_WIDTH_FEEDBACK_ENABLE                           :   out std_logic_vector(15 downto 0);
 		-----------------------------------------------------------------------------
 		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
+		FEEDBACK_VADJP_DAC_VALUE_C_R                            : in    Sampling_Rate_DAC_C_R;
+		FEEDBACK_VADJN_DAC_VALUE_C_R                            : in    Sampling_Rate_DAC_C_R;
 		UNKNOWN_COMMAND_RECEIVED_COUNTER                        :   out std_logic_vector(7 downto 0);
 		status_LEDs                                             :   out std_logic_vector(3 downto 0);
 		chipscope_ila                                           :   out std_logic_vector(255 downto 0);
@@ -315,6 +317,8 @@ begin
 		TRIGGER_WIDTH_FEEDBACK_ENABLE                  => TRIGGER_WIDTH_FEEDBACK_ENABLE,
 		-----------------------------------------------------------------------------
 		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_WILKINSON_CLOCK_RATE => FEEDBACK_WILKINSON_DAC_VALUE_C_R,
+		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJP  => FEEDBACK_VADJP_DAC_VALUE_C_R,
+		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJN  => FEEDBACk_VADJN_DAC_VALUE_C_R,
 		acknowledge_execution_of_command               => internal_acknowledge_execution_of_command,
 		UNKNOWN_COMMAND_RECEIVED_COUNTER               => internal_UNKNOWN_COMMAND_RECEIVED_COUNTER
 	);
