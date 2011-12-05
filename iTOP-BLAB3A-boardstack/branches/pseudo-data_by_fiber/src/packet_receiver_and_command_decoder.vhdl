@@ -579,7 +579,7 @@ begin
 								DESIRED_DAC_SETTING_FROM_FIBER_FOR_WILKINSON_CLOCK_RATE(i)(j) <= x"AF0"; --VDLY
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(5) <= x"384"; -- CMPBIAS
 								DESIRED_DAC_SETTINGS(i)(j*2+1)(6) <= x"7FF"; -- PAD_G									
-								DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"578"; -- WBIAS
+								DESIRED_DAC_SETTINGS(i)(j*2+1)(7) <= x"51E"; -- WBIAS
 							end loop;
 						end loop;
 						COMMAND_PROCESSING_STATE <= CLEAR_ALL_SIGNALS;

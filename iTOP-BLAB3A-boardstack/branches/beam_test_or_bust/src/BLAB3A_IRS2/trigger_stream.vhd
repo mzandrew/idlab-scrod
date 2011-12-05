@@ -44,35 +44,48 @@ end trigger_stream;
 architecture Behavioral of trigger_stream is
 	signal internal_TRIGGER_STREAM : std_logic_vector(1023 downto 0) := (others => '0');
 	signal internal_WINDOWS_TO_LOOK_BACK : unsigned(8 downto 0);
+	signal internal_STILL_STREAMING : std_logic := '1';
 begin
-	
+
 	internal_WINDOWS_TO_LOOK_BACK <= unsigned(WINDOWS_TO_LOOK_BACK);
 
-	process(CONTINUE_WRITING, CLOCK_4xSST) begin
+	process(CONTINUE_WRITING, CLOCK_4xSST)	
+		variable stop_counter : integer range 0 to 15 := 0;
+	begin
 		if ( rising_edge(CLOCK_4xSST) ) then
 			--Only shift in the trigger stream bit if we're still sampling		
-			if (CONTINUE_WRITING = '1') then
+			if (CONTINUE_WRITING = '0' and stop_counter >= 4) then
+				internal_STILL_STREAMING <= '0';
+			else 
+				internal_STILL_STREAMING <= '1';
+				if (CONTINUE_WRITING = '1') then
+					stop_counter := 0;
+				else
+					stop_counter := stop_counter + 1;
+				end if;
+
 				--Shift all bits by one spot, except for lowest bit...
 				for i in 1023 downto 1 loop
 					internal_TRIGGER_STREAM(i) <= internal_TRIGGER_STREAM(i-1);
 				end loop;
 				--Lowest bit should be the current status of the trigger bit.
 				internal_TRIGGER_STREAM(0) <= TRIGGER_BIT;
+
 			end if;
 		end if;
 	end process;
 
 
-	process(CONTINUE_WRITING, CLOCK_4xSST) 
+	process(internal_STILL_STREAMING, CLOCK_4xSST) 
 		variable counter : integer range 0 to 32 := 0;
 		variable bit_counter : integer range 0 to 15 := 0;
 		variable look_back_index_high : integer range 0 to 1023 := 15;
 		variable look_back_index_low  : integer range 0 to 1023 := 0;
 	begin
 		if ( rising_edge(CLOCK_SST) ) then
-			if ( CONTINUE_WRITING = '1' ) then
+			if ( internal_STILL_STREAMING = '1' ) then
 				counter := 0;
-			elsif (CONTINUE_WRITING = '0') then
+			else
 				if (counter = 0) then 
 					look_back_index_high := to_integer(internal_WINDOWS_TO_LOOK_BACK) * 4 - 1;
 					look_back_index_low  := look_back_index_high - 15;

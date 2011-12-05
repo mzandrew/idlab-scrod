@@ -11,7 +11,7 @@ use work.Board_Stack_Definitions.ALL;
 
 entity fiber_readout is
 	generic (
-		CURRENT_PROTOCOL_FREEZE_DATE                   : std_logic_vector(31 downto 0) := x"20111016";
+		CURRENT_PROTOCOL_FREEZE_DATE                   : std_logic_vector(31 downto 0) := x"20111213";
 		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND    : integer :=  1; -- set to 83 for an 83kHz clock input
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS    : integer := 32;
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS : integer := 17;
@@ -70,6 +70,9 @@ entity fiber_readout is
 		-----------------------------------------------------------------------------
 		ASIC_SCALERS                                            : in    ASIC_Scalers_C_R_CH;
 		ASIC_TRIGGER_STREAMS                                    : in    ASIC_Trigger_Stream_C_R_CH;
+		-----------------------------------------------------------------------------
+		FEEDBACK_WILKINSON_COUNTER_C_R                          : in    Wilkinson_Rate_Counters_C_R;
+		FEEDBACK_SAMPLING_RATE_COUNTER_C_R                      : in    Sampling_Rate_Counters_C_R;		
 		-----------------------------------------------------------------------------
 		TEMPERATURE_R1                                          : in    std_logic_vector(11 downto 0);
 		FEEDBACK_WILKINSON_DAC_VALUE_C_R                        : in    Wilkinson_Rate_DAC_C_R;
@@ -215,6 +218,8 @@ begin
 		DONE_BUILDING_A_QUARTER_EVENT      => internal_DONE_BUILDING_A_QUARTER_EVENT,
 		ASIC_SCALERS                       => ASIC_SCALERS,
 		ASIC_TRIGGER_STREAMS               => ASIC_TRIGGER_STREAMS,
+		FEEDBACK_WILKINSON_COUNTER_C_R     => FEEDBACK_WILKINSON_COUNTER_C_R,
+		FEEDBACK_SAMPLING_RATE_COUNTER_C_R => FEEDBACK_SAMPLING_RATE_COUNTER_C_R,
 		TEMPERATURE_R1                     => TEMPERATURE_R1,
 		SAMPLING_RATE_FEEDBACK_GOAL        => internal_SAMPLING_RATE_FEEDBACK_GOAL,
 		WILKINSON_RATE_FEEDBACK_GOAL       => internal_WILKINSON_RATE_FEEDBACK_GOAL,

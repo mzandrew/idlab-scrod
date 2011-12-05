@@ -235,11 +235,12 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_TEST_SCALER_CH					: std_logic_vector(2 downto 0);
 	signal internal_DAQ_BUSY_VIO						: std_logic;	
 	signal internal_ZERO_VECTOR_255_LONG			: std_logic_vector(255 downto 0) := (others => '0');
+	signal internal_TRIGGER_OUT                  : std_logic;
 	---------------------------------------------------------
 begin
 	-----Clocking and FTSW interface-------------------------
 	internal_USE_FTSW_CLOCK <= not(internal_MONITOR_INPUTS(0));
-	MONITOR_OUTPUTS(0) <= internal_TRIGGER_TO_USE;
+	MONITOR_OUTPUTS(0) <= internal_TRIGGER_OUT;
 	---------
 	map_clocking_and_ftsw_interface : entity work.clocking_and_ftsw_interface
 		port map (
@@ -503,6 +504,8 @@ begin
 			--------------------------------------------------------
 			ASIC_SCALERS                                            => internal_ASIC_SCALERS_C_R_CH,
 			ASIC_TRIGGER_STREAMS                                    => internal_ASIC_TRIGGER_STREAMS_C_R_CH,
+			FEEDBACK_WILKINSON_COUNTER_C_R                          => internal_FEEDBACK_WILKINSON_COUNTER_C_R,
+			FEEDBACK_SAMPLING_RATE_COUNTER_C_R                      => internal_FEEDBACK_SAMPLING_RATE_COUNTER_C_R,
 			TEMPERATURE_R1                                          => internal_TEMP_R1,
 			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 			FEEDBACK_VADJP_DAC_VALUE_C_R                            => internal_FEEDBACK_SAMPLING_RATE_VADJP_C_R,
@@ -551,12 +554,15 @@ begin
 				trigger_seen := false;
 				post_trigger_counter := 0;
 				internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
+				internal_TRIGGER_OUT <= '0';
 			elsif (internal_SOFTWARE_TRIGGER = '1' and trigger_seen = false) then
 				trigger_seen := true;
 			else
 				if (post_trigger_counter < 4) then
+					internal_TRIGGER_OUT <= '1';
 					post_trigger_counter := post_trigger_counter + 1;
 				elsif (post_trigger_counter < 8) then
+					internal_TRIGGER_OUT <= '0';
 					internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '1';
 					post_trigger_counter := post_trigger_counter + 1;
 				else
@@ -574,17 +580,21 @@ begin
 		end if;
 	end process;
 	--
-	process(internal_TEST_DAC_COLUMN, internal_TEST_DAC_LOC, internal_TEST_DAC_CH, internal_CURRENT_DAC_VOLTAGES) begin
+--	process(internal_TEST_DAC_COLUMN, internal_TEST_DAC_LOC, internal_TEST_DAC_CH, internal_CURRENT_DAC_VOLTAGES) begin
+--		internal_VIO_IN(11 downto 0) <= internal_CURRENT_DAC_VOLTAGES( to_integer( unsigned(internal_TEST_DAC_COLUMN) ))
+--																						 ( to_integer( unsigned(internal_TEST_DAC_LOC) ))
+--																						 ( to_integer( unsigned(internal_TEST_DAC_CH) ) );
+	process(internal_TEST_DAC_COLUMN, internal_TEST_DAC_LOC, internal_CURRENT_DAC_VOLTAGES) begin
 		internal_VIO_IN(11 downto 0) <= internal_CURRENT_DAC_VOLTAGES( to_integer( unsigned(internal_TEST_DAC_COLUMN) ))
 																						 ( to_integer( unsigned(internal_TEST_DAC_LOC) ))
-																						 ( to_integer( unsigned(internal_TEST_DAC_CH) ) );
+																						 (4);
 	end process;
 	process(internal_FEEDBACK_MONITOR_COLUMN, internal_FEEDBACK_MONITOR_ROW, internal_FEEDBACK_WILKINSON_COUNTER_C_R) begin	
 		internal_VIO_IN(27 downto 12) <= internal_FEEDBACK_WILKINSON_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
 																										( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
 		internal_VIO_IN(128 downto 113) <= internal_FEEDBACK_SAMPLING_RATE_COUNTER_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
                                                                                     ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));
-	end process;                                                                     
+	end process;
 	process(internal_FEEDBACK_MONITOR_COLUMN, internal_FEEDBACK_MONITOR_ROW, internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R) begin		
 		internal_VIO_IN(39 downto 28) <= internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R( to_integer( unsigned(internal_FEEDBACK_MONITOR_COLUMN) ))
 																										  ( to_integer( unsigned(internal_FEEDBACK_MONITOR_ROW) ));

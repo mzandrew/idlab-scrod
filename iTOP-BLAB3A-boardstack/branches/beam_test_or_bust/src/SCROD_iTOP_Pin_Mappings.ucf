@@ -453,3 +453,9 @@ NET FIBER_TRANSCEIVER_1_DISABLE_MODULE LOC = "B14" | IOSTANDARD = LVCMOS33; # TX
 #NET ASIC_CARRIER1_CAL_OUT LOC = "AA15";
 
 
+## attempt to clean up map errors by constraining the feedback section
+#INST "map_ASIC_feedback_and_monitoring*" AREA_GROUP = "pblock_mp_ASC_fdbck_and_mntrng";
+#AREA_GROUP "pblock_mp_ASC_fdbck_and_mntrng" RANGE=SLICE_X2Y4:SLICE_X33Y187;
+#AREA_GROUP "pblock_mp_ASC_fdbck_and_mntrng" RANGE=DSP48_X0Y1:DSP48_X0Y46;
+#AREA_GROUP "pblock_mp_ASC_fdbck_and_mntrng" RANGE=RAMB16_X0Y2:RAMB16_X1Y92;
+#AREA_GROUP "pblock_mp_ASC_fdbck_and_mntrng" RANGE=RAMB8_X0Y2:RAMB8_X1Y93;

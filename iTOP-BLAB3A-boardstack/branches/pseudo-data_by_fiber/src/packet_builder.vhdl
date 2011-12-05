@@ -65,6 +65,8 @@ entity packet_builder is
 		OUTPUT_BASE_ADDRESS                                : in    std_logic_vector(WIDTH_OF_OUTPUT_ADDRESS_BUS-1 downto 0);
 		ASIC_SCALERS                                       : in    ASIC_Scalers_C_R_CH;
 		ASIC_TRIGGER_STREAMS                               : in    ASIC_Trigger_Stream_C_R_CH;
+		FEEDBACK_WILKINSON_COUNTER_C_R                     : in    Wilkinson_Rate_Counters_C_R;
+		FEEDBACK_SAMPLING_RATE_COUNTER_C_R                 : in    Sampling_Rate_Counters_C_R;	
 		TEMPERATURE_R1                                     : in    std_logic_vector(11 downto 0);
 		SAMPLING_RATE_FEEDBACK_GOAL                        : in    std_logic_vector(31 downto 0);
 		WILKINSON_RATE_FEEDBACK_GOAL                       : in    std_logic_vector(31 downto 0);     
@@ -106,6 +108,7 @@ architecture packet_builder_architecture of packet_builder is
 		ABOUT_TO_FETCH_SOME_INPUT_DATA, FETCH_SOME_INPUT_DATA, PACK_DATA, WRITE_SOME_OUTPUT_DATA, WRITE_AN_ORIGIN_WINDOW_WORD,
 		WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET, 
 		GET_TRIGGER_STREAM_DATA, WRITE_TRIGGER_STREAM_DATA, GET_SCALER_DATA, WRITE_SCALER_DATA,
+		GET_FEEDBACK_DATA, WRITE_FEEDBACK_DATA,
 		GET_HOUSEKEEPING_DATA, WRITE_HOUSEKEEPING_DATA,
 		WRITE_THE_LAST_PART_OF_A_PACKET, ALMOST_DONE_BUILDING_PACKET, DONE_BUILDING_PACKET);
 	signal packet_builder_state : packet_builder_state_type := IDLE;
@@ -286,9 +289,11 @@ begin
 				when DONE_BUILDING_THE_FIRST_PART_OF_A_PACKET =>
 					internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
 					CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
-					if (internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER = '1' or internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
+					if (internal_THIS_PACKET_IS_A_QUARTER_EVENT_HEADER = '1') then
 						internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
 						packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
+					elsif (internal_THIS_PACKET_IS_A_QUARTER_EVENT_FOOTER = '1') then
+						packet_builder_state <= GET_FEEDBACK_DATA;
 					elsif (internal_THIS_PACKET_IS_A_TRIGGER_SCALER_DATA_PACKET = '1') then
 						stream_and_scaler_counter_flattened := (others => '0');
 						packet_builder_state <= GET_TRIGGER_STREAM_DATA;
@@ -569,6 +574,30 @@ begin
 							packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
 						else
 							packet_builder_state <= GET_HOUSEKEEPING_DATA;
+						end if;
+				-----------------------------------------------------------------------------
+				when GET_FEEDBACK_DATA => 
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '0';
+						if (word_counter = 6) then
+							internal_OUTPUT_DATA_BUS <= x"0000" & WILKINSON_RATE_FEEDBACK_ENABLE;
+						elsif (word_counter >= 7 and word_counter <= 22) then
+							internal_OUTPUT_DATA_BUS <= x"0000" & FEEDBACK_WILKINSON_COUNTER_C_R( (word_counter - 7) / 4 )( (word_counter - 7) mod 4 );
+						elsif (word_counter = 23) then
+							internal_OUTPUT_DATA_BUS <= x"0000" & SAMPLING_RATE_FEEDBACK_ENABLE;
+						elsif (word_counter >= 24 and word_counter <= 39) then
+							internal_OUTPUT_DATA_BUS <= x"0000" & FEEDBACK_SAMPLING_RATE_COUNTER_C_R( (word_counter - 25) / 4 )( (word_counter - 25) mod 4 );
+						else
+							internal_OUTPUT_DATA_BUS <= PACKET_RESERVED_WORD;
+						end if;
+						packet_builder_state <= WRITE_FEEDBACK_DATA;
+				when WRITE_FEEDBACK_DATA =>
+						internal_OUTPUT_FIFO_WRITE_ENABLE <= '1';
+						word_counter := word_counter + 1;
+						CHECKSUM <= std_logic_vector(unsigned(CHECKSUM) + unsigned(internal_OUTPUT_DATA_BUS));
+						if (word_counter = 41) then
+							packet_builder_state <= WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET;
+						else
+							packet_builder_state <= GET_FEEDBACK_DATA;
 						end if;
 				-----------------------------------------------------------------------------
 				when WRITE_RESERVED_WORDS_UNTIL_LAST_PART_OF_PACKET =>
