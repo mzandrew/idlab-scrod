@@ -40,7 +40,10 @@ entity quarter_event_builder is
 		DONE_BUILDING_A_QUARTER_EVENT      :   out std_logic;
 		--Trigger stream and scaler data to pass down to packet builder
 		ASIC_SCALERS                       : in    ASIC_Scalers_C_R_CH;
-		ASIC_TRIGGER_STREAMS               : in    ASIC_Trigger_Stream_C_R_CH;	
+		ASIC_TRIGGER_STREAMS               : in    ASIC_Trigger_Stream_C_R_CH;
+		--Feedback counters and info to pass down to packet builder
+		FEEDBACK_WILKINSON_COUNTER_C_R     : in    Wilkinson_Rate_Counters_C_R;
+		FEEDBACK_SAMPLING_RATE_COUNTER_C_R : in    Sampling_Rate_Counters_C_R;	
 		--
 		TEMPERATURE_R1                     : in    std_logic_vector(11 downto 0);
 		SAMPLING_RATE_FEEDBACK_GOAL        : in    std_logic_vector(31 downto 0);
@@ -115,6 +118,8 @@ begin
 		OUTPUT_BASE_ADDRESS                                => internal_OUTPUT_BASE_ADDRESS,
 		ASIC_SCALERS                                       => ASIC_SCALERS,
 		ASIC_TRIGGER_STREAMS                               => ASIC_TRIGGER_STREAMS,
+		FEEDBACK_WILKINSON_COUNTER_C_R                     => FEEDBACK_WILKINSON_COUNTER_C_R,
+		FEEDBACK_SAMPLING_RATE_COUNTER_C_R                 => FEEDBACK_SAMPLING_RATE_COUNTER_C_R,
 		TEMPERATURE_R1                                     => TEMPERATURE_R1,
 		SAMPLING_RATE_FEEDBACK_GOAL                        => SAMPLING_RATE_FEEDBACK_GOAL,
 		WILKINSON_RATE_FEEDBACK_GOAL                       => WILKINSON_RATE_FEEDBACK_GOAL,
