@@ -547,7 +547,7 @@ begin
 
 	process(internal_CLOCK_SST)
 		variable trigger_seen : boolean := false;
-		variable post_trigger_counter : integer range 0 to 511 := 0;
+		variable post_trigger_counter : integer range 0 to 31 := 0;
 	begin
 		if (falling_edge(internal_CLOCK_SST)) then
 			if (internal_SOFTWARE_TRIGGER = '0') then
@@ -560,13 +560,15 @@ begin
 			else
 				if (post_trigger_counter < 4) then
 					internal_TRIGGER_OUT <= '1';
-					post_trigger_counter := post_trigger_counter + 1;
 				elsif (post_trigger_counter < 8) then
 					internal_TRIGGER_OUT <= '0';
+				elsif (post_trigger_counter < 12) then
 					internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '1';
-					post_trigger_counter := post_trigger_counter + 1;
 				else
 					internal_DUMMY_FTSW_TRIGGER21_SHIFTED <= '0';
+				end if;
+				if (post_trigger_counter < 31) then
+					post_trigger_counter := post_trigger_counter + 1;
 				end if;
 			end if;
 		end if;

@@ -537,8 +537,8 @@ begin
 						elsif (word_counter >=  86 and word_counter <=  93) then --Isel
 --							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+3 )(1) & 
 --							                            x"0" & DESIRED_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+1 )(1);
-							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)+2 )(5) & 
-							                            x"0" & CURRENT_DAC_SETTINGS( (m-70)/2 )( 4*((m-70) mod 2)   )(5);
+							internal_OUTPUT_DATA_BUS <= x"0" & CURRENT_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)+2 )(5) & 
+							                            x"0" & CURRENT_DAC_SETTINGS( (m-86)/2 )( 4*((m-86) mod 2)   )(5);
 						elsif (word_counter >=  94 and word_counter <= 101) then --Vdly
 --							internal_OUTPUT_DATA_BUS <= x"0" & DESIRED_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+3 )(4) & 
 --							                            x"0" & DESIRED_DAC_SETTINGS( (m-94)/2 )( 4*((m-94) mod 2)+1 )(4);						

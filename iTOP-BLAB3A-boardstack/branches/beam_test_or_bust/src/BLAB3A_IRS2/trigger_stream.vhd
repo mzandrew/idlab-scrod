@@ -80,15 +80,13 @@ begin
 		variable counter : integer range 0 to 32 := 0;
 		variable bit_counter : integer range 0 to 15 := 0;
 		variable look_back_index_high : integer range 0 to 1023 := 15;
-		variable look_back_index_low  : integer range 0 to 1023 := 0;
 	begin
 		if ( rising_edge(CLOCK_SST) ) then
 			if ( internal_STILL_STREAMING = '1' ) then
 				counter := 0;
 			else
 				if (counter = 0) then 
-					look_back_index_high := to_integer(internal_WINDOWS_TO_LOOK_BACK) * 4 - 1;
-					look_back_index_low  := look_back_index_high - 15;
+					look_back_index_high := to_integer(internal_WINDOWS_TO_LOOK_BACK) * 2 - 1 + 8;
 					counter := counter + 1;
 				elsif (counter <= 16) then
 					STREAM_OUT(16 - counter) <= internal_TRIGGER_STREAM( look_back_index_high - counter - 1);
