@@ -1,10 +1,56 @@
 #summary Items to bring to various integration tests
 
-= Packing Lists =
-
 The following are a list of items to bring for the following tests:
 
-== September 2011 - Second Nagoya Integration Trip ==
+= 2011 December Fermilab beamtest =
+
+== big things: ==
+
+  * 350MHz scope
+  * 8 cat6 cables
+  * 80MHz signal generator
+  * power supply (off the shelf)
+  * power supply (Matt's)
+  * 1 power cable bundle
+  * cPCI crate + DSP_cPCI
+
+travel toolkit with:
+  * soldering irons
+  * solder
+  * soldering tools
+
+
+== little things: ==
+
+  * 3 complete board stacks (1 Kurtis; 2 ??)
+  * 3 populated SL10_HV rev A3 boards
+  * NIM pocket pulser + spare batteries
+  * voltmeter + ez-hook / sharp leads
+  * loupe
+  * FTSW (well packed)
+  * CAMAC crate controller
+  * "AMPs"
+  * 100MHz and 500 MHz oscillators
+  * VCO
+  * attenuators
+  * SMA, BNC, LEMO adaptors kit
+  * 2mm-SMA adaptor
+  * "lots of blk & cu tape"
+  * all IRS2_DC revB boards
+  * tygon tubing
+  * USB/cat5 cable adaptor
+
+the following spare discrete components:
+  * temperature sensors
+  * IRS2_DC signal path components (AMPs, diodes, caps)
+  * HV res/cap
+  * 0 Ohm resistors
+
+== things we are skipping ==
+3GHz sine wave generator
+fast pulser
+
+= September 2011 - Second Nagoya Integration Trip =
 
   * Minimum of the following boards, debugged for shorts and opens:
     * 3x SCROD 
@@ -41,7 +87,7 @@ The following are a list of items to bring for the following tests:
   * SMA connectors
   * Vector board
 
-== August 2011 - First Nagoya Integration Trip ==
+= August 2011 - First Nagoya Integration Trip =
 
   * Mixed signal oscilloscope and probes(?)
   * Minimum of the following boards, debugged for shorts and opens:
