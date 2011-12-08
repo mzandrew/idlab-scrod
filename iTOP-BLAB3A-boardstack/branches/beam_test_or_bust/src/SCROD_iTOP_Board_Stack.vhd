@@ -2,7 +2,7 @@
 -- SCROD - iTOP Board Stack
 -- Top level firmware intended for 2011 cosmic ray and beam tests.
 --
--- Contributors: Matt Andrew, Kurtis Nishimura, Xiaowen Shi, Lynn Wood
+-- Contributors: Matt Andrew, Chester Lim, Kurtis Nishimura, Xiaowen Shi, Lynn Wood
 --
 -- This module forms the top level of the board stack firmware.
 -- Please see the block diagram at <link_forthcoming> to see a
@@ -26,12 +26,17 @@ entity SCROD_iTOP_Board_Stack is
 	Generic (
 		WIDTH_OF_BLOCKRAM_DATA_BUS		                   : integer := 16;
 		WIDTH_OF_BLOCKRAM_ADDRESS_BUS                    : integer := 13;
-		LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC : integer :=  9
+		LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC : integer :=  9;
+		SER_STRING_SIZE											 : integer := 16
 	);
    Port ( 
 				--On board differential oscillator pins
 				BOARD_CLOCK_250MHz_P : in STD_LOGIC;
 				BOARD_CLOCK_250MHz_N : in STD_LOGIC;
+				
+				--EEPROM
+				SCL					: inout std_logic;
+				SDA					: inout std_logic;
 				
 				---FTSW I/Os (from RJ45)
 				RJ45_ACK_P			: out std_logic;
@@ -135,12 +140,15 @@ end SCROD_iTOP_Board_Stack;
 
 architecture Behavioral of SCROD_iTOP_Board_Stack is
 
+	--------Register Board Revision--------------------------
+	signal REV_r										: std_logic_vector(SER_STRING_SIZE*8-1 downto 0);
 	--------SIGNAL DEFINITIONS-------------------------------
 	signal internal_LEDS_ENABLED              : std_logic := '0';
 	signal internal_LEDS                      : std_logic_vector(15 downto 0);
 	signal internal_MONITOR_INPUTS            : std_logic_vector(0 downto 0);	
 	signal internal_CHIPSCOPE_CONTROL0        : std_logic_vector(35 downto 0);
 	signal internal_CHIPSCOPE_CONTROL1        : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_CONTROL2        : std_logic_vector(35 downto 0);
 	--------Signals for the clocking and FTSW interface------
 	signal internal_USE_FTSW_CLOCK            : std_logic;
 	signal internal_FTSW_INTERFACE_READY      : std_logic;
@@ -236,6 +244,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_DAQ_BUSY_VIO						: std_logic;	
 	signal internal_ZERO_VECTOR_255_LONG			: std_logic_vector(255 downto 0) := (others => '0');
 	signal internal_TRIGGER_OUT                  : std_logic;
+	signal INTERNAL_CHIPSCOPE_VIO_IN 				: STD_LOGIC_VECTOR(128 DOWNTO 0);
+	signal INTERNAL_CHIPSCOPE_VIO_OUT 				: STD_LOGIC_VECTOR(142 DOWNTO 0);
 	---------------------------------------------------------
 begin
 	-----Clocking and FTSW interface-------------------------
@@ -263,15 +273,44 @@ begin
 			SAMPLING_CLOCKS_READY 	=> internal_SAMPLING_CLOCKS_READY,
 			--Clock outputs 
 			CLOCK_127MHz			=> internal_CLOCK_127MHz,
-			CLOCK_SST				=> internal_CLOCK_SST,
-			CLOCK_SSP				=> internal_CLOCK_SSP,
+			CLOCK_SST				=> internal_CLOCK_SST, --21.2MHz
+			CLOCK_SSP				=> internal_CLOCK_SSP, --21.2MHz
 			CLOCK_SSP_UNBUFFERED => internal_CLOCK_SSP_UNBUFFERED,
 			CLOCK_WRITE_STROBE 	=> internal_CLOCK_WRITE_STROBE,
-			CLOCK_4xSST				=> internal_CLOCK_4xSST,
+			CLOCK_4xSST				=> internal_CLOCK_4xSST, --84.8MHz
 			CLOCK_83kHz				=> internal_CLOCK_83kHz,
 			CLOCK_80Hz				=> internal_CLOCK_80Hz,
 			FTSW_TRIGGER21_SHIFTED => internal_FTSW_TRIGGER21_SHIFTED
 		);
+		
+	---------------------------------------------------------
+	-----------------Read & Write to EEPROM------------------
+	eeprom : entity work.SCROD_EEPROM
+	generic map(
+		STRING_SIZE => SER_STRING_SIZE	--# of bytes write and read at one time from chipscope.
+	)
+	port map(
+		CLK => internal_CLOCK_83kHz,
+		RESET => internal_GLOBAL_RESET,	--Will once read automatically after reset
+		SCL => SCL,
+		SDA => SDA,
+		ADDR => INTERNAL_CHIPSCOPE_VIO_OUT(140 downto 128),
+		RD_EN	=> INTERNAL_CHIPSCOPE_VIO_OUT(141),
+		WR_EN	=> INTERNAL_CHIPSCOPE_VIO_OUT(142),
+		WR_DATA => INTERNAL_CHIPSCOPE_VIO_OUT(127 downto 0),
+		RD_DATA => INTERNAL_CHIPSCOPE_VIO_IN(127 downto 0),
+		DONE => INTERNAL_CHIPSCOPE_VIO_IN(128)
+	);
+	
+	process(internal_CLOCK_127MHz)
+	begin
+		if rising_edge(internal_CLOCK_127MHz) then
+			if INTERNAL_CHIPSCOPE_VIO_IN(128) = '1' then
+				REV_r <= INTERNAL_CHIPSCOPE_VIO_IN(127 downto 0);
+			end if;
+		end if;
+	end process;
+	
 	---------------------------------------------------------
 	-----Control for external DACs on each daughter card-----
 	map_iTOP_Board_Stack_DAC_Control : entity work.iTOP_Board_Stack_DAC_Control
@@ -517,7 +556,8 @@ begin
 	map_Chipscope_Core : entity work.Chipscope_Core
 		port map (
 			CONTROL0 => internal_CHIPSCOPE_CONTROL0,
-			CONTROL1 => internal_CHIPSCOPE_CONTROL1
+			CONTROL1 => internal_CHIPSCOPE_CONTROL1,
+			CONTROL2 => internal_CHIPSCOPE_CONTROL2
 		);
 	--
 	map_Chipscope_VIO : entity work.Chipscope_VIO
@@ -527,6 +567,15 @@ begin
 			SYNC_IN => internal_VIO_IN,
 			SYNC_OUT => internal_VIO_OUT		
 		);	
+		
+	--VIO for EEPROM
+	map_EEPROM_VIO : entity work.EEPROM_VIO
+		port map (
+			CONTROL => internal_CHIPSCOPE_CONTROL2,
+			CLK => internal_CLOCK_83kHz,
+			SYNC_IN => internal_CHIPSCOPE_VIO_IN,
+			SYNC_OUT => internal_CHIPSCOPE_VIO_OUT		
+		);
 	--
 	internal_LATCH_SCALERS <= internal_CLOCK_80Hz;
 	--
