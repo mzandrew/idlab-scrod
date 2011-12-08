@@ -1,0 +1,6 @@
+#Read/Write to EEPROM
+#Spartan6 SCROD board
+NET "bclk_250MHz_p" 			LOC = "U25" | PERIOD = 4 ns | IOSTANDARD = LVDS_25;
+NET "bclk_250MHz_n"			LOC = "U26" | IOSTANDARD = LVDS_25;
+NET "SCL"						LOC = "B23" | IOSTANDARD = LVCMOS33;
+NET "SDA"						LOC = "A23" | IOSTANDARD = LVCMOS33 | PULLUP;
