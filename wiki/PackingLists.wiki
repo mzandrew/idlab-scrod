@@ -13,15 +13,16 @@ The following are a list of items to bring for the following tests:
   * power supply (Matt's)
   * 1 power cable bundle
   * cPCI crate + DSP_cPCI
+  * SciFi (2 * eKLM_MB + 2 * budboxes)
 
 travel toolkit with:
   * soldering irons
   * solder
   * soldering tools
 
-
 == little things: ==
 
+  * 4 * 15m fiber optic cables
   * 3 complete board stacks (1 Kurtis; 2 ??)
   * 3 populated SL10_HV rev A3 boards
   * NIM pocket pulser + spare batteries
@@ -30,8 +31,6 @@ travel toolkit with:
   * FTSW (well packed)
   * CAMAC crate controller
   * "AMPs"
-  * 100MHz and 500 MHz oscillators
-  * VCO
   * attenuators
   * SMA, BNC, LEMO adaptors kit
   * 2mm-SMA adaptor
@@ -39,6 +38,10 @@ travel toolkit with:
   * all IRS2_DC revB boards
   * tygon tubing
   * USB/cat5 cable adaptor
+
+calibration sources:
+  * 100MHz and 500 MHz oscillators
+  * VCO
 
 the following spare discrete components:
   * temperature sensors
