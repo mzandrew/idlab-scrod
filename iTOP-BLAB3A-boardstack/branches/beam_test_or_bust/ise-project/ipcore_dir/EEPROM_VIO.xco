@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 13.2
-# Date: Tue Dec 06 06:37:17 2011
+# Date: Tue Dec 06 06:40:11 2011
 #
 ##############################################################
 #
@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-#  Generated from component: xilinx.com:ip:chipscope_icon:1.04.a
+#  Generated from component: xilinx.com:ip:chipscope_vio:1.04.a
 #
 ##############################################################
 #
@@ -30,22 +30,26 @@ SET foundationsym = false
 SET implementationfiletype = Ngc
 SET package = fgg676
 SET removerpms = false
-SET simulationfiles = Structural
+SET simulationfiles = Behavioral
 SET speedgrade = -3
 SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
-SELECT ICON_(ChipScope_Pro_-_Integrated_Controller) family Xilinx,_Inc. 1.04.a
+SELECT VIO_(ChipScope_Pro_-_Virtual_Input/Output) family Xilinx,_Inc. 1.04.a
 # END Select
 # BEGIN Parameters
-CSET component_name=Chipscope_Core
-CSET enable_jtag_bufg=true
-CSET number_control_ports=3
-CSET use_ext_bscan=false
-CSET use_softbscan=false
-CSET use_unused_bscan=false
-CSET user_scan_chain=USER1
+CSET asynchronous_input_port_width=8
+CSET asynchronous_output_port_width=8
+CSET component_name=EEPROM_VIO
+CSET enable_asynchronous_input_port=false
+CSET enable_asynchronous_output_port=false
+CSET enable_synchronous_input_port=true
+CSET enable_synchronous_output_port=true
+CSET example_design=false
+CSET invert_clock_input=false
+CSET synchronous_input_port_width=129
+CSET synchronous_output_port_width=143
 # END Parameters
 GENERATE
-# CRC: 44f0f9e1
+# CRC: a324ce7f
