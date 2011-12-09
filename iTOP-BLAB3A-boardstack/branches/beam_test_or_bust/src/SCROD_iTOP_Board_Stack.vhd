@@ -285,7 +285,7 @@ begin
 		
 	---------------------------------------------------------
 	-----------------Read & Write to EEPROM------------------
-	eeprom : entity work.SCROD_EEPROM
+	map_eeprom : entity work.SCROD_EEPROM
 	generic map(
 		STRING_SIZE => SER_STRING_SIZE	--# of bytes write and read at one time from chipscope.
 	)
