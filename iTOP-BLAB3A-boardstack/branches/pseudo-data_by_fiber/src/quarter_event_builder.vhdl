@@ -25,6 +25,7 @@ entity quarter_event_builder is
 	port (
 		RESET                              : in    std_logic;
 		CLOCK                              : in    std_logic;
+		SCROD_SER								  : in	 std_logic_vector(31 downto 0);
 		COMMAND_ARGUMENT                   : in    std_logic_vector(31 downto 0);
 		EVENT_NUMBER_SET                   : in    std_logic;
 		INPUT_DATA_BUS                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1           downto 0);
@@ -85,7 +86,18 @@ architecture quarter_event_builder_architecture of quarter_event_builder is
 		BUILD_A_QUARTER_EVENT_FOOTER_PACKET, DONE_BUILDING_A_QUARTER_EVENT_FOOTER_PACKET,
 		ALMOST_DONE_BUILDING_QUARTER_EVENT, DONE_BUILDING_QUARTER_EVENT);
 	signal quarter_event_builder_state : quarter_event_builder_state_type := IDLE;
+	
+	signal SCROD_REVISION	: std_logic_vector(15 downto 0);
+	signal SCROD_ID			: std_logic_vector(15 downto 0);
 begin
+	process(CLOCK)
+	begin
+		if rising_edge(CLOCK) then
+			SCROD_REVISION <= SCROD_SER(31 downto 16);
+			SCROD_ID <= SCROD_SER(15 downto 0);
+		end if;
+	end process;
+	
 	PB : entity work.packet_builder 
 	generic map (
 		NUMBER_OF_PACKETS_IN_AN_EVENT                     => NUMBER_OF_PACKETS_IN_AN_EVENT,
@@ -94,6 +106,8 @@ begin
 	port map (
 		RESET                                              => internal_RESET,
 		CLOCK                                              => internal_CLOCK,
+		SCROD_REVISION													=> SCROD_REVISION,
+		SCROD_ID															=> SCROD_ID,
 		INPUT_DATA_BUS                                     => INPUT_DATA_BUS,
 		INPUT_ADDRESS_BUS                                  => INPUT_ADDRESS_BUS,
 		INPUT_BLOCK_RAM_ADDRESS                            => INPUT_BLOCK_RAM_ADDRESS,

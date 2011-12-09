@@ -34,16 +34,18 @@ entity packet_builder is
 --		NUMBER_OF_WORDS_NEEDED_TO_PACK_8_SAMPLES : integer := 3;
 		NUMBER_OF_SAMPLES_IN_A_PACKET            : integer := 256;
 		LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC : integer := 9;
-		SCROD_REVISION                           : std_logic_vector(15 downto 0) := x"000a";
-		SCROD_ID                                 : std_logic_vector(15 downto 0) := x"0001";
+--		SCROD_REVISION                           : std_logic_vector(15 downto 0) := x"000a";
+--		SCROD_ID                                 : std_logic_vector(15 downto 0) := x"0001";
 		FOOTER                                   : std_logic_vector(31 downto 0) := x"62504944"
 	);
 	port (
 		RESET                                              : in    std_logic;
 		CLOCK                                              : in    std_logic;
+		SCROD_REVISION													: in 	  std_logic_vector(15 downto 0);
+		SCROD_ID															: in	  std_logic_vector(15 downto 0);
 		INPUT_DATA_BUS                                     : in    std_logic_vector(WIDTH_OF_INPUT_DATA_BUS-1                          downto 0);
-		INPUT_ADDRESS_BUS                                  :   out std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1                       downto 0);
-		INPUT_BLOCK_RAM_ADDRESS                            :   out std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1                       downto 0);
+		INPUT_ADDRESS_BUS                                  : out   std_logic_vector(WIDTH_OF_INPUT_ADDRESS_BUS-1                       downto 0);
+		INPUT_BLOCK_RAM_ADDRESS                            : out   std_logic_vector(NUMBER_OF_INPUT_BLOCK_RAMS-1                       downto 0);
 		ASIC_START_WINDOW                                  : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
 		ASIC_END_WINDOW                                    : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);
 		ADDRESS_OF_STARTING_WINDOW_IN_ASIC                 : in    std_logic_vector(LOG_BASE_2_OF_NUMBER_OF_WAVEFORM_WINDOWS_IN_ASIC-1 downto 0);

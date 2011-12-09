@@ -141,7 +141,7 @@ end SCROD_iTOP_Board_Stack;
 architecture Behavioral of SCROD_iTOP_Board_Stack is
 
 	--------Register Board Revision--------------------------
-	signal REV_r										: std_logic_vector(SER_STRING_SIZE*8-1 downto 0);
+	signal REV_r										: std_logic_vector(31 downto 0);
 	--------SIGNAL DEFINITIONS-------------------------------
 	signal internal_LEDS_ENABLED              : std_logic := '0';
 	signal internal_LEDS                      : std_logic_vector(15 downto 0);
@@ -290,8 +290,8 @@ begin
 		STRING_SIZE => SER_STRING_SIZE	--# of bytes write and read at one time from chipscope.
 	)
 	port map(
-		CLK => internal_CLOCK_83kHz,
-		RESET => internal_GLOBAL_RESET,	--Will once read automatically after reset
+		CLK => internal_CLOCK_80Hz,
+		RESET => internal_GLOBAL_RESET,	--Will read once automatically after reset
 		SCL => SCL,
 		SDA => SDA,
 		ADDR => INTERNAL_CHIPSCOPE_VIO_OUT(140 downto 128),
@@ -302,11 +302,11 @@ begin
 		DONE => INTERNAL_CHIPSCOPE_VIO_IN(128)
 	);
 	
-	process(internal_CLOCK_127MHz)
+	process(internal_CLOCK_80Hz) --Register the revision number
 	begin
-		if rising_edge(internal_CLOCK_127MHz) then
+		if rising_edge(internal_CLOCK_80Hz) then
 			if INTERNAL_CHIPSCOPE_VIO_IN(128) = '1' then
-				REV_r <= INTERNAL_CHIPSCOPE_VIO_IN(127 downto 0);
+				REV_r <= INTERNAL_CHIPSCOPE_VIO_IN(31 downto 0);
 			end if;
 		end if;
 	end process;
@@ -487,6 +487,7 @@ begin
 		)
 		port map (
 			RESET                                                   => internal_GLOBAL_RESET,
+			SCROD_SER															  => REV_r,
 			Aurora_RocketIO_GTP_MGT_101_RESET                       => internal_GLOBAL_RESET,
 			Aurora_RocketIO_GTP_MGT_101_initialization_clock        => internal_CLOCK_SST, --Originally set to 31.25 MHz in PDBF, trying 21.2 MHz here.
 			Aurora_RocketIO_GTP_MGT_101_reset_clock                 => internal_CLOCK_83kHz, -- make sure to update NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND if you change this
@@ -572,7 +573,7 @@ begin
 	map_EEPROM_VIO : entity work.EEPROM_VIO
 		port map (
 			CONTROL => internal_CHIPSCOPE_CONTROL2,
-			CLK => internal_CLOCK_83kHz,
+			CLK => internal_CLOCK_80Hz,
 			SYNC_IN => internal_CHIPSCOPE_VIO_IN,
 			SYNC_OUT => internal_CHIPSCOPE_VIO_OUT		
 		);
