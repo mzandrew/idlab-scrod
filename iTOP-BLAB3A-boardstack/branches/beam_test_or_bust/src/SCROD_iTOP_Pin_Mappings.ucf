@@ -6,6 +6,7 @@ NET BOARD_CLOCK_250MHz_N	LOC = "U26" | IOSTANDARD = LVDS_25;
 NET "SCL"						LOC = "B23"	| IOSTANDARD = LVCMOS33;
 NET "SDA"						LOC = "A23"	| IOSTANDARD = LVCMOS33 | PULLUP;
 
+
 #FTSW Inputs
 NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;
 NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;
@@ -359,6 +360,8 @@ NET map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/sig
 NET map_clocking_and_ftsw_interface/internal_BOARD_CLOCK_250MHz								PERIOD = 4.0 ns;
 NET internal_CLOCK_SST																						PERIOD = 47.1 ns;
 NET internal_CLOCK_4xSST																					PERIOD = 11.7 ns;
+#NET map_clocking_and_ftsw_interface/internal_CLOCK_83kHz											CLOCK_DEDICATED_ROUTE = FALSE;
+#NET map_clocking_and_ftsw_interface/internal_CLOCK_80Hz											CLOCK_DEDICATED_ROUTE = FALSE;
 
 #The location of the FTSW receiver PLL seems to only work in specific locations.
 #The one below is verified working... others may also work but have not been

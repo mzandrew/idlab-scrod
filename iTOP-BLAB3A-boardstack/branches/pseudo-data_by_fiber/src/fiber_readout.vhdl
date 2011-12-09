@@ -22,6 +22,7 @@ entity fiber_readout is
 	);
 	port (
 		RESET                                                   : in    std_logic;
+		SCROD_SER															  : in	 std_logic_vector(31 downto 0);
 		Aurora_RocketIO_GTP_MGT_101_RESET                       : in    std_logic;
 		Aurora_RocketIO_GTP_MGT_101_initialization_clock        : in    std_logic;
 		Aurora_RocketIO_GTP_MGT_101_reset_clock                 : in    std_logic;
@@ -201,6 +202,7 @@ begin
 	)
 	port map (
 		RESET                              => RESET,
+		SCROD_SER								  => SCROD_SER,
 --		CLOCK                              => internal_Aurora_78MHz_clock,
 		CLOCK                              => QEB_AND_PB_CLOCK,
 		COMMAND_ARGUMENT                   => internal_COMMAND_ARGUMENT,
