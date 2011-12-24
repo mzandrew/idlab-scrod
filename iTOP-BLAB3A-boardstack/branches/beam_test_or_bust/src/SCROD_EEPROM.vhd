@@ -1,21 +1,8 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
 -- Create Date:    17:35:00 08/27/2011 
--- Design Name: 
 -- Module Name:    EEPROM_CHIPSCOPE_MODULE - Behavioral 
--- Project Name: 	
--- Target Devices: Spartan-3A/3AN; 
--- Tool versions: 
+-- Target Devices: Tested with Spartan-3 eval board and Spartan-6 on SCROD
 -- Description: 	Using Chipscope to write and read 16 bytes to EEPROM at any given address.
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -137,7 +124,7 @@ begin
 		);
 		
 
-	process (CLK)
+	process (CLK, RESET)
 		--======================================================================
 		-----------COMMAND FOR EEPROM_I2C_INTERFACE MODULE----------------
 		CONSTANT CMD_CHECK_COMMAND			: STD_LOGIC_VECTOR(2 DOWNTO 0) := "000";
@@ -162,20 +149,30 @@ begin
 	variable  sub_step_counter						: integer range 0 to 7 := 0;
 		--======================================================================
 	BEGIN
-		IF RISING_EDGE(CLK) THEN
+
+		if RESET = '1' then
+			AUTO_READ <= '1';
+			DONE_r <= '0';
+			step_counter := 0;
+			sub_step_counter := 0;
+			counter := 0;
+		
+		ELSIF RISING_EDGE(CLK) THEN
+
 			--#############################
 			IF EXECUTE_EEPROM = '1' THEN
 				EXECUTE_EEPROM <= '0';			--RESET SIGNAL 'EXECUTE' TO '0'!
 			END IF;
 			--#############################
 
-			if RESET = '1' then
-				AUTO_READ <= '1';
-				DONE_r <= '0';
-				step_counter := 0;
-				sub_step_counter := 0;
-				counter := 0;
-			elsif AUTO_READ = '1' then
+--			if RESET = '1' then
+--				AUTO_READ <= '1';
+--				DONE_r <= '0';
+--				step_counter := 0;
+--				sub_step_counter := 0;
+--				counter := 0;
+--			elsif AUTO_READ = '1' then
+			if AUTO_READ = '1' then
 			--------------Read after reset---------------
 					if step_counter = 0 then
 						if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then
