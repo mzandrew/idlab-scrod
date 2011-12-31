@@ -371,7 +371,7 @@ begin
 		generic map (
 			WIDTH_OF_BLOCKRAM_DATA_BUS		=> WIDTH_OF_BLOCKRAM_DATA_BUS,
 			WIDTH_OF_BLOCKRAM_ADDRESS_BUS => WIDTH_OF_BLOCKRAM_ADDRESS_BUS,	
-			use_chipscope_ila					=> false
+			use_chipscope_ila					=> true
 		)
 		port map (
 			AsicIn_DATA_BUS_CHANNEL_ADDRESS			=> AsicIn_DATA_BUS_CHANNEL_ADDRESS,
@@ -673,7 +673,8 @@ begin
 	internal_VIO_IN(110) <= internal_TRIGGER_TO_USE;
 	internal_VIO_IN(111) <= internal_TRIGGER_VETO;
 	internal_VIO_IN(112) <= internal_CLEAR_TRIGGER_VETO;
-	internal_VIO_IN(255 downto 153) <= (others => '0');
+	internal_VIO_IN(153) <= internal_FTSW_INTERFACE_STABLE;
+	internal_VIO_IN(255 downto 154) <= (others => '0');
 
 	internal_MONITOR_INPUTS <= MONITOR_INPUTS;
 	--First four LEDS show FTSW status (none green if not using FTSW, 0 and 1 should be green if using FTSW)

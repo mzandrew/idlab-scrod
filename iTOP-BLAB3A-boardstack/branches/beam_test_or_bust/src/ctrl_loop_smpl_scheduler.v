@@ -184,14 +184,14 @@ module CTRL_LOOP_SMPL_SCHEDULER(ENABLE, CLR_ALL, PULSEDET_CLK, REFRESH_CLK,
 
 //2011-11-28 Kurtis: Commenting out this instantiation to see if it allows compilation.
 //                   With this instantiated, map always fails with no specific errors. 
-	CTRL_LOOP_SMPL	ctrl_loop_smpl(ENABLE | !fsm_reset_out, CLR_ALL | fsm_reset_out,
-												PULSEDET_CLK, REFRESH_CLK,
-												SSP_IN,
-												cur_ssp_out,
-												cur_smpl_int,
-												cur_vadjp,
-												cur_vadjn,
-												NO_PULSE, INITIAL_VADJP, INITIAL_VADJN,
-												SMPL_THRESH_LOW, SMPL_THRESH_HIGH);
+//	CTRL_LOOP_SMPL	ctrl_loop_smpl(ENABLE | !fsm_reset_out, CLR_ALL | fsm_reset_out,
+//												PULSEDET_CLK, REFRESH_CLK,
+//												SSP_IN,
+//												cur_ssp_out,
+//												cur_smpl_int,
+//												cur_vadjp,
+//												cur_vadjn,
+//												NO_PULSE, INITIAL_VADJP, INITIAL_VADJN,
+//												SMPL_THRESH_LOW, SMPL_THRESH_HIGH);
 
 endmodule
