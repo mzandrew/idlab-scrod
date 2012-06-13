@@ -36,7 +36,7 @@ entity clocking_and_ftsw_interface is
     Port ( 
 				BOARD_CLOCK_250MHz_P : in STD_LOGIC;
 				BOARD_CLOCK_250MHz_N : in STD_LOGIC;
-				---FTSW I/Os (from RJ45)
+--				---FTSW I/Os (from RJ45)
 				RJ45_ACK_P			: out std_logic;
 				RJ45_ACK_N			: out std_logic;			  
 				RJ45_TRG_P			: in std_logic;
@@ -118,7 +118,7 @@ begin
 	internal_USE_FTSW_CLOCK <= USE_FTSW_CLOCK;
    -----------------------------------------------------------------
 	internal_CLOCK_SST <= internal_CLOCK_21MHz;
-   ----Map out the interface signals--------------------------------
+--   ----Map out the interface signals--------------------------------
 	map_FTSW_interface: entity work.bpid
     port map (
       ack_p  => RJ45_ACK_P,

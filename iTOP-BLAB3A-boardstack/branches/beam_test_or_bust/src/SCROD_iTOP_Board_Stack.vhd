@@ -33,12 +33,12 @@ entity SCROD_iTOP_Board_Stack is
 				--On board differential oscillator pins
 				BOARD_CLOCK_250MHz_P : in STD_LOGIC;
 				BOARD_CLOCK_250MHz_N : in STD_LOGIC;
-				
+--				DIS_250					: out STD_LOGIC;
 				--EEPROM
 				SCL					: inout std_logic;
 				SDA					: inout std_logic;
 				
-				---FTSW I/Os (from RJ45)
+--				---FTSW I/Os (from RJ45)
 				RJ45_ACK_P			: out std_logic;
 				RJ45_ACK_N			: out std_logic;			  
 				RJ45_TRG_P			: in std_logic;
@@ -131,6 +131,25 @@ entity SCROD_iTOP_Board_Stack is
 				Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N 				: out std_logic;
 				FIBER_TRANSCEIVER_1_DISABLE_MODULE 								: out std_logic;				
 
+				--USB interface
+				IFCLK			: in std_logic;
+				CLKOUT		: in std_logic;
+				FDD			: inout std_logic_vector(15 downto 0);
+				PA0			: out std_logic;
+				PA1			: out std_logic;
+				PA2			: out std_logic;
+				PA3			: out std_logic;
+				PA4			: out std_logic;
+				PA5			: out std_logic;
+				PA6			: out std_logic;
+				PA7			: in std_logic;
+				CTL0			: in std_logic;
+				CTL1			: in std_logic;
+				CTL2			: in std_logic;
+				RDY0			: out std_logic;
+				RDY1			: out std_logic;
+				WAKEUP		: in std_logic;
+
 				---General monitor and diagnostic
 				LEDS 					: out STD_LOGIC_VECTOR(15 downto 0);
 				MONITOR_OUTPUTS	: out STD_LOGIC_VECTOR(0 downto 0);
@@ -149,6 +168,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_CHIPSCOPE_CONTROL0        : std_logic_vector(35 downto 0);
 	signal internal_CHIPSCOPE_CONTROL1        : std_logic_vector(35 downto 0);
 	signal internal_CHIPSCOPE_CONTROL2        : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_CONTROL3        : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_CONTROL4        : std_logic_vector(35 downto 0);
 	--------Signals for the clocking and FTSW interface------
 	signal internal_USE_FTSW_CLOCK            : std_logic;
 	signal internal_FTSW_INTERFACE_READY      : std_logic;
@@ -216,6 +237,8 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	signal internal_DONE_BUILDING_A_QUARTER_EVENT            : std_logic;
 	signal internal_chipscope_vio_display                    : std_logic_vector(255 downto 0);
 	------------------------------------------------------------
+	---------Signals for the USB interface----------------------
+	------------------------------------------------------------
 	--Signals corresponding to commands-------------------------
 	signal internal_SOFT_TRIGGER_FROM_FIBER            : std_logic := '0';
 	signal internal_RESET_SCALER_COUNTERS              : std_logic := '0';
@@ -249,6 +272,7 @@ architecture Behavioral of SCROD_iTOP_Board_Stack is
 	---------------------------------------------------------
 begin
 	-----Clocking and FTSW interface-------------------------
+--	DIS_250 <= '1';
 	internal_USE_FTSW_CLOCK <= not(internal_MONITOR_INPUTS(0));
 	MONITOR_OUTPUTS(0) <= internal_TRIGGER_OUT;
 	---------
@@ -256,7 +280,7 @@ begin
 		port map (
 			BOARD_CLOCK_250MHz_P => BOARD_CLOCK_250MHz_P,
 			BOARD_CLOCK_250MHz_N => BOARD_CLOCK_250MHz_N,
-			---FTSW I/Os (from RJ45)
+--			---FTSW I/Os (from RJ45)
 			RJ45_ACK_P				=> RJ45_ACK_P,
 			RJ45_ACK_N				=> RJ45_ACK_N,
 			RJ45_TRG_P				=> RJ45_TRG_P,
@@ -364,7 +388,7 @@ begin
 		);
 	---------------------------------------------------------
 	--------ASIC digitizing and readout----------------------
-	internal_TRIGGER_TO_USE  <= ((internal_FTSW_TRIGGER21_SHIFTED and internal_FTSW_INTERFACE_STABLE) or internal_DUMMY_FTSW_TRIGGER21_SHIFTED) and not (internal_TRIGGER_VETO);
+	internal_TRIGGER_TO_USE  <= internal_DUMMY_FTSW_TRIGGER21_SHIFTED and not (internal_TRIGGER_VETO);--((internal_FTSW_TRIGGER21_SHIFTED and internal_FTSW_INTERFACE_STABLE) or internal_DUMMY_FTSW_TRIGGER21_SHIFTED) and not (internal_TRIGGER_VETO);
 	internal_DAQ_BUSY_TO_USE <= (internal_DAQ_BUSY or internal_DAQ_BUSY_VIO);
 
 	map_ASIC_digitizing_and_readout : entity work.ASIC_digitizing_and_readout
@@ -477,6 +501,7 @@ begin
 	-----------------------------------------------------------
 	---------Fiberoptic readout interface----------------------
 	internal_GLOBAL_RESET <= (internal_GLOBAL_RESET_REQUESTED_BY_FIBER or internal_GLOBAL_RESET_REQUESTED_BY_VIO);
+
 	
 	FR : entity work.fiber_readout
 		generic map (
@@ -488,13 +513,14 @@ begin
 		port map (
 			RESET                                                   => internal_GLOBAL_RESET,
 			SCROD_SER															  => REV_r,
+			-- Fiber interface -------------------------------------
 			Aurora_RocketIO_GTP_MGT_101_RESET                       => internal_GLOBAL_RESET,
 			Aurora_RocketIO_GTP_MGT_101_initialization_clock        => internal_CLOCK_SST, --Originally set to 31.25 MHz in PDBF, trying 21.2 MHz here.
 			Aurora_RocketIO_GTP_MGT_101_reset_clock                 => internal_CLOCK_83kHz, -- make sure to update NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND if you change this
-			-- fiber optic dual clock input
+--			 fiber optic dual clock input
 			Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P             => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P,
 			Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N             => Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N,
-			-- fiber optic transceiver #101 lane 0 I/O
+--			 fiber optic transceiver #101 lane 0 I/O
 			Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P             => Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P,
 			Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N             => Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N,
 			Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P            => Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P,
@@ -503,12 +529,30 @@ begin
 			FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER => FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER,
 			FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  => FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT,
 			FIBER_TRANSCEIVER_0_DISABLE_MODULE                      => FIBER_TRANSCEIVER_0_DISABLE_MODULE,
-			-- fiber optic transceiver #101 lane 1 I/O
+--			 fiber optic transceiver #101 lane 1 I/O
 			FIBER_TRANSCEIVER_1_DISABLE_MODULE                      => FIBER_TRANSCEIVER_1_DISABLE_MODULE,
-			Aurora_78MHz_clock                                      => internal_CLOCK_DAQ_INTERFACE,
+			READOUT_CLK                                      		  => internal_CLOCK_DAQ_INTERFACE,
 			QEB_AND_PB_CLOCK                                        => internal_CLOCK_SSP,
 			should_not_automatically_try_to_keep_fiber_link_up      => internal_should_not_automatically_try_to_keep_fiber_link_up,
 			fiber_link_is_up                                        => internal_fiber_link_is_up,
+			-- USB interface ---------------------------------------
+			IFCLK																	  => IFCLK,
+			CLKOUT																  => CLKOUT,
+			FDD																	  => FDD,
+			PA0																	  => PA0,
+			PA1																	  => PA1,
+			PA2																	  => PA2,
+			PA3																	  => PA3,
+			PA4																	  => PA4,
+			PA5																	  => PA5,
+			PA6																	  => PA6,
+			PA7																	  => PA7,
+			CTL0																	  => CTL0,
+			CTL1																	  => CTL1,
+			CTL2																	  => CTL2,
+			RDY0																	  => RDY0,
+			RDY1																	  => RDY1,
+			WAKEUP																  => WAKEUP,
 			--------------------------------------------------------
 			Aurora_RocketIO_GTP_MGT_101_status_LEDs                 => internal_Aurora_RocketIO_GTP_MGT_101_status_LEDs,
 			chipscope_ila                                           => open,
@@ -550,6 +594,9 @@ begin
 			FEEDBACK_WILKINSON_DAC_VALUE_C_R                        => internal_FEEDBACK_WILKINSON_DAC_VALUE_C_R,
 			FEEDBACK_VADJP_DAC_VALUE_C_R                            => internal_FEEDBACK_SAMPLING_RATE_VADJP_C_R,
 			FEEDBACK_VADJN_DAC_VALUE_C_R                            => internal_FEEDBACK_SAMPLING_RATE_VADJN_C_R
+			
+--			CONTROL3																  => internal_CHIPSCOPE_CONTROL3
+--			CONTROL4																  => internal_CHIPSCOPE_CONTROL4
 		);
 	-----------------------------------------------------------
 	
@@ -559,6 +606,8 @@ begin
 			CONTROL0 => internal_CHIPSCOPE_CONTROL0,
 			CONTROL1 => internal_CHIPSCOPE_CONTROL1,
 			CONTROL2 => internal_CHIPSCOPE_CONTROL2
+--			CONTROL3 =>	internal_CHIPSCOPE_CONTROL3
+--			CONTROL4 => internal_CHIPSCOPE_CONTROL4
 		);
 	--
 	map_Chipscope_VIO : entity work.Chipscope_VIO
