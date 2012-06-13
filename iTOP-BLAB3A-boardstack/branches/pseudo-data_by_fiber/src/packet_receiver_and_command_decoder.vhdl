@@ -19,8 +19,8 @@ entity packet_receiver_and_command_interpreter is
 	);
 	port (
 		-- User Interface
-		RX_D            : in  std_logic_vector(31 downto 0);
-		RX_SRC_RDY_N    : in  std_logic;
+		PACKET_IN       : in  std_logic_vector(31 downto 0);
+		PACKET_WR_EN    : in  std_logic;
 		-- System Interface
 		USER_CLK        : in  std_logic;
 		RESET           : in  std_logic;
@@ -59,6 +59,7 @@ entity packet_receiver_and_command_interpreter is
 		DESIRED_DAC_SETTING_FROM_FEEDBACK_FOR_SAMPLING_RATE_VADJN  : in    Sampling_Rate_DAC_C_R;
 		acknowledge_execution_of_command   : in    std_logic;
 		UNKNOWN_COMMAND_RECEIVED_COUNTER   :   out std_logic_vector(7 downto 0)
+
 );
 end packet_receiver_and_command_interpreter;
 
@@ -72,8 +73,8 @@ use work.Board_Stack_Definitions.all;
 architecture Behavioral of packet_receiver_and_command_interpreter is
 	type PACKET_RECEIVER_STATE_TYPE is (WAITING_FOR_HEADER, READING_PACKET_SIZE, READING_PROTOCOL_DATE, READING_PACKET_TYPE, READING_VALUES, READING_SCROD_REV_AND_ID, READING_CHECKSUM, READING_FOOTER);
 	type COMMAND_PROCESSING_STATE_TYPE is (WAITING_TO_PROCESS_COMMAND, PROCESS_COMMAND, WAITING_FOR_COMMAND_EXECUTION, RESET_DAC_VALUES_TO_NOMINAL, CLEAR_ALL_SIGNALS, WAITING_FOR_ACKNOWLEDGE);
-	signal internal_RX_D                               : std_logic_vector(31 downto 0);
-	signal internal_RX_SRC_RDY_N                       : std_logic;
+	signal internal_PACKET_IN                          : std_logic_vector(31 downto 0);
+	signal internal_PACKET_WR_EN                       : std_logic;
 	signal internal_WRONG_PACKET_SIZE_COUNTER          : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER : std_logic_vector(31 downto 0);
 	signal internal_WRONG_PACKET_TYPE_COUNTER          : std_logic_vector(31 downto 0);
@@ -108,10 +109,11 @@ architecture Behavioral of packet_receiver_and_command_interpreter is
 	signal internal_UNKNOWN_COMMAND_RECEIVED_COUNTER   : std_logic_vector(31 downto 0);
 	signal PACKET_RECEIVER_STATE                       : PACKET_RECEIVER_STATE_TYPE    := WAITING_FOR_HEADER;
 	signal COMMAND_PROCESSING_STATE                    : COMMAND_PROCESSING_STATE_TYPE := RESET_DAC_VALUES_TO_NOMINAL;
+	
 begin
 	UNKNOWN_COMMAND_RECEIVED_COUNTER   <= internal_UNKNOWN_COMMAND_RECEIVED_COUNTER(7 downto 0);
-	internal_RX_D                      <= RX_D;
-	internal_RX_SRC_RDY_N              <= RX_SRC_RDY_N;
+	internal_PACKET_IN                 <= PACKET_IN;
+	internal_PACKET_WR_EN              <= PACKET_WR_EN;
 	WRONG_PACKET_TYPE_COUNTER          <= internal_WRONG_PACKET_TYPE_COUNTER;
 	WRONG_PACKET_SIZE_COUNTER          <= internal_WRONG_PACKET_SIZE_COUNTER;
 	WRONG_PROTOCOL_FREEZE_DATE_COUNTER <= internal_WRONG_PROTOCOL_FREEZE_DATE_COUNTER;
@@ -163,7 +165,7 @@ begin
 		end loop;
 	end process;
 	----------------------------------------------------------------------------------
-	process (RESET, USER_CLK, RX_SRC_RDY_N)
+	process (RESET, USER_CLK, PACKET_WR_EN)
 		constant COMMAND_PACKET_OFFSET                    : integer                :=   5;
 		constant NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY : integer range 0 to 255 := 133; -- 140 - 1*(head, size, date, type, scrod, check, foot)
 		type command_word_type is array(NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY-1 downto 0) of unsigned(31 downto 0);
@@ -227,14 +229,14 @@ begin
 			COMMAND_PROCESSING_STATE <= RESET_DAC_VALUES_TO_NOMINAL;
 --		elsif (CHANNEL_UP = '0') then
 		elsif (rising_edge(USER_CLK)) then
-			-- this only receives packets when internal_RX_SRC_RDY_N = '0'
-			-- and it only processes commands when internal_RX_SRC_RDY_N = '1'
-			if (internal_RX_SRC_RDY_N = '0') then
+			-- this only receives packets when internal_PACKET_WR_EN = '0'
+			-- and it only processes commands when internal_PACKET_WR_EN = '1'
+			if (internal_PACKET_WR_EN = '0') then
 				internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= std_logic_vector(unsigned(internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR) + 1);
 				case PACKET_RECEIVER_STATE is
 					when WAITING_FOR_HEADER =>
 --						values_read := 0;
-						if (internal_RX_D = x"00BE11E2") then
+						if (internal_PACKET_IN = x"00BE11E2") then
 							checksum := x"00BE11E2";
 							internal_NUMBER_OF_WORDS_IN_THIS_PACKET_RECEIVED_SO_FAR <= x"00000001";
 							PACKET_RECEIVER_STATE <= READING_PACKET_SIZE;
@@ -243,7 +245,7 @@ begin
 							internal_resynchronizing_with_header <= '1';
 						end if;
 					when READING_PACKET_SIZE =>
-						packet_size := unsigned(internal_RX_D(15 downto 0));
+						packet_size := unsigned(internal_PACKET_IN(15 downto 0));
 						checksum := checksum + packet_size;
 						remaining_words_in_packet := packet_size - 2; -- 1 each for header & packet size
 						if (packet_size = EXPECTED_PACKET_SIZE) then
@@ -253,7 +255,7 @@ begin
 							PACKET_RECEIVER_STATE <= WAITING_FOR_HEADER;
 						end if;
 					when READING_PROTOCOL_DATE =>
-						protocol_date := unsigned(internal_RX_D);
+						protocol_date := unsigned(internal_PACKET_IN);
 						checksum := checksum + protocol_date;
 						remaining_words_in_packet := remaining_words_in_packet - 1;
 						if (protocol_date = CURRENT_PROTOCOL_FREEZE_DATE) then
@@ -263,9 +265,9 @@ begin
 							PACKET_RECEIVER_STATE <= WAITING_FOR_HEADER;
 						end if;
 					when READING_PACKET_TYPE =>
-						checksum := checksum + unsigned(internal_RX_D);
+						checksum := checksum + unsigned(internal_PACKET_IN);
 						remaining_words_in_packet := remaining_words_in_packet - 1;
-						if (internal_RX_D = x"B01DFACE") then -- command packet
+						if (internal_PACKET_IN = x"B01DFACE") then -- command packet
 							command_word_counter := 0;
 							PACKET_RECEIVER_STATE <= READING_VALUES;
 						else
@@ -273,7 +275,7 @@ begin
 							PACKET_RECEIVER_STATE <= WAITING_FOR_HEADER;
 						end if;
 					when READING_VALUES =>
-						value := unsigned(internal_RX_D);
+						value := unsigned(internal_PACKET_IN);
 						if (command_word_counter < NUMBER_OF_PACKETS_IN_COMMAND_PACKET_BODY) then
 							command_word(command_word_counter) := value;
 						end if;
@@ -285,7 +287,7 @@ begin
 							PACKET_RECEIVER_STATE <= READING_SCROD_REV_AND_ID;
 						end if;
 					when READING_SCROD_REV_AND_ID =>
-						revision_and_id := unsigned(internal_RX_D);
+						revision_and_id := unsigned(internal_PACKET_IN);
 						revision := revision_and_id(31 downto 16);
 						id := revision_and_id(15 downto 0);
 						checksum := checksum + revision_and_id;
@@ -296,18 +298,18 @@ begin
 							PACKET_RECEIVER_STATE <= WAITING_FOR_HEADER;
 						end if;
 						if (revision = 0 or revision = SCROD_REVISION) then
-					else
+						else
 							internal_WRONG_SCROD_ADDRESSED_COUNTER <= std_logic_vector(unsigned(internal_WRONG_SCROD_ADDRESSED_COUNTER) + 1);
 							PACKET_RECEIVER_STATE <= WAITING_FOR_HEADER;
 						end if;
 						PACKET_RECEIVER_STATE <= READING_CHECKSUM;
 					when READING_CHECKSUM =>
 						-- this state does not change the running checksum "checksum" like all other states do
-						checksum_from_packet := unsigned(internal_RX_D);
+						checksum_from_packet := unsigned(internal_PACKET_IN);
 						remaining_words_in_packet := remaining_words_in_packet - 1; -- should be one after this
 						PACKET_RECEIVER_STATE <= READING_FOOTER;
 					when READING_FOOTER =>
-						footer := unsigned(internal_RX_D);
+						footer := unsigned(internal_PACKET_IN);
 						checksum := checksum + footer;
 						remaining_words_in_packet := remaining_words_in_packet - 1; -- should be zero after this
 --						if (remaining_words_in_packet = '0') then
@@ -598,4 +600,5 @@ begin
 			end if;
 		end if;
 	end process;
+	 
 end Behavioral;

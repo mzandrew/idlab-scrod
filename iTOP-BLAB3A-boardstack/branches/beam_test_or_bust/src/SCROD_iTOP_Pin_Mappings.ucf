@@ -1,21 +1,30 @@
+# 2012-06-05 revised for SCROD revA2
+
 #Using on-board 250 MHz oscillator
-NET BOARD_CLOCK_250MHz_P	LOC = "U25" | IOSTANDARD = LVDS_25;
+NET BOARD_CLOCK_250MHz_P	LOC = "U25" | IOSTANDARD = LVDS_25 | TNM_NET="BCLK_250";
 NET BOARD_CLOCK_250MHz_N	LOC = "U26" | IOSTANDARD = LVDS_25;
+TIMESPEC "TS_BCLK_250" = PERIOD "BCLK_250" 4 ns HIGH 50%;
 
-#EEPROM
-NET "SCL"						LOC = "B23"	| IOSTANDARD = LVCMOS33;
-NET "SDA"						LOC = "A23"	| IOSTANDARD = LVCMOS33 | PULLUP;
+#EEPROM and temperature sensor
+NET "SCL"						LOC = "B23"	| IOSTANDARD = LVCMOS33 | SLEW = SLOW | DRIVE = 6;
+NET "SDA"						LOC = "A23"	| IOSTANDARD = LVCMOS33 | SLEW = SLOW | DRIVE = 6 | PULLUP;
+
+# new things for SCROD revA2:
+#NET DO_NOT_USE_ME LOC = "AF3"; # on SCROD revA2, CSO_B (pin AF3) should not be driven low during normal running!
+#NET DIS_250 LOC = "D22" | IOSTANDARD = LVCMOS33; # test to see if jumper is installed; drive low to disable oscillator
+#NET DIS_156 LOC = "D21"; # test to see if jumper is installed; drive low to disable oscillator
+#NET thermal_alarm_active_low LOC = "E16"; # this is low if the temperature sensor got too hot (settable threshold) until an I2C transfer is initiated to clear it
 
 
-#FTSW Inputs
-NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;
-NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;
-NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
-NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
-NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVDS_25;
-NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25;
-NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
-NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
+##FTSW Inputs
+#NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;
+#NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;
+#NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
+#NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
+#NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVDS_25;
+#NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25;
+#NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
+#NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
 
 #Pins for controlling external DACs - separated by column.
 NET DAC_SCL_C<0>		LOC = "H13" | IOSTANDARD = LVCMOS33; #DAC1 on SCROD schematic
@@ -52,8 +61,8 @@ NET	AsicIn_SAMPLING_TRACK_MODE_C<2>				LOC = 	AB4;	#SSP_IN_C
 NET	AsicIn_SAMPLING_TRACK_MODE_C<3>				LOC = 	P19;	#SSP_IN_D
 
 #Pins for ASIC digitizing and readout
-NET	AsicIn_DATA_BUS_CHANNEL_ADDRESS<0>			LOC = 	W19;	#CH_SEL0
-NET	AsicIn_DATA_BUS_CHANNEL_ADDRESS<1>			LOC = 	V18;	#CH_SEL1
+NET	AsicIn_DATA_BUS_CHANNEL_ADDRESS<0>			LOC = 	W19;	#CH_SEL0 # on SCROD revA2, this is overloaded with the SPI signals (which shouldn't matter during normal operation)
+NET	AsicIn_DATA_BUS_CHANNEL_ADDRESS<1>			LOC = 	V18;	#CH_SEL1 # on SCROD revA2, this is overloaded with the SPI signals (which shouldn't matter during normal operation)
 NET	AsicIn_DATA_BUS_CHANNEL_ADDRESS<2>			LOC = 	AC22;	#CH_SEL2
 NET	AsicIn_DATA_BUS_SAMPLE_ADDRESS<0>			LOC = 	Y20;	#SMPL_SEL0
 NET	AsicIn_DATA_BUS_SAMPLE_ADDRESS<1>			LOC = 	AA22;	#SMPL_SEL1
@@ -146,7 +155,7 @@ NET	AsicOut_DATA_BUS_C3<11>							LOC = 	AD24;	#DAT11_D
 
 ##Pins for ASIC feedback loops
 ##Trigger monitoring
-#NET	AsicIn_MONITOR_TRIG								LOC = 	B24;	#TRIG_IN
+NET AsicIn_MONITOR_TRIG								LOC = 	AF23;	#TRIG_IN # on SCROD revA2, J4_091_B24 is now J4_091_AF23/MOSI/MISO0
 NET	AsicOut_MONITOR_TRIG_C0_R<0>					LOC = 	AE5;	#TRIG_MON_DC0
 NET	AsicOut_MONITOR_TRIG_C1_R<0>					LOC = 	M1;	#TRIG_MON_DC1
 NET	AsicOut_MONITOR_TRIG_C2_R<0>					LOC = 	J7;	#TRIG_MON_DC2
@@ -175,7 +184,7 @@ NET	AsicOut_MONITOR_WILK_COUNTER_C1_R<1>		LOC = 	AB22	| PULLDOWN;	#TST_OUT_DC5
 NET	AsicOut_MONITOR_WILK_COUNTER_C2_R<1>		LOC = 	M9		| PULLDOWN;	#TST_OUT_DC6
 NET	AsicOut_MONITOR_WILK_COUNTER_C3_R<1>		LOC = 	J20	| PULLDOWN;	#TST_OUT_DC7
 NET	AsicOut_MONITOR_WILK_COUNTER_C0_R<2>		LOC = 	AB13	| PULLDOWN;	#TST_OUT_DC8
-NET	AsicOut_MONITOR_WILK_COUNTER_C1_R<2>		LOC = 	AF23	| PULLDOWN;	#TST_OUT_DC9
+NET	AsicOut_MONITOR_WILK_COUNTER_C1_R<2>		LOC = 	B24	| PULLDOWN;	#TST_OUT_DC9 # on SCROD revA2, J2_045_AF23 is now J2_045_B24
 NET	AsicOut_MONITOR_WILK_COUNTER_C2_R<2>		LOC = 	N9		| PULLDOWN;	#TST_OUT_DC10
 NET	AsicOut_MONITOR_WILK_COUNTER_C3_R<2>		LOC = 	K20	| PULLDOWN;	#TST_OUT_DC11
 NET	AsicOut_MONITOR_WILK_COUNTER_C0_R<3>		LOC = 	V12	| PULLDOWN;	#TST_OUT_DC12
@@ -187,7 +196,7 @@ NET	AsicOut_SAMPLING_TRACK_MODE_C0_R<0>			LOC = 	AC5;	#SSP_OUT_DC0
 NET	AsicOut_SAMPLING_TRACK_MODE_C1_R<0>			LOC = 	D3;	#SSP_OUT_DC1
 NET	AsicOut_SAMPLING_TRACK_MODE_C2_R<0>			LOC = 	AD3;	#SSP_OUT_DC2
 NET	AsicOut_SAMPLING_TRACK_MODE_C3_R<0>			LOC = 	N21;	#SSP_OUT_DC3
-NET	AsicOut_SAMPLING_TRACK_MODE_C0_R<1>			LOC = 	AF3;	#SSP_OUT_DC4
+NET	AsicOut_SAMPLING_TRACK_MODE_C0_R<1>			LOC = 	R10;	#SSP_OUT_DC4 # on SCROD revA2, J2_007_AF3 is now J2_007_R10
 NET	AsicOut_SAMPLING_TRACK_MODE_C1_R<1>			LOC = 	E4;	#SSP_OUT_DC5
 NET	AsicOut_SAMPLING_TRACK_MODE_C2_R<1>			LOC = 	H6;	#SSP_OUT_DC6
 NET	AsicOut_SAMPLING_TRACK_MODE_C3_R<1>			LOC = 	M21;	#SSP_OUT_DC7
@@ -355,8 +364,8 @@ NET MONITOR_INPUTS<0>	LOC = "J2" | IOSTANDARD = LVCMOS25 | PULLUP;
 NET MONITOR_OUTPUTS<0>	LOC = "M10" | IOSTANDARD = LVCMOS25;
 
 #Timing constraints
-NET map_clocking_and_ftsw_interface/map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
-NET map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/sig_clk1  PERIOD = 7.8 ns;
+##NET map_clocking_and_ftsw_interface/map_FTSW_interface/sig_jclk 								PERIOD = 7.8 ns;
+##NET map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/sig_clk1  PERIOD = 7.8 ns;
 NET map_clocking_and_ftsw_interface/internal_BOARD_CLOCK_250MHz								PERIOD = 4.0 ns;
 NET internal_CLOCK_SST																						PERIOD = 47.1 ns;
 NET internal_CLOCK_4xSST																					PERIOD = 11.7 ns;
@@ -366,7 +375,7 @@ NET internal_CLOCK_4xSST																					PERIOD = 11.7 ns;
 #The location of the FTSW receiver PLL seems to only work in specific locations.
 #The one below is verified working... others may also work but have not been
 #systematically tried.
-INST map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/map_pll 	LOC = PLL_ADV_X0Y0;
+##INST map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/map_pll 	LOC = PLL_ADV_X0Y0;
 
 
 
@@ -379,8 +388,8 @@ INST map_clocking_and_ftsw_interface/map_FTSW_interface/map_belle2clk/map_pll/ma
 #################################################################################
 
 # 156.25MHz GTP Reference clock contraint
-NET "FR/Aurora_data_link/Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left" TNM_NET = GT_REFCLK;
-TIMESPEC TS_Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left = PERIOD "GT_REFCLK" 156.25 MHz HIGH 50%;
+#NET "FR/Aurora_data_link/Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left" TNM_NET = GT_REFCLK;
+#TIMESPEC TS_Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left = PERIOD "GT_REFCLK" 156.25 MHz HIGH 50%;
 #NET "FR/Aurora_data_link/aurora_module_i/gtp_wrapper_i/REFCLK" TNM_NET = GT_REFCLK;
 #TIMESPEC TS_Aurora_CLOCK_156_MHz_left = PERIOD "GT_REFCLK" 156.25 MHz HIGH 50%;
 
@@ -390,71 +399,73 @@ TIMESPEC TS_Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_left = PERIOD "GT_REFCLK" 
 #NET "FR/Aurora_data_link/clock_module_i/clkout0_o" TNM_NET = "TNM_Aurora_78MHz_clock";
 #PIN "FR/Aurora_data_link/clock_module_i/user_clk_net_i.O" CLOCK_DEDICATED_ROUTE = TRUE;
 #NET "internal_Aurora_78MHz_clock" CLOCK_DEDICATED_ROUTE = TRUE;
-NET "FR/Aurora_78MHz_clock" TNM_NET = "TNM_Aurora_78MHz_clock";
-TIMESPEC "TS_Aurora_78MHz_clock" = PERIOD "TNM_Aurora_78MHz_clock" 12.8 ns HIGH 50%; # generated by aurora core
+#NET "FR/Aurora_78MHz_clock" TNM_NET = "TNM_Aurora_78MHz_clock";
+#TIMESPEC "TS_Aurora_78MHz_clock" = PERIOD "TNM_Aurora_78MHz_clock" 12.8 ns HIGH 50%; # generated by aurora core
 
 
 # Sync Clock Contraint: Value is selected based on the line rate (3.125 Gbps) and lane width (4-Byte)
-NET "FR/Aurora_data_link/sync_clk_i" TNM_NET = "TNM_SYNC_CLK";
-TIMESPEC "TS_SYNC_CLK_I" = PERIOD "TNM_SYNC_CLK" 3.2 ns HIGH 50%;
+#NET "FR/Aurora_data_link/sync_clk_i" TNM_NET = "TNM_SYNC_CLK";
+#TIMESPEC "TS_SYNC_CLK_I" = PERIOD "TNM_SYNC_CLK" 3.2 ns HIGH 50%;
 
 ###### No cross clock domain analysis. Domains are not related ############## 
 #TIMESPEC "TS_TIG1" = FROM "INIT_CLK" TO "USER_CLK" TIG; 
-TIMESPEC "TS_TIG1" = FROM "INIT_CLK" TO "TNM_Aurora_78MHz_clock" TIG; 
-INST "FR/Aurora_data_link/aurora_module_i/gtp_wrapper_i/gtp_tile_inst/gtpa1_dual_i" LOC=GTPA1_DUAL_X0Y1;
+#TIMESPEC "TS_TIG1" = FROM "INIT_CLK" TO "TNM_Aurora_78MHz_clock" TIG; 
+#INST "FR/Aurora_data_link/aurora_module_i/gtp_wrapper_i/gtp_tile_inst/gtpa1_dual_i" LOC=GTPA1_DUAL_X0Y1;
 
 # GT REFCLK = 156.25 MHz
 NET Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_P LOC = B10 | IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET Aurora_RocketIO_GTP_MGT_101_CLOCK_156_MHz_N LOC = A10 | IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 
 # fiber optic transceiver 0
-NET FIBER_TRANSCEIVER_0_DISABLE_MODULE                      LOC = "e13" | IOSTANDARD = LVCMOS33; # TX_DIS on schematic
-NET FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER LOC = "g13" | IOSTANDARD = LVCMOS33; # TX_FAULT on schematic
-NET FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER LOC = "b5"  | IOSTANDARD = LVCMOS33; # LOS on schematic
-NET FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  LOC = "a13" | IOSTANDARD = LVCMOS33; # MOD0 on schematic
+NET FIBER_TRANSCEIVER_0_DISABLE_MODULE                      LOC = "e10" | IOSTANDARD = LVCMOS33; # TX_DIS0 on schematic # on SCROD revA2, TX_DIS0 is connected to e10
+NET FIBER_TRANSCEIVER_0_LASER_FAULT_DETECTED_IN_TRANSMITTER LOC = "g12" | IOSTANDARD = LVCMOS33; # TX_FAULT0 on schematic # on SCROD revA2, TX_FAULT0 is connected to g12
+NET FIBER_TRANSCEIVER_0_LOSS_OF_SIGNAL_DETECTED_BY_RECEIVER LOC = "b5"  | IOSTANDARD = LVCMOS33; # LOS_0 on schematic
+NET FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT  LOC = "a13" | IOSTANDARD = LVCMOS33; # MOD0_0 on schematic
 NET Aurora_RocketIO_GTP_MGT_101_lane0_Receive_P  LOC = "D7";
 NET Aurora_RocketIO_GTP_MGT_101_lane0_Receive_N  LOC = "C7";
 NET Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_P LOC = "B6";
 NET Aurora_RocketIO_GTP_MGT_101_lane0_Transmit_N LOC = "A6";
 
 # fiber optic transceiver 1
-NET FIBER_TRANSCEIVER_1_DISABLE_MODULE LOC = "B14" | IOSTANDARD = LVCMOS33; # TX_DIS on schematic
+NET FIBER_TRANSCEIVER_1_DISABLE_MODULE LOC = "g13" | IOSTANDARD = LVCMOS33; # TX_DIS1 on schematic # on SCROD revA2, TX_DIS1 is connected to g13
 
 
 #########Pins that are not used right now but may be desired in the future######
 #USB Pins
-#NET IFCLK      	LOC = "g12"  | IOSTANDARD = LVCMOS33  |  CLOCK_DEDICATED_ROUTE = FALSE;
-#NET CLKOUT     	LOC = "e10"  | IOSTANDARD = LVCMOS33;
-#NET FD<0>			LOC = "f5"   | IOSTANDARD = LVCMOS33;
-#NET FD<1>			LOC = "e6"   | IOSTANDARD = LVCMOS33;
-#NET FD<2>			LOC = "e5"   | IOSTANDARD = LVCMOS33;
-#NET FD<3>			LOC = "h9"   | IOSTANDARD = LVCMOS33;
-#NET FD<4>			LOC = "g9"   | IOSTANDARD = LVCMOS33;
-#NET FD<5>			LOC = "a3"   | IOSTANDARD = LVCMOS33;
-#NET FD<6>			LOC = "a2"   | IOSTANDARD = LVCMOS33;
-#NET FD<7>			LOC = "f9"   | IOSTANDARD = LVCMOS33;
-#NET FD<8>			LOC = "e8"   | IOSTANDARD = LVCMOS33;
-#NET FD<9>			LOC = "d5"   | IOSTANDARD = LVCMOS33;
-#NET FD<10>			LOC = "c5"   | IOSTANDARD = LVCMOS33;
-#NET FD<11>			LOC = "h10"  | IOSTANDARD = LVCMOS33;
-#NET FD<12>			LOC = "g10"  | IOSTANDARD = LVCMOS33;
-#NET FD<13>			LOC = "b4"   | IOSTANDARD = LVCMOS33;
-#NET FD<14>			LOC = "a4"   | IOSTANDARD = LVCMOS33;
-#NET FD<15>			LOC = "f10"  | IOSTANDARD = LVCMOS33;
-#NET PA0        	LOC = "f7"   | IOSTANDARD = LVCMOS33;
-#NET PA1        	LOC = "h8"   | IOSTANDARD = LVCMOS33;
-#NET PA2        	LOC = "g8"   | IOSTANDARD = LVCMOS33;
-#NET PA3        	LOC = "f7"   | IOSTANDARD = LVCMOS33;
-#NET PA4        	LOC = "f6"   | IOSTANDARD = LVCMOS33;
-#NET PA5        	LOC = "c3"   | IOSTANDARD = LVCMOS33;
-#NET PA6        	LOC = "b3"   | IOSTANDARD = LVCMOS33;
-#NET PA7        	LOC = "g6"   | IOSTANDARD = LVCMOS33;
-#NET CTL0       	LOC = "f12"  | IOSTANDARD = LVCMOS33;
-#NET CTL1       	LOC = "e12"  | IOSTANDARD = LVCMOS33;
-#NET CTL2       	LOC = "j11"  | IOSTANDARD = LVCMOS33;
-#NET RDY0       	LOC = "g11"  | IOSTANDARD = LVCMOS33;
-#NET RDY1       	LOC = "h12"  | IOSTANDARD = LVCMOS33;
-#NET WAKEUP     	LOC = "f11"  | IOSTANDARD = LVCMOS33;
+NET IFCLK      	LOC = "b14"  | TNM_NET="IFCLK_48M" | IOSTANDARD = LVCMOS33; # on SCROD revA2, IFCLK is connected to b14
+TIMESPEC "TS_IFCLK_48M" = PERIOD "IFCLK_48M" 20.833 ns HIGH 50%;
+
+NET CLKOUT     	LOC = "e13"  | IOSTANDARD = LVCMOS33; # on SCROD revA2, CLKOUT is connected to e13
+NET FDD<0>			LOC = "f5"   | IOSTANDARD = LVCMOS33;
+NET FDD<1>			LOC = "e6"   | IOSTANDARD = LVCMOS33;
+NET FDD<2>			LOC = "e5"   | IOSTANDARD = LVCMOS33;
+NET FDD<3>			LOC = "h9"   | IOSTANDARD = LVCMOS33;
+NET FDD<4>			LOC = "g9"   | IOSTANDARD = LVCMOS33;
+NET FDD<5>			LOC = "a3"   | IOSTANDARD = LVCMOS33;
+NET FDD<6>			LOC = "a2"   | IOSTANDARD = LVCMOS33;
+NET FDD<7>			LOC = "f9"   | IOSTANDARD = LVCMOS33;
+NET FDD<8>			LOC = "e8"   | IOSTANDARD = LVCMOS33;
+NET FDD<9>			LOC = "d5"   | IOSTANDARD = LVCMOS33;
+NET FDD<10>			LOC = "c5"   | IOSTANDARD = LVCMOS33;
+NET FDD<11>			LOC = "h10"  | IOSTANDARD = LVCMOS33;
+NET FDD<12>			LOC = "g10"  | IOSTANDARD = LVCMOS33;
+NET FDD<13>			LOC = "b4"   | IOSTANDARD = LVCMOS33;
+NET FDD<14>			LOC = "a4"   | IOSTANDARD = LVCMOS33;
+NET FDD<15>			LOC = "f10"  | IOSTANDARD = LVCMOS33;
+NET PA0        	LOC = "g7"   | IOSTANDARD = LVCMOS33;
+NET PA1        	LOC = "h8"   | IOSTANDARD = LVCMOS33;
+NET PA2        	LOC = "g8"   | IOSTANDARD = LVCMOS33;
+NET PA3        	LOC = "f7"   | IOSTANDARD = LVCMOS33;
+NET PA4        	LOC = "f6"   | IOSTANDARD = LVCMOS33;
+NET PA5        	LOC = "c3"   | IOSTANDARD = LVCMOS33;
+NET PA6        	LOC = "b3"   | IOSTANDARD = LVCMOS33;
+NET PA7        	LOC = "g6"   | IOSTANDARD = LVCMOS33;
+NET CTL0       	LOC = "f12"  | IOSTANDARD = LVCMOS33;
+NET CTL1       	LOC = "e12"  | IOSTANDARD = LVCMOS33;
+NET CTL2       	LOC = "j11"  | IOSTANDARD = LVCMOS33;
+NET RDY0       	LOC = "g11"  | IOSTANDARD = LVCMOS33;
+NET RDY1       	LOC = "h12"  | IOSTANDARD = LVCMOS33;
+NET WAKEUP     	LOC = "f11"  | IOSTANDARD = LVCMOS33;
 #
 ##Unsorted?  Not really an ASIC pin but still applicable...
 #NET ASIC_CARRIER1_CAL_OUT LOC = "AA15";

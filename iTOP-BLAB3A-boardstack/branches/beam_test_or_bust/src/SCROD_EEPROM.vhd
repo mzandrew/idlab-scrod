@@ -149,14 +149,12 @@ begin
 	variable  sub_step_counter						: integer range 0 to 7 := 0;
 		--======================================================================
 	BEGIN
-
 		if RESET = '1' then
 			AUTO_READ <= '1';
 			DONE_r <= '0';
 			step_counter := 0;
 			sub_step_counter := 0;
 			counter := 0;
-		
 		ELSIF RISING_EDGE(CLK) THEN
 
 			--#############################
@@ -344,8 +342,8 @@ begin
 					sub_step_counter := 0;
 					DONE_r <= '0';
 				end if;
-			end if;	--if RESET
-		END IF;
+			end if;	--if AUTO_READ
+		END IF; --if RESET
 	END PROCESS;
 --=================================================================================
 end Behavioral;
