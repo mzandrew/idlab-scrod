@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 13.3
-# Date: Thu May 24 20:06:48 2012
+# Xilinx Core Generator version 13.2
+# Date: Thu Jun 21 20:11:17 2012
 #
 ##############################################################
 #
@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-#  Generated from component: xilinx.com:ip:fifo_generator:8.3
+#  Generated from component: xilinx.com:ip:fifo_generator:8.2
 #
 ##############################################################
 #
@@ -36,7 +36,7 @@ SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
-SELECT Fifo_Generator xilinx.com:ip:fifo_generator:8.3
+SELECT Fifo_Generator xilinx.com:ip:fifo_generator:8.2
 # END Select
 # BEGIN Parameters
 CSET add_ngc_constraint_axi=false
@@ -56,7 +56,7 @@ CSET data_count=false
 CSET data_count_width=15
 CSET disable_timing_violations=false
 CSET disable_timing_violations_axi=false
-CSET dout_reset_value=aa99
+CSET dout_reset_value=0
 CSET empty_threshold_assert_value=2
 CSET empty_threshold_assert_value_axis=1022
 CSET empty_threshold_assert_value_rach=1022
@@ -214,4 +214,4 @@ CSET wuser_width=1
 MISC pkg_timestamp=2011-03-14T07:12:32.000Z
 # END Extra information
 GENERATE
-# CRC: f34cf6d6
+# CRC: 87cf9eff
