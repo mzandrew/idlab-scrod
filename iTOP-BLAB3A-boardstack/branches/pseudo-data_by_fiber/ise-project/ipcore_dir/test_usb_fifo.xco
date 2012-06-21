@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 13.3
-# Date: Fri Jun 08 23:26:47 2012
+# Xilinx Core Generator version 13.2
+# Date: Thu Jun 21 20:16:35 2012
 #
 ##############################################################
 #
@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-#  Generated from component: xilinx.com:ip:fifo_generator:8.3
+#  Generated from component: xilinx.com:ip:fifo_generator:8.2
 #
 ##############################################################
 #
@@ -24,7 +24,7 @@ SET createndf = false
 SET designentry = VHDL
 SET device = xc6slx150t
 SET devicefamily = spartan6
-SET flowvendor = Other
+SET flowvendor = Foundation_ISE
 SET formalverification = false
 SET foundationsym = false
 SET implementationfiletype = Ngc
@@ -36,7 +36,7 @@ SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
-SELECT Fifo_Generator xilinx.com:ip:fifo_generator:8.3
+SELECT Fifo_Generator xilinx.com:ip:fifo_generator:8.2
 # END Select
 # BEGIN Parameters
 CSET add_ngc_constraint_axi=false
@@ -57,14 +57,14 @@ CSET data_count_width=10
 CSET disable_timing_violations=false
 CSET disable_timing_violations_axi=false
 CSET dout_reset_value=0
-CSET empty_threshold_assert_value=4
+CSET empty_threshold_assert_value=2
 CSET empty_threshold_assert_value_axis=1022
 CSET empty_threshold_assert_value_rach=1022
 CSET empty_threshold_assert_value_rdch=1022
 CSET empty_threshold_assert_value_wach=1022
 CSET empty_threshold_assert_value_wdch=1022
 CSET empty_threshold_assert_value_wrch=1022
-CSET empty_threshold_negate_value=5
+CSET empty_threshold_negate_value=3
 CSET enable_aruser=false
 CSET enable_awuser=false
 CSET enable_buser=false
@@ -117,14 +117,14 @@ CSET fifo_implementation_wach=Common_Clock_Block_RAM
 CSET fifo_implementation_wdch=Common_Clock_Block_RAM
 CSET fifo_implementation_wrch=Common_Clock_Block_RAM
 CSET full_flags_reset_value=1
-CSET full_threshold_assert_value=1020
+CSET full_threshold_assert_value=1022
 CSET full_threshold_assert_value_axis=1023
 CSET full_threshold_assert_value_rach=1023
 CSET full_threshold_assert_value_rdch=1023
 CSET full_threshold_assert_value_wach=1023
 CSET full_threshold_assert_value_wdch=1023
 CSET full_threshold_assert_value_wrch=1023
-CSET full_threshold_negate_value=1019
+CSET full_threshold_negate_value=1021
 CSET id_width=4
 CSET inject_dbit_error=false
 CSET inject_dbit_error_axis=false
@@ -214,4 +214,4 @@ CSET wuser_width=1
 MISC pkg_timestamp=2011-03-14T07:12:32.000Z
 # END Extra information
 GENERATE
-# CRC: 327ef749
+# CRC: 91381cf5
