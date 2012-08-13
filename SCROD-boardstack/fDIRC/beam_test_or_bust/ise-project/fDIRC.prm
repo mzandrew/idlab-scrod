@@ -1,9 +1,9 @@
 PROMGEN: Xilinx Prom Generator O.61xd
 Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
 
-promgen -w -p mcs -c FF -o C:\mza\FPGA\idlab-scrod\iTOP-BLAB3A-boardstack\branches\beam_test_or_bust\ise-project//Untitled -s 8192 -u 0000 C:/mza/FPGA/idlab-scrod/iTOP-BLAB3A-boardstack/branches/beam_test_or_bust/ise-project/scrod_itop_board_stack.bit -spi 
+promgen -w -p mcs -c FF -o D:\mza\FPGA\idlab-scrod\SCROD-boardstack\fDIRC\beam_test_or_bust\ise-project//fDIRC.mcs -s 8192 -u 0000 D:/mza/FPGA/idlab-scrod/SCROD-boardstack/fDIRC/beam_test_or_bust/ise-project/scrod_boardstack.bit -spi 
 
-PROM C:\mza\FPGA\idlab-scrod\iTOP-BLAB3A-boardstack\branches\beam_test_or_bust\ise-project\Untitled.prm map: Tue Jun 19 14:37:13 2012
+PROM D:\mza\FPGA\idlab-scrod\SCROD-boardstack\fDIRC\beam_test_or_bust\ise-project\fDIRC.prm map: Mon Aug 13 13:42:50 2012
 
 Calculating PROM checksum with fill value ff
 
@@ -11,7 +11,7 @@ Format        Mcs86 (32-bit)
 Size          8192K
 PROM start    0000:0000
 PROM end      007f:ffff
-PROM checksum 42eeb7cc
+PROM checksum 4f311f00
 
         Addr1        Addr2                     Date File(s)
-    0000:0000    0040:67a3     Jun 19 14:08:20 2012 C:/mza/FPGA/idlab-scrod/iTOP-BLAB3A-boardstack/branches/beam_test_or_bust/ise-project/scrod_itop_board_stack.bit
+    0000:0000    0036:1781     Aug 13 13:12:11 2012 D:/mza/FPGA/idlab-scrod/SCROD-boardstack/fDIRC/beam_test_or_bust/ise-project/scrod_boardstack.bit
