@@ -1,0 +1,11 @@
+# PROMGEN: Xilinx Prom Generator O.61xd
+# Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+
+SOFTWARE_VERSION O.61xd
+DATE            08/13/2012 - 15:02
+SOURCE          D:\mza\FPGA\idlab-scrod\SCROD-boardstack\tags\iTOP-2012-USB-readout-with-FTSW-SCROD-revA2\beam_test_or_bust\ise-project\SCROD-boardstack.mcs
+DEVICE          8192K
+DATA_WIDTH      4
+FILL_DATA       0xFF
+SIGNATURE       0x48F5C44D
+START_ADDRESS   0x00000000 END_ADDRESS 0x003B9385 DIRECTION_UP   "D:/mza/FPGA/idlab-scrod/SCROD-boardstack/tags/iTOP-2012-USB-readout-with-FTSW-SCROD-revA2/beam_test_or_bust/ise-project/scrod_itop_board_stack.bit" 6slx150tfgg676
