@@ -1,0 +1,17 @@
+PROMGEN: Xilinx Prom Generator O.61xd
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+
+promgen -w -p mcs -c FF -o D:\mza\FPGA\idlab-scrod\SCROD-boardstack\tags\iTOP-2012-USB-readout-with-FTSW-SCROD-revA2\beam_test_or_bust\ise-project//SCROD-boardstack.mcs -s 8192 -u 0000 D:/mza/FPGA/idlab-scrod/SCROD-boardstack/tags/iTOP-2012-USB-readout-with-FTSW-SCROD-revA2/beam_test_or_bust/ise-project/scrod_itop_board_stack.bit -spi 
+
+PROM D:\mza\FPGA\idlab-scrod\SCROD-boardstack\tags\iTOP-2012-USB-readout-with-FTSW-SCROD-revA2\beam_test_or_bust\ise-project\SCROD-boardstack.prm map: Mon Aug 13 15:02:45 2012
+
+Calculating PROM checksum with fill value ff
+
+Format        Mcs86 (32-bit)
+Size          8192K
+PROM start    0000:0000
+PROM end      007f:ffff
+PROM checksum 48f5c44d
+
+        Addr1        Addr2                     Date File(s)
+    0000:0000    003b:9385     Aug 13 15:02:13 2012 D:/mza/FPGA/idlab-scrod/SCROD-boardstack/tags/iTOP-2012-USB-readout-with-FTSW-SCROD-revA2/beam_test_or_bust/ise-project/scrod_itop_board_stack.bit
