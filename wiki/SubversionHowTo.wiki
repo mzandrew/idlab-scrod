@@ -80,6 +80,12 @@ logdir
 " .
 }}}
 
+===changing permissions===
+To remove the executable permission from a file in the repository, do this:
+{{{
+svn propdel svn:executable src/read_CAMAC.c 
+}}}
+
 ===reintegrating a branch into the trunk===
 
 Once you have something you like in a branch of the svn, you can reintegrate it into the trunk as follows:
