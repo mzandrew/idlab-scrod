@@ -174,7 +174,7 @@ begin
 	FR : entity work.fiber_readout
 	generic map (
 		CURRENT_PROTOCOL_FREEZE_DATE                => CURRENT_PROTOCOL_FREEZE_DATE,
-		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND => 1
+		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND => 83
 	)
 	port map (
 		RESET                                                   => global_reset,

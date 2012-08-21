@@ -12,7 +12,7 @@ use work.Board_Stack_Definitions.ALL;
 entity fiber_readout is
 	generic (
 		CURRENT_PROTOCOL_FREEZE_DATE                   : std_logic_vector(31 downto 0) := x"20111213";
-		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND    : integer :=  1; -- set to 83 for an 83kHz clock input
+		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND    : integer := 83; -- set to 83 for an 83kHz clock input
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_DATA_BUS    : integer := 32;
 		WIDTH_OF_QUARTER_EVENT_FIFO_OUTPUT_ADDRESS_BUS : integer := 17;
 		WIDTH_OF_ASIC_DATA_BLOCKRAM_DATA_BUS           : integer := 16;
