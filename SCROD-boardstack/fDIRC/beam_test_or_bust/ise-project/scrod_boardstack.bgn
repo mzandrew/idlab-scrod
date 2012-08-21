@@ -6,7 +6,7 @@ C:\Xilinx\13.2\ISE_DS\ISE\.
 speed -3
 Opened constraints file SCROD_boardstack.pcf.
 
-Mon Aug 13 13:00:48 2012
+Mon Aug 20 12:01:29 2012
 
 C:\Xilinx\13.2\ISE_DS\ISE\bin\nt\unwrapped\bitgen.exe -filter iseconfig/filter.filter -intstyle ise -w -g DebugBitstream:No -d -g Binary:no -g Compress -g CRC:Enable -g Reset_on_err:No -g ConfigRate:12 -g ProgPin:PullUp -g TckPin:PullUp -g TdiPin:PullUp -g TdoPin:PullUp -g TmsPin:PullUp -g UnusedPin:PullDown -g UserID:0xFFFFFFFF -g ExtMasterCclk_en:No -g SPI_buswidth:4 -g TIMER_CFG:0xFFFF -g multipin_wakeup:No -g StartUpClk:CClk -g DONE_cycle:4 -g GTS_cycle:5 -g GWE_cycle:6 -g LCK_cycle:NoWait -g Security:None -g DonePipe:No -g DriveDone:Yes -g Encrypt:No -g en_sw_gsr:No -g drive_awake:No -g sw_clk:Startupclk -g sw_gwe_cycle:5 -g sw_gts_cycle:4 SCROD_boardstack.ncd 
 
@@ -130,5 +130,5 @@ There were 0 CONFIG constraint(s) processed from SCROD_boardstack.pcf.
 
 Creating bit map...
 Saving bit stream in "scrod_boardstack.bit".
-Bitstream compression saved 5406576 bits.
+Bitstream compression saved 5209488 bits.
 Bitstream generation is complete.

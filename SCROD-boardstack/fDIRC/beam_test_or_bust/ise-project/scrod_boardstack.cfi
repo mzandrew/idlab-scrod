@@ -1,0 +1,11 @@
+# PROMGEN: Xilinx Prom Generator O.61xd
+# Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+
+SOFTWARE_VERSION O.61xd
+DATE            08/20/2012 - 14:02
+SOURCE          D:\mza\FPGA\idlab-scrod\SCROD-boardstack\fDIRC\beam_test_or_bust\ise-project\scrod_boardstack.mcs
+DEVICE          8192K
+DATA_WIDTH      4
+FILL_DATA       0xFF
+SIGNATURE       0x4EE5E054
+START_ADDRESS   0x00000000 END_ADDRESS 0x003677BD DIRECTION_UP   "D:/mza/FPGA/idlab-scrod/SCROD-boardstack/fDIRC/beam_test_or_bust/ise-project/scrod_boardstack.bit" 6slx150tfgg676

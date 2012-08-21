@@ -11,7 +11,7 @@ use work.Board_Stack_Definitions.all;
 entity Aurora_RocketIO_GTP_MGT_101 is
 	generic (
 		CURRENT_PROTOCOL_FREEZE_DATE                : std_logic_vector(31 downto 0) := x"20110910";
-		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND : integer := 1; -- set to 83 for an 83kHz clock input
+		NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND : integer := 83; -- set to 83 for an 83kHz clock input
 		SIM_GTPRESET_SPEEDUP                        : integer := 1  -- set to 1 to speed up sim reset
 	);
 	port (
@@ -186,11 +186,11 @@ begin
 
 	process(internal_Aurora_RocketIO_GTP_MGT_101_reset_clock, RESET, should_not_automatically_try_to_keep_fiber_link_up, fiber_link_should_be_up, internal_fiber_link_is_up, FIBER_TRANSCEIVER_0_MODULE_DEFINITION_0_LOW_IF_PRESENT)
 		variable internal_COUNTER                                       : integer range 0 to 1000000 := 0;
-		constant number_of_cycles_to_keep_fiber_transceiver_powered_off : integer := 2 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
-		constant number_of_cycles_to_wait_for_transceiver_to_power_on   : integer := 300 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
-		constant number_of_cycles_to_wait_for_gt_logic_to_reset         : integer := 5 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
-		constant number_of_cycles_to_wait_for_aurora_logic_to_reset     : integer := 5 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
-		constant number_of_cycles_to_wait_for_aurora_to_connect         : integer := 100 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_keep_fiber_transceiver_powered_off : integer := 3 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_transceiver_to_power_on   : integer := 310 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_gt_logic_to_reset         : integer := 50 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_aurora_logic_to_reset     : integer := 50 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
+		constant number_of_cycles_to_wait_for_aurora_to_connect         : integer := 300 * NUMBER_OF_SLOW_CLOCK_CYCLES_PER_MILLISECOND;
 		constant counter_value_to_get_past_fiber_transceiver_power_off_state : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off;
 		constant counter_value_to_get_past_fiber_transceiver_reset_state     : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off + number_of_cycles_to_wait_for_transceiver_to_power_on;
 		constant counter_value_to_get_past_gt_logic_reset_state              : integer := number_of_cycles_to_keep_fiber_transceiver_powered_off + number_of_cycles_to_wait_for_transceiver_to_power_on + number_of_cycles_to_wait_for_gt_logic_to_reset;
