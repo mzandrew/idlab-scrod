@@ -8,6 +8,8 @@ The following is a revision history of documentation for the Belle II barrel par
 
   * [http://idlab-scrod.googlecode.com/files/2011-10-16.BelleII-bPID.electronics-documentation.pdf 2011-10-16 Belle II bPID electronics documentation] - Minor development of some data packet formats.
 
+  * [https://www.phys.hawaii.edu/~kurtisn/doku.php?id=documentation 2012-09-24 preliminary documentation for final version of iTOP system documentation]
+
 =previous versions=
 
   * [http://idlab-scrod.googlecode.com/files/2011-09-10.BelleII-bPID.electronics-documentation.pdf 2011-09-10 Belle II bPID electronics documentation] - More development of raw waveform data packet format, as well as a new system block diagram.
