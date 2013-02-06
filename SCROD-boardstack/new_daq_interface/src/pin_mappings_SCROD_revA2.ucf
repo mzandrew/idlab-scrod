@@ -34,19 +34,19 @@ NET LEDS<13> LOC=A22 | IOSTANDARD = LVCMOS33; #LEDS<13>
 NET LEDS<14> LOC=G19 | IOSTANDARD = LVCMOS33; #LEDS<14>
 NET LEDS<15> LOC=F19 | IOSTANDARD = LVCMOS33; #LEDS<15>
 
-##Jumper to choose between FTSW and local clock##
+##Jumper to choose between distributed and local clock##
 NET MONITOR_INPUT<0>  LOC=J2 | IOSTANDARD = LVCMOS25 | PULLUP;
 
-####FTSW Pin mappings######
-##FTSW Inputs
-#NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
+####Distributed clock/trigger pin mappings######
+##for FTSW/CLK_FIN 
+NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;
+NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;
+NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVDS_25;
+NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25;
+NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
 
 ####I2C Pin Mappings#######
 #Bus A - SCROD general purpose EEPROM and temp sensor

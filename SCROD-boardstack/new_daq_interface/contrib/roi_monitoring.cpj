@@ -1,5 +1,5 @@
 #ChipScope Pro Analyzer Project File, Version 3.0
-#Thu Dec 06 00:15:35 JST 2012
+#Fri Jan 18 21:08:39 PST 2013
 deviceChain.deviceName0=XC6SLX150T
 deviceChain.iRLength0=6
 deviceChain.name0=MyDevice0
@@ -362,12 +362,12 @@ unit.0.0.port.-1.s.17.color=java.awt.Color[r\=0,g\=0,b\=124]
 unit.0.0.port.-1.s.17.name=DataPort[17]
 unit.0.0.port.-1.s.17.orderindex=-1
 unit.0.0.port.-1.s.17.visible=0
-unit.0.0.port.-1.s.18.alias=CH_COUNT_EN
+unit.0.0.port.-1.s.18.alias=CH_COUNT_RST
 unit.0.0.port.-1.s.18.color=java.awt.Color[r\=0,g\=0,b\=124]
 unit.0.0.port.-1.s.18.name=DataPort[18]
 unit.0.0.port.-1.s.18.orderindex=-1
 unit.0.0.port.-1.s.18.visible=1
-unit.0.0.port.-1.s.19.alias=CH_COUNT_RST
+unit.0.0.port.-1.s.19.alias=CH_COUNT_EN
 unit.0.0.port.-1.s.19.color=java.awt.Color[r\=0,g\=0,b\=124]
 unit.0.0.port.-1.s.19.name=DataPort[19]
 unit.0.0.port.-1.s.19.orderindex=-1
@@ -1017,12 +1017,12 @@ unit.0.0.port.0.s.17.color=java.awt.Color[r\=0,g\=0,b\=124]
 unit.0.0.port.0.s.17.name=TriggerPort0[17]
 unit.0.0.port.0.s.17.orderindex=-1
 unit.0.0.port.0.s.17.visible=1
-unit.0.0.port.0.s.18.alias=CH_COUNT_EN
+unit.0.0.port.0.s.18.alias=CH_COUNT_RST
 unit.0.0.port.0.s.18.color=java.awt.Color[r\=0,g\=0,b\=124]
 unit.0.0.port.0.s.18.name=TriggerPort0[18]
 unit.0.0.port.0.s.18.orderindex=-1
 unit.0.0.port.0.s.18.visible=1
-unit.0.0.port.0.s.19.alias=CH_COUNT_RST
+unit.0.0.port.0.s.19.alias=CH_COUNT_EN
 unit.0.0.port.0.s.19.color=java.awt.Color[r\=0,g\=0,b\=124]
 unit.0.0.port.0.s.19.name=TriggerPort0[19]
 unit.0.0.port.0.s.19.orderindex=-1
@@ -1683,7 +1683,7 @@ unit.0.0.waveform.posn.39.channel=127
 unit.0.0.waveform.posn.39.name=DataPort[127]
 unit.0.0.waveform.posn.39.type=signal
 unit.0.0.waveform.posn.4.channel=18
-unit.0.0.waveform.posn.4.name=CH_COUNT_EN
+unit.0.0.waveform.posn.4.name=CH_COUNT_RST
 unit.0.0.waveform.posn.4.radix=4
 unit.0.0.waveform.posn.4.type=signal
 unit.0.0.waveform.posn.40.channel=127
@@ -1717,7 +1717,7 @@ unit.0.0.waveform.posn.49.channel=127
 unit.0.0.waveform.posn.49.name=DataPort[127]
 unit.0.0.waveform.posn.49.type=signal
 unit.0.0.waveform.posn.5.channel=19
-unit.0.0.waveform.posn.5.name=Ch_COUNT_RST
+unit.0.0.waveform.posn.5.name=CH_COUNT_EN
 unit.0.0.waveform.posn.5.radix=4
 unit.0.0.waveform.posn.5.type=signal
 unit.0.0.waveform.posn.50.channel=127

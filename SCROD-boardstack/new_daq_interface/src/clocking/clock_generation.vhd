@@ -22,8 +22,8 @@ entity clock_generation is
 		RJ45_RSV_N        : out std_logic;
 		RJ45_CLK_P        : in  std_logic;
 		RJ45_CLK_N        : in  std_logic;
-		--Trigger outputs from FTSW
-		FTSW_TRIGGER      : out std_logic;
+		--Trigger outputs from distributed system
+		EXT_TRIGGER       : out std_logic;
 		--Select signal between the two
 		USE_LOCAL_CLOCK   : in  std_logic;
 		--General output clocks
@@ -48,7 +48,9 @@ architecture Behavioral of clock_generation is
 	signal internal_BOARD_CLOCK_FB      : std_logic;
 	signal internal_BOARD_CLOCK_FB_BUFG : std_logic;
 	signal internal_BOARD_DERIVED_SST   : std_logic;
+	signal internal_BOARD_DERIVED_SST_GBUF : std_logic;
 	signal internal_FTSW_DERIVED_SST    : std_logic;
+	signal internal_CLK_FIN_SST         : std_logic;
 	signal internal_CLOCK_SST           : std_logic;
 	signal internal_CLOCK_SSP_BUFG      : std_logic;
 	signal internal_CLOCK_WRITE_STROBE_BUFG : std_logic;
@@ -57,6 +59,7 @@ architecture Behavioral of clock_generation is
 	signal internal_FTSW_INTERFACE_STABLE : std_logic;
 	signal internal_FTSW_STABLE_COUNTER   : unsigned(15 downto 0);
 	signal internal_FTSW_TRIGGER          : std_logic;
+	signal internal_CLK_FIN_TRIGGER       : std_logic;
 	--
 	signal internal_CLOCK_4MHz_BUFG     : std_logic;
 	signal internal_CLOCK_50MHz_BUFG    : std_logic;
@@ -106,33 +109,54 @@ begin
 --		ready  => internal_FTSW_INTERFACE_READY,
 --		monitor => open
 --	);
-	--Quick stability check for FTSW interface
-	process(internal_BOARD_DERIVED_SST) begin
-		if (rising_edge(internal_BOARD_DERIVED_SST)) then
-			if (internal_FTSW_INTERFACE_READY = '0') then
-				internal_FTSW_STABLE_COUNTER <= (others => '0');
-			elsif (internal_FTSW_STABLE_COUNTER(15) = '0') then
-				internal_FTSW_STABLE_COUNTER <= internal_FTSW_STABLE_COUNTER + 1;
-			end if;
-		end if;
-	end process;
-	--Don't issue FTSW triggers unless the FTSW interface is stable.
-	internal_FTSW_INTERFACE_STABLE <= internal_FTSW_STABLE_COUNTER(15);
-	FTSW_TRIGGER <= internal_FTSW_TRIGGER and internal_FTSW_INTERFACE_STABLE;
+--	--Quick stability check for FTSW interface
+--	process(internal_BOARD_DERIVED_SST) begin
+--		if (rising_edge(internal_BOARD_DERIVED_SST)) then
+--			if (internal_FTSW_INTERFACE_READY = '0') then
+--				internal_FTSW_STABLE_COUNTER <= (others => '0');
+--			elsif (internal_FTSW_STABLE_COUNTER(15) = '0') then
+--				internal_FTSW_STABLE_COUNTER <= internal_FTSW_STABLE_COUNTER + 1;
+--			end if;
+--		end if;
+--	end process;
+--	--Don't issue FTSW triggers unless the FTSW interface is stable.
+--	internal_FTSW_INTERFACE_STABLE <= internal_FTSW_STABLE_COUNTER(15);
+--	FTSW_TRIGGER <= internal_FTSW_TRIGGER and internal_FTSW_INTERFACE_STABLE;
+
 	------------------------------------------------------
-	--            MUX between board/FTSW                --
+	--            CLK_FIN derived clocking              --
 	------------------------------------------------------
---	map_bufgmux_sst : bufgmux
---	port map (
---		I0 => internal_FTSW_DERIVED_SST,
---		I1 => internal_BOARD_DERIVED_SST,
---		O  => internal_CLOCK_SST,
---		S  => USE_LOCAL_CLOCK		
---	);
-	map_sst_bufg : bufg port map(
-		I => internal_BOARD_DERIVED_SST,
-		O => internal_CLOCK_SST
+	map_CLK_FIN_interface: entity work.clk_fin_receiver
+	port map (
+		RJ45_ACK_N  => RJ45_ACK_N,
+		RJ45_ACK_P  => RJ45_ACK_P,
+		RJ45_TRG_N  => RJ45_TRG_N,
+		RJ45_TRG_P  => RJ45_TRG_P,
+		RJ45_RSV_N  => RJ45_RSV_N,
+		RJ45_RSV_P  => RJ45_RSV_P,
+		RJ45_CLK_N  => RJ45_CLK_N,
+		RJ45_CLK_P  => RJ45_CLK_P,
+		SST_NOBUF   => internal_CLK_FIN_SST,
+		SST_GBUF    => open,
+		TRIG21      => internal_CLK_FIN_TRIGGER
 	);
+	EXT_TRIGGER <= internal_CLK_FIN_TRIGGER;
+
+	------------------------------------------------------
+	--            MUX between board/distributed         --
+	------------------------------------------------------
+	map_bufgmux_sst : bufgmux
+	port map (
+		I0 => internal_CLK_FIN_SST,
+		I1 => internal_BOARD_DERIVED_SST,
+		O  => internal_CLOCK_SST,
+		S  => USE_LOCAL_CLOCK		
+	);
+--	map_sst_bufg : bufg port map(
+--		I => internal_BOARD_DERIVED_SST,
+--		O => internal_CLOCK_SST
+--	);
+--	internal_CLOCK_SST <= internal_CLK_FIN_SST;
 	------------------------------------------------------
 	--        PLLs to generate all other clocks         --
 	------------------------------------------------------

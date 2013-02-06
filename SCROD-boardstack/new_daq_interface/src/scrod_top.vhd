@@ -30,7 +30,7 @@ entity scrod_top is
 		BOARD_CLOCKP                : in  STD_LOGIC;
 		BOARD_CLOCKN                : in  STD_LOGIC;
 		LEDS                        : out STD_LOGIC_VECTOR(15 downto 0);
-		------------------FTSW pins------------------
+		------------------FTSW/CLK_FIN pins------------------
 		RJ45_ACK_P                  : out std_logic;
 		RJ45_ACK_N                  : out std_logic;			  
 		RJ45_TRG_P                  : in std_logic;
@@ -39,7 +39,7 @@ entity scrod_top is
 		RJ45_RSV_N                  : out std_logic;
 		RJ45_CLK_P                  : in std_logic;
 		RJ45_CLK_N                  : in std_logic;
-		---------Jumper for choosing FTSW clock------
+		---------Jumper for choosing distributed clock------
 		MONITOR_INPUT               : in  std_logic_vector(0 downto 0);
 		------------------I2C pins-------------------
 		--Bus A handles SCROD temperature sensor and SCROD EEPROM
@@ -270,7 +270,7 @@ begin
 		RJ45_CLK_P        => RJ45_CLK_P,
 		RJ45_CLK_N        => RJ45_CLK_N,
 		--Trigger outputs from FTSW
-		FTSW_TRIGGER      => internal_HARDWARE_TRIGGER,
+		EXT_TRIGGER       => internal_HARDWARE_TRIGGER,
 		--Select signal between the two
 		USE_LOCAL_CLOCK   => MONITOR_INPUT(0),
 		--General output clocks

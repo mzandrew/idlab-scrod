@@ -284,7 +284,12 @@ begin
 			if (internal_CURRENT_WINDOW_INITIALIZE = '1') then
 				internal_CURRENT_WINDOW <= internal_STARTING_WINDOW_REG;
 			elsif (internal_CURRENT_WINDOW_COUNT_ENABLE = '1') then
-				if (internal_CURRENT_WINDOW < unsigned(LAST_ALLOWED_WINDOW & '1')) then
+--  This condition has a problem if FIRST_ALLOWED = LAST_ALLOWED
+--  This is because last sampled always has an LSB of 1, so you can end up
+--  outside of the allowed range.
+--				if (internal_CURRENT_WINDOW < unsigned(LAST_ALLOWED_WINDOW & '1')) then
+--  We can try this condition instead to force our scan of memory to end on odd windows.
+				if (internal_CURRENT_WINDOW < unsigned(LAST_ALLOWED_WINDOW(LAST_ALLOWED_WINDOW'length-1 downto 1) & '1' & '1')) then
 					internal_CURRENT_WINDOW <= internal_CURRENT_WINDOW + 1;
 				else 
 					internal_CURRENT_WINDOW <= unsigned(FIRST_ALLOWED_WINDOW & '0');
