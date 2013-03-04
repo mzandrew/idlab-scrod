@@ -145,6 +145,7 @@ begin
 	------------------------------------------------------
 	--            MUX between board/distributed         --
 	------------------------------------------------------
+	-- Nominal version with multiplexing
 	map_bufgmux_sst : bufgmux
 	port map (
 		I0 => internal_CLK_FIN_SST,
@@ -152,10 +153,12 @@ begin
 		O  => internal_CLOCK_SST,
 		S  => USE_LOCAL_CLOCK		
 	);
+--	-- Force using board clock only
 --	map_sst_bufg : bufg port map(
 --		I => internal_BOARD_DERIVED_SST,
 --		O => internal_CLOCK_SST
 --	);
+-- Force using distributed clock only
 --	internal_CLOCK_SST <= internal_CLK_FIN_SST;
 	------------------------------------------------------
 	--        PLLs to generate all other clocks         --

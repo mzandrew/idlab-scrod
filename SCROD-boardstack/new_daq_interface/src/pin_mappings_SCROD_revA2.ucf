@@ -74,6 +74,25 @@ TIMESPEC TS_I2C_ENABLES = FROM "I2C_ENABLES" TO "I2C_ENABLES" TS_BOARD_CLOCK*40;
 NET "map_CarrierRevA_I2C_DAC_Control/map_DAC_Control_COL_GEN*/internal_UPDATE_STATUSES*" TIG;
 NET "map_readout_interfaces/internal_GPR*" TIG;
 
+#Timing constraint to try to resolve failing timing paths
+#The synchronization signal from the event builder "done" connects to "resume sampling" on sampler
+NET "map_irs2_sdr/map_event_builder/internal_EVENT_BUILDER_STATE_FSM_FFd1" TNM_NET = FFS "event_builder_grp";
+NET "map_irs2_sdr/map_sampling_control/internal_SAMPLING_STATE_FSM_FFd1" TNM_NET = FFS "sampling_grp";
+TIMESPEC TS_EVT_NUMBER = FROM "event_builder_grp" TO "sampling_grp" TIG;
+##The feedback values update once every 10 Hz on a 50 MHz clock.  I'm choosing to make this a TIG rather than TS_BOARD_CLOCK*5e6, since the latter seems kind of stupid
+NET "map_asic_feedback_and_monitoring/map_wilkinson_monitoring/gen_wilk_feedback*" TNM_NET = FFS "wilk_feedback_grp";
+NET "map_CarrierRevA_I2C_DAC_Control/map_DAC_Control_*" TNM_NET = FFS "dac_setting_grp";
+TIMESPEC TS_WILK_FEEDBACK = FROM "wilk_feedback_grp" TO "dac_setting_grp" TIG;
+
+#The last window sampled causes some issues when passing from the SST domain to the general 50 MHz clock.  The timing here is meant to be enforced by the handshaking between modules, so this is not a real synchronous path
+#NET "map_irs2_sdr/map_sampling_control/*" TNM_NET = FFS "sampling";
+#NET "map_irs2_sdr/map_irs2_roi_parser/*" TNM_NET = FFS "roi";
+#NET "map_irs2_sdr/map_sampling_control/internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_*" TNM_NET = FFS "last_window_sampled_grp";
+#NET "map_irs2_sdr/map_irs2_roi_parser/internal_STARTING_WINDOW_REG*" TNM_NET = FFS "roi_start_window_grp";
+#NET "map_irs2_sdr/map_irs2_roi_parser/internal_ENDING_WINDOW_REG*" TNM_NET = FFS "roi_end_window_grp";
+#TIMEGRP "roi_start_and_end_window_grp" = "roi_start_window_grp" "roi_end_window_grp";
+#TIMESPEC TS_LAST_WINDOW_SAMPLED = FROM "sampling" TO "roi" TIG;
+
 ####################USB IOs and timing constraints###########################
 NET USB_IFCLK   LOC = "b14" | IOSTANDARD = LVCMOS33; # on SCROD revA2, IFCLK is connected to b14
 NET "map_readout_interfaces/map_daq_fifo_layer/internal_USB_CLOCK" TNM_NET = IFCLK_48M;
