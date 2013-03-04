@@ -70,9 +70,12 @@ architecture Behavioral of irs2_sampling_digitizing_readout is
 	--Track the current event number
 	signal internal_EVENT_NUMBER                         : std_logic_vector(31 downto 0);
 	--Trigger signals
-	signal internal_TRIGGER_REG                          : std_logic_vector(1 downto 0);
+	signal internal_SOFTWARE_TRIGGER_REG                 : std_logic_vector(1 downto 0);
+	signal internal_HARDWARE_TRIGGER_REG                 : std_logic_vector(1 downto 0);
 	signal internal_TRIGGER                              : std_logic;
 	signal internal_TRIGGER_TO_SAMPLER                   : std_logic;
+	signal internal_HARDWARE_TRIGGER_FLAG                : std_logic;
+	signal internal_SOFTWARE_TRIGGER_FLAG                : std_logic;
 	--Signals from the sampler
 	signal internal_CURRENTLY_SAMPLING                   : std_logic;
 	signal internal_LAST_WINDOW_SAMPLED                  : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -111,11 +114,15 @@ architecture Behavioral of irs2_sampling_digitizing_readout is
 	signal internal_EVENT_FIFO_DATA_VALID     : std_logic;
 	signal internal_EVENT_FIFO_READ_ENABLE    : std_logic;
 	signal internal_DONE_SENDING_EVENT        : std_logic;
+
+	--Trying to slow down some processes
+	signal internal_DIGITIZER_CLOCK_ENABLE         : std_logic := '0';
 	
 --	--Chipscope debugging signals
 --	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
 --	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
 --	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
+
 begin
 	EVENT_FIFO_DATA_OUT             <= internal_EVENT_FIFO_DATA_OUT;
 	EVENT_FIFO_DATA_VALID           <= internal_EVENT_FIFO_DATA_VALID;
@@ -135,15 +142,21 @@ begin
 		end if;
 	end process;
 
-	--Edge detector for the trigger, should be synchronized to the sampling block
+	--Edge detector for the trigger on the regular CLOCK domain.  Synchronization to SST clock comes in the next process below.
 	process (CLOCK) begin
 		--The only other couple SST clock processes work on falling edges, so we should be consistent here
-		if (falling_edge(CLOCK)) then	
-			internal_TRIGGER_REG(1) <= internal_TRIGGER_REG(0);
-			internal_TRIGGER_REG(0) <= ((SOFTWARE_TRIGGER_IN and not(SOFTWARE_TRIGGER_VETO)) or (HARDWARE_TRIGGER_IN and not(HARDWARE_TRIGGER_VETO)));
+		if (rising_edge(CLOCK)) then	
+			internal_SOFTWARE_TRIGGER_REG(1) <= internal_SOFTWARE_TRIGGER_REG(0);
+			internal_SOFTWARE_TRIGGER_REG(0) <= (SOFTWARE_TRIGGER_IN and not(SOFTWARE_TRIGGER_VETO));
 		end if;
 	end process;
-	internal_TRIGGER <= '1' when (internal_TRIGGER_REG = "01") else
+	process (CLOCK) begin
+		if (rising_edge(CLOCK)) then	
+			internal_HARDWARE_TRIGGER_REG(1) <= internal_HARDWARE_TRIGGER_REG(0);
+			internal_HARDWARE_TRIGGER_REG(0) <= (HARDWARE_TRIGGER_IN and not(HARDWARE_TRIGGER_VETO));
+		end if;
+	end process;
+	internal_TRIGGER <= '1' when (internal_SOFTWARE_TRIGGER_REG = "01" or internal_HARDWARE_TRIGGER_REG = "01") else
 	                    '0';
 
 	--Version of the trigger synchronized to the sampling clock
@@ -154,6 +167,28 @@ begin
 			CLOCK        => CLOCK_SAMPLING_HOLD_MODE,
 			CLOCK_ENABLE => '1'
 		);
+
+	--Set-reset flip flops for the hardware and software trigger flags
+	--They should be set by their respective trigger edge, and cleared by the event builder DONE
+	--Event builder DONE is guaranteed high for at least one CLOCK cycle.
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			if (internal_SOFTWARE_TRIGGER_REG = "01") then
+				internal_SOFTWARE_TRIGGER_FLAG <= '1';
+			elsif (internal_DONE_SENDING_EVENT = '1') then
+				internal_SOFTWARE_TRIGGER_FLAG <= '0';
+			end if;
+		end if;
+	end process;
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			if (internal_HARDWARE_TRIGGER_REG = "01") then
+				internal_HARDWARE_TRIGGER_FLAG <= '1';
+			elsif (internal_DONE_SENDING_EVENT = '1') then
+				internal_HARDWARE_TRIGGER_FLAG <= '0';
+			end if;
+		end if;
+	end process;
 
 	---------------------------------------------------------------------
 	--             TRIGGER MEMORY                                      --
@@ -246,6 +281,7 @@ begin
 	port map( 
 		--Inputs for running the digitizing state machine
 		CLOCK                                 => CLOCK,
+		CLOCK_ENABLE                          => internal_DIGITIZER_CLOCK_ENABLE,
 		--Interface to the ROI recorder
 		NEXT_WINDOW_FIFO_READ_CLOCK           => internal_NEXT_WINDOW_FIFO_READ_CLOCK,
 		NEXT_WINDOW_FIFO_READ_ENABLE          => internal_NEXT_WINDOW_FIFO_READ_ENABLE,
@@ -285,10 +321,11 @@ begin
 	EVENT_FIFO_EMPTY                      <= internal_EVENT_FIFO_EMPTY;
 	internal_EVENT_TYPE_WORD(0)           <= '1' when PEDESTAL_MODE = '1' else
 	                                         '0';
-	internal_EVENT_FLAG_WORD(1)           <= internal_ROI_TRUNCATED_FLAG;													  
 	internal_EVENT_TYPE_WORD(31 downto 1) <= (others => '0');
-	internal_EVENT_FLAG_WORD(31 downto 2) <= (others => '0');
-	internal_EVENT_FLAG_WORD(0)           <= '0';  --Reserved for hard/soft trigger	
+	internal_EVENT_FLAG_WORD(0)           <= internal_HARDWARE_TRIGGER_FLAG;
+	internal_EVENT_FLAG_WORD(1)           <= internal_SOFTWARE_TRIGGER_FLAG;
+	internal_EVENT_FLAG_WORD(2)           <= internal_ROI_TRUNCATED_FLAG;													  
+	internal_EVENT_FLAG_WORD(31 downto 3) <= (others => '0');
 	map_event_builder : entity work.event_builder
 	port map( 
 		READ_CLOCK                      => EVENT_FIFO_READ_CLOCK,
@@ -315,6 +352,20 @@ begin
 		FIFO_READ_ENABLE                => internal_EVENT_FIFO_READ_ENABLE
 	);
 
+
+	process(CLOCK) 
+		variable counter : unsigned(2 downto 0) := (others => '0');
+		variable shift   : std_logic_vector(1 downto 0) := "00";
+	begin
+		if (rising_edge(CLOCK)) then
+			counter := counter + 1;
+		end if;
+		if (rising_edge(CLOCK)) then
+			shift(1) := shift(0);
+			shift(0) := counter(2);
+		end if;
+		internal_DIGITIZER_CLOCK_ENABLE <= shift(0) and not(shift(1));
+	end process;
 
 --	--DEBUGGING CRAP
 --	map_ILA : entity work.s6_ila
@@ -359,6 +410,10 @@ begin
 --	internal_CHIPSCOPE_ILA(107) <= internal_CURRENTLY_SAMPLING;
 --	internal_CHIPSCOPE_ILA(116 downto 108) <= internal_LAST_WINDOW_SAMPLED;
 --	internal_CHIPSCOPE_ILA(117) <= internal_DONE_SENDING_EVENT;
+--	internal_CHIPSCOPE_ILA(118) <= SOFTWARE_TRIGGER_IN;
+--	internal_CHIPSCOPE_ILA(119) <= SOFTWARE_TRIGGER_VETO;
+--	internal_CHIPSCOPE_ILA(120) <= HARDWARE_TRIGGER_IN;
+--	internal_CHIPSCOPE_ILA(121) <= HARDWARE_TRIGGER_VETO;	
 
 
 end Behavioral;

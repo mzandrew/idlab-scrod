@@ -27,6 +27,7 @@
 --------------------------------------------------------------------------------
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.all;
 use work.asic_definitions_irs2_carrier_revA.all;
  
 -- Uncomment the following library declaration if using
@@ -48,6 +49,7 @@ ARCHITECTURE behavior OF irs2_digitizing_test IS
          NEXT_WINDOW_FIFO_EMPTY : IN  std_logic;
          NEXT_WINDOW_FIFO_DATA : IN  std_logic_vector(15 downto 0);
          ROI_PARSER_READY_FOR_TRIGGER : IN  std_logic;
+			EVENT_NUMBER_WORD : IN std_logic_vector(31 downto 0);
          SCROD_REV_AND_ID_WORD : IN  std_logic_vector(31 downto 0);
          REFERENCE_WINDOW : IN  std_logic_vector(8 downto 0);
          WAVEFORM_DATA_OUT : OUT  std_logic_vector(31 downto 0);
@@ -77,6 +79,7 @@ ARCHITECTURE behavior OF irs2_digitizing_test IS
    signal NEXT_WINDOW_FIFO_DATA : std_logic_vector(15 downto 0) := (others => '0');
    signal ROI_PARSER_READY_FOR_TRIGGER : std_logic := '0';
    signal SCROD_REV_AND_ID_WORD : std_logic_vector(31 downto 0) := (others => '0');
+	signal EVENT_NUMBER_WORD : std_logic_vector(31 downto 0) := (others => '0');
    signal REFERENCE_WINDOW : std_logic_vector(8 downto 0) := (others => '0');
    signal WAVEFORM_DATA_READ_CLOCK : std_logic := '0';
    signal WAVEFORM_DATA_READ_ENABLE : std_logic := '0';
@@ -116,6 +119,7 @@ BEGIN
           NEXT_WINDOW_FIFO_DATA => NEXT_WINDOW_FIFO_DATA,
           ROI_PARSER_READY_FOR_TRIGGER => ROI_PARSER_READY_FOR_TRIGGER,
           SCROD_REV_AND_ID_WORD => SCROD_REV_AND_ID_WORD,
+			 EVENT_NUMBER_WORD => EVENT_NUMBER_WORD,
           REFERENCE_WINDOW => REFERENCE_WINDOW,
           WAVEFORM_DATA_OUT => WAVEFORM_DATA_OUT,
           WAVEFORM_DATA_EMPTY => WAVEFORM_DATA_EMPTY,
@@ -173,8 +177,15 @@ BEGIN
 
       -- insert stimulus here 
 		NEXT_WINDOW_FIFO_EMPTY <= '0';
-		wait for CLOCK_period;
-		NEXT_WINDOW_FIFO_EMPTY <= '1';
+		NEXT_WINDOW_FIFO_DATA  <= x"0001";
+		wait for CLOCK_period*10;
+
+		if (rising_edge(NEXT_WINDOW_FIFO_READ_CLOCK)) then
+			if (NEXT_WINDOW_FIFO_READ_ENABLE = '1') then
+				NEXT_WINDOW_FIFO_DATA <= x"0010";
+				NEXT_WINDOW_FIFO_EMPTY <= '1';
+			end if;
+		end if;
 
       wait;
    end process;
