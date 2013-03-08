@@ -54,12 +54,30 @@ entity scrod_top is
 		--Bus D handles carrier level temperature sensor
 		--I2C_BUSD_SCL                : inout STD_LOGIC;
 		--I2C_BUSD_SDA                : inout STD_LOGIC;
+		--Bus GPIO
+		--I2C_SCL_GPIO12_R01          : inout STD_LOGIC;
+		--I2C_SDA_GPIO12_R01          : inout STD_LOGIC;
+		--I2C Bus
+		--I2C_SCL_GPIO12_R23          : inout STD_LOGIC;
+		--I2C_SDA_GPIO12_R23          : inout STD_LOGIC;
+		--I2C Bus
+		--I2C_SCL_temperature_eeprom_GPIO0_R01                : inout STD_LOGIC;
+		--I2C_SDA_temperature_eeprom_GPIO0_R01                : inout STD_LOGIC;
+		--I2C Bus
+		--I2C_SCL_temperature_eeprom_GPIO0_R23                : inout STD_LOGIC;
+		--I2C_SDA_temperature_eeprom_GPIO0_R23                : inout STD_LOGIC;
+		--I2C Bus
+		--I2C_DAC_SCL_R01             : inout STD_LOGIC;
+		--I2C_DAC_SDA_R01             : inout STD_LOGIC;
+		--I2C Bus
+		--I2C_DAC_SCL_R23             : inout STD_LOGIC;
+		--I2C_DAC_SDA_R23             : inout STD_LOGIC;
+		--I2C Bus
+		--I2C_CAL_SDA                 : inout STD_LOGIC;
+		--I2C_CAL_SCL                 : inout STD_LOGIC;
 		----------------------------------------------
 		------------ASIC Related Pins-----------------
-		----------------------------------------------
-		--IIC DAC lines for controlling bias voltages
-		DAC_SCL_C                     : out std_logic_vector(3 downto 0);
-		DAC_SDA_C                     : inout std_logic_vector(3 downto 0); 
+		---------------------------------------------- 
 		--ASIC trigger interface signals
 		AsicIn_TRIG_ON_RISING_EDGE		: out std_logic;
 		AsicOut_TRIG_OUTPUT_R0_C0_CH	: in std_logic_vector(7 downto 0);
@@ -340,17 +358,6 @@ begin
 		SCL               => I2C_BUSC_SCL,
 		SDA               => I2C_BUSC_SDA
 	);
-	-----I2C Control for external DACs on each daughter card-----
-	map_CarrierRevA_I2C_DAC_Control : entity work.CarrierRevA_I2C_DAC_Control
-		port map ( 
-			INTENDED_DAC_VALUES	=> internal_DESIRED_DAC_VOLTAGES,
-			UPDATE_STATUSES      => internal_DAC_UPDATE_STATUSES,
-			CLK      	         => internal_CLOCK_4MHz_BUFG,
-			CLK_ENABLE           => internal_CLOCK_ENABLE_I2C,
-			SCL_C 		  			=> DAC_SCL_C,
-			SDA_C		  				=> DAC_SDA_C
-		);
-	---------------------------------------------------------
 
 	--Scaler monitors for the ASIC channels
 	--First we need to map the scalers into rows/cols
