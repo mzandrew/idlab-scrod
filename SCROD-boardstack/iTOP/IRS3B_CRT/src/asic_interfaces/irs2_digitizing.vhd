@@ -1,3 +1,6 @@
+--LM: to do:
+-- - check what is odd-even w Kurtis
+-- - write/copy the serial register blocks
 ----------------------------------------------------------------------------------
 -- 
 ----------------------------------------------------------------------------------
@@ -44,8 +47,20 @@ entity irs2_digitizing is
 		ASIC_READOUT_TRISTATE_DISABLE         : out Column_Row_Enables; --Real running mode
 --		ASIC_READOUT_TRISTATE_DISABLE         : out STD_LOGIC_VECTOR(3 downto 0); --Switch in for simulation
 		--Inputs from the ASIC
-		ASIC_READOUT_DATA                     : in  ASIC_DATA_C --Real running mode
---		ASIC_READOUT_DATA                     : in  STD_LOGIC_VECTOR(11 downto 0) --Switch in for simulation
+		ASIC_READOUT_DATA                     : in  ASIC_DATA_C;
+--		ASIC_READOUT_DATA                     : in  STD_LOGIC_VECTOR(11 downto 0) --For simulation
+		new_address_reached						: in std_logic; --LM: updating address 
+		START_NEW_ADDRESS							: out std_logic; --LM: start new address update
+		new_sample_address_reached				: in std_logic; --LM: updating sample address
+		START_NEW_SAMPLE_ADDRESS							: out std_logic; --LM: start new sample address update
+--LM: what follows are the serial interfaces for RD and DO
+		DO_RESET_SMPSEL							: out std_logic; --LM: start GPIO to reset SMPSEL_ANY
+		DO_SET_SMPSEL								: out std_logic; --LM: start GPIO to set SMPSEL_ANY
+		CARRIER_ACTIVE 							: out	std_logic_vector(1 downto 0);
+		smpsel_done									: in std_logic; --LM:  GPIO finished setting/resetting  SMPSEL_ANY
+		SAMPLE_COUNTER_RESET			: out std_logic; -- LM: resets sample address
+--LM: debugging
+		state_debug : out STD_LOGIC_VECTOR(3 downto 0)
 	);
 end irs2_digitizing;
 
@@ -57,7 +72,8 @@ architecture Behavioral of irs2_digitizing is
 	signal internal_CHECKSUM        : unsigned(31 downto 0) := (others => '0');
 	signal internal_CHECKSUM_RESET  : std_logic := '0';
 
-	type digitizing_state is (IDLE, READ_NEXT_MEMORY_ADDRESS, PAUSE, CHECK_IF_DIGITIZED, DIGITIZE, BUILD_PACKET_HEADER, READOUT_EVEN, READOUT_ODD, WRITE_ADC_VALUE, WRITE_CHECKSUM);
+	type digitizing_state is (IDLE, READ_NEXT_MEMORY_ADDRESS, WAIT_FOR_NEW_ADDRESS, CHECK_IF_DIGITIZED, DIGITIZE, SET_SMPSEL_ANY, RESET_SMPSEL_ANY,
+	BUILD_PACKET_HEADER, READOUT_EVEN_WAIT, READOUT_EVEN, READOUT_ODD_WAIT, READOUT_ODD, WRITE_ADC_VALUE, WRITE_CHECKSUM);
 	signal internal_DIGITIZING_STATE      : digitizing_state := IDLE;
 	signal internal_NEXT_DIGITIZING_STATE : digitizing_state := IDLE;
 	
@@ -110,6 +126,8 @@ architecture Behavioral of irs2_digitizing is
 	signal internal_WAVEFORM_FIFO_WRITE_ENABLE : std_logic := '0';
 	signal internal_WAVEFORM_FIFO_WRITE_DATA   : std_logic_vector(31 downto 0) := (others => '0');
 
+	signal first_sample : std_logic :='1';
+
 --	--Chipscope debugging signals
 --	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
 --	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
@@ -117,6 +135,9 @@ architecture Behavioral of irs2_digitizing is
 
 begin
 	--Mapping to the top level ports
+	CARRIER_ACTIVE <= internal_ROW_TO_READ;
+	
+	SAMPLE_COUNTER_RESET <= internal_SAMPLE_COUNTER_RESET;
 	NEXT_WINDOW_FIFO_READ_CLOCK         <= CLOCK;
 	ASIC_STORAGE_TO_WILK_ADDRESS        <= internal_ADDR_TO_READ;
 	ASIC_READOUT_CHANNEL_ADDRESS        <= internal_CHANNEL_TO_READ;
@@ -129,19 +150,21 @@ begin
 	ASIC_READOUT_TRISTATE_DISABLE       <= internal_ASIC_READOUT_TRISTATE_DISABLE;
 	--Output enables for the tristates on the ASIC data buses
 	--We could technically readout multiple columns simultaneously, but let's start simple...
+	--LM: modification: We NEED to read all columns together, possibly here stuff gets read multiple times
+	-- at the moment 3 out of 4 bits are redundant
 --	process(internal_COL_TO_READ,internal_ROW_TO_READ) begin
 	process(CLOCK) begin
 		if (rising_edge(CLOCK) and CLOCK_ENABLE = '1') then
-			for col in 0 to ASICS_PER_ROW-1 loop
-				for row in 0 to ROWS_PER_COL-1 loop
-					if (internal_COL_TO_READ = std_logic_vector(to_unsigned(col,internal_COL_TO_READ'length)) and
-							internal_ROW_TO_READ = std_logic_vector(to_unsigned(row,internal_ROW_TO_READ'length)) ) then
-						internal_ASIC_READOUT_TRISTATE_DISABLE(col)(row) <= '0';
-					else
-						internal_ASIC_READOUT_TRISTATE_DISABLE(col)(row) <= '1';					
-					end if;
-				end loop;
+		for col in 0 to ASICS_PER_ROW-1 loop
+			for row in 0 to ROWS_PER_COL-1 loop
+--				if (internal_COL_TO_READ = std_logic_vector(to_unsigned(col,internal_COL_TO_READ'length)) and
+				if   internal_ROW_TO_READ = std_logic_vector(to_unsigned(row,internal_COL_TO_READ'length))  then
+					 internal_ASIC_READOUT_TRISTATE_DISABLE(col)(row) <= '0';
+				else
+					 internal_ASIC_READOUT_TRISTATE_DISABLE(col)(row) <= '1';					
+				end if;
 			end loop;
+		end loop;
 		end if;
 	end process;
 --	--Simulation version of above
@@ -192,9 +215,11 @@ begin
 		internal_ASIC_WILK_RAMP_ACTIVE      <= '0';
 		internal_ASIC_READOUT_ENABLE        <= '0';
 		DIGITIZER_BUSY                      <= '1';
+		START_NEW_ADDRESS <= '0';
 		--Logic outputs for each state
 		case(internal_DIGITIZING_STATE) is
 			when IDLE =>
+				state_debug <= "0001"; --1
 				DIGITIZER_BUSY                   <= '0';
 				internal_WILKINSON_COUNTER_RESET <= '1';
 				internal_SAMPLE_COUNTER_RESET    <= '1';
@@ -204,14 +229,18 @@ begin
 					NEXT_WINDOW_FIFO_READ_ENABLE  <= '1' and CLOCK_ENABLE;
 				end if;
 			when READ_NEXT_MEMORY_ADDRESS =>
+				state_debug <= "0010"; --2
 				internal_NEXT_ADDRESS_READ_ENABLE <= '1';
-			when PAUSE =>
-				
+				START_NEW_ADDRESS <= '1';
+			when WAIT_FOR_NEW_ADDRESS =>  --LM just a wait state for readout
+				state_debug <= "0011"; --3 
 			when CHECK_IF_DIGITIZED =>
+				state_debug <= "0100"; --4
 				if (internal_FORCE_NEXT_DIGITIZE = '1' or internal_ADDR_TO_READ /= internal_LAST_ADDRESS_DIGITIZED) then
 					internal_ASIC_WILK_COUNTER_RESET <= '1';
 				end if;
 			when DIGITIZE =>
+				state_debug <= "0101"; --5
 				internal_CLEAR_FORCE_NEXT_DIGITIZE  <= '1';
 				internal_ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE <= '1';
 				internal_ASIC_STORAGE_TO_WILK_ENABLE <= '1';
@@ -222,28 +251,57 @@ begin
 					internal_ASIC_WILK_RAMP_ACTIVE   <= '1';
 				end if;
 			when BUILD_PACKET_HEADER =>
+				state_debug <= "0110"; --6
 				internal_WAVEFORM_FIFO_WRITE_ENABLE <= '1';
 				internal_PACKET_COUNTER_ENABLE      <= '1';
 				internal_ASIC_READOUT_ENABLE        <= '1';
+				first_sample <='1';
 			when READOUT_EVEN =>
 				internal_ADC_EVEN_READ_ENABLE       <= '1';
 				internal_ASIC_READOUT_ENABLE        <= '1';
 				internal_SAMPLE_COUNTER_ENABLE      <= '1';
+			when READOUT_EVEN_WAIT => 
+				state_debug <= "1000"; --8
+--				if(first_sample = '1') then internal_SAMPLE_COUNTER_RESET <='1'; -- gets changed here - first point of entry for samples
+--				else 
+				internal_SAMPLE_COUNTER_RESET <='0';
+--				end if;			
 			when READOUT_ODD =>
+				state_debug <= "1001"; --9
 				internal_ADC_ODD_READ_ENABLE        <= '1';
 				internal_ASIC_READOUT_ENABLE        <= '1';
+				first_sample <='0';
+			when READOUT_ODD_WAIT => NULL;
+				state_debug <= "1010"; --A
 			when WRITE_ADC_VALUE =>
+				state_debug <= "1011"; --B
 				internal_WAVEFORM_FIFO_WRITE_ENABLE <= '1';
 				internal_PACKET_COUNTER_ENABLE      <= '1';
 				internal_SAMPLE_COUNTER_ENABLE      <= '1';
 				internal_ASIC_READOUT_ENABLE        <= '1';
+			when SET_SMPSEL_ANY =>
+				state_debug <= "1100"; --C
+				first_sample <='1';
+				internal_SAMPLE_COUNTER_RESET    <= '1';					
+			when RESET_SMPSEL_ANY =>
+				state_debug <= "1101"; --D
+				internal_SAMPLE_COUNTER_RESET    <= '1';	 -- an entire cycle of read consists in an entire window - for a single channel				
 			when WRITE_CHECKSUM => 
+				state_debug <= "1110"; --E
 				internal_WAVEFORM_FIFO_WRITE_ENABLE <= '1';
 			when others =>
+				state_debug <= "1111";
 		end case;
 	end process;
 	--Next state logic
-	process(internal_DIGITIZING_STATE,NEXT_WINDOW_FIFO_EMPTY,internal_FORCE_NEXT_DIGITIZE,internal_ADDR_TO_READ,internal_LAST_ADDRESS_DIGITIZED,internal_WILKINSON_COUNTER,internal_PACKET_COUNTER,internal_SAMPLE_COUNTER) begin
+	process(internal_DIGITIZING_STATE,NEXT_WINDOW_FIFO_EMPTY,internal_FORCE_NEXT_DIGITIZE,
+	internal_ADDR_TO_READ,internal_LAST_ADDRESS_DIGITIZED,internal_WILKINSON_COUNTER,
+	internal_PACKET_COUNTER,internal_SAMPLE_COUNTER, 
+	new_address_reached, new_sample_address_reached, smpsel_done) 
+	begin
+		START_NEW_SAMPLE_ADDRESS <= '0';
+		DO_SET_SMPSEL<='0';
+		DO_RESET_SMPSEL<='0';
 		case(internal_DIGITIZING_STATE) is
 			when IDLE =>
 				if (NEXT_WINDOW_FIFO_EMPTY = '0') then
@@ -253,9 +311,13 @@ begin
 				end if;
 			when READ_NEXT_MEMORY_ADDRESS =>
 --				internal_NEXT_DIGITIZING_STATE <= CHECK_IF_DIGITIZED;
-				internal_NEXT_DIGITIZING_STATE <= PAUSE;
-			when PAUSE =>
+				internal_NEXT_DIGITIZING_STATE <= WAIT_FOR_NEW_ADDRESS;
+			when WAIT_FOR_NEW_ADDRESS =>
+				if new_address_reached = '1'  then
 				internal_NEXT_DIGITIZING_STATE <= CHECK_IF_DIGITIZED;
+				else
+					internal_NEXT_DIGITIZING_STATE <= WAIT_FOR_NEW_ADDRESS;			
+				end if;
 			when CHECK_IF_DIGITIZED =>
 				if (internal_FORCE_NEXT_DIGITIZE = '1' or internal_ADDR_TO_READ /= internal_LAST_ADDRESS_DIGITIZED) then
 					internal_NEXT_DIGITIZING_STATE <= DIGITIZE;
@@ -270,19 +332,48 @@ begin
 				end if;
 			when BUILD_PACKET_HEADER =>
 				if (to_integer(internal_PACKET_COUNTER) = NUMBER_OF_WAVEFORM_PACKET_WORDS_BEFORE_ADC) then
-					internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN;
+					internal_NEXT_DIGITIZING_STATE <= SET_SMPSEL_ANY;
+					DO_SET_SMPSEL<='1';
 				else
 					internal_NEXT_DIGITIZING_STATE <= BUILD_PACKET_HEADER;
 				end if;
+			when SET_SMPSEL_ANY =>
+				if smpsel_done = '1' then 
+						internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN_WAIT;
+						START_NEW_SAMPLE_ADDRESS <= '1';
+					else
+						internal_NEXT_DIGITIZING_STATE <= SET_SMPSEL_ANY;					
+				end if;
+			when READOUT_EVEN_WAIT =>
+				if new_sample_address_reached = '1'  then
+					internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN;
+				else
+					internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN_WAIT;				
+				end if;
 			when READOUT_EVEN =>
+					internal_NEXT_DIGITIZING_STATE <= READOUT_ODD_WAIT;
+					START_NEW_SAMPLE_ADDRESS <= '1';
+			when READOUT_ODD_WAIT =>
+				if new_sample_address_reached = '1'  then
 				internal_NEXT_DIGITIZING_STATE <= READOUT_ODD;
+				else
+					internal_NEXT_DIGITIZING_STATE <= READOUT_ODD_WAIT;
+				end if;
 			when READOUT_ODD =>
 				internal_NEXT_DIGITIZING_STATE <= WRITE_ADC_VALUE;
 			when WRITE_ADC_VALUE =>
 				if (to_integer(internal_SAMPLE_COUNTER) = SAMPLES_PER_WINDOW-1) then
+					internal_NEXT_DIGITIZING_STATE <= RESET_SMPSEL_ANY;
+					DO_RESET_SMPSEL<='1';
+				else
+					START_NEW_SAMPLE_ADDRESS <= '1';
+					internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN_WAIT;
+				end if;
+			when RESET_SMPSEL_ANY =>
+				if smpsel_done = '1' then 
 					internal_NEXT_DIGITIZING_STATE <= WRITE_CHECKSUM;
 				else
-					internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN;
+						internal_NEXT_DIGITIZING_STATE <= RESET_SMPSEL_ANY;				
 				end if;
 			when WRITE_CHECKSUM =>
 				internal_NEXT_DIGITIZING_STATE <= IDLE;
