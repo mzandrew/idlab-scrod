@@ -50,7 +50,9 @@ entity irs2_roi_parser is
 		--Outputs to facilitate flow control
 		READY_FOR_TRIGGER                    : out STD_LOGIC;
 		DONE_BUILDING_WINDOW_LIST            : out STD_LOGIC;
-		VETO_NEW_EVENTS                      : in  STD_LOGIC
+		VETO_NEW_EVENTS                      : in  STD_LOGIC;
+		
+		debug_roi_parser : out STD_LOGIC_VECTOR(41 downto 0)
 	);
 end irs2_roi_parser;
 
@@ -108,8 +110,9 @@ architecture Behavioral of irs2_roi_parser is
 --	-- Chipscope debugging signals
 --	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
 --	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
---	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
+	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
 	
+	signal 		state_debug :  STD_LOGIC_VECTOR(3 downto 0);
 begin
 	--Wiring to the ports
 	internal_TRIGGER_MEMORY_WORD <= TRIGGER_MEMORY_DATA;
@@ -144,9 +147,11 @@ begin
 		--
 		case(internal_ROI_STATE) is
 			when IDLE =>
+				state_debug <= "0001";
 				internal_READY_FOR_TRIGGER <= '1';
 				--Otherwise just use the defaults in IDLE state
 			when CALCULATE_FIRST_WINDOW =>
+				state_debug <= "0010";
 				internal_SEGMENTS_THIS_EVENT_COUNTER_RESET <= '1';
 				internal_CHANNEL_COUNTER_RESET             <= '1';
 				internal_STARTING_WINDOW_READ_ENABLE       <= '1';
@@ -154,16 +159,20 @@ begin
 				--Reset the FIFO here just in case we have junk left over from previous events. Should never happen, but might as well be safe.
 				internal_NEXT_WINDOW_FIFO_RESET            <= '1';  
 			when INITIALIZE_CURRENT_WINDOW =>
+				state_debug <= "0011";
 				internal_CURRENT_WINDOW_INITIALIZE   <= '1';
 			when READ_NEXT_TRIGGER_WORD =>
+				state_debug <= "0100";
 				internal_TRIGGER_MEMORY_READ_ENABLE  <= '1';
 			when CHECK_EACH_CHANNEL_A =>
+				state_debug <= "0101";
 				internal_CHANNEL_COUNTER_ENABLE      <= '1';
 				if ( (internal_THIS_TRIGGER_BIT = '1') and (unsigned(internal_SEGMENTS_THIS_EVENT_COUNTER) /= MAXIMUM_SEGMENTS_PER_EVENT) ) then
 					internal_NEXT_WINDOW_FIFO_WRITE_ENABLE <= '1';
 					internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
 				end if;
 			when CHECK_EACH_CHANNEL_B =>
+				state_debug <= "0110";
 				internal_CHANNEL_COUNTER_ENABLE      <= '1';
 				internal_NEXT_WINDOW_FIFO_MUX_SELECT <= '1';
 				--When trigger bits are forced, only check them during the "B" cycle, or we'll end up writing multiple windows repeatedly.
@@ -172,17 +181,21 @@ begin
 					internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
 				end if;
 			when INCREMENT_WINDOW =>
+				state_debug <= "0111";
 				internal_CURRENT_WINDOW_COUNT_ENABLE <= '1';
 				internal_CHANNEL_COUNTER_RESET       <= '1';
 			when GENERATE_PEDESTALS =>
+				state_debug <= "1000";
 				internal_CHANNEL_COUNTER_ENABLE      <= '1';
 				if ( (internal_THIS_PEDESTAL_BIT = '1') ) then
 					internal_NEXT_WINDOW_FIFO_WRITE_ENABLE <= '1';
 					internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
 				end if;
 			when DONE => 
+				state_debug <= "1001";
 				internal_DONE_BUILDING_WINDOW_LIST <= '1';
 			when others =>
+				state_debug <= "1111";
 		end case;		
 	end process;
 	--Next state logic
@@ -446,4 +459,16 @@ begin
 --	internal_CHIPSCOPE_ILA(79 downto 71) <= LAST_WINDOW_SAMPLED;
 --	internal_CHIPSCOPE_ILA(89 downto 80) <= internal_TRIGGER_MEMORY_READ_ADDRESS_ADJ;
 
+--	internal_CHIPSCOPE_ILA(6 downto 0) <= std_logic_vector(internal_CHANNEL_COUNTER);
+--	internal_CHIPSCOPE_ILA(7) <= BEGIN_PARSING_FOR_WINDOWS;
+--	internal_CHIPSCOPE_ILA(8) <= MAKE_READY_FOR_NEXT_EVENT;
+--	internal_CHIPSCOPE_ILA(9) <= internal_DONE_BUILDING_WINDOW_LIST;
+--	internal_CHIPSCOPE_ILA(10) <= internal_READY_FOR_TRIGGER;
+--	internal_CHIPSCOPE_ILA(26 downto 11) <= internal_NEXT_WINDOW_FIFO_WRITE_DATA;
+--	internal_CHIPSCOPE_ILA(27) <= internal_NEXT_WINDOW_FIFO_WRITE_ENABLE;
+--	internal_CHIPSCOPE_ILA(37 downto 28) <= std_logic_vector(internal_CURRENT_WINDOW);
+--	internal_CHIPSCOPE_ILA(41 downto 38) <=state_debug;
+--
+--	debug_roi_parser <= internal_CHIPSCOPE_ILA_REG(41 downto 0);
+	
 end Behavioral;
