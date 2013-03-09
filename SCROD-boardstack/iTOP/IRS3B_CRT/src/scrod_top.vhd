@@ -54,12 +54,32 @@ entity scrod_top is
 		--Bus D handles carrier level temperature sensor
 		--I2C_BUSD_SCL                : inout STD_LOGIC;
 		--I2C_BUSD_SDA                : inout STD_LOGIC;
+		--LM: new I2Cs:
+		
+		--GPIOs to read ASIC shregs rows 0 and 1 --now not implemented
+		SCL_GPIO12_R01						: inout STD_LOGIC;
+		SDA_GPIO12_R01						: inout STD_LOGIC;
+		--GPIOs to read ASIC shregs rosw 2 and 3 --now not implemented
+		SCL_GPIO12_R23						: inout STD_LOGIC;
+		SDA_GPIO12_R23						: inout STD_LOGIC;
+		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1 --now  implemented only for wiritng
+		SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
+		SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
+		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3 --now  implemented only for writing
+		SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
 		----------------------------------------------
 		------------ASIC Related Pins-----------------
 		----------------------------------------------
 		--IIC DAC lines for controlling bias voltages
 		DAC_SCL_C                     : out std_logic_vector(3 downto 0);
 		DAC_SDA_C                     : inout std_logic_vector(3 downto 0); 
+		--Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
+		DAC_SCL_R01						: inout STD_LOGIC;
+		DAC_SDA_R01						: inout STD_LOGIC;
+		--Vadjn/p rows 2 and 3
+		DAC_SCL_R23						: inout STD_LOGIC;
+		DAC_SDA_R23						: inout STD_LOGIC;
 		--ASIC trigger interface signals
 		AsicIn_TRIG_ON_RISING_EDGE		: out std_logic;
 		AsicOut_TRIG_OUTPUT_R0_C0_CH	: in std_logic_vector(7 downto 0);
@@ -80,13 +100,13 @@ entity scrod_top is
 		AsicOut_TRIG_OUTPUT_R3_C3_CH	: in std_logic_vector(7 downto 0);
 		--ASIC sampling and analog storage signals
 		AsicIn_SAMPLING_HOLD_MODE_C               : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-		AsicIn_SAMPLING_TRACK_MODE_C              : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-		AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : out std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+--		AsicIn_SAMPLING_TRACK_MODE_C              : out std_logic_vector(ASICS_PER_ROW-1 downto 0); --LM: old SSP - does not exist
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : out std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1);
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out std_logic;
 		AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C     : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
 		--ASIC digitization signals
-		AsicIn_STORAGE_TO_WILK_ADDRESS            : out std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
-		AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE     : out std_logic;
+--		AsicIn_STORAGE_TO_WILK_ADDRESS            : out std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0); --LM does not exist
+--		AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE     : out std_logic; --LM: dos not exist - uses RD_SH* signals
 		AsicIn_STORAGE_TO_WILK_ENABLE             : out std_logic;
 		AsicIn_WILK_COUNTER_RESET                 : out std_logic;
 		AsicIn_WILK_COUNTER_START_C               : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
@@ -96,16 +116,18 @@ entity scrod_top is
 		AsicOut_DATA_BUS_C1                       : in  std_logic_vector(11 downto 0);
 		AsicOut_DATA_BUS_C2                       : in  std_logic_vector(11 downto 0);
 		AsicOut_DATA_BUS_C3                       : in  std_logic_vector(11 downto 0);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-		AsicIn_DATA_BUS_OUTPUT_ENABLE             : out std_logic;
-		AsicIn_DATA_BUS_SAMPLE_ADDRESS            : out std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0);
-		AsicIn_DATA_BUS_CHANNEL_ADDRESS           : out std_logic_vector(CH_SELECT_BITS-1 downto 0);
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0); --LM: substituted by below
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
+		AsicIn_DATA_OUTPUT_DISABLE_R     			: out std_logic_vector(ASICS_PER_ROW-1 downto 0);
+
+--		AsicIn_DATA_BUS_OUTPUT_ENABLE             : out std_logic; --LM now sampselany - from a GPIO...
+--		AsicIn_DATA_BUS_SAMPLE_ADDRESS            : out std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0); --LM now DO_SHfts
+--		AsicIn_DATA_BUS_CHANNEL_ADDRESS           : out std_logic_vector(CH_SELECT_BITS-1 downto 0);
 		--ASIC Wilkinson monitoring pins
-		AsicIn_MONITOR_WILK_COUNTER_RESET : out std_logic;
-		AsicIn_MONITOR_WILK_COUNTER_START : out std_logic;
+--		AsicIn_MONITOR_WILK_COUNTER_RESET : out std_logic; --LM: check: should be handled by the do_load
+--		AsicIn_MONITOR_WILK_COUNTER_START : out std_logic;
 		AsicOut_MONITOR_WILK_COUNTER_C0_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C1_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C2_R : in std_logic_vector(3 downto 0);
@@ -149,6 +171,23 @@ entity scrod_top is
 		USB_RDY1                    : out STD_LOGIC;
 		USB_WAKEUP                  : in  STD_LOGIC;
 		USB_CLKOUT		             : in  STD_LOGIC;
+		---------------------------------------------
+		-- All shift registers ---------------------- --LM: all to be implemented!!!
+		---------------------------------------------
+	  AsicIn_CLEAR_ALL_REGISTERS : out std_logic;
+	  AsicIn_SERIAL_SHIFT_CLOCK : out std_logic;
+	  AsicIn_SERIAL_INPUT  : out std_logic;
+	-- DO (serial/increment interface for sample / channel select)
+	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  : out std_logic;
+	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR : out std_logic;
+	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  : out std_logic;
+
+	-- RD (serial/increment interface for storage to wilkinson address)
+	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  : out std_logic;
+	  AsicIn_STORAGE_TO_WILK_ADDRESS_DIR: out std_logic;
+	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT : out std_logic;
+		
+		 
 		---------------------------------------------
 		-- Monitorinf/feedbacks----------------------
 		---------------------------------------------
@@ -219,6 +258,15 @@ architecture Behavioral of scrod_top is
 	signal internal_WAVEFORM_PACKET_BUILDER_BUSY : std_logic;
 	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS_LSB : std_logic;
+	
+	signal internal_STORAGE_TO_WILK_ADDRESS            :  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0); --LM now internal - converted into RD_SH*
+	signal internal_STORAGE_TO_WILK_ADDRESS_ENABLE     :  std_logic; --LM:  now internal - uses RD_SH* signals
+	signal internal_STORAGE_TO_WILK_ENABLE             :  std_logic;
+	
+	signal internal_DATA_BUS_OUTPUT_ENABLE             :  std_logic; --LM now sampselany - from a GPIO...
+	signal internal_DATA_BUS_SAMPLE_ADDRESS            :  std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0); --LM now DO_SHfts
+	signal internal_DATA_BUS_CHANNEL_ADDRESS           :  std_logic_vector(CH_SELECT_BITS-1 downto 0);
+		 
 	--registers related to ASIC readout
 	signal internal_FIRST_ALLOWED_WINDOW         : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_LAST_ALLOWED_WINDOW          : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -282,11 +330,41 @@ signal internal_CLK_SSTx2 : std_logic;
 	signal       FEEDBACK_SAMPLING_RATE_ENABLE                :  std_logic_vector(15 downto 0);
 
 signal 		BOARD_CLOCK :   STD_LOGIC;
+signal internal_LAST_WINDOW_SAMPLED : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+signal internal_DONE_SENDING_EVENT : std_logic;
+signal wait_for_trigger_counter : std_logic_vector(3 downto 0) := (others => '1');
+signal ready_for_new_trigger : std_logic := '1';
+signal waiting_end_count : std_logic := '0';
+signal trigger_start : std_logic := '0';
+signal internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : std_logic;
 signal debug_CLOCK_SST :std_logic;
 signal debug_CLOCK_SST_out :std_logic;
 
-begin
+signal internal_TEMP_OUT :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_0 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_1 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_2 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_3 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_4 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_5 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_6 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_7 :std_logic_vector(15 downto 0);
+
+signal internal_TEMP_OUT_8 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_9 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_10 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_11 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_12 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_13 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_14 :std_logic_vector(15 downto 0);
+signal internal_TEMP_OUT_15 :std_logic_vector(15 downto 0);
 	
+	signal FORCE_ADDRESS_ASIC : std_logic_vector(3 downto 0);
+	signal FORCE_ADDRESS_CHANNEL : std_logic_vector(2 downto 0);
+	
+	
+begin 
+	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE<=internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
 	--Monitoring pins
 	MON0 <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(1); -- MONTIMING for chip 1 column 0
 	MON1 <= debug_CLOCK_SST_out; -- SSTin 
@@ -325,7 +403,7 @@ begin
 --		ASIC_SSP          => AsicIn_SAMPLING_TRACK_MODE_C, --LM: not used now
 --		ASIC_WR_STRB      => open, -- LM WRSTRB written internally
 		CLK_SSTx2			=> internal_CLK_SSTx2, --LM Added - "almost" equivalent to WR_STRB, but used as a clock to sample PHAB
-		ASIC_WR_ADDR_LSB  => AsicIn_SAMPLING_TO_STORAGE_ADDRESS(0),
+		ASIC_WR_ADDR_LSB  => internal_SAMPLING_TO_STORAGE_ADDRESS(0),
 		ASIC_WR_ADDR_LSB_RAW => internal_SAMPLING_TO_STORAGE_ADDRESS_LSB,
 		--Output clock enable for I2C things
 		I2C_CLOCK_ENABLE  => internal_CLOCK_ENABLE_I2C,
@@ -464,14 +542,20 @@ begin
 	internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
 	internal_ASIC_READOUT_DATA(3) <= AsicOut_DATA_BUS_C3;
 
+	
+	AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1); --LSB not used - generated internally in IRS3B
+	AsicIn_STORAGE_TO_WILK_ENABLE <= internal_STORAGE_TO_WILK_ENABLE;
+	
 	map_irs2_sdr : entity work.irs2_sampling_digitizing_readout
 	port map (
 		--Clock for running the analog memory manager
 		CLOCK_SAMPLING_HOLD_MODE              => internal_CLOCK_SST_BUFG,
-		--Clock for monitoring the trigger memory
+		--Clock for monitoring the trigger memory and phase
 		CLOCK_TRIGGER_MEMORY                  => internal_CLOCK_4xSST_BUFG,
 		--Primary clock for ROI and digitizing (set nominally for 50 MHz)
 		CLOCK                                 => internal_CLOCK_50MHz_BUFG,
+		--Clock to sample PHAB - needs to be at least 2xSST
+		internal_CLK_SSTx2 						  => internal_CLK_SSTx2,
 		--Trigger inputs
 		SOFTWARE_TRIGGER_IN                   => internal_SOFTWARE_TRIGGER,
 		HARDWARE_TRIGGER_IN                   => internal_HARDWARE_TRIGGER,
@@ -494,24 +578,48 @@ begin
 		FORCE_CHANNEL_MASK                    => internal_FORCE_CHANNEL_MASK,
 		IGNORE_CHANNEL_MASK                   => internal_IGNORE_CHANNEL_MASK,
 		--Sampling signals and controls for writing to analog memory
-		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => AsicIn_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
+		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
 		  --The LSB here is handled by the clocking block.  We take a copy so we have access to it
 		  --in the trigger memory logic.
 		ASIC_SAMPLING_TO_STORAGE_ADDRESS_LSB    => internal_SAMPLING_TO_STORAGE_ADDRESS_LSB,
-		ASIC_SAMPLING_TO_STORAGE_ENABLE         => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
+		ASIC_SAMPLING_TO_STORAGE_ENABLE         => internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
+		PHAB => AsicOut_SAMPLING_TIMING_MONITOR_C0_R(0), -- LM added one MONTIMING that should be
+																													-- set as PHAB, as it needs to be used
+																													-- to synchronize initially the phase
+																													-- will it be ok for all chips?
+		LAST_WINDOW_SAMPLED => internal_LAST_WINDOW_SAMPLED,
+		DONE_SENDING_EVENT => internal_DONE_SENDING_EVENT,
 		--Digitization signals
-		ASIC_STORAGE_TO_WILK_ADDRESS          => AsicIn_STORAGE_TO_WILK_ADDRESS,
-		ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE,
-		ASIC_STORAGE_TO_WILK_ENABLE           => AsicIn_STORAGE_TO_WILK_ENABLE,
+--		ASIC_STORAGE_TO_WILK_ADDRESS          => AsicIn_STORAGE_TO_WILK_ADDRESS,
+--		ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE,
+--		ASIC_STORAGE_TO_WILK_ENABLE           => internal_STORAGE_TO_WILK_ENABLE,
+		ASIC_STORAGE_TO_WILK_ADDRESS          => internal_STORAGE_TO_WILK_ADDRESS,
+		ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => internal_STORAGE_TO_WILK_ADDRESS_ENABLE,
+		ASIC_STORAGE_TO_WILK_ENABLE           => internal_STORAGE_TO_WILK_ENABLE,		
 		ASIC_WILK_COUNTER_RESET               => AsicIn_WILK_COUNTER_RESET,
 		ASIC_WILK_COUNTER_START               => AsicIn_WILK_COUNTER_START_C,
 		ASIC_WILK_RAMP_ACTIVE                 => AsicIn_WILK_RAMP_ACTIVE,
+		
+	-- RD (serial/increment interface for storage to wilkinson address)
+	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK, --: out std_logic;
+	  AsicIn_STORAGE_TO_WILK_ADDRESS_DIR => AsicIn_STORAGE_TO_WILK_ADDRESS_DIR, --out std_logic;
+	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT, -- : out std_logic;		
 		--Readout signals
-		ASIC_READOUT_CHANNEL_ADDRESS          => AsicIn_DATA_BUS_CHANNEL_ADDRESS,
-		ASIC_READOUT_SAMPLE_ADDRESS           => AsicIn_DATA_BUS_SAMPLE_ADDRESS,
-		ASIC_READOUT_ENABLE                   => AsicIn_DATA_BUS_OUTPUT_ENABLE,
+		ASIC_READOUT_CHANNEL_ADDRESS          => internal_DATA_BUS_CHANNEL_ADDRESS,
+		ASIC_READOUT_SAMPLE_ADDRESS           => internal_DATA_BUS_SAMPLE_ADDRESS,
+		ASIC_READOUT_ENABLE                   => internal_DATA_BUS_OUTPUT_ENABLE,
 		ASIC_READOUT_TRISTATE_DISABLE         => internal_ASIC_READOUT_TRISTATE_DISABLE,
 		ASIC_READOUT_DATA                     => internal_ASIC_READOUT_DATA,
+	-- DO (serial/increment interface for sample / channel select)
+--		GPIO_CAL_SCL							=>  SCL_temperature_eeprom_GPIO0_R01_dummy,-- To change SMPSELANY
+--		GPIO_CAL_SDA							=> SDA_temperature_eeprom_GPIO0_R01_dummy,
+		GPIO_CAL_SCL01							=>  SCL_temperature_eeprom_GPIO0_R01,-- To change SMPSELANY carriers 2 and 3
+		GPIO_CAL_SDA01							=> SDA_temperature_eeprom_GPIO0_R01,
+		GPIO_CAL_SCL23							=>  SCL_temperature_eeprom_GPIO0_R23,-- To change SMPSELANY carriers 2 and 3
+		GPIO_CAL_SDA23							=> SDA_temperature_eeprom_GPIO0_R23,
+	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK,-- out std_logic;
+	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR, --: out std_logic;
+	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT, --: out std_logic;
 		--Trigger bits in to determine ROIs
 		ASIC_TRIGGER_BITS                     => internal_ASIC_TRIGGER_BITS_C_R_CH,
 		--FIFO data to send off as an event
@@ -521,7 +629,35 @@ begin
 		EVENT_FIFO_READ_CLOCK                 => internal_WAVEFORM_FIFO_READ_CLOCK,
 		EVENT_FIFO_READ_ENABLE                => internal_WAVEFORM_FIFO_READ_ENABLE,
 		EVENT_PACKET_BUILDER_BUSY             => internal_WAVEFORM_PACKET_BUILDER_BUSY,
-		EVENT_PACKET_BUILDER_VETO             => internal_WAVEFORM_PACKET_BUILDER_VETO
+		EVENT_PACKET_BUILDER_VETO             => internal_WAVEFORM_PACKET_BUILDER_VETO,
+--		internal_CHIPSCOPE_CONTROL				  => CONTROL0,
+--		ready_for_new_trigger					  => ready_for_new_trigger,
+--		TEMP_OUT_chipscope						  => internal_TEMP_OUT,
+--		TEMP_OUT_0_chipscope						  => internal_TEMP_OUT_0,
+--		TEMP_OUT_1_chipscope						  => internal_TEMP_OUT_1,
+--		TEMP_OUT_2_chipscope						  => internal_TEMP_OUT_2,
+--		TEMP_OUT_3_chipscope						  => internal_TEMP_OUT_3,
+--		TEMP_OUT_4_chipscope						  => internal_TEMP_OUT_4,
+--		TEMP_OUT_5_chipscope						  => internal_TEMP_OUT_5,
+--		TEMP_OUT_6_chipscope						  => internal_TEMP_OUT_6,
+--		TEMP_OUT_7_chipscope						  => internal_TEMP_OUT_7,
+--		TEMP_OUT_8_chipscope						  => internal_TEMP_OUT_8,
+--		TEMP_OUT_9_chipscope						  => internal_TEMP_OUT_9,
+--		TEMP_OUT_10_chipscope						  => internal_TEMP_OUT_10,
+--		TEMP_OUT_11_chipscope						  => internal_TEMP_OUT_11,
+--		TEMP_OUT_12_chipscope						  => internal_TEMP_OUT_12,
+--		TEMP_OUT_13_chipscope						  => internal_TEMP_OUT_13,
+--		TEMP_OUT_14_chipscope						  => internal_TEMP_OUT_14,
+--		TEMP_OUT_15_chipscope						  => internal_TEMP_OUT_15,		
+--		state_debug_temp							  => state_debug_temp2,
+--		debug_state_i2c_busB						  => debug_state_i2c_busC,
+--		address_debug								 => address_debug2,
+--		pos_debug									=> pos_debug2,
+		FORCE_ADDRESS_CHANNEL					=> FORCE_ADDRESS_CHANNEL,
+		FORCE_ADDRESS_ASIC					=> FORCE_ADDRESS_ASIC
+		
+--		new_address_reached				 		  => new_address_reached, --LM: updating address feedback
+--		START_NEW_ADDRESS							  =>  START_NEW_ADDRESS --LM: start new address update
 	);
 
 	--Interface to the DAQ devices
