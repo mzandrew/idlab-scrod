@@ -54,34 +54,32 @@ entity scrod_top is
 		--Bus D handles carrier level temperature sensor
 		--I2C_BUSD_SCL                : inout STD_LOGIC;
 		--I2C_BUSD_SDA                : inout STD_LOGIC;
-		--LM: new I2Cs:
-		
-		--GPIOs to read ASIC shregs rows 0 and 1 --now not implemented
-		SCL_GPIO12_R01						: inout STD_LOGIC;
-		SDA_GPIO12_R01						: inout STD_LOGIC;
-		--GPIOs to read ASIC shregs rosw 2 and 3 --now not implemented
-		SCL_GPIO12_R23						: inout STD_LOGIC;
-		SDA_GPIO12_R23						: inout STD_LOGIC;
-		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1 --now  implemented only for wiritng
-		SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
-		SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
-		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3 --now  implemented only for writing
-		SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
-		SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		--GPIOs to read ASIC shregs rows 0 and 1
+		--I2C_SCL_GPIO12_R01						: inout STD_LOGIC;
+		--I2C_SDA_GPIO12_R01						: inout STD_LOGIC;
+		--GPIOs to read ASIC shregs rosw 2 and 3
+		--I2C_SCL_GPIO12_R23						: inout STD_LOGIC;
+		--I2C_SDA_GPIO12_R23						: inout STD_LOGIC;
+		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
+		--I2C_SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
+		--I2C_SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
+		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
+		--I2C_SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		--I2C_SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		--Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
+		--I2C_DAC_SCL_R01						: inout STD_LOGIC;
+		--I2C_DAC_SDA_R01						: inout STD_LOGIC;
+		--Vadjn/p rows 2 and 3
+		--I2C_DAC_SCL_R23						: inout STD_LOGIC;
+		--I2C_DAC_SDA_R23						: inout STD_LOGIC;
+		--channel calibration signals
+      --I2C_CAL_SDA                 : inout STD_LOGIC;
+      --I2C_CAL_SCL                 : inout STD_LOGIC;
+
 		----------------------------------------------
 		------------ASIC Related Pins-----------------
 		----------------------------------------------
-		--IIC DAC lines for controlling bias voltages
-		DAC_SCL_C                     : out std_logic_vector(3 downto 0);
-		DAC_SDA_C                     : inout std_logic_vector(3 downto 0); 
-		--Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
-		DAC_SCL_R01						: inout STD_LOGIC;
-		DAC_SDA_R01						: inout STD_LOGIC;
-		--Vadjn/p rows 2 and 3
-		DAC_SCL_R23						: inout STD_LOGIC;
-		DAC_SDA_R23						: inout STD_LOGIC;
 		--ASIC trigger interface signals
-		AsicIn_TRIG_ON_RISING_EDGE		: out std_logic;
 		AsicOut_TRIG_OUTPUT_R0_C0_CH	: in std_logic_vector(7 downto 0);
 		AsicOut_TRIG_OUTPUT_R0_C1_CH	: in std_logic_vector(7 downto 0);
 		AsicOut_TRIG_OUTPUT_R0_C2_CH	: in std_logic_vector(7 downto 0);
@@ -100,13 +98,10 @@ entity scrod_top is
 		AsicOut_TRIG_OUTPUT_R3_C3_CH	: in std_logic_vector(7 downto 0);
 		--ASIC sampling and analog storage signals
 		AsicIn_SAMPLING_HOLD_MODE_C               : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
---		AsicIn_SAMPLING_TRACK_MODE_C              : out std_logic_vector(ASICS_PER_ROW-1 downto 0); --LM: old SSP - does not exist
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : out std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1);
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out std_logic;
 		AsicIn_SAMPLING_TO_STORAGE_TRANSFER_C     : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
 		--ASIC digitization signals
---		AsicIn_STORAGE_TO_WILK_ADDRESS            : out std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0); --LM does not exist
---		AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE     : out std_logic; --LM: dos not exist - uses RD_SH* signals
 		AsicIn_STORAGE_TO_WILK_ENABLE             : out std_logic;
 		AsicIn_WILK_COUNTER_RESET                 : out std_logic;
 		AsicIn_WILK_COUNTER_START_C               : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
@@ -116,18 +111,8 @@ entity scrod_top is
 		AsicOut_DATA_BUS_C1                       : in  std_logic_vector(11 downto 0);
 		AsicOut_DATA_BUS_C2                       : in  std_logic_vector(11 downto 0);
 		AsicOut_DATA_BUS_C3                       : in  std_logic_vector(11 downto 0);
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0); --LM: substituted by below
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R       : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
 		AsicIn_DATA_OUTPUT_DISABLE_R     			: out std_logic_vector(ASICS_PER_ROW-1 downto 0);
-
---		AsicIn_DATA_BUS_OUTPUT_ENABLE             : out std_logic; --LM now sampselany - from a GPIO...
---		AsicIn_DATA_BUS_SAMPLE_ADDRESS            : out std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0); --LM now DO_SHfts
---		AsicIn_DATA_BUS_CHANNEL_ADDRESS           : out std_logic_vector(CH_SELECT_BITS-1 downto 0);
 		--ASIC Wilkinson monitoring pins
---		AsicIn_MONITOR_WILK_COUNTER_RESET : out std_logic; --LM: check: should be handled by the do_load
---		AsicIn_MONITOR_WILK_COUNTER_START : out std_logic;
 		AsicOut_MONITOR_WILK_COUNTER_C0_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C1_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C2_R : in std_logic_vector(3 downto 0);
@@ -200,16 +185,16 @@ entity scrod_top is
 		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
 		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
 		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in STD_LOGIC_VECTOR(3 downto 0) --LM: TBIMPLEMENTED
 
 		------------------------------------------------------------------------
 		-- Monitorin pins - TO BE CHANGED FOR Intctc REVB!----------------------
 		------------------------------------------------------------------------		
 		
-		MON0 : out std_logic;
-		MON1 : out std_logic;
-		MON2 : out std_logic;
-		MON3 : out std_logic
+		--MON0 : out std_logic;
+		--MON1 : out std_logic;
+		--MON2 : out std_logic;
+		--MON3 : out std_logic
 		
 	);
 end scrod_top;
@@ -366,10 +351,10 @@ signal internal_TEMP_OUT_15 :std_logic_vector(15 downto 0);
 begin 
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE<=internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
 	--Monitoring pins
-	MON0 <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(1); -- MONTIMING for chip 1 column 0
-	MON1 <= debug_CLOCK_SST_out; -- SSTin 
-	MON2 <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R(1); -- RCO_SSX for chip 1 column 0
-	MON3 <= internal_SAMPLING_TO_STORAGE_ADDRESS(1); --WRADDR (LS)
+	--MON0 <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(1); -- MONTIMING for chip 1 column 0
+--	MON1 <= debug_CLOCK_SST_out; -- SSTin 
+--	MON2 <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R(1); -- RCO_SSX for chip 1 column 0
+--	MON3 <= internal_SAMPLING_TO_STORAGE_ADDRESS(1); --WRADDR (LS)
 --	MON1 <= internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE; -- WR_EN
 --	MON1 <= AsicOut_MONITOR_WILK_COUNTER_C0_R(0); -- TSTout for chip 0 column 0
 --	MON2 <= internal_STORAGE_TO_WILK_ENABLE; -- RD_EN!
@@ -462,17 +447,6 @@ begin
 		SCL               => I2C_BUSC_SCL,
 		SDA               => I2C_BUSC_SDA
 	);
-	-----I2C Control for external DACs on each daughter card-----
-	map_CarrierRevA_I2C_DAC_Control : entity work.CarrierRevA_I2C_DAC_Control
-		port map ( 
-			INTENDED_DAC_VALUES	=> internal_DESIRED_DAC_VOLTAGES,
-			UPDATE_STATUSES      => internal_DAC_UPDATE_STATUSES,
-			CLK      	         => internal_CLOCK_4MHz_BUFG,
-			CLK_ENABLE           => internal_CLOCK_ENABLE_I2C,
-			SCL_C 		  			=> DAC_SCL_C,
-			SDA_C		  				=> DAC_SDA_C
-		);
-	---------------------------------------------------------
 
 	--Scaler monitors for the ASIC channels
 	--First we need to map the scalers into rows/cols
@@ -542,7 +516,6 @@ begin
 	internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
 	internal_ASIC_READOUT_DATA(3) <= AsicOut_DATA_BUS_C3;
 
-	
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1); --LSB not used - generated internally in IRS3B
 	AsicIn_STORAGE_TO_WILK_ENABLE <= internal_STORAGE_TO_WILK_ENABLE;
 	
