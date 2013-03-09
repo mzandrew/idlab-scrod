@@ -34,12 +34,15 @@ entity clock_generation is
 		CLOCK_SST_BUFG    : out STD_LOGIC;
 		--ASIC output clocks
 		ASIC_SST          : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
-		ASIC_SSP          : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
-		ASIC_WR_STRB      : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
+--		ASIC_SSP          : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
+--		ASIC_WR_STRB      : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
+		CLK_SSTx2			: out std_logic; --LM Added - "almost" equivalent to WR_STRB, but used as a clock to sample PHAB
 		ASIC_WR_ADDR_LSB     : out STD_LOGIC;
 		ASIC_WR_ADDR_LSB_RAW : out STD_LOGIC;
 		--Output clock enable for I2C things
-		I2C_CLOCK_ENABLE  : out STD_LOGIC
+		I2C_CLOCK_ENABLE  : out STD_LOGIC;
+		BOARD_CLOCK :  out STD_LOGIC;
+		debug_CLOCK_SST : out STD_LOGIC
 	);
 end clock_generation;
 
@@ -63,7 +66,26 @@ architecture Behavioral of clock_generation is
 	--
 	signal internal_CLOCK_4MHz_BUFG     : std_logic;
 	signal internal_CLOCK_50MHz_BUFG    : std_logic;
+	
+	
+	
+component clockgen_asic_A
+port
+ (-- Clock in ports
+  CLK_SST           : in     std_logic;
+  -- Clock out ports
+  CLK_50MHz_BUFG          : out    std_logic;
+  CLK_4MHz_BUFG          : out    std_logic;
+  CLK_SSTx4_BUFG          : out    std_logic;
+  CLK_SSP_BUFG          : out    std_logic;
+  CLK_WR_STRB_BUFG          : out    std_logic;
+  -- Status and control signals
+  LOCKED            : out    std_logic
+ );
+end component;
 begin
+
+debug_CLOCK_SST <= internal_CLOCK_SST;
 	------------------------------------------------------
 	--            Board derived clocking                --
 	------------------------------------------------------
@@ -73,6 +95,12 @@ begin
 		IB => BOARD_CLOCKN,
 		O  => internal_BOARD_CLOCK
 	);	
+	 --LM export board clock for ILA?
+	map_board_clock_bufg : bufg
+	port map(
+		I  => internal_BOARD_CLOCK,
+		O  => BOARD_CLOCK
+	);
 	map_board_clock_feedback : bufg
 	port map(
 		I  => internal_BOARD_CLOCK_FB,
@@ -169,7 +197,11 @@ begin
 	--               sspx4   @ 84.8108 MHz @ 90 degrees
    --               ssp     @ 21.2027 MHz @ 315 degree
 	--               wr_strb @ 42.4054 MHz @ 90 degrees
-	map_clockgen_ASIC : entity work.clockgen_asic_A
+	
+
+--	map_clockgen_ASIC : entity work.clockgen_asic_A
+	CLK_SSTx2 <= internal_CLOCK_WRITE_STROBE_BUFG;
+	map_clockgen_ASIC : clockgen_asic_A
 	port map (
 		-- Clock in ports
 		CLK_SST          => internal_CLOCK_SST,
@@ -217,36 +249,36 @@ begin
 				R  => '0',                     -- 1-bit reset input
 				S  => '0'                      -- 1-bit set input
 		);
-		map_ssp_to_col : ODDR2
-			generic map(
-				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
-				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
-				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
-			port map (
-				Q  => ASIC_SSP(i),        -- 1-bit output data
-				C0 => internal_CLOCK_SSP_BUFG,      -- 1-bit clock input
-				C1 => not(internal_CLOCK_SSP_BUFG), -- 1-bit clock input
-				CE => '1',                     -- 1-bit clock enable input
-				D0 => '1',                     -- 1-bit data input (associated with C0)
-				D1 => '0',                     -- 1-bit data input (associated with C1)
-				R  => '0',                     -- 1-bit reset input
-				S  => '0'                      -- 1-bit set input
-		);		
-		map_wr_strb_to_col : ODDR2
-			generic map(
-				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
-				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
-				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
-			port map (
-				Q  => ASIC_WR_STRB(i),        -- 1-bit output data
-				C0 => internal_CLOCK_WRITE_STROBE_BUFG,      -- 1-bit clock input
-				C1 => not(internal_CLOCK_WRITE_STROBE_BUFG), -- 1-bit clock input
-				CE => '1',                     -- 1-bit clock enable input
-				D0 => '1',                     -- 1-bit data input (associated with C0)
-				D1 => '0',                     -- 1-bit data input (associated with C1)
-				R  => '0',                     -- 1-bit reset input
-				S  => '0'                      -- 1-bit set input
-		);		
+--		map_ssp_to_col : ODDR2 --LM: do not exist anymore
+--			generic map(
+--				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+--				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+--				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+--			port map (
+--				Q  => ASIC_SSP(i),        -- 1-bit output data
+--				C0 => internal_CLOCK_SSP_BUFG,      -- 1-bit clock input
+--				C1 => not(internal_CLOCK_SSP_BUFG), -- 1-bit clock input
+--				CE => '1',                     -- 1-bit clock enable input
+--				D0 => '1',                     -- 1-bit data input (associated with C0)
+--				D1 => '0',                     -- 1-bit data input (associated with C1)
+--				R  => '0',                     -- 1-bit reset input
+--				S  => '0'                      -- 1-bit set input
+--		);		
+--		map_wr_strb_to_col : ODDR2 --LM: do not exist anymore
+--			generic map(
+--				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+--				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+--				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+--			port map (
+--				Q  => ASIC_WR_STRB(i),        -- 1-bit output data
+--				C0 => internal_CLOCK_WRITE_STROBE_BUFG,      -- 1-bit clock input
+--				C1 => not(internal_CLOCK_WRITE_STROBE_BUFG), -- 1-bit clock input
+--				CE => '1',                     -- 1-bit clock enable input
+--				D0 => '1',                     -- 1-bit data input (associated with C0)
+--				D1 => '0',                     -- 1-bit data input (associated with C1)
+--				R  => '0',                     -- 1-bit reset input
+--				S  => '0'                      -- 1-bit set input
+--		);		
 	end generate;
 	map_oddr2_wr_addr_lsb : ODDR2
 		generic map(
