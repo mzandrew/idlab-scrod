@@ -55,26 +55,26 @@ entity scrod_top is
 		--I2C_BUSD_SCL                : inout STD_LOGIC;
 		--I2C_BUSD_SDA                : inout STD_LOGIC;
 		--GPIOs to read ASIC shregs rows 0 and 1
-		--I2C_SCL_GPIO12_R01						: inout STD_LOGIC;
-		--I2C_SDA_GPIO12_R01						: inout STD_LOGIC;
+		I2C_SCL_GPIO12_R01						: inout STD_LOGIC;
+		I2C_SDA_GPIO12_R01						: inout STD_LOGIC;
 		--GPIOs to read ASIC shregs rosw 2 and 3
-		--I2C_SCL_GPIO12_R23						: inout STD_LOGIC;
-		--I2C_SDA_GPIO12_R23						: inout STD_LOGIC;
+		I2C_SCL_GPIO12_R23						: inout STD_LOGIC;
+		I2C_SDA_GPIO12_R23						: inout STD_LOGIC;
 		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
-		--I2C_SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
-		--I2C_SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
+		I2C_SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
+		I2C_SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
 		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
-		--I2C_SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
-		--I2C_SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		I2C_SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		I2C_SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
 		--Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
-		--I2C_DAC_SCL_R01						: inout STD_LOGIC;
-		--I2C_DAC_SDA_R01						: inout STD_LOGIC;
+		I2C_DAC_SCL_R01						: inout STD_LOGIC;
+		I2C_DAC_SDA_R01						: inout STD_LOGIC;
 		--Vadjn/p rows 2 and 3
-		--I2C_DAC_SCL_R23						: inout STD_LOGIC;
-		--I2C_DAC_SDA_R23						: inout STD_LOGIC;
+		I2C_DAC_SCL_R23						: inout STD_LOGIC;
+		I2C_DAC_SDA_R23						: inout STD_LOGIC;
 		--channel calibration signals
-      --I2C_CAL_SDA                 : inout STD_LOGIC;
-      --I2C_CAL_SCL                 : inout STD_LOGIC;
+      I2C_CAL_SDA                 : inout STD_LOGIC;
+      I2C_CAL_SCL                 : inout STD_LOGIC;
 
 		----------------------------------------------
 		------------ASIC Related Pins-----------------
@@ -117,6 +117,37 @@ entity scrod_top is
 		AsicOut_MONITOR_WILK_COUNTER_C1_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C2_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C3_R : in std_logic_vector(3 downto 0);
+		--Internal ASIC DAC shift register control
+		AsicIn_CLEAR_ALL_REGISTERS : out std_logic;
+		AsicIn_SERIAL_SHIFT_CLOCK : out std_logic;
+		AsicIn_SERIAL_INPUT  : out std_logic;
+		AsicIn_PARALLEL_CLOCK_C0_R : out std_logic_vector(3 downto 0);
+		AsicIn_PARALLEL_CLOCK_C1_R : out std_logic_vector(3 downto 0);
+		AsicIn_PARALLEL_CLOCK_C2_R : out std_logic_vector(3 downto 0);
+		AsicIn_PARALLEL_CLOCK_C3_R : out std_logic_vector(3 downto 0);
+		--DO shift register control (serial/increment interface for sample / channel select)
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  : out std_logic;
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR : out std_logic;
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  : out std_logic;
+		--RD shift register control (serial/increment interface for storage to wilkinson address)
+		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  : out std_logic;
+		AsicIn_STORAGE_TO_WILK_ADDRESS_DIR: out std_logic;
+		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT : out std_logic;
+		
+		---------------------------------------------
+		-- Monitorinf/feedbacks----------------------
+		---------------------------------------------	
+		--SSXMON	
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		--MONTIMING
+		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+
 		----------------------------------------------
 		------------Fiberoptic Pins-------------------
 		----------------------------------------------
@@ -155,38 +186,8 @@ entity scrod_top is
 		USB_RDY0                    : out STD_LOGIC;
 		USB_RDY1                    : out STD_LOGIC;
 		USB_WAKEUP                  : in  STD_LOGIC;
-		USB_CLKOUT		             : in  STD_LOGIC;
-		---------------------------------------------
-		-- All shift registers ---------------------- --LM: all to be implemented!!!
-		---------------------------------------------
-	  AsicIn_CLEAR_ALL_REGISTERS : out std_logic;
-	  AsicIn_SERIAL_SHIFT_CLOCK : out std_logic;
-	  AsicIn_SERIAL_INPUT  : out std_logic;
-	-- DO (serial/increment interface for sample / channel select)
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  : out std_logic;
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR : out std_logic;
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  : out std_logic;
-
-	-- RD (serial/increment interface for storage to wilkinson address)
-	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  : out std_logic;
-	  AsicIn_STORAGE_TO_WILK_ADDRESS_DIR: out std_logic;
-	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT : out std_logic;
+		USB_CLKOUT		             : in  STD_LOGIC
 		
-		 
-		---------------------------------------------
-		-- Monitorinf/feedbacks----------------------
-		---------------------------------------------
-		
-		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		
-		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
-		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in STD_LOGIC_VECTOR(3 downto 0) --LM: TBIMPLEMENTED
-
 		------------------------------------------------------------------------
 		-- Monitorin pins - TO BE CHANGED FOR Intctc REVB!----------------------
 		------------------------------------------------------------------------		
