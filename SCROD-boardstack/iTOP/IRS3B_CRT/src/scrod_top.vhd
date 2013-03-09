@@ -504,14 +504,14 @@ begin
 		CLOCK                              => internal_CLOCK_50MHz_BUFG
 	);
 
-	--ASIC sampling, digitization, and readout (SDR)
-	--This includes sampling, selection of ROIs, digitizing, and readout
-	gen_asic_boe : for row in 0 to 3 generate
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(0)(row);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(1)(row);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(2)(row);
-		AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(3)(row);
-	end generate;
+--	--ASIC sampling, digitization, and readout (SDR)
+--	--This includes sampling, selection of ROIs, digitizing, and readout
+--	gen_asic_boe : for row in 0 to 3 generate
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(0)(row);
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(1)(row);
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(2)(row);
+--		AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(3)(row);
+--	end generate;
 	internal_ASIC_READOUT_DATA(0) <= AsicOut_DATA_BUS_C0;
 	internal_ASIC_READOUT_DATA(1) <= AsicOut_DATA_BUS_C1;
 	internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
@@ -587,10 +587,10 @@ begin
 	-- DO (serial/increment interface for sample / channel select)
 --		GPIO_CAL_SCL							=>  SCL_temperature_eeprom_GPIO0_R01_dummy,-- To change SMPSELANY
 --		GPIO_CAL_SDA							=> SDA_temperature_eeprom_GPIO0_R01_dummy,
-		GPIO_CAL_SCL01							=>  SCL_temperature_eeprom_GPIO0_R01,-- To change SMPSELANY carriers 2 and 3
-		GPIO_CAL_SDA01							=> SDA_temperature_eeprom_GPIO0_R01,
-		GPIO_CAL_SCL23							=>  SCL_temperature_eeprom_GPIO0_R23,-- To change SMPSELANY carriers 2 and 3
-		GPIO_CAL_SDA23							=> SDA_temperature_eeprom_GPIO0_R23,
+		GPIO_CAL_SCL01							=>  I2C_SCL_temperature_eeprom_GPIO0_R01,-- To change SMPSELANY carriers 2 and 3
+		GPIO_CAL_SDA01							=> I2C_SDA_temperature_eeprom_GPIO0_R01,
+		GPIO_CAL_SCL23							=>  I2C_SCL_temperature_eeprom_GPIO0_R23,-- To change SMPSELANY carriers 2 and 3
+		GPIO_CAL_SDA23							=> I2C_SDA_temperature_eeprom_GPIO0_R23,
 	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK,-- out std_logic;
 	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR, --: out std_logic;
 	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT, --: out std_logic;
@@ -758,7 +758,7 @@ begin
 	internal_I2C_BUSC_READ_BYTE            <= internal_OUTPUT_REGISTERS(3)(10);
 	internal_I2C_BUSC_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(3)(11);
 	internal_I2C_BUSC_SEND_STOP            <= internal_OUTPUT_REGISTERS(3)(12);
-	AsicIn_TRIG_ON_RISING_EDGE             <= internal_OUTPUT_REGISTERS(4)(15);         --Register 4: Select trigger polarity and which ASIC to read scalers from: PXXX XXXX XXXX CCRR, where P is 1/0 for rising/falling edge triggering, and C/R are column and row
+--	AsicIn_TRIG_ON_RISING_EDGE             <= internal_OUTPUT_REGISTERS(4)(15);         --Register 4: Select trigger polarity and which ASIC to read scalers from: PXXX XXXX XXXX CCRR, where P is 1/0 for rising/falling edge triggering, and C/R are column and row
 	internal_TRIGGER_SCALER_ROW_SELECT     <= internal_OUTPUT_REGISTERS(4)(ROW_SELECT_BITS-1 downto 0); 
 	internal_TRIGGER_SCALER_COL_SELECT     <= internal_OUTPUT_REGISTERS(4)(ROW_SELECT_BITS+COL_SELECT_BITS-1 downto ROW_SELECT_BITS);
 	gen_dac_common_col : for col in 0 to 3 generate
@@ -793,8 +793,8 @@ begin
 			internal_WBIAS_FEEDBACK_ENABLES(col)(row) <= internal_OUTPUT_REGISTERS(143)(col*4+row); --Registers 143: Trigger width  feedback enable bits, increasing by row, then col
 		end generate;
 	end generate;
-	AsicIn_MONITOR_WILK_COUNTER_START <= internal_OUTPUT_REGISTERS(144)(0); --Register 144: Bit 0: start wilkinson monitoring counter (edge sensitive)
-	AsicIn_MONITOR_WILK_COUNTER_RESET <= internal_OUTPUT_REGISTERS(144)(1); --              Bit 1: reset wilkinson monitoring counter
+--	AsicIn_MONITOR_WILK_COUNTER_START <= internal_OUTPUT_REGISTERS(144)(0); --Register 144: Bit 0: start wilkinson monitoring counter (edge sensitive)
+--	AsicIn_MONITOR_WILK_COUNTER_RESET <= internal_OUTPUT_REGISTERS(144)(1); --              Bit 1: reset wilkinson monitoring counter
 	gen_feedback_targets_col : for col in 0 to 3 generate
 		gen_feedback_targets_row : for row in 0 to 3 generate
 			internal_WILKINSON_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(145+col*4+row); --Registers 145-160: wilkinson counter target values for feedback
