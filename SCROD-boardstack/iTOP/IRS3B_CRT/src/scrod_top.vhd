@@ -148,7 +148,30 @@ entity scrod_top is
 		USB_RDY0                    : out STD_LOGIC;
 		USB_RDY1                    : out STD_LOGIC;
 		USB_WAKEUP                  : in  STD_LOGIC;
-		USB_CLKOUT		             : in  STD_LOGIC
+		USB_CLKOUT		             : in  STD_LOGIC;
+		---------------------------------------------
+		-- Monitorinf/feedbacks----------------------
+		---------------------------------------------
+		
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R : in  STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		
+		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in STD_LOGIC_VECTOR(3 downto 0); --LM: TBIMPLEMENTED
+
+		------------------------------------------------------------------------
+		-- Monitorin pins - TO BE CHANGED FOR Intctc REVB!----------------------
+		------------------------------------------------------------------------		
+		
+		MON0 : out std_logic;
+		MON1 : out std_logic;
+		MON2 : out std_logic;
+		MON3 : out std_logic
+		
 	);
 end scrod_top;
 
@@ -162,7 +185,10 @@ architecture Behavioral of scrod_top is
 	
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
-
+ 
+	signal internal_SAMPLING_TO_STORAGE_ADDRESS    :  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+ 
+        
 	--Trigger readout
 	signal internal_SOFTWARE_TRIGGER : std_logic;
 	signal internal_HARDWARE_TRIGGER : std_logic;
@@ -253,12 +279,22 @@ signal internal_CLK_SSTx2 : std_logic;
 	signal internal_I2C_BUSC_BUSY             : std_logic;
 
 
+	signal       FEEDBACK_SAMPLING_RATE_ENABLE                :  std_logic_vector(15 downto 0);
+
 signal 		BOARD_CLOCK :   STD_LOGIC;
 signal debug_CLOCK_SST :std_logic;
 signal debug_CLOCK_SST_out :std_logic;
 
 begin
 	
+	--Monitoring pins
+	MON0 <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(1); -- MONTIMING for chip 1 column 0
+	MON1 <= debug_CLOCK_SST_out; -- SSTin 
+	MON2 <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R(1); -- RCO_SSX for chip 1 column 0
+	MON3 <= internal_SAMPLING_TO_STORAGE_ADDRESS(1); --WRADDR (LS)
+--	MON1 <= internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE; -- WR_EN
+--	MON1 <= AsicOut_MONITOR_WILK_COUNTER_C0_R(0); -- TSTout for chip 0 column 0
+--	MON2 <= internal_STORAGE_TO_WILK_ENABLE; -- RD_EN!
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
 	port map ( 
@@ -391,6 +427,18 @@ begin
 	--ASIC monitoring and control for potential feedback paths
 	map_asic_feedback_and_monitoring : entity work.feedback_and_monitoring
 	port map (
+	
+	
+				AsicOut_SAMPLING_TRACK_MODE_C0_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
+				AsicOut_SAMPLING_TRACK_MODE_C1_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
+				AsicOut_SAMPLING_TRACK_MODE_C2_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
+				AsicOut_SAMPLING_TRACK_MODE_C3_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R,
+				
+				FEEDBACK_SAMPLING_RATE_ENABLE            => FEEDBACK_SAMPLING_RATE_ENABLE, --LM: to fill with appropriate...? 
+--				FEEDBACK_SAMPLING_RATE_COUNTER_C_R       => open,
+				FEEDBACK_SAMPLING_RATE_VADJP_C_R         => open,
+				FEEDBACK_SAMPLING_RATE_VADJN_C_R         => internal_VADJN_DAC_VALUES_FEEDBACK,
+	
 		AsicOut_MONITOR_WILK_COUNTERS_C0_R => AsicOut_MONITOR_WILK_COUNTER_C0_R,
 		AsicOut_MONITOR_WILK_COUNTERS_C1_R => AsicOut_MONITOR_WILK_COUNTER_C1_R,
 		AsicOut_MONITOR_WILK_COUNTERS_C2_R => AsicOut_MONITOR_WILK_COUNTER_C2_R,
