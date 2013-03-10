@@ -356,6 +356,22 @@ architecture Behavioral of scrod_top is
 	signal internal_I2C_BUSH_SEND_STOP        : std_logic;
 	signal internal_I2C_BUSH_BUSY             : std_logic;
 
+	signal internal_I2C_BUSI_UPDATE 				: std_logic;
+	signal internal_I2C_BUSI_ADDRESS 			: std_logic_vector(6 downto 0);
+	signal internal_I2C_BUSI_COMMAND 			: std_logic_vector(3 downto 0);
+	signal internal_I2C_BUSI_CHANNEL 			: std_logic_vector(3 downto 0);
+	signal internal_I2C_BUSI_DAC_VALUE 			: std_logic_vector(11 downto 0);
+	signal internal_I2C_BUSI_BUSY					: std_logic;
+	signal internal_I2C_BUSI_SUCCEEDED			: std_logic;
+	
+	signal internal_I2C_BUSJ_UPDATE 				: std_logic;
+	signal internal_I2C_BUSJ_ADDRESS 			: std_logic_vector(6 downto 0);
+	signal internal_I2C_BUSJ_COMMAND 			: std_logic_vector(3 downto 0);
+	signal internal_I2C_BUSJ_CHANNEL 			: std_logic_vector(3 downto 0);
+	signal internal_I2C_BUSJ_DAC_VALUE 			: std_logic_vector(11 downto 0);
+	signal internal_I2C_BUSJ_BUSY					: std_logic;
+	signal internal_I2C_BUSJ_SUCCEEDED			: std_logic;
+
 	signal internal_I2C_BUSK_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
 	signal internal_I2C_BUSK_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
 	signal internal_I2C_BUSK_ACKNOWLEDGED     : std_logic;
@@ -653,9 +669,36 @@ begin
 		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R23,
 		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R23
 	);
+	
 	--BUS I - Vadjn/p rows 0 and 1
+	Inst_LTC2637_I2C_Interface_BusI: entity work.LTC2637_I2C_Interface PORT MAP(
+		SCL => I2C_DAC_SCL_R01,
+		SDA => I2C_DAC_SDA_R01,
+		CLK => internal_CLOCK_4MHz_BUFG,
+		CLK_ENABLE => internal_CLOCK_ENABLE_I2C,
+		ADDRESS => internal_I2C_BUSI_ADDRESS,
+		COMMAND => internal_I2C_BUSI_COMMAND,
+		CHANNEL => internal_I2C_BUSI_CHANNEL,
+		DAC_VALUE => internal_I2C_BUSI_DAC_VALUE,
+		UPDATE => internal_I2C_BUSI_UPDATE,
+		UPDATING => internal_I2C_BUSI_BUSY,
+		UPDATE_SUCCEEDED => internal_I2C_BUSI_SUCCEEDED
+	);
 	
 	--BUS J - Vadjn/p rows 2 and 3
+	Inst_LTC2637_I2C_Interface_BusJ: entity work.LTC2637_I2C_Interface PORT MAP(
+		SCL => I2C_DAC_SCL_R23,
+		SDA => I2C_DAC_SDA_R23,
+		CLK => internal_CLOCK_4MHz_BUFG,
+		CLK_ENABLE => internal_CLOCK_ENABLE_I2C,
+		ADDRESS => internal_I2C_BUSJ_ADDRESS,
+		COMMAND => internal_I2C_BUSJ_COMMAND,
+		CHANNEL => internal_I2C_BUSJ_CHANNEL,
+		DAC_VALUE => internal_I2C_BUSJ_DAC_VALUE,
+		UPDATE => internal_I2C_BUSJ_UPDATE,
+		UPDATING => internal_I2C_BUSJ_BUSY,
+		UPDATE_SUCCEEDED => internal_I2C_BUSJ_SUCCEEDED
+	);
 	
 	--Interface to I2C bus K - channel calibration signals
 	map_i2c_busK : entity work.i2c_master
@@ -1081,8 +1124,19 @@ begin
 	internal_I2C_BUSH_READ_BYTE            <= internal_OUTPUT_REGISTERS(8)(10);
 	internal_I2C_BUSH_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(8)(11);
 	internal_I2C_BUSH_SEND_STOP            <= internal_OUTPUT_REGISTERS(8)(12);
-	--skip I2K Bus I
-	--skip I2K Bus J
+	--BUS I - note slightly different I2C interface for LTC2637
+	internal_I2C_BUSI_UPDATE  <= internal_OUTPUT_REGISTERS(9)(11);
+	internal_I2C_BUSI_ADDRESS <= internal_OUTPUT_REGISTERS(9)(6 downto 0);
+	internal_I2C_BUSI_COMMAND <= internal_OUTPUT_REGISTERS(9)(10 downto 7);
+	internal_I2C_BUSI_CHANNEL <= internal_OUTPUT_REGISTERS(10)(3 downto 0);
+	internal_I2C_BUSI_DAC_VALUE <= internal_OUTPUT_REGISTERS(10)(15 downto 4);
+	--Bus J - note slightly different I2C interface for LTC2637
+	internal_I2C_BUSJ_UPDATE  <= internal_OUTPUT_REGISTERS(11)(11);
+	internal_I2C_BUSJ_ADDRESS <= internal_OUTPUT_REGISTERS(11)(6 downto 0);
+	internal_I2C_BUSJ_COMMAND <= internal_OUTPUT_REGISTERS(11)(10 downto 7);
+	internal_I2C_BUSJ_CHANNEL <= internal_OUTPUT_REGISTERS(12)(3 downto 0);
+	internal_I2C_BUSJ_DAC_VALUE <= internal_OUTPUT_REGISTERS(12)(15 downto 4);
+
 	internal_I2C_BUSK_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(11)(7 downto 0); --Register 3: I2C BusC interfaces
 	internal_I2C_BUSK_SEND_START           <= internal_OUTPUT_REGISTERS(11)(8);
 	internal_I2C_BUSK_SEND_BYTE            <= internal_OUTPUT_REGISTERS(11)(9);
@@ -1228,40 +1282,50 @@ begin
 	--- The register numbers must be updated for the following if N_GPR is changed.
 	internal_INPUT_REGISTERS(N_GPR   ) <= internal_I2C_BUSA_ACKNOWLEDGED & internal_I2C_BUSA_BUSY & "000000" & internal_I2C_BUSA_BYTE_RECEIVED; --Register 256: I2C BusA interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 1) <= internal_I2C_BUSB_ACKNOWLEDGED & internal_I2C_BUSB_BUSY & "000000" & internal_I2C_BUSB_BYTE_RECEIVED; --Register 257: I2C BusB interfaces
-	internal_INPUT_REGISTERS(N_GPR+ 2) <= internal_I2C_BUSC_ACKNOWLEDGED & internal_I2C_BUSC_BUSY & "000000" & internal_I2C_BUSC_BYTE_RECEIVED; --Register 257: I2C BusB interfaces
-	internal_INPUT_REGISTERS(N_GPR+ 3) <= internal_ASIC_SCALERS_TO_READ(0);                                                                     --Register 258: Trigger scalers, ch0
-	internal_INPUT_REGISTERS(N_GPR+ 4) <= internal_ASIC_SCALERS_TO_READ(1);                                                                     --Register 259: Trigger scalers, ch1
-	internal_INPUT_REGISTERS(N_GPR+ 5) <= internal_ASIC_SCALERS_TO_READ(2);                                                                     --Register 260: Trigger scalers, ch2
-	internal_INPUT_REGISTERS(N_GPR+ 6) <= internal_ASIC_SCALERS_TO_READ(3);                                                                     --Register 261: Trigger scalers, ch3
-	internal_INPUT_REGISTERS(N_GPR+ 7) <= internal_ASIC_SCALERS_TO_READ(4);                                                                     --Register 262: Trigger scalers, ch4
-	internal_INPUT_REGISTERS(N_GPR+ 8) <= internal_ASIC_SCALERS_TO_READ(5);                                                                     --Register 263: Trigger scalers, ch5
-	internal_INPUT_REGISTERS(N_GPR+ 9) <= internal_ASIC_SCALERS_TO_READ(6);                                                                     --Register 264: Trigger scalers, ch6
-	internal_INPUT_REGISTERS(N_GPR+10) <= internal_ASIC_SCALERS_TO_READ(7);                                                                     --Register 265: Trigger scalers, ch7
-	internal_INPUT_REGISTERS(N_GPR+11) <= internal_DAC_UPDATE_STATUSES(0)(1) & internal_DAC_UPDATE_STATUSES(0)(0);                              --Register 267: DAC statuses for col0, row0, upper 8 bits are dac2, lower are dac1
-	internal_INPUT_REGISTERS(N_GPR+12) <= internal_DAC_UPDATE_STATUSES(0)(3) & internal_DAC_UPDATE_STATUSES(0)(2);                              --Register 268: DAC statuses for col0, row1
-	internal_INPUT_REGISTERS(N_GPR+13) <= internal_DAC_UPDATE_STATUSES(0)(5) & internal_DAC_UPDATE_STATUSES(0)(4);                              --Register 269: DAC statuses for col0, row2
-	internal_INPUT_REGISTERS(N_GPR+14) <= internal_DAC_UPDATE_STATUSES(0)(7) & internal_DAC_UPDATE_STATUSES(0)(6);                              --Register 270: DAC statuses for col0, row3
-	internal_INPUT_REGISTERS(N_GPR+15) <= internal_DAC_UPDATE_STATUSES(1)(1) & internal_DAC_UPDATE_STATUSES(1)(0);                              --Register 271: DAC statuses for col1, row0
-	internal_INPUT_REGISTERS(N_GPR+16) <= internal_DAC_UPDATE_STATUSES(1)(3) & internal_DAC_UPDATE_STATUSES(1)(2);                              --Register 272: DAC statuses for col1, row1
-	internal_INPUT_REGISTERS(N_GPR+17) <= internal_DAC_UPDATE_STATUSES(1)(5) & internal_DAC_UPDATE_STATUSES(1)(4);                              --Register 273: DAC statuses for col1, row2
-	internal_INPUT_REGISTERS(N_GPR+18) <= internal_DAC_UPDATE_STATUSES(1)(7) & internal_DAC_UPDATE_STATUSES(1)(6);                              --Register 274: DAC statuses for col1, row3
-	internal_INPUT_REGISTERS(N_GPR+19) <= internal_DAC_UPDATE_STATUSES(2)(1) & internal_DAC_UPDATE_STATUSES(2)(0);                              --Register 275: DAC statuses for col2, row0
-	internal_INPUT_REGISTERS(N_GPR+20) <= internal_DAC_UPDATE_STATUSES(2)(3) & internal_DAC_UPDATE_STATUSES(2)(2);                              --Register 276: DAC statuses for col2, row1
-	internal_INPUT_REGISTERS(N_GPR+21) <= internal_DAC_UPDATE_STATUSES(2)(5) & internal_DAC_UPDATE_STATUSES(2)(4);                              --Register 277: DAC statuses for col2, row2
-	internal_INPUT_REGISTERS(N_GPR+22) <= internal_DAC_UPDATE_STATUSES(2)(7) & internal_DAC_UPDATE_STATUSES(2)(6);                              --Register 278: DAC statuses for col2, row3
-	internal_INPUT_REGISTERS(N_GPR+23) <= internal_DAC_UPDATE_STATUSES(3)(1) & internal_DAC_UPDATE_STATUSES(3)(0);                              --Register 279: DAC statuses for col3, row0
-	internal_INPUT_REGISTERS(N_GPR+24) <= internal_DAC_UPDATE_STATUSES(3)(3) & internal_DAC_UPDATE_STATUSES(3)(2);                              --Register 280: DAC statuses for col3, row1
-	internal_INPUT_REGISTERS(N_GPR+25) <= internal_DAC_UPDATE_STATUSES(3)(5) & internal_DAC_UPDATE_STATUSES(3)(4);                              --Register 281: DAC statuses for col3, row2
-	internal_INPUT_REGISTERS(N_GPR+26) <= internal_DAC_UPDATE_STATUSES(3)(7) & internal_DAC_UPDATE_STATUSES(3)(6);                              --Register 282: DAC statuses for col3, row3
-	gen_feedback_readbacks_col : for col in 0 to 3 generate
-		gen_feedback_readbacks_row : for row in 0 to 3 generate                                                                                  --All the following increase by row, then by col
-			internal_INPUT_REGISTERS(N_GPR+27+col*4+row) <= "0000" & internal_WILK_DAC_VALUES_FEEDBACK(col)(row);                                 --Registers 283-298: Feedback DAC values for VDLY  (Wilkinson count rate)
-			internal_INPUT_REGISTERS(N_GPR+43+col*4+row) <= "0000" & internal_VADJP_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 299-314: Feedback DAC values for VADJP (sampling rate PFET)
-			internal_INPUT_REGISTERS(N_GPR+59+col*4+row) <= "0000" & internal_VADJN_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 315-330: Feedback DAC values for VADJN (sampling rate NFET)
-			internal_INPUT_REGISTERS(N_GPR+75+col*4+row) <= "0000" & internal_WBIAS_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 331-346: Feedback DAC values for WBIAS (Trigger width adjust)
-			internal_INPUT_REGISTERS(N_GPR+91+col*4+row) <= internal_WILKINSON_COUNTERS(col)(row);                                                --Registers 347-362: Wilkinson counters
-		end generate;
-	end generate;
-	internal_INPUT_REGISTERS(N_GPR+107) <= internal_EVENT_NUMBER(15 downto  0);                                                                 --Register 363: LSBs of current event number
-	internal_INPUT_REGISTERS(N_GPR+108) <= internal_EVENT_NUMBER(31 downto 16);                                                                 --Register 364: MSBs of current event number
+	internal_INPUT_REGISTERS(N_GPR+ 2) <= internal_I2C_BUSC_ACKNOWLEDGED & internal_I2C_BUSC_BUSY & "000000" & internal_I2C_BUSC_BYTE_RECEIVED; --Register 258: I2C BusC interfaces
+	--skip bus D
+	internal_INPUT_REGISTERS(N_GPR+ 4) <= internal_I2C_BUSE_ACKNOWLEDGED & internal_I2C_BUSE_BUSY & "000000" & internal_I2C_BUSE_BYTE_RECEIVED; --Register 260: I2C BusE interfaces
+	internal_INPUT_REGISTERS(N_GPR+ 5) <= internal_I2C_BUSF_ACKNOWLEDGED & internal_I2C_BUSF_BUSY & "000000" & internal_I2C_BUSF_BYTE_RECEIVED; --Register 261: I2C BusF interfaces
+	internal_INPUT_REGISTERS(N_GPR+ 6) <= internal_I2C_BUSG_ACKNOWLEDGED & internal_I2C_BUSG_BUSY & "000000" & internal_I2C_BUSG_BYTE_RECEIVED; --Register 262: I2C BusG interfaces
+	internal_INPUT_REGISTERS(N_GPR+ 7) <= internal_I2C_BUSH_ACKNOWLEDGED & internal_I2C_BUSH_BUSY & "000000" & internal_I2C_BUSH_BYTE_RECEIVED; --Register 263: I2C BusH interfaces
+	internal_INPUT_REGISTERS(N_GPR+ 8) <= internal_I2C_BUSI_SUCCEEDED & internal_I2C_BUSI_BUSY & "000000" & x"00"; 										--Register 264: I2C BusI interfaces
+	internal_INPUT_REGISTERS(N_GPR+ 9) <= internal_I2C_BUSJ_SUCCEEDED & internal_I2C_BUSJ_BUSY & "000000" & x"00"; 										--Register 265: I2C BusJ interfaces
+	internal_INPUT_REGISTERS(N_GPR+ 10) <= internal_I2C_BUSK_ACKNOWLEDGED & internal_I2C_BUSK_BUSY & "000000" & internal_I2C_BUSK_BYTE_RECEIVED; --Register 266: I2C BusK interfaces
+	
+	--TEMPORARY! COMMENT OUT REMAINING READ REGISTERS
+	--internal_INPUT_REGISTERS(N_GPR+ 3) <= internal_ASIC_SCALERS_TO_READ(0);                                                                     --Register 258: Trigger scalers, ch0
+	--internal_INPUT_REGISTERS(N_GPR+ 4) <= internal_ASIC_SCALERS_TO_READ(1);                                                                     --Register 259: Trigger scalers, ch1
+	--internal_INPUT_REGISTERS(N_GPR+ 5) <= internal_ASIC_SCALERS_TO_READ(2);                                                                     --Register 260: Trigger scalers, ch2
+	--internal_INPUT_REGISTERS(N_GPR+ 6) <= internal_ASIC_SCALERS_TO_READ(3);                                                                     --Register 261: Trigger scalers, ch3
+	--internal_INPUT_REGISTERS(N_GPR+ 7) <= internal_ASIC_SCALERS_TO_READ(4);                                                                     --Register 262: Trigger scalers, ch4
+	--internal_INPUT_REGISTERS(N_GPR+ 8) <= internal_ASIC_SCALERS_TO_READ(5);                                                                     --Register 263: Trigger scalers, ch5
+	--internal_INPUT_REGISTERS(N_GPR+ 9) <= internal_ASIC_SCALERS_TO_READ(6);                                                                     --Register 264: Trigger scalers, ch6
+	--internal_INPUT_REGISTERS(N_GPR+10) <= internal_ASIC_SCALERS_TO_READ(7);                                                                     --Register 265: Trigger scalers, ch7
+	--internal_INPUT_REGISTERS(N_GPR+11) <= internal_DAC_UPDATE_STATUSES(0)(1) & internal_DAC_UPDATE_STATUSES(0)(0);                              --Register 267: DAC statuses for col0, row0, upper 8 bits are dac2, lower are dac1
+	--internal_INPUT_REGISTERS(N_GPR+12) <= internal_DAC_UPDATE_STATUSES(0)(3) & internal_DAC_UPDATE_STATUSES(0)(2);                              --Register 268: DAC statuses for col0, row1
+	--internal_INPUT_REGISTERS(N_GPR+13) <= internal_DAC_UPDATE_STATUSES(0)(5) & internal_DAC_UPDATE_STATUSES(0)(4);                              --Register 269: DAC statuses for col0, row2
+	--internal_INPUT_REGISTERS(N_GPR+14) <= internal_DAC_UPDATE_STATUSES(0)(7) & internal_DAC_UPDATE_STATUSES(0)(6);                              --Register 270: DAC statuses for col0, row3
+	--internal_INPUT_REGISTERS(N_GPR+15) <= internal_DAC_UPDATE_STATUSES(1)(1) & internal_DAC_UPDATE_STATUSES(1)(0);                              --Register 271: DAC statuses for col1, row0
+	--internal_INPUT_REGISTERS(N_GPR+16) <= internal_DAC_UPDATE_STATUSES(1)(3) & internal_DAC_UPDATE_STATUSES(1)(2);                              --Register 272: DAC statuses for col1, row1
+	--internal_INPUT_REGISTERS(N_GPR+17) <= internal_DAC_UPDATE_STATUSES(1)(5) & internal_DAC_UPDATE_STATUSES(1)(4);                              --Register 273: DAC statuses for col1, row2
+	--internal_INPUT_REGISTERS(N_GPR+18) <= internal_DAC_UPDATE_STATUSES(1)(7) & internal_DAC_UPDATE_STATUSES(1)(6);                              --Register 274: DAC statuses for col1, row3
+	--internal_INPUT_REGISTERS(N_GPR+19) <= internal_DAC_UPDATE_STATUSES(2)(1) & internal_DAC_UPDATE_STATUSES(2)(0);                              --Register 275: DAC statuses for col2, row0
+	--internal_INPUT_REGISTERS(N_GPR+20) <= internal_DAC_UPDATE_STATUSES(2)(3) & internal_DAC_UPDATE_STATUSES(2)(2);                              --Register 276: DAC statuses for col2, row1
+	--internal_INPUT_REGISTERS(N_GPR+21) <= internal_DAC_UPDATE_STATUSES(2)(5) & internal_DAC_UPDATE_STATUSES(2)(4);                              --Register 277: DAC statuses for col2, row2
+	--internal_INPUT_REGISTERS(N_GPR+22) <= internal_DAC_UPDATE_STATUSES(2)(7) & internal_DAC_UPDATE_STATUSES(2)(6);                              --Register 278: DAC statuses for col2, row3
+	--internal_INPUT_REGISTERS(N_GPR+23) <= internal_DAC_UPDATE_STATUSES(3)(1) & internal_DAC_UPDATE_STATUSES(3)(0);                              --Register 279: DAC statuses for col3, row0
+	--internal_INPUT_REGISTERS(N_GPR+24) <= internal_DAC_UPDATE_STATUSES(3)(3) & internal_DAC_UPDATE_STATUSES(3)(2);                              --Register 280: DAC statuses for col3, row1
+	--internal_INPUT_REGISTERS(N_GPR+25) <= internal_DAC_UPDATE_STATUSES(3)(5) & internal_DAC_UPDATE_STATUSES(3)(4);                              --Register 281: DAC statuses for col3, row2
+	--internal_INPUT_REGISTERS(N_GPR+26) <= internal_DAC_UPDATE_STATUSES(3)(7) & internal_DAC_UPDATE_STATUSES(3)(6);                              --Register 282: DAC statuses for col3, row3
+	--gen_feedback_readbacks_col : for col in 0 to 3 generate
+	--	gen_feedback_readbacks_row : for row in 0 to 3 generate                                                                                  --All the following increase by row, then by col
+	--		internal_INPUT_REGISTERS(N_GPR+27+col*4+row) <= "0000" & internal_WILK_DAC_VALUES_FEEDBACK(col)(row);                                 --Registers 283-298: Feedback DAC values for VDLY  (Wilkinson count rate)
+	--		internal_INPUT_REGISTERS(N_GPR+43+col*4+row) <= "0000" & internal_VADJP_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 299-314: Feedback DAC values for VADJP (sampling rate PFET)
+	--		internal_INPUT_REGISTERS(N_GPR+59+col*4+row) <= "0000" & internal_VADJN_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 315-330: Feedback DAC values for VADJN (sampling rate NFET)
+	--		internal_INPUT_REGISTERS(N_GPR+75+col*4+row) <= "0000" & internal_WBIAS_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 331-346: Feedback DAC values for WBIAS (Trigger width adjust)
+	--		internal_INPUT_REGISTERS(N_GPR+91+col*4+row) <= internal_WILKINSON_COUNTERS(col)(row);                                                --Registers 347-362: Wilkinson counters
+	--	end generate;
+	--end generate;
+	--internal_INPUT_REGISTERS(N_GPR+107) <= internal_EVENT_NUMBER(15 downto  0);                                                                 --Register 363: LSBs of current event number
+	--internal_INPUT_REGISTERS(N_GPR+108) <= internal_EVENT_NUMBER(31 downto 16);                                                                 --Register 364: MSBs of current event number
 end Behavioral;
