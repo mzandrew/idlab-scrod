@@ -51,30 +51,27 @@ entity scrod_top is
 		--Bus C handles SCROD fiberoptic transceiver 1
 		I2C_BUSC_SCL                : inout STD_LOGIC;
 		I2C_BUSC_SDA                : inout STD_LOGIC;
-		--Bus D handles carrier level temperature sensor
-		--I2C_BUSD_SCL                : inout STD_LOGIC;
-		--I2C_BUSD_SDA                : inout STD_LOGIC;
-		--BUS E - GPIOs to read ASIC shregs rows 0 and 1
+		--BUS D - GPIOs to read ASIC shregs rows 0 and 1
 		I2C_SCL_GPIO12_R01						: inout STD_LOGIC;
 		I2C_SDA_GPIO12_R01						: inout STD_LOGIC;
-		--BUS F - GPIOs to read ASIC shregs rosw 2 and 3
+		--BUS E - GPIOs to read ASIC shregs rosw 2 and 3
 		I2C_SCL_GPIO12_R23						: inout STD_LOGIC;
 		I2C_SDA_GPIO12_R23						: inout STD_LOGIC;
-		--BUS G - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
+		--BUS F - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
 		I2C_SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
 		I2C_SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
-		--BUS H - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
+		--BUS G - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
 		I2C_SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
 		I2C_SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
+		--BUS H - channel calibration signals on interconnect
+      I2C_CAL_SDA                 : inout STD_LOGIC;
+      I2C_CAL_SCL                 : inout STD_LOGIC;
 		--BUS I - Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
 		I2C_DAC_SCL_R01						: inout STD_LOGIC;
 		I2C_DAC_SDA_R01						: inout STD_LOGIC;
 		--BUS J - Vadjn/p rows 2 and 3
 		I2C_DAC_SCL_R23						: inout STD_LOGIC;
 		I2C_DAC_SDA_R23						: inout STD_LOGIC;
-		--BUS K - channel calibration signals
-      I2C_CAL_SDA                 : inout STD_LOGIC;
-      I2C_CAL_SCL                 : inout STD_LOGIC;
 
 		----------------------------------------------
 		------------ASIC Related Pins-----------------
@@ -372,16 +369,6 @@ architecture Behavioral of scrod_top is
 	signal internal_I2C_BUSJ_BUSY					: std_logic;
 	signal internal_I2C_BUSJ_SUCCEEDED			: std_logic;
 
-	signal internal_I2C_BUSK_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
-	signal internal_I2C_BUSK_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
-	signal internal_I2C_BUSK_ACKNOWLEDGED     : std_logic;
-	signal internal_I2C_BUSK_SEND_START       : std_logic;
-	signal internal_I2C_BUSK_SEND_BYTE        : std_logic;
-	signal internal_I2C_BUSK_READ_BYTE        : std_logic;
-	signal internal_I2C_BUSK_SEND_ACKNOWLEDGE : std_logic;
-	signal internal_I2C_BUSK_SEND_STOP        : std_logic;
-	signal internal_I2C_BUSK_BUSY             : std_logic;
-
 	signal       FEEDBACK_SAMPLING_RATE_ENABLE                :  std_logic_vector(15 downto 0);
 	signal 		BOARD_CLOCK :   STD_LOGIC;
 	signal internal_LAST_WINDOW_SAMPLED : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -601,7 +588,24 @@ begin
 		SCL               => I2C_BUSC_SCL,
 		SDA               => I2C_BUSC_SDA
 	);
-	--Interface to I2C bus E - GPIOs to read ASIC shregs rows 0 and 1
+	--Interface to I2C bus D - GPIOs to read ASIC shregs rows 0 and 1
+	map_i2c_busD : entity work.i2c_master
+	port map(
+		I2C_BYTE_TO_SEND  => internal_I2C_BUSD_BYTE_TO_SEND,
+		I2C_BYTE_RECEIVED => internal_I2C_BUSD_BYTE_RECEIVED,
+		ACKNOWLEDGED      => internal_I2C_BUSD_ACKNOWLEDGED,
+		SEND_START        => internal_I2C_BUSD_SEND_START,
+		SEND_BYTE         => internal_I2C_BUSD_SEND_BYTE,
+		READ_BYTE         => internal_I2C_BUSD_READ_BYTE,
+		SEND_ACKNOWLEDGE  => internal_I2C_BUSD_SEND_ACKNOWLEDGE,
+		SEND_STOP         => internal_I2C_BUSD_SEND_STOP,
+		BUSY              => internal_I2C_BUSD_BUSY,
+		CLOCK             => internal_CLOCK_4MHz_BUFG,
+		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
+		SCL               => I2C_SCL_GPIO12_R01,
+		SDA               => I2C_SDA_GPIO12_R01
+	);
+	--Interface to I2C bus E - GPIOs to read ASIC shregs rosw 2 and 3
 	map_i2c_busE : entity work.i2c_master
 	port map(
 		I2C_BYTE_TO_SEND  => internal_I2C_BUSE_BYTE_TO_SEND,
@@ -615,10 +619,10 @@ begin
 		BUSY              => internal_I2C_BUSE_BUSY,
 		CLOCK             => internal_CLOCK_4MHz_BUFG,
 		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
-		SCL               => I2C_SCL_GPIO12_R01,
-		SDA               => I2C_SDA_GPIO12_R01
+		SCL               => I2C_SCL_GPIO12_R23,
+		SDA               => I2C_SDA_GPIO12_R23
 	);
-	--Interface to I2C bus F -
+	--Interface to I2C bus F - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
 	map_i2c_busF : entity work.i2c_master
 	port map(
 		I2C_BYTE_TO_SEND  => internal_I2C_BUSF_BYTE_TO_SEND,
@@ -632,10 +636,10 @@ begin
 		BUSY              => internal_I2C_BUSF_BUSY,
 		CLOCK             => internal_CLOCK_4MHz_BUFG,
 		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
-		SCL               => I2C_SCL_GPIO12_R23,
-		SDA               => I2C_SDA_GPIO12_R23
+		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R01,
+		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R01
 	);
-	--Interface to I2C bus G - 
+	--Interface to I2C bus G - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
 	map_i2c_busG : entity work.i2c_master
 	port map(
 		I2C_BYTE_TO_SEND  => internal_I2C_BUSG_BYTE_TO_SEND,
@@ -649,10 +653,10 @@ begin
 		BUSY              => internal_I2C_BUSG_BUSY,
 		CLOCK             => internal_CLOCK_4MHz_BUFG,
 		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
-		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R01,
-		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R01
+		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R23,
+		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R23
 	);
-	--Interface to I2C bus H - 
+	--Interface to I2C bus H - channel calibration signals on interconnect
 	map_i2c_busH : entity work.i2c_master
 	port map(
 		I2C_BYTE_TO_SEND  => internal_I2C_BUSH_BYTE_TO_SEND,
@@ -666,10 +670,9 @@ begin
 		BUSY              => internal_I2C_BUSH_BUSY,
 		CLOCK             => internal_CLOCK_4MHz_BUFG,
 		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
-		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R23,
-		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R23
+		SCL               => I2C_CAL_SCL,
+		SDA               => I2C_CAL_SDA
 	);
-	
 	--BUS I - Vadjn/p rows 0 and 1
 	Inst_LTC2637_I2C_Interface_BusI: entity work.LTC2637_I2C_Interface PORT MAP(
 		SCL => I2C_DAC_SCL_R01,
@@ -684,7 +687,6 @@ begin
 		UPDATING => internal_I2C_BUSI_BUSY,
 		UPDATE_SUCCEEDED => internal_I2C_BUSI_SUCCEEDED
 	);
-	
 	--BUS J - Vadjn/p rows 2 and 3
 	Inst_LTC2637_I2C_Interface_BusJ: entity work.LTC2637_I2C_Interface PORT MAP(
 		SCL => I2C_DAC_SCL_R23,
@@ -698,24 +700,6 @@ begin
 		UPDATE => internal_I2C_BUSJ_UPDATE,
 		UPDATING => internal_I2C_BUSJ_BUSY,
 		UPDATE_SUCCEEDED => internal_I2C_BUSJ_SUCCEEDED
-	);
-	
-	--Interface to I2C bus K - channel calibration signals
-	map_i2c_busK : entity work.i2c_master
-	port map(
-		I2C_BYTE_TO_SEND  => internal_I2C_BUSK_BYTE_TO_SEND,
-		I2C_BYTE_RECEIVED => internal_I2C_BUSK_BYTE_RECEIVED,
-		ACKNOWLEDGED      => internal_I2C_BUSK_ACKNOWLEDGED,
-		SEND_START        => internal_I2C_BUSK_SEND_START,
-		SEND_BYTE         => internal_I2C_BUSK_SEND_BYTE,
-		READ_BYTE         => internal_I2C_BUSK_READ_BYTE,
-		SEND_ACKNOWLEDGE  => internal_I2C_BUSK_SEND_ACKNOWLEDGE,
-		SEND_STOP         => internal_I2C_BUSK_SEND_STOP,
-		BUSY              => internal_I2C_BUSK_BUSY,
-		CLOCK             => internal_CLOCK_4MHz_BUFG,
-		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
-		SCL               =>  I2C_CAL_SCL,
-		SDA               =>  I2C_CAL_SDA
 	);
 	
 	--program to load ASIC internal DACs
@@ -1099,7 +1083,12 @@ begin
 	internal_I2C_BUSC_READ_BYTE            <= internal_OUTPUT_REGISTERS(3)(10);
 	internal_I2C_BUSC_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(3)(11);
 	internal_I2C_BUSC_SEND_STOP            <= internal_OUTPUT_REGISTERS(3)(12);
-	--Skip I2C Bus D
+	internal_I2C_BUSD_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(4)(7 downto 0); --Register 3: I2C BusC interfaces
+	internal_I2C_BUSD_SEND_START           <= internal_OUTPUT_REGISTERS(4)(8);
+	internal_I2C_BUSD_SEND_BYTE            <= internal_OUTPUT_REGISTERS(4)(9);
+	internal_I2C_BUSD_READ_BYTE            <= internal_OUTPUT_REGISTERS(4)(10);
+	internal_I2C_BUSD_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(4)(11);
+	internal_I2C_BUSD_SEND_STOP            <= internal_OUTPUT_REGISTERS(4)(12);
 	internal_I2C_BUSE_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(5)(7 downto 0); --Register 3: I2C BusC interfaces
 	internal_I2C_BUSE_SEND_START           <= internal_OUTPUT_REGISTERS(5)(8);
 	internal_I2C_BUSE_SEND_BYTE            <= internal_OUTPUT_REGISTERS(5)(9);
@@ -1137,13 +1126,6 @@ begin
 	internal_I2C_BUSJ_CHANNEL <= internal_OUTPUT_REGISTERS(12)(3 downto 0);
 	internal_I2C_BUSJ_DAC_VALUE <= internal_OUTPUT_REGISTERS(12)(15 downto 4);
 
-	internal_I2C_BUSK_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(11)(7 downto 0); --Register 3: I2C BusC interfaces
-	internal_I2C_BUSK_SEND_START           <= internal_OUTPUT_REGISTERS(11)(8);
-	internal_I2C_BUSK_SEND_BYTE            <= internal_OUTPUT_REGISTERS(11)(9);
-	internal_I2C_BUSK_READ_BYTE            <= internal_OUTPUT_REGISTERS(11)(10);
-	internal_I2C_BUSK_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(11)(11);
-	internal_I2C_BUSK_SEND_STOP            <= internal_OUTPUT_REGISTERS(11)(12);
-	
 	--Internal ASIC DAC writing signals, temporary implementation
 	load_ASIC_DACs <= internal_OUTPUT_REGISTERS(19)(0);
 	THR1 <= internal_OUTPUT_REGISTERS(20)(11 downto 0);
@@ -1283,14 +1265,13 @@ begin
 	internal_INPUT_REGISTERS(N_GPR   ) <= internal_I2C_BUSA_ACKNOWLEDGED & internal_I2C_BUSA_BUSY & "000000" & internal_I2C_BUSA_BYTE_RECEIVED; --Register 256: I2C BusA interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 1) <= internal_I2C_BUSB_ACKNOWLEDGED & internal_I2C_BUSB_BUSY & "000000" & internal_I2C_BUSB_BYTE_RECEIVED; --Register 257: I2C BusB interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 2) <= internal_I2C_BUSC_ACKNOWLEDGED & internal_I2C_BUSC_BUSY & "000000" & internal_I2C_BUSC_BYTE_RECEIVED; --Register 258: I2C BusC interfaces
-	--skip bus D
+	internal_INPUT_REGISTERS(N_GPR+ 3) <= internal_I2C_BUSD_ACKNOWLEDGED & internal_I2C_BUSD_BUSY & "000000" & internal_I2C_BUSD_BYTE_RECEIVED; --Register 258: I2C BusC interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 4) <= internal_I2C_BUSE_ACKNOWLEDGED & internal_I2C_BUSE_BUSY & "000000" & internal_I2C_BUSE_BYTE_RECEIVED; --Register 260: I2C BusE interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 5) <= internal_I2C_BUSF_ACKNOWLEDGED & internal_I2C_BUSF_BUSY & "000000" & internal_I2C_BUSF_BYTE_RECEIVED; --Register 261: I2C BusF interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 6) <= internal_I2C_BUSG_ACKNOWLEDGED & internal_I2C_BUSG_BUSY & "000000" & internal_I2C_BUSG_BYTE_RECEIVED; --Register 262: I2C BusG interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 7) <= internal_I2C_BUSH_ACKNOWLEDGED & internal_I2C_BUSH_BUSY & "000000" & internal_I2C_BUSH_BYTE_RECEIVED; --Register 263: I2C BusH interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 8) <= internal_I2C_BUSI_SUCCEEDED & internal_I2C_BUSI_BUSY & "000000" & x"00"; 										--Register 264: I2C BusI interfaces
 	internal_INPUT_REGISTERS(N_GPR+ 9) <= internal_I2C_BUSJ_SUCCEEDED & internal_I2C_BUSJ_BUSY & "000000" & x"00"; 										--Register 265: I2C BusJ interfaces
-	internal_INPUT_REGISTERS(N_GPR+ 10) <= internal_I2C_BUSK_ACKNOWLEDGED & internal_I2C_BUSK_BUSY & "000000" & internal_I2C_BUSK_BYTE_RECEIVED; --Register 266: I2C BusK interfaces
 	
 	--TEMPORARY! COMMENT OUT REMAINING READ REGISTERS
 	--internal_INPUT_REGISTERS(N_GPR+ 3) <= internal_ASIC_SCALERS_TO_READ(0);                                                                     --Register 258: Trigger scalers, ch0
