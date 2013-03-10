@@ -54,25 +54,25 @@ entity scrod_top is
 		--Bus D handles carrier level temperature sensor
 		--I2C_BUSD_SCL                : inout STD_LOGIC;
 		--I2C_BUSD_SDA                : inout STD_LOGIC;
-		--GPIOs to read ASIC shregs rows 0 and 1
+		--BUS E - GPIOs to read ASIC shregs rows 0 and 1
 		I2C_SCL_GPIO12_R01						: inout STD_LOGIC;
 		I2C_SDA_GPIO12_R01						: inout STD_LOGIC;
-		--GPIOs to read ASIC shregs rosw 2 and 3
+		--BUS F - GPIOs to read ASIC shregs rosw 2 and 3
 		I2C_SCL_GPIO12_R23						: inout STD_LOGIC;
 		I2C_SDA_GPIO12_R23						: inout STD_LOGIC;
-		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
+		--BUS G - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 0 and 1
 		I2C_SCL_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
 		I2C_SDA_temperature_eeprom_GPIO0_R01						: inout STD_LOGIC;
-		--Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
+		--BUS H - Temp, EEPROMs, CAL,SMPLSEL,AMP rows 2 and 3
 		I2C_SCL_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
 		I2C_SDA_temperature_eeprom_GPIO0_R23						: inout STD_LOGIC;
-		--Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
+		--BUS I - Vadjn/p rows 0 and 1 -- need to not activate internal - reg 43 and reg 45 set to 0?
 		I2C_DAC_SCL_R01						: inout STD_LOGIC;
 		I2C_DAC_SDA_R01						: inout STD_LOGIC;
-		--Vadjn/p rows 2 and 3
+		--BUS J - Vadjn/p rows 2 and 3
 		I2C_DAC_SCL_R23						: inout STD_LOGIC;
 		I2C_DAC_SDA_R23						: inout STD_LOGIC;
-		--channel calibration signals
+		--BUS K - channel calibration signals
       I2C_CAL_SDA                 : inout STD_LOGIC;
       I2C_CAL_SCL                 : inout STD_LOGIC;
 
@@ -210,23 +210,19 @@ architecture Behavioral of scrod_top is
 	
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
- 
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS    :  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
  
-        
 	--Trigger readout
 	signal internal_SOFTWARE_TRIGGER : std_logic;
 	signal internal_HARDWARE_TRIGGER : std_logic;
 	--Vetoes for the triggers
 	signal internal_SOFTWARE_TRIGGER_VETO : std_logic;
 	signal internal_HARDWARE_TRIGGER_VETO : std_logic;
-	
 	--ASIC trigger signals
 	signal internal_ASIC_TRIGGER_BITS_C_R_CH  : COL_ROW_TRIGGER_BITS;
 	signal internal_TRIGGER_SCALER_ROW_SELECT : std_logic_vector(ROW_SELECT_BITS-1 downto 0);
 	signal internal_TRIGGER_SCALER_COL_SELECT : std_logic_vector(COL_SELECT_BITS-1 downto 0);
 	signal internal_ASIC_SCALERS_TO_READ      : ASIC_TRIGGER_SCALERS;
-
 	--ASIC Wilkinson feedback signals
 	signal internal_WILKINSON_TARGETS         : Column_Row_Wilkinson_Counters;
 	signal internal_WILKINSON_COUNTERS        : Column_Row_Wilkinson_Counters;
@@ -244,11 +240,9 @@ architecture Behavioral of scrod_top is
 	signal internal_WAVEFORM_PACKET_BUILDER_BUSY : std_logic;
 	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS_LSB : std_logic;
-	
 	signal internal_STORAGE_TO_WILK_ADDRESS            :  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0); --LM now internal - converted into RD_SH*
 	signal internal_STORAGE_TO_WILK_ADDRESS_ENABLE     :  std_logic; --LM:  now internal - uses RD_SH* signals
 	signal internal_STORAGE_TO_WILK_ENABLE             :  std_logic;
-	
 	signal internal_DATA_BUS_OUTPUT_ENABLE             :  std_logic; --LM now sampselany - from a GPIO...
 	signal internal_DATA_BUS_SAMPLE_ADDRESS            :  std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0); --LM now DO_SHfts
 	signal internal_DATA_BUS_CHANNEL_ADDRESS           :  std_logic_vector(CH_SELECT_BITS-1 downto 0);
@@ -281,8 +275,8 @@ architecture Behavioral of scrod_top is
 	signal internal_WBIAS_DAC_VALUES_STATIC   : Column_Row_DAC_Values;
 	signal internal_WBIAS_DAC_VALUES_FEEDBACK : Column_Row_DAC_Values;
 	signal internal_WBIAS_FEEDBACK_ENABLES    : Column_Row_Enables;
+	signal internal_CLK_SSTx2 : std_logic;
 	
-signal internal_CLK_SSTx2 : std_logic;
 	--I2C signals
 	signal internal_I2C_BUSA_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
 	signal internal_I2C_BUSA_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
@@ -311,54 +305,166 @@ signal internal_CLK_SSTx2 : std_logic;
 	signal internal_I2C_BUSC_SEND_ACKNOWLEDGE : std_logic;
 	signal internal_I2C_BUSC_SEND_STOP        : std_logic;
 	signal internal_I2C_BUSC_BUSY             : std_logic;
+	
+	signal internal_I2C_BUSD_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSD_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSD_ACKNOWLEDGED     : std_logic;
+	signal internal_I2C_BUSD_SEND_START       : std_logic;
+	signal internal_I2C_BUSD_SEND_BYTE        : std_logic;
+	signal internal_I2C_BUSD_READ_BYTE        : std_logic;
+	signal internal_I2C_BUSD_SEND_ACKNOWLEDGE : std_logic;
+	signal internal_I2C_BUSD_SEND_STOP        : std_logic;
+	signal internal_I2C_BUSD_BUSY             : std_logic;
+	
+	signal internal_I2C_BUSE_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSE_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSE_ACKNOWLEDGED     : std_logic;
+	signal internal_I2C_BUSE_SEND_START       : std_logic;
+	signal internal_I2C_BUSE_SEND_BYTE        : std_logic;
+	signal internal_I2C_BUSE_READ_BYTE        : std_logic;
+	signal internal_I2C_BUSE_SEND_ACKNOWLEDGE : std_logic;
+	signal internal_I2C_BUSE_SEND_STOP        : std_logic;
+	signal internal_I2C_BUSE_BUSY             : std_logic;
+	
+	signal internal_I2C_BUSF_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSF_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSF_ACKNOWLEDGED     : std_logic;
+	signal internal_I2C_BUSF_SEND_START       : std_logic;
+	signal internal_I2C_BUSF_SEND_BYTE        : std_logic;
+	signal internal_I2C_BUSF_READ_BYTE        : std_logic;
+	signal internal_I2C_BUSF_SEND_ACKNOWLEDGE : std_logic;
+	signal internal_I2C_BUSF_SEND_STOP        : std_logic;
+	signal internal_I2C_BUSF_BUSY             : std_logic;
+	
+	signal internal_I2C_BUSG_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSG_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSG_ACKNOWLEDGED     : std_logic;
+	signal internal_I2C_BUSG_SEND_START       : std_logic;
+	signal internal_I2C_BUSG_SEND_BYTE        : std_logic;
+	signal internal_I2C_BUSG_READ_BYTE        : std_logic;
+	signal internal_I2C_BUSG_SEND_ACKNOWLEDGE : std_logic;
+	signal internal_I2C_BUSG_SEND_STOP        : std_logic;
+	signal internal_I2C_BUSG_BUSY             : std_logic;
+	
+	signal internal_I2C_BUSH_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSH_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSH_ACKNOWLEDGED     : std_logic;
+	signal internal_I2C_BUSH_SEND_START       : std_logic;
+	signal internal_I2C_BUSH_SEND_BYTE        : std_logic;
+	signal internal_I2C_BUSH_READ_BYTE        : std_logic;
+	signal internal_I2C_BUSH_SEND_ACKNOWLEDGE : std_logic;
+	signal internal_I2C_BUSH_SEND_STOP        : std_logic;
+	signal internal_I2C_BUSH_BUSY             : std_logic;
 
+	signal internal_I2C_BUSK_BYTE_TO_SEND     : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSK_BYTE_RECEIVED    : std_logic_vector(7 downto 0);
+	signal internal_I2C_BUSK_ACKNOWLEDGED     : std_logic;
+	signal internal_I2C_BUSK_SEND_START       : std_logic;
+	signal internal_I2C_BUSK_SEND_BYTE        : std_logic;
+	signal internal_I2C_BUSK_READ_BYTE        : std_logic;
+	signal internal_I2C_BUSK_SEND_ACKNOWLEDGE : std_logic;
+	signal internal_I2C_BUSK_SEND_STOP        : std_logic;
+	signal internal_I2C_BUSK_BUSY             : std_logic;
 
 	signal       FEEDBACK_SAMPLING_RATE_ENABLE                :  std_logic_vector(15 downto 0);
+	signal 		BOARD_CLOCK :   STD_LOGIC;
+	signal internal_LAST_WINDOW_SAMPLED : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_DONE_SENDING_EVENT : std_logic;
+	signal wait_for_trigger_counter : std_logic_vector(3 downto 0) := (others => '1');
+	signal ready_for_new_trigger : std_logic := '1';
+	signal waiting_end_count : std_logic := '0';
+	signal trigger_start : std_logic := '0';
+	signal internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : std_logic;
+	signal debug_CLOCK_SST :std_logic;
+	signal debug_CLOCK_SST_out :std_logic;
 
-signal 		BOARD_CLOCK :   STD_LOGIC;
-signal internal_LAST_WINDOW_SAMPLED : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
-signal internal_DONE_SENDING_EVENT : std_logic;
-signal wait_for_trigger_counter : std_logic_vector(3 downto 0) := (others => '1');
-signal ready_for_new_trigger : std_logic := '1';
-signal waiting_end_count : std_logic := '0';
-signal trigger_start : std_logic := '0';
-signal internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : std_logic;
-signal debug_CLOCK_SST :std_logic;
-signal debug_CLOCK_SST_out :std_logic;
-
-signal internal_TEMP_OUT :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_0 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_1 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_2 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_3 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_4 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_5 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_6 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_7 :std_logic_vector(15 downto 0);
-
-signal internal_TEMP_OUT_8 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_9 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_10 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_11 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_12 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_13 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_14 :std_logic_vector(15 downto 0);
-signal internal_TEMP_OUT_15 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_0 :std_logic_vector(15 downto 0);	
+	signal internal_TEMP_OUT_1 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_2 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_3 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_4 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_5 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_6 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_7 :std_logic_vector(15 downto 0);
+	
+	signal internal_TEMP_OUT_8 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_9 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_10 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_11 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_12 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_13 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_14 :std_logic_vector(15 downto 0);
+	signal internal_TEMP_OUT_15 :std_logic_vector(15 downto 0);
 	
 	signal FORCE_ADDRESS_ASIC : std_logic_vector(3 downto 0);
 	signal FORCE_ADDRESS_CHANNEL : std_logic_vector(2 downto 0);
 	
+	--Internal ASIC DAC loading signals, likely temporary
+	signal load_ASIC_DACs : std_logic;
+	signal THR1 : std_logic_vector(11 downto 0);
+	signal THR2 : std_logic_vector(11 downto 0);
+	signal THR3 : std_logic_vector(11 downto 0);
+	signal THR4 : std_logic_vector(11 downto 0);
+	signal THR5 : std_logic_vector(11 downto 0);
+	signal THR6 : std_logic_vector(11 downto 0);
+	signal THR7 : std_logic_vector(11 downto 0);
+	signal THR8 : std_logic_vector(11 downto 0);
+	signal VBDBIAS : std_logic_vector(11 downto 0);
+	signal VBIAS : std_logic_vector(11 downto 0);
+	signal VBIAS2 : std_logic_vector(11 downto 0);
+	signal MiscReg : std_logic_vector(7 downto 0);
+	signal WBDbias : std_logic_vector(11 downto 0);
+	signal Wbias : std_logic_vector(11 downto 0);
+	signal TCDbias : std_logic_vector(11 downto 0);
+	signal TRGbias : std_logic_vector(11 downto 0);
+	signal THDbias : std_logic_vector(11 downto 0);
+	signal Tbbias : std_logic_vector(11 downto 0);
+	signal TRGDbias : std_logic_vector(11 downto 0);
+	signal TRGbias2 : std_logic_vector(11 downto 0);
+	signal TRGthref : std_logic_vector(11 downto 0);
+	signal LeadSSPin : std_logic_vector(7 downto 0);
+	signal TrailSSPin : std_logic_vector(7 downto 0);
+	signal LeadS1 : std_logic_vector(7 downto 0);
+	signal TrailS1 : std_logic_vector(7 downto 0);
+	signal LeadS2 : std_logic_vector(7 downto 0);
+	signal TrailS2 : std_logic_vector(7 downto 0);
+	signal LeadPHASE : std_logic_vector(7 downto 0);
+	signal TrailPHASE : std_logic_vector(7 downto 0);
+	signal LeadWR_STRB : std_logic_vector(7 downto 0);
+	signal TrailWR_STRB : std_logic_vector(7 downto 0);
+	signal TimGenReg : std_logic_vector(7 downto 0);
+	signal PDDbias : std_logic_vector(11 downto 0);
+	signal CMPbias : std_logic_vector(11 downto 0);
+	signal PUDbias : std_logic_vector(11 downto 0);
+	signal PUbias : std_logic_vector(11 downto 0);
+	signal SBDbias : std_logic_vector(11 downto 0);
+	signal Sbbias : std_logic_vector(11 downto 0);
+	signal ISDbias : std_logic_vector(11 downto 0);
+	signal ISEL : std_logic_vector(11 downto 0);
+	signal VDDbias : std_logic_vector(11 downto 0);
+	signal Vdly : std_logic_vector(11 downto 0);
+	signal VAPDbias : std_logic_vector(11 downto 0);
+	signal VadjP : std_logic_vector(11 downto 0);
+	signal VANDbias : std_logic_vector(11 downto 0);
+	signal VadjN : std_logic_vector(11 downto 0);
+	signal PCLK_All : std_logic;
+	signal SCLK_All : std_logic;
+	signal SIN_All : std_logic;
+	signal SHOUT : std_logic;
+	signal DAC_done : std_logic;
+	signal DAC_updating : std_logic;
 	
 begin 
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE<=internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE;
 	--Monitoring pins
 	--MON0 <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(1); -- MONTIMING for chip 1 column 0
---	MON1 <= debug_CLOCK_SST_out; -- SSTin 
---	MON2 <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R(1); -- RCO_SSX for chip 1 column 0
---	MON3 <= internal_SAMPLING_TO_STORAGE_ADDRESS(1); --WRADDR (LS)
---	MON1 <= internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE; -- WR_EN
---	MON1 <= AsicOut_MONITOR_WILK_COUNTER_C0_R(0); -- TSTout for chip 0 column 0
---	MON2 <= internal_STORAGE_TO_WILK_ENABLE; -- RD_EN!
+	--MON1 <= debug_CLOCK_SST_out; -- SSTin 
+	--MON2 <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R(1); -- RCO_SSX for chip 1 column 0
+	--MON3 <= internal_SAMPLING_TO_STORAGE_ADDRESS(1); --WRADDR (LS)
+	--MON1 <= internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE; -- WR_EN
+	--MON1 <= AsicOut_MONITOR_WILK_COUNTER_C0_R(0); -- TSTout for chip 0 column 0
+	--MON2 <= internal_STORAGE_TO_WILK_ENABLE; -- RD_EN!
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
 	port map ( 
@@ -386,8 +492,8 @@ begin
 		CLOCK_SST_BUFG    => internal_CLOCK_SST_BUFG,
 		--ASIC output clocks
 		ASIC_SST          => AsicIn_SAMPLING_HOLD_MODE_C,
---		ASIC_SSP          => AsicIn_SAMPLING_TRACK_MODE_C, --LM: not used now
---		ASIC_WR_STRB      => open, -- LM WRSTRB written internally
+		--ASIC_SSP          => AsicIn_SAMPLING_TRACK_MODE_C, --LM: not used now
+		--ASIC_WR_STRB      => open, -- LM WRSTRB written internally
 		CLK_SSTx2			=> internal_CLK_SSTx2, --LM Added - "almost" equivalent to WR_STRB, but used as a clock to sample PHAB
 		ASIC_WR_ADDR_LSB  => internal_SAMPLING_TO_STORAGE_ADDRESS(0),
 		ASIC_WR_ADDR_LSB_RAW => internal_SAMPLING_TO_STORAGE_ADDRESS_LSB,
@@ -448,162 +554,315 @@ begin
 		SCL               => I2C_BUSC_SCL,
 		SDA               => I2C_BUSC_SDA
 	);
+	--Interface to I2C bus E - GPIOs to read ASIC shregs rows 0 and 1
+	map_i2c_busE : entity work.i2c_master
+	port map(
+		I2C_BYTE_TO_SEND  => internal_I2C_BUSE_BYTE_TO_SEND,
+		I2C_BYTE_RECEIVED => internal_I2C_BUSE_BYTE_RECEIVED,
+		ACKNOWLEDGED      => internal_I2C_BUSE_ACKNOWLEDGED,
+		SEND_START        => internal_I2C_BUSE_SEND_START,
+		SEND_BYTE         => internal_I2C_BUSE_SEND_BYTE,
+		READ_BYTE         => internal_I2C_BUSE_READ_BYTE,
+		SEND_ACKNOWLEDGE  => internal_I2C_BUSE_SEND_ACKNOWLEDGE,
+		SEND_STOP         => internal_I2C_BUSE_SEND_STOP,
+		BUSY              => internal_I2C_BUSE_BUSY,
+		CLOCK             => internal_CLOCK_4MHz_BUFG,
+		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
+		SCL               => I2C_SCL_GPIO12_R01,
+		SDA               => I2C_SDA_GPIO12_R01
+	);
+	--Interface to I2C bus F -
+	map_i2c_busF : entity work.i2c_master
+	port map(
+		I2C_BYTE_TO_SEND  => internal_I2C_BUSF_BYTE_TO_SEND,
+		I2C_BYTE_RECEIVED => internal_I2C_BUSF_BYTE_RECEIVED,
+		ACKNOWLEDGED      => internal_I2C_BUSF_ACKNOWLEDGED,
+		SEND_START        => internal_I2C_BUSF_SEND_START,
+		SEND_BYTE         => internal_I2C_BUSF_SEND_BYTE,
+		READ_BYTE         => internal_I2C_BUSF_READ_BYTE,
+		SEND_ACKNOWLEDGE  => internal_I2C_BUSF_SEND_ACKNOWLEDGE,
+		SEND_STOP         => internal_I2C_BUSF_SEND_STOP,
+		BUSY              => internal_I2C_BUSF_BUSY,
+		CLOCK             => internal_CLOCK_4MHz_BUFG,
+		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
+		SCL               => I2C_SCL_GPIO12_R23,
+		SDA               => I2C_SDA_GPIO12_R23
+	);
+	--Interface to I2C bus G - 
+	map_i2c_busG : entity work.i2c_master
+	port map(
+		I2C_BYTE_TO_SEND  => internal_I2C_BUSG_BYTE_TO_SEND,
+		I2C_BYTE_RECEIVED => internal_I2C_BUSG_BYTE_RECEIVED,
+		ACKNOWLEDGED      => internal_I2C_BUSG_ACKNOWLEDGED,
+		SEND_START        => internal_I2C_BUSG_SEND_START,
+		SEND_BYTE         => internal_I2C_BUSG_SEND_BYTE,
+		READ_BYTE         => internal_I2C_BUSG_READ_BYTE,
+		SEND_ACKNOWLEDGE  => internal_I2C_BUSG_SEND_ACKNOWLEDGE,
+		SEND_STOP         => internal_I2C_BUSG_SEND_STOP,
+		BUSY              => internal_I2C_BUSG_BUSY,
+		CLOCK             => internal_CLOCK_4MHz_BUFG,
+		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
+		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R01,
+		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R01
+	);
+	--Interface to I2C bus H - 
+	map_i2c_busH : entity work.i2c_master
+	port map(
+		I2C_BYTE_TO_SEND  => internal_I2C_BUSH_BYTE_TO_SEND,
+		I2C_BYTE_RECEIVED => internal_I2C_BUSH_BYTE_RECEIVED,
+		ACKNOWLEDGED      => internal_I2C_BUSH_ACKNOWLEDGED,
+		SEND_START        => internal_I2C_BUSH_SEND_START,
+		SEND_BYTE         => internal_I2C_BUSH_SEND_BYTE,
+		READ_BYTE         => internal_I2C_BUSH_READ_BYTE,
+		SEND_ACKNOWLEDGE  => internal_I2C_BUSH_SEND_ACKNOWLEDGE,
+		SEND_STOP         => internal_I2C_BUSH_SEND_STOP,
+		BUSY              => internal_I2C_BUSH_BUSY,
+		CLOCK             => internal_CLOCK_4MHz_BUFG,
+		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
+		SCL               => I2C_SCL_temperature_eeprom_GPIO0_R23,
+		SDA               => I2C_SDA_temperature_eeprom_GPIO0_R23
+	);
+	--BUS I - Vadjn/p rows 0 and 1
+	
+	--BUS J - Vadjn/p rows 2 and 3
+	
+	--Interface to I2C bus K - channel calibration signals
+	map_i2c_busK : entity work.i2c_master
+	port map(
+		I2C_BYTE_TO_SEND  => internal_I2C_BUSK_BYTE_TO_SEND,
+		I2C_BYTE_RECEIVED => internal_I2C_BUSK_BYTE_RECEIVED,
+		ACKNOWLEDGED      => internal_I2C_BUSK_ACKNOWLEDGED,
+		SEND_START        => internal_I2C_BUSK_SEND_START,
+		SEND_BYTE         => internal_I2C_BUSK_SEND_BYTE,
+		READ_BYTE         => internal_I2C_BUSK_READ_BYTE,
+		SEND_ACKNOWLEDGE  => internal_I2C_BUSK_SEND_ACKNOWLEDGE,
+		SEND_STOP         => internal_I2C_BUSK_SEND_STOP,
+		BUSY              => internal_I2C_BUSK_BUSY,
+		CLOCK             => internal_CLOCK_4MHz_BUFG,
+		CLOCK_ENABLE      => internal_CLOCK_ENABLE_I2C,
+		SCL               =>  I2C_CAL_SCL,
+		SDA               =>  I2C_CAL_SDA
+	);
+	
+	--program to load ASIC internal DACs
+	instance_Internal_ASIC_DAC_write : entity work.program_DACs port map(
+		CLK => internal_CLOCK_50MHz_BUFG,
+		do_load=> load_ASIC_DACs,
+		--addr_load => addr_load,
+		THR1 => THR1, --1
+		THR2=>THR2, --2
+		THR3=>THR3, --3
+		THR4=>THR4, --4
+		THR5=>THR5, --5
+		THR6=>THR6, --6
+		THR7=>THR7, --7
+		THR8=>THR8, --8
+		VBDBIAS=>VBDBIAS, --9
+		VBIAS=>VBIAS, --10
+		VBIAS2=>VBIAS2, --11
+		MiscReg=>MiscReg, --12(incl. SGN)
+		WBDbias=>WBDbias, --13
+		Wbias=>Wbias, --14
+		TCDbias=>TCDbias, --15
+		TRGbias=>TRGbias,--16
+		THDbias=>THDbias,--17
+		Tbbias=>Tbbias,--18
+		TRGDbias=>TRGDbias,--19
+		TRGbias2=>TRGbias2,--20
+		TRGthref=>TRGthref,--21
+		LeadSSPin=>LeadSSPin,--22
+		TrailSSPin=>TrailSSPIN,--23
+		LeadS1=>LeadS1,--24
+		TrailS1=>TrailS1,--25
+		LeadS2=>LeadS2,--26
+		TrailS2=>TrailS2,--27
+		LeadPHASE=>LeadPHASE,--28
+		TrailPHASE=>TrailPHASE,--29
+		LeadWR_STRB=>LeadWR_STRB,--30
+		TrailWR_STRB=>TrailWR_STRB,--31
+		TimGenReg=>TimGenReg,--32
+		PDDbias=>PDDbias,--33
+		CMPbias=>CMPbias,--34
+		PUDbias=>PUDbias,--35
+		PUbias=>PUbias,--36
+		SBDbias=>SBDbias,--37
+		Sbbias=>Sbbias,--38
+		ISDbias=>ISDbias,--39
+		ISEL=>ISEL,--40 
+		VDDbias=>VDDbias,--41
+		Vdly=>Vdly,--42
+		VAPDbias=>VAPDbias,--43
+		VadjP=>VadjP,--44
+		VANDbias=>VANDbias,--45
+		VadjN=>VadjN,--46
+
+		init_done => open,
+
+		PCLK=>PCLK_All,
+		SCLK=>SCLK_All,
+		SIN=>SIN_All,
+		SHOUT=>SHOUT,
+		flag_done=>open,
+		DAC_updating=>open
+	);
+	AsicIn_PARALLEL_CLOCK_C0_R<= (others => PCLK_All);
+	AsicIn_PARALLEL_CLOCK_C1_R<= (others => PCLK_All);
+	AsicIn_PARALLEL_CLOCK_C2_R<= (others => PCLK_All);
+	AsicIn_PARALLEL_CLOCK_C3_R<= (others => PCLK_All);
+	AsicIn_SERIAL_SHIFT_CLOCK <= SCLK_All;
+	AsicIn_SERIAL_INPUT <= SIN_All;
+	SHOUT <= '0'; --LM: now not connected - need FW for the GPIO
 
 	--Scaler monitors for the ASIC channels
 	--First we need to map the scalers into rows/cols
-	internal_ASIC_TRIGGER_BITS_C_R_CH(0)(0) <= AsicOut_TRIG_OUTPUT_R0_C0_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(0)(1) <= AsicOut_TRIG_OUTPUT_R1_C0_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(0)(2) <= AsicOut_TRIG_OUTPUT_R2_C0_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(0)(3) <= AsicOut_TRIG_OUTPUT_R3_C0_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(1)(0) <= AsicOut_TRIG_OUTPUT_R0_C1_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(1)(1) <= AsicOut_TRIG_OUTPUT_R1_C1_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(1)(2) <= AsicOut_TRIG_OUTPUT_R2_C1_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(1)(3) <= AsicOut_TRIG_OUTPUT_R3_C1_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(2)(0) <= AsicOut_TRIG_OUTPUT_R0_C2_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(2)(1) <= AsicOut_TRIG_OUTPUT_R1_C2_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(2)(2) <= AsicOut_TRIG_OUTPUT_R2_C2_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(2)(3) <= AsicOut_TRIG_OUTPUT_R3_C2_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(3)(0) <= AsicOut_TRIG_OUTPUT_R0_C3_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(3)(1) <= AsicOut_TRIG_OUTPUT_R1_C3_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(3)(2) <= AsicOut_TRIG_OUTPUT_R2_C3_CH;
-	internal_ASIC_TRIGGER_BITS_C_R_CH(3)(3) <= AsicOut_TRIG_OUTPUT_R3_C3_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(0)(0) <= AsicOut_TRIG_OUTPUT_R0_C0_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(0)(1) <= AsicOut_TRIG_OUTPUT_R1_C0_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(0)(2) <= AsicOut_TRIG_OUTPUT_R2_C0_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(0)(3) <= AsicOut_TRIG_OUTPUT_R3_C0_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(1)(0) <= AsicOut_TRIG_OUTPUT_R0_C1_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(1)(1) <= AsicOut_TRIG_OUTPUT_R1_C1_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(1)(2) <= AsicOut_TRIG_OUTPUT_R2_C1_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(1)(3) <= AsicOut_TRIG_OUTPUT_R3_C1_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(2)(0) <= AsicOut_TRIG_OUTPUT_R0_C2_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(2)(1) <= AsicOut_TRIG_OUTPUT_R1_C2_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(2)(2) <= AsicOut_TRIG_OUTPUT_R2_C2_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(2)(3) <= AsicOut_TRIG_OUTPUT_R3_C2_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(3)(0) <= AsicOut_TRIG_OUTPUT_R0_C3_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(3)(1) <= AsicOut_TRIG_OUTPUT_R1_C3_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(3)(2) <= AsicOut_TRIG_OUTPUT_R2_C3_CH;
+	--internal_ASIC_TRIGGER_BITS_C_R_CH(3)(3) <= AsicOut_TRIG_OUTPUT_R3_C3_CH;
 	--Then we instantiate the trigger scaler block
-	map_asic_trigger_scalers : entity work.trigger_scaler_top
-	port map (
-		TRIGGER_BITS_IN => internal_ASIC_TRIGGER_BITS_C_R_CH,
-		CLOCK           => internal_CLOCK_50MHz_BUFG,
-		ROW_SELECT      => internal_TRIGGER_SCALER_ROW_SELECT,
-		COL_SELECT      => internal_TRIGGER_SCALER_COL_SELECT,
-		SCALERS         => internal_ASIC_SCALERS_TO_READ
-	);
+	--map_asic_trigger_scalers : entity work.trigger_scaler_top
+	--port map (
+	--	TRIGGER_BITS_IN => internal_ASIC_TRIGGER_BITS_C_R_CH,
+	--	CLOCK           => internal_CLOCK_50MHz_BUFG,
+	--	ROW_SELECT      => internal_TRIGGER_SCALER_ROW_SELECT,
+	--	COL_SELECT      => internal_TRIGGER_SCALER_COL_SELECT,
+	--	SCALERS         => internal_ASIC_SCALERS_TO_READ
+	--);
 
 	--ASIC monitoring and control for potential feedback paths
-	map_asic_feedback_and_monitoring : entity work.feedback_and_monitoring
-	port map (
-	
-	
-				AsicOut_SAMPLING_TRACK_MODE_C0_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
-				AsicOut_SAMPLING_TRACK_MODE_C1_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
-				AsicOut_SAMPLING_TRACK_MODE_C2_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
-				AsicOut_SAMPLING_TRACK_MODE_C3_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R,
+	--map_asic_feedback_and_monitoring : entity work.feedback_and_monitoring
+	--port map (
+	--	AsicOut_SAMPLING_TRACK_MODE_C0_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
+	--	AsicOut_SAMPLING_TRACK_MODE_C1_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
+	--	AsicOut_SAMPLING_TRACK_MODE_C2_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
+	--	AsicOut_SAMPLING_TRACK_MODE_C3_R          => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R,
 				
-				FEEDBACK_SAMPLING_RATE_ENABLE            => FEEDBACK_SAMPLING_RATE_ENABLE, --LM: to fill with appropriate...? 
---				FEEDBACK_SAMPLING_RATE_COUNTER_C_R       => open,
-				FEEDBACK_SAMPLING_RATE_VADJP_C_R         => open,
-				FEEDBACK_SAMPLING_RATE_VADJN_C_R         => internal_VADJN_DAC_VALUES_FEEDBACK,
+	--	FEEDBACK_SAMPLING_RATE_ENABLE            => FEEDBACK_SAMPLING_RATE_ENABLE, --LM: to fill with appropriate...? 
+	--	--FEEDBACK_SAMPLING_RATE_COUNTER_C_R       => open,
+	--	FEEDBACK_SAMPLING_RATE_VADJP_C_R         => open,
+	--	FEEDBACK_SAMPLING_RATE_VADJN_C_R         => internal_VADJN_DAC_VALUES_FEEDBACK,
 	
-		AsicOut_MONITOR_WILK_COUNTERS_C0_R => AsicOut_MONITOR_WILK_COUNTER_C0_R,
-		AsicOut_MONITOR_WILK_COUNTERS_C1_R => AsicOut_MONITOR_WILK_COUNTER_C1_R,
-		AsicOut_MONITOR_WILK_COUNTERS_C2_R => AsicOut_MONITOR_WILK_COUNTER_C2_R,
-		AsicOut_MONITOR_WILK_COUNTERS_C3_R => AsicOut_MONITOR_WILK_COUNTER_C3_R,
-		FEEDBACK_WILKINSON_ENABLES_C_R     => internal_WILK_FEEDBACK_ENABLES,
-		FEEDBACK_WILKINSON_GOALS_C_R       => internal_WILKINSON_TARGETS,
-		FEEDBACK_WILKINSON_COUNTERS_C_R    => internal_WILKINSON_COUNTERS,
-		FEEDBACK_WILKINSON_DAC_VALUES_C_R  => internal_WILK_DAC_VALUES_FEEDBACK,
+	--	AsicOut_MONITOR_WILK_COUNTERS_C0_R => AsicOut_MONITOR_WILK_COUNTER_C0_R,
+	--	AsicOut_MONITOR_WILK_COUNTERS_C1_R => AsicOut_MONITOR_WILK_COUNTER_C1_R,
+	--	AsicOut_MONITOR_WILK_COUNTERS_C2_R => AsicOut_MONITOR_WILK_COUNTER_C2_R,
+	--	AsicOut_MONITOR_WILK_COUNTERS_C3_R => AsicOut_MONITOR_WILK_COUNTER_C3_R,
+	--	FEEDBACK_WILKINSON_ENABLES_C_R     => internal_WILK_FEEDBACK_ENABLES,
+	--	FEEDBACK_WILKINSON_GOALS_C_R       => internal_WILKINSON_TARGETS,
+	--	FEEDBACK_WILKINSON_COUNTERS_C_R    => internal_WILKINSON_COUNTERS,
+	--	FEEDBACK_WILKINSON_DAC_VALUES_C_R  => internal_WILK_DAC_VALUES_FEEDBACK,
 		
-		CLOCK                              => internal_CLOCK_50MHz_BUFG
-	);
+	--	CLOCK                              => internal_CLOCK_50MHz_BUFG
+	--);
 
---	--ASIC sampling, digitization, and readout (SDR)
---	--This includes sampling, selection of ROIs, digitizing, and readout
---	gen_asic_boe : for row in 0 to 3 generate
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(0)(row);
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(1)(row);
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(2)(row);
---		AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(3)(row);
---	end generate;
-	internal_ASIC_READOUT_DATA(0) <= AsicOut_DATA_BUS_C0;
-	internal_ASIC_READOUT_DATA(1) <= AsicOut_DATA_BUS_C1;
-	internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
-	internal_ASIC_READOUT_DATA(3) <= AsicOut_DATA_BUS_C3;
-
-	AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1); --LSB not used - generated internally in IRS3B
-	AsicIn_STORAGE_TO_WILK_ENABLE <= internal_STORAGE_TO_WILK_ENABLE;
+	--ASIC sampling, digitization, and readout (SDR)
+	--This includes sampling, selection of ROIs, digitizing, and readout
+	--gen_asic_boe : for row in 0 to 3 generate
+	--	AsicIn_DATA_BUS_OUTPUT_DISABLE_C0_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(0)(row);
+	--	AsicIn_DATA_BUS_OUTPUT_DISABLE_C1_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(1)(row);
+	--	AsicIn_DATA_BUS_OUTPUT_DISABLE_C2_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(2)(row);
+	--	AsicIn_DATA_BUS_OUTPUT_DISABLE_C3_R(row) <= internal_ASIC_READOUT_TRISTATE_DISABLE(3)(row);
+	--end generate;
+	--internal_ASIC_READOUT_DATA(0) <= AsicOut_DATA_BUS_C0;
+	--internal_ASIC_READOUT_DATA(1) <= AsicOut_DATA_BUS_C1;
+	--internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
+	--internal_ASIC_READOUT_DATA(3) <= AsicOut_DATA_BUS_C3;
+	--AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1); --LSB not used - generated internally in IRS3B
+	--AsicIn_STORAGE_TO_WILK_ENABLE <= internal_STORAGE_TO_WILK_ENABLE;
 	
-	map_irs2_sdr : entity work.irs2_sampling_digitizing_readout
-	port map (
-		--Clock for running the analog memory manager
-		CLOCK_SAMPLING_HOLD_MODE              => internal_CLOCK_SST_BUFG,
-		--Clock for monitoring the trigger memory and phase
-		CLOCK_TRIGGER_MEMORY                  => internal_CLOCK_4xSST_BUFG,
-		--Primary clock for ROI and digitizing (set nominally for 50 MHz)
-		CLOCK                                 => internal_CLOCK_50MHz_BUFG,
-		--Clock to sample PHAB - needs to be at least 2xSST
-		internal_CLK_SSTx2 						  => internal_CLK_SSTx2,
-		--Trigger inputs
-		SOFTWARE_TRIGGER_IN                   => internal_SOFTWARE_TRIGGER,
-		HARDWARE_TRIGGER_IN                   => internal_HARDWARE_TRIGGER,
-		--Trigger vetoes
-		SOFTWARE_TRIGGER_VETO                 => internal_SOFTWARE_TRIGGER_VETO,
-		HARDWARE_TRIGGER_VETO                 => internal_HARDWARE_TRIGGER_VETO,		
-		--User registers
-		FIRST_ALLOWED_WINDOW                  => internal_FIRST_ALLOWED_WINDOW,
-		LAST_ALLOWED_WINDOW                   => internal_LAST_ALLOWED_WINDOW,
-		ROI_ADDRESS_ADJUST                    => internal_ROI_ADDRESS_ADJUST,
-		MAX_WINDOWS_TO_LOOK_BACK              => internal_MAX_WINDOWS_TO_LOOK_BACK,
-		MIN_WINDOWS_TO_LOOK_BACK              => internal_MIN_WINDOWS_TO_LOOK_BACK,
-		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER  => internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER,
-		PEDESTAL_WINDOW                       => internal_PEDESTAL_WINDOW,
-		PEDESTAL_MODE                         => internal_PEDESTAL_MODE,
-		SCROD_REV_AND_ID_WORD                 => internal_SCROD_REV_AND_ID_WORD,
-		EVENT_NUMBER_TO_SET                   => internal_EVENT_NUMBER_TO_SET,
-		SET_EVENT_NUMBER                      => internal_SET_EVENT_NUMBER,
-		EVENT_NUMBER                          => internal_EVENT_NUMBER,
-		FORCE_CHANNEL_MASK                    => internal_FORCE_CHANNEL_MASK,
-		IGNORE_CHANNEL_MASK                   => internal_IGNORE_CHANNEL_MASK,
-		--Sampling signals and controls for writing to analog memory
-		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
-		  --The LSB here is handled by the clocking block.  We take a copy so we have access to it
-		  --in the trigger memory logic.
-		ASIC_SAMPLING_TO_STORAGE_ADDRESS_LSB    => internal_SAMPLING_TO_STORAGE_ADDRESS_LSB,
-		ASIC_SAMPLING_TO_STORAGE_ENABLE         => internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
-		PHAB => AsicOut_SAMPLING_TIMING_MONITOR_C0_R(0), -- LM added one MONTIMING that should be
-																													-- set as PHAB, as it needs to be used
-																													-- to synchronize initially the phase
-																													-- will it be ok for all chips?
-		LAST_WINDOW_SAMPLED => internal_LAST_WINDOW_SAMPLED,
-		DONE_SENDING_EVENT => internal_DONE_SENDING_EVENT,
-		--Digitization signals
---		ASIC_STORAGE_TO_WILK_ADDRESS          => AsicIn_STORAGE_TO_WILK_ADDRESS,
---		ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE,
---		ASIC_STORAGE_TO_WILK_ENABLE           => internal_STORAGE_TO_WILK_ENABLE,
-		ASIC_STORAGE_TO_WILK_ADDRESS          => internal_STORAGE_TO_WILK_ADDRESS,
-		ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => internal_STORAGE_TO_WILK_ADDRESS_ENABLE,
-		ASIC_STORAGE_TO_WILK_ENABLE           => internal_STORAGE_TO_WILK_ENABLE,		
-		ASIC_WILK_COUNTER_RESET               => AsicIn_WILK_COUNTER_RESET,
-		ASIC_WILK_COUNTER_START               => AsicIn_WILK_COUNTER_START_C,
-		ASIC_WILK_RAMP_ACTIVE                 => AsicIn_WILK_RAMP_ACTIVE,
-		
+	--map_irs2_sdr : entity work.irs2_sampling_digitizing_readout
+	--port map (
+	--	--Clock for running the analog memory manager
+	--	CLOCK_SAMPLING_HOLD_MODE              => internal_CLOCK_SST_BUFG,
+	--	--Clock for monitoring the trigger memory and phase
+	--	CLOCK_TRIGGER_MEMORY                  => internal_CLOCK_4xSST_BUFG,
+	--	--Primary clock for ROI and digitizing (set nominally for 50 MHz)
+	--	CLOCK                                 => internal_CLOCK_50MHz_BUFG,
+	--	--Clock to sample PHAB - needs to be at least 2xSST
+	--	internal_CLK_SSTx2 						  => internal_CLK_SSTx2,
+	--	--Trigger inputs
+	--	SOFTWARE_TRIGGER_IN                   => internal_SOFTWARE_TRIGGER,
+	--	HARDWARE_TRIGGER_IN                   => internal_HARDWARE_TRIGGER,
+	--	--Trigger vetoes
+	--	SOFTWARE_TRIGGER_VETO                 => internal_SOFTWARE_TRIGGER_VETO,
+	--	HARDWARE_TRIGGER_VETO                 => internal_HARDWARE_TRIGGER_VETO,		
+	--	--User registers
+	--	FIRST_ALLOWED_WINDOW                  => internal_FIRST_ALLOWED_WINDOW,
+	--	LAST_ALLOWED_WINDOW                   => internal_LAST_ALLOWED_WINDOW,
+	--	ROI_ADDRESS_ADJUST                    => internal_ROI_ADDRESS_ADJUST,
+	--	MAX_WINDOWS_TO_LOOK_BACK              => internal_MAX_WINDOWS_TO_LOOK_BACK,
+	--	MIN_WINDOWS_TO_LOOK_BACK              => internal_MIN_WINDOWS_TO_LOOK_BACK,
+	--	WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER  => internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER,
+	--	PEDESTAL_WINDOW                       => internal_PEDESTAL_WINDOW,
+	--	PEDESTAL_MODE                         => internal_PEDESTAL_MODE,
+	--	SCROD_REV_AND_ID_WORD                 => internal_SCROD_REV_AND_ID_WORD,
+	--	EVENT_NUMBER_TO_SET                   => internal_EVENT_NUMBER_TO_SET,
+	--	SET_EVENT_NUMBER                      => internal_SET_EVENT_NUMBER,
+	--	EVENT_NUMBER                          => internal_EVENT_NUMBER,
+	--	FORCE_CHANNEL_MASK                    => internal_FORCE_CHANNEL_MASK,
+	--	IGNORE_CHANNEL_MASK                   => internal_IGNORE_CHANNEL_MASK,
+	--	--Sampling signals and controls for writing to analog memory
+	--	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
+	--	  --The LSB here is handled by the clocking block.  We take a copy so we have access to it
+	--	  --in the trigger memory logic.
+	--	ASIC_SAMPLING_TO_STORAGE_ADDRESS_LSB    => internal_SAMPLING_TO_STORAGE_ADDRESS_LSB,
+	--	ASIC_SAMPLING_TO_STORAGE_ENABLE         => internal_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
+	--	PHAB => AsicOut_SAMPLING_TIMING_MONITOR_C0_R(0), -- LM added one MONTIMING that should be
+																											-- will it be ok for all chips?
+	--	LAST_WINDOW_SAMPLED => internal_LAST_WINDOW_SAMPLED,
+	--	DONE_SENDING_EVENT => internal_DONE_SENDING_EVENT,
+	--	--Digitization signals
+	--	ASIC_STORAGE_TO_WILK_ADDRESS          => AsicIn_STORAGE_TO_WILK_ADDRESS,
+	--	ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => AsicIn_STORAGE_TO_WILK_ADDRESS_ENABLE,
+	--	ASIC_STORAGE_TO_WILK_ENABLE           => internal_STORAGE_TO_WILK_ENABLE,
+	--	ASIC_STORAGE_TO_WILK_ADDRESS          => internal_STORAGE_TO_WILK_ADDRESS,
+	--	ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE   => internal_STORAGE_TO_WILK_ADDRESS_ENABLE,
+	--	ASIC_STORAGE_TO_WILK_ENABLE           => internal_STORAGE_TO_WILK_ENABLE,		
+	--	ASIC_WILK_COUNTER_RESET               => AsicIn_WILK_COUNTER_RESET,
+	--	ASIC_WILK_COUNTER_START               => AsicIn_WILK_COUNTER_START_C,
+	--	ASIC_WILK_RAMP_ACTIVE                 => AsicIn_WILK_RAMP_ACTIVE,
+	--	
 	-- RD (serial/increment interface for storage to wilkinson address)
-	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK, --: out std_logic;
-	  AsicIn_STORAGE_TO_WILK_ADDRESS_DIR => AsicIn_STORAGE_TO_WILK_ADDRESS_DIR, --out std_logic;
-	  AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT, -- : out std_logic;		
-		--Readout signals
-		ASIC_READOUT_CHANNEL_ADDRESS          => internal_DATA_BUS_CHANNEL_ADDRESS,
-		ASIC_READOUT_SAMPLE_ADDRESS           => internal_DATA_BUS_SAMPLE_ADDRESS,
-		ASIC_READOUT_ENABLE                   => internal_DATA_BUS_OUTPUT_ENABLE,
-		ASIC_READOUT_TRISTATE_DISABLE         => internal_ASIC_READOUT_TRISTATE_DISABLE,
-		ASIC_READOUT_DATA                     => internal_ASIC_READOUT_DATA,
+	-- - AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK, --: out std_logic;
+	-- - AsicIn_STORAGE_TO_WILK_ADDRESS_DIR => AsicIn_STORAGE_TO_WILK_ADDRESS_DIR, --out std_logic;
+	-- AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT, -- : out std_logic;		
+	--	--Readout signals
+	--	ASIC_READOUT_CHANNEL_ADDRESS          => internal_DATA_BUS_CHANNEL_ADDRESS,
+	--	ASIC_READOUT_SAMPLE_ADDRESS           => internal_DATA_BUS_SAMPLE_ADDRESS,
+	--	ASIC_READOUT_ENABLE                   => internal_DATA_BUS_OUTPUT_ENABLE,
+	--	ASIC_READOUT_TRISTATE_DISABLE         => internal_ASIC_READOUT_TRISTATE_DISABLE,
+	--	ASIC_READOUT_DATA                     => internal_ASIC_READOUT_DATA,
 	-- DO (serial/increment interface for sample / channel select)
---		GPIO_CAL_SCL							=>  SCL_temperature_eeprom_GPIO0_R01_dummy,-- To change SMPSELANY
---		GPIO_CAL_SDA							=> SDA_temperature_eeprom_GPIO0_R01_dummy,
-		GPIO_CAL_SCL01							=>  I2C_SCL_temperature_eeprom_GPIO0_R01,-- To change SMPSELANY carriers 2 and 3
-		GPIO_CAL_SDA01							=> I2C_SDA_temperature_eeprom_GPIO0_R01,
-		GPIO_CAL_SCL23							=>  I2C_SCL_temperature_eeprom_GPIO0_R23,-- To change SMPSELANY carriers 2 and 3
-		GPIO_CAL_SDA23							=> I2C_SDA_temperature_eeprom_GPIO0_R23,
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK,-- out std_logic;
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR, --: out std_logic;
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT, --: out std_logic;
-		--Trigger bits in to determine ROIs
-		ASIC_TRIGGER_BITS                     => internal_ASIC_TRIGGER_BITS_C_R_CH,
-		--FIFO data to send off as an event
-		EVENT_FIFO_DATA_OUT                   => internal_WAVEFORM_FIFO_DATA_OUT,
-		EVENT_FIFO_DATA_VALID                 => internal_WAVEFORM_FIFO_DATA_VALID,
-		EVENT_FIFO_EMPTY                      => internal_WAVEFORM_FIFO_EMPTY,
-		EVENT_FIFO_READ_CLOCK                 => internal_WAVEFORM_FIFO_READ_CLOCK,
-		EVENT_FIFO_READ_ENABLE                => internal_WAVEFORM_FIFO_READ_ENABLE,
-		EVENT_PACKET_BUILDER_BUSY             => internal_WAVEFORM_PACKET_BUILDER_BUSY,
-		EVENT_PACKET_BUILDER_VETO             => internal_WAVEFORM_PACKET_BUILDER_VETO,
+	--	GPIO_CAL_SCL							=>  SCL_temperature_eeprom_GPIO0_R01_dummy,-- To change SMPSELANY
+	--	GPIO_CAL_SDA							=> SDA_temperature_eeprom_GPIO0_R01_dummy,
+	--	GPIO_CAL_SCL01							=>  I2C_SCL_temperature_eeprom_GPIO0_R01,-- To change SMPSELANY carriers 2 and 3
+	--	GPIO_CAL_SDA01							=> I2C_SDA_temperature_eeprom_GPIO0_R01,
+	--	GPIO_CAL_SCL23							=>  I2C_SCL_temperature_eeprom_GPIO0_R23,-- To change SMPSELANY carriers 2 and 3
+	--	GPIO_CAL_SDA23							=> I2C_SDA_temperature_eeprom_GPIO0_R23,
+	-- AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK,-- out std_logic;
+	-- AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR, --: out std_logic;
+	-- AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT, --: out std_logic;
+	--	--Trigger bits in to determine ROIs
+	--	ASIC_TRIGGER_BITS                     => internal_ASIC_TRIGGER_BITS_C_R_CH,
+	--	--FIFO data to send off as an event
+	--	EVENT_FIFO_DATA_OUT                   => internal_WAVEFORM_FIFO_DATA_OUT,
+	--	EVENT_FIFO_DATA_VALID                 => internal_WAVEFORM_FIFO_DATA_VALID,
+	--	EVENT_FIFO_EMPTY                      => internal_WAVEFORM_FIFO_EMPTY,
+	--	EVENT_FIFO_READ_CLOCK                 => internal_WAVEFORM_FIFO_READ_CLOCK,
+	--	EVENT_FIFO_READ_ENABLE                => internal_WAVEFORM_FIFO_READ_ENABLE,
+	--	EVENT_PACKET_BUILDER_BUSY             => internal_WAVEFORM_PACKET_BUILDER_BUSY,
+	--	EVENT_PACKET_BUILDER_VETO             => internal_WAVEFORM_PACKET_BUILDER_VETO,
 --		internal_CHIPSCOPE_CONTROL				  => CONTROL0,
 --		ready_for_new_trigger					  => ready_for_new_trigger,
 --		TEMP_OUT_chipscope						  => internal_TEMP_OUT,
@@ -627,12 +886,11 @@ begin
 --		debug_state_i2c_busB						  => debug_state_i2c_busC,
 --		address_debug								 => address_debug2,
 --		pos_debug									=> pos_debug2,
-		FORCE_ADDRESS_CHANNEL					=> FORCE_ADDRESS_CHANNEL,
-		FORCE_ADDRESS_ASIC					=> FORCE_ADDRESS_ASIC
-		
+--		FORCE_ADDRESS_CHANNEL					=> FORCE_ADDRESS_CHANNEL,
+--		FORCE_ADDRESS_ASIC					=> FORCE_ADDRESS_ASIC		
 --		new_address_reached				 		  => new_address_reached, --LM: updating address feedback
 --		START_NEW_ADDRESS							  =>  START_NEW_ADDRESS --LM: start new address update
-	);
+	--);
 
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
@@ -641,14 +899,23 @@ begin
 
 		OUTPUT_REGISTERS             => internal_OUTPUT_REGISTERS,
 		INPUT_REGISTERS              => internal_INPUT_REGISTERS,
-
-		WAVEFORM_FIFO_DATA_IN        => internal_WAVEFORM_FIFO_DATA_OUT,
-		WAVEFORM_FIFO_EMPTY          => internal_WAVEFORM_FIFO_EMPTY,
-		WAVEFORM_FIFO_DATA_VALID     => internal_WAVEFORM_FIFO_DATA_VALID,
-		WAVEFORM_FIFO_READ_CLOCK     => internal_WAVEFORM_FIFO_READ_CLOCK,
-		WAVEFORM_FIFO_READ_ENABLE    => internal_WAVEFORM_FIFO_READ_ENABLE,
-		WAVEFORM_PACKET_BUILDER_BUSY => internal_WAVEFORM_PACKET_BUILDER_BUSY,
-		WAVEFORM_PACKET_BUILDER_VETO => internal_WAVEFORM_PACKET_BUILDER_VETO,
+	
+		--super temporary -- disable waveform interface to event builder
+		--WAVEFORM_FIFO_DATA_IN        => internal_WAVEFORM_FIFO_DATA_OUT,
+		--WAVEFORM_FIFO_EMPTY          => internal_WAVEFORM_FIFO_EMPTY,
+		--WAVEFORM_FIFO_DATA_VALID     => internal_WAVEFORM_FIFO_DATA_VALID,
+		--WAVEFORM_FIFO_READ_CLOCK     => internal_WAVEFORM_FIFO_READ_CLOCK,
+		--WAVEFORM_FIFO_READ_ENABLE    => internal_WAVEFORM_FIFO_READ_ENABLE,
+		--WAVEFORM_PACKET_BUILDER_BUSY => internal_WAVEFORM_PACKET_BUILDER_BUSY,
+		--WAVEFORM_PACKET_BUILDER_VETO => internal_WAVEFORM_PACKET_BUILDER_VETO,
+		--WAVEFORM ROI readout disable for now
+		WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
+		WAVEFORM_FIFO_EMPTY          => '1',
+		WAVEFORM_FIFO_DATA_VALID     => '0',
+		WAVEFORM_FIFO_READ_CLOCK     => open,
+		WAVEFORM_FIFO_READ_ENABLE    => open,
+		WAVEFORM_PACKET_BUILDER_BUSY => '0',
+		WAVEFORM_PACKET_BUILDER_VETO => open,
 
 		FIBER_0_RXP                  => FIBER_0_RXP,
 		FIBER_0_RXN                  => FIBER_0_RXN,
@@ -689,50 +956,50 @@ begin
 	--------------------------------------------------
 	-------Multiplexing to turn feedbacks on/off------
 	--------------------------------------------------
-	proc_wilk_enables : process(internal_WILK_FEEDBACK_ENABLES, internal_WILK_DAC_VALUES_STATIC, internal_WILK_DAC_VALUES_FEEDBACK ) begin
-		for col in 0 to 3 loop
-			for row in 0 to 3 loop
-				case internal_WILK_FEEDBACK_ENABLES(col)(row) is
-					when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(4) <= internal_WILK_DAC_VALUES_STATIC(col)(row);
-					when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(4) <= internal_WILK_DAC_VALUES_FEEDBACK(col)(row);
-					when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(4) <= (others => 'X');
-				end case;
-			end loop;
-		end loop;
-	end process;
-	proc_vadjp_enables : process(internal_VADJ_FEEDBACK_ENABLES, internal_VADJP_DAC_VALUES_STATIC, internal_VADJP_DAC_VALUES_FEEDBACK ) begin
-		for col in 0 to 3 loop
-			for row in 0 to 3 loop
-				case internal_VADJ_FEEDBACK_ENABLES(col)(row) is
-					when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(2) <= internal_VADJP_DAC_VALUES_STATIC(col)(row);
-					when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(2) <= internal_VADJP_DAC_VALUES_FEEDBACK(col)(row);
-					when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(2) <= (others => 'X');
-				end case;
-			end loop;
-		end loop;
-	end process;
-	proc_vadjn_enables : process(internal_VADJ_FEEDBACK_ENABLES, internal_VADJN_DAC_VALUES_STATIC, internal_VADJN_DAC_VALUES_FEEDBACK ) begin
-		for col in 0 to 3 loop
-			for row in 0 to 3 loop
-				case internal_VADJ_FEEDBACK_ENABLES(col)(row) is
-					when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(3) <= internal_VADJN_DAC_VALUES_STATIC(col)(row);
-					when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(3) <= internal_VADJN_DAC_VALUES_FEEDBACK(col)(row);
-					when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(3) <= (others => 'X');
-				end case;
-			end loop;
-		end loop;
-	end process;
-	proc_wbias_enables : process(internal_WBIAS_FEEDBACK_ENABLES, internal_WBIAS_DAC_VALUES_STATIC, internal_WBIAS_DAC_VALUES_FEEDBACK ) begin
-		for col in 0 to 3 loop
-			for row in 0 to 3 loop
-				case internal_WBIAS_FEEDBACK_ENABLES(col)(row) is
-					when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(7) <= internal_WBIAS_DAC_VALUES_STATIC(col)(row);
-					when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(7) <= internal_WBIAS_DAC_VALUES_FEEDBACK(col)(row);
-					when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(7) <= (others => 'X');
-				end case;
-			end loop;
-		end loop;
-	end process;
+	--proc_wilk_enables : process(internal_WILK_FEEDBACK_ENABLES, internal_WILK_DAC_VALUES_STATIC, internal_WILK_DAC_VALUES_FEEDBACK ) begin
+	--	for col in 0 to 3 loop
+	--		for row in 0 to 3 loop
+	--			case internal_WILK_FEEDBACK_ENABLES(col)(row) is
+	--				when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(4) <= internal_WILK_DAC_VALUES_STATIC(col)(row);
+	--				when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(4) <= internal_WILK_DAC_VALUES_FEEDBACK(col)(row);
+	--				when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(4) <= (others => 'X');
+	--			end case;
+	--		end loop;
+	--	end loop;
+	--end process;
+	--proc_vadjp_enables : process(internal_VADJ_FEEDBACK_ENABLES, internal_VADJP_DAC_VALUES_STATIC, internal_VADJP_DAC_VALUES_FEEDBACK ) begin
+	--	for col in 0 to 3 loop
+	--		for row in 0 to 3 loop
+	--			case internal_VADJ_FEEDBACK_ENABLES(col)(row) is
+	--				when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(2) <= internal_VADJP_DAC_VALUES_STATIC(col)(row);
+	--				when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(2) <= internal_VADJP_DAC_VALUES_FEEDBACK(col)(row);
+	--				when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(2) <= (others => 'X');
+	--			end case;
+	--		end loop;
+	--	end loop;
+	--end process;
+	--proc_vadjn_enables : process(internal_VADJ_FEEDBACK_ENABLES, internal_VADJN_DAC_VALUES_STATIC, internal_VADJN_DAC_VALUES_FEEDBACK ) begin
+	--	for col in 0 to 3 loop
+	--		for row in 0 to 3 loop
+	--			case internal_VADJ_FEEDBACK_ENABLES(col)(row) is
+	--				when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(3) <= internal_VADJN_DAC_VALUES_STATIC(col)(row);
+	--				when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(3) <= internal_VADJN_DAC_VALUES_FEEDBACK(col)(row);
+	--				when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(3) <= (others => 'X');
+	--			end case;
+	--		end loop;
+	--	end loop;
+	--end process;
+	--proc_wbias_enables : process(internal_WBIAS_FEEDBACK_ENABLES, internal_WBIAS_DAC_VALUES_STATIC, internal_WBIAS_DAC_VALUES_FEEDBACK ) begin
+	--	for col in 0 to 3 loop
+	--		for row in 0 to 3 loop
+	--			case internal_WBIAS_FEEDBACK_ENABLES(col)(row) is
+	--				when '0' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(7) <= internal_WBIAS_DAC_VALUES_STATIC(col)(row);
+	--				when '1' => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(7) <= internal_WBIAS_DAC_VALUES_FEEDBACK(col)(row);
+	--				when others => internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(7) <= (others => 'X');
+	--			end case;
+	--		end loop;
+	--	end loop;
+	--end process;
 
 	--------------------------------------------------
 	-------General registers interfaced to DAQ -------
@@ -758,48 +1025,131 @@ begin
 	internal_I2C_BUSC_READ_BYTE            <= internal_OUTPUT_REGISTERS(3)(10);
 	internal_I2C_BUSC_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(3)(11);
 	internal_I2C_BUSC_SEND_STOP            <= internal_OUTPUT_REGISTERS(3)(12);
---	AsicIn_TRIG_ON_RISING_EDGE             <= internal_OUTPUT_REGISTERS(4)(15);         --Register 4: Select trigger polarity and which ASIC to read scalers from: PXXX XXXX XXXX CCRR, where P is 1/0 for rising/falling edge triggering, and C/R are column and row
-	internal_TRIGGER_SCALER_ROW_SELECT     <= internal_OUTPUT_REGISTERS(4)(ROW_SELECT_BITS-1 downto 0); 
-	internal_TRIGGER_SCALER_COL_SELECT     <= internal_OUTPUT_REGISTERS(4)(ROW_SELECT_BITS+COL_SELECT_BITS-1 downto ROW_SELECT_BITS);
-	gen_dac_common_col : for col in 0 to 3 generate
-		gen_dac_common_row : for row in 0 to 3 generate 
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(4) <= internal_OUTPUT_REGISTERS( 5)(11 downto 0); --Register  5: TRG_BIAS for all ASICs
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(5) <= internal_OUTPUT_REGISTERS( 6)(11 downto 0); --Register  6: VBIAS for all ASICs
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(0) <= internal_OUTPUT_REGISTERS( 7)(11 downto 0); --Register  7: TRGTHREF for all ASICs	
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(1) <= internal_OUTPUT_REGISTERS( 8)(11 downto 0); --Register  8: ISEL for all ASICs	
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(2) <= internal_OUTPUT_REGISTERS( 9)(11 downto 0); --Register  9: SBBIAS for all ASICs	
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(3) <= internal_OUTPUT_REGISTERS(10)(11 downto 0); --Register 10: PUBIAS for all ASICs	
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(5) <= internal_OUTPUT_REGISTERS(11)(11 downto 0); --Register 11: CMPBIAS for all ASICs	
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(6) <= internal_OUTPUT_REGISTERS(12)(11 downto 0); --Register 12: PAD_G (spare) for all ASICs	
-		end generate;
-	end generate;
-	gen_dac_independent_col : for col in 0 to 3 generate
-		gen_dac_independent_row : for row in 0 to 3 generate
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(0) <= internal_OUTPUT_REGISTERS( 13+col*4+row)(11 downto 0); --Registers 13 - 28: TRG thresh for channel 0,1; increasing ASIC by row, then col
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(1) <= internal_OUTPUT_REGISTERS( 29+col*4+row)(11 downto 0); --Registers 29 - 44: TRG thresh for channel 2,3; increasing ASIC by row, then col
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(6) <= internal_OUTPUT_REGISTERS( 45+col*4+row)(11 downto 0); --Registers 45 - 60: TRG thresh for channel 4,5; increasing ASIC by row, then col
-			internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(7) <= internal_OUTPUT_REGISTERS( 61+col*4+row)(11 downto 0); --Registers 61 - 76: TRG thresh for channel 6,7; increasing ASIC by row, then col
+	--Skip I2C Bus D
+	internal_I2C_BUSE_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(5)(7 downto 0); --Register 3: I2C BusC interfaces
+	internal_I2C_BUSE_SEND_START           <= internal_OUTPUT_REGISTERS(5)(8);
+	internal_I2C_BUSE_SEND_BYTE            <= internal_OUTPUT_REGISTERS(5)(9);
+	internal_I2C_BUSE_READ_BYTE            <= internal_OUTPUT_REGISTERS(5)(10);
+	internal_I2C_BUSE_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(5)(11);
+	internal_I2C_BUSE_SEND_STOP            <= internal_OUTPUT_REGISTERS(5)(12);
+	internal_I2C_BUSF_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(6)(7 downto 0); --Register 3: I2C BusC interfaces
+	internal_I2C_BUSF_SEND_START           <= internal_OUTPUT_REGISTERS(6)(8);
+	internal_I2C_BUSF_SEND_BYTE            <= internal_OUTPUT_REGISTERS(6)(9);
+	internal_I2C_BUSF_READ_BYTE            <= internal_OUTPUT_REGISTERS(6)(10);
+	internal_I2C_BUSF_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(6)(11);
+	internal_I2C_BUSF_SEND_STOP            <= internal_OUTPUT_REGISTERS(6)(12);
+	internal_I2C_BUSG_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(7)(7 downto 0); --Register 3: I2C BusC interfaces
+	internal_I2C_BUSG_SEND_START           <= internal_OUTPUT_REGISTERS(7)(8);
+	internal_I2C_BUSG_SEND_BYTE            <= internal_OUTPUT_REGISTERS(7)(9);
+	internal_I2C_BUSG_READ_BYTE            <= internal_OUTPUT_REGISTERS(7)(10);
+	internal_I2C_BUSG_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(7)(11);
+	internal_I2C_BUSG_SEND_STOP            <= internal_OUTPUT_REGISTERS(7)(12);
+	internal_I2C_BUSH_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(8)(7 downto 0); --Register 3: I2C BusC interfaces
+	internal_I2C_BUSH_SEND_START           <= internal_OUTPUT_REGISTERS(8)(8);
+	internal_I2C_BUSH_SEND_BYTE            <= internal_OUTPUT_REGISTERS(8)(9);
+	internal_I2C_BUSH_READ_BYTE            <= internal_OUTPUT_REGISTERS(8)(10);
+	internal_I2C_BUSH_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(8)(11);
+	internal_I2C_BUSH_SEND_STOP            <= internal_OUTPUT_REGISTERS(8)(12);
+	--skip I2K Bus I
+	--skip I2K Bus J
+	internal_I2C_BUSK_BYTE_TO_SEND         <= internal_OUTPUT_REGISTERS(11)(7 downto 0); --Register 3: I2C BusC interfaces
+	internal_I2C_BUSK_SEND_START           <= internal_OUTPUT_REGISTERS(11)(8);
+	internal_I2C_BUSK_SEND_BYTE            <= internal_OUTPUT_REGISTERS(11)(9);
+	internal_I2C_BUSK_READ_BYTE            <= internal_OUTPUT_REGISTERS(11)(10);
+	internal_I2C_BUSK_SEND_ACKNOWLEDGE     <= internal_OUTPUT_REGISTERS(11)(11);
+	internal_I2C_BUSK_SEND_STOP            <= internal_OUTPUT_REGISTERS(11)(12);
+	
+	--Internal ASIC DAC writing signals, temporary implementation
+	load_ASIC_DACs <= internal_OUTPUT_REGISTERS(19)(0);
+	THR1 <= internal_OUTPUT_REGISTERS(20)(11 downto 0);
+	THR2 <= internal_OUTPUT_REGISTERS(21)(11 downto 0);
+	THR3 <= internal_OUTPUT_REGISTERS(22)(11 downto 0);
+	THR4 <= internal_OUTPUT_REGISTERS(23)(11 downto 0);
+	THR5 <= internal_OUTPUT_REGISTERS(24)(11 downto 0);
+	THR6 <= internal_OUTPUT_REGISTERS(25)(11 downto 0);
+	THR7 <= internal_OUTPUT_REGISTERS(26)(11 downto 0);
+	THR8 <= internal_OUTPUT_REGISTERS(27)(11 downto 0);
+	VBDBIAS <= internal_OUTPUT_REGISTERS(28)(11 downto 0);
+	VBIAS <= internal_OUTPUT_REGISTERS(29)(11 downto 0);
+	VBIAS2 <= internal_OUTPUT_REGISTERS(30)(11 downto 0);
+	MiscReg <= internal_OUTPUT_REGISTERS(31)(7 downto 0);
+	WBDbias <= internal_OUTPUT_REGISTERS(32)(11 downto 0);
+	Wbias <= internal_OUTPUT_REGISTERS(33)(11 downto 0);
+	TCDbias <= internal_OUTPUT_REGISTERS(34)(11 downto 0);
+	TRGbias <= internal_OUTPUT_REGISTERS(35)(11 downto 0);
+	THDbias <= internal_OUTPUT_REGISTERS(36)(11 downto 0);
+	Tbbias <= internal_OUTPUT_REGISTERS(37)(11 downto 0);
+	TRGDbias <= internal_OUTPUT_REGISTERS(38)(11 downto 0);
+	TRGbias2 <= internal_OUTPUT_REGISTERS(39)(11 downto 0);
+	TRGthref <= internal_OUTPUT_REGISTERS(40)(11 downto 0);
+	LeadSSPin <= internal_OUTPUT_REGISTERS(41)(7 downto 0);
+	TrailSSPin <= internal_OUTPUT_REGISTERS(42)(7 downto 0);
+	LeadS1 <= internal_OUTPUT_REGISTERS(43)(7 downto 0);
+	TrailS1 <= internal_OUTPUT_REGISTERS(44)(7 downto 0);
+	LeadS2 <= internal_OUTPUT_REGISTERS(45)(7 downto 0);
+	TrailS2 <= internal_OUTPUT_REGISTERS(46)(7 downto 0);
+	LeadPHASE <= internal_OUTPUT_REGISTERS(47)(7 downto 0);
+	TrailPHASE <= internal_OUTPUT_REGISTERS(48)(7 downto 0);
+	LeadWR_STRB <= internal_OUTPUT_REGISTERS(49)(7 downto 0);
+	TrailWR_STRB <= internal_OUTPUT_REGISTERS(50)(7 downto 0);
+	TimGenReg <= internal_OUTPUT_REGISTERS(51)(7 downto 0);
+	PDDbias <= internal_OUTPUT_REGISTERS(52)(11 downto 0);
+	CMPbias <= internal_OUTPUT_REGISTERS(53)(11 downto 0);
+	PUDbias <= internal_OUTPUT_REGISTERS(54)(11 downto 0);
+	PUbias <= internal_OUTPUT_REGISTERS(55)(11 downto 0);
+	SBDbias <= internal_OUTPUT_REGISTERS(56)(11 downto 0);
+	Sbbias <= internal_OUTPUT_REGISTERS(57)(11 downto 0);
+	ISDbias <= internal_OUTPUT_REGISTERS(58)(11 downto 0);
+	ISEL <= internal_OUTPUT_REGISTERS(59)(11 downto 0);
+	VDDbias <= internal_OUTPUT_REGISTERS(60)(11 downto 0);
+	Vdly <= internal_OUTPUT_REGISTERS(61)(11 downto 0);
+	VAPDbias <= internal_OUTPUT_REGISTERS(62)(11 downto 0);
+	VadjP <= internal_OUTPUT_REGISTERS(63)(11 downto 0);
+	VANDbias <= internal_OUTPUT_REGISTERS(64)(11 downto 0);
+	VadjN <= internal_OUTPUT_REGISTERS(65)(11 downto 0);
+	
+	--	AsicIn_TRIG_ON_RISING_EDGE             <= internal_OUTPUT_REGISTERS(4)(15);         --Register 4: Select trigger polarity and which ASIC to read scalers from: PXXX XXXX XXXX CCRR, where P is 1/0 for rising/falling edge triggering, and C/R are column and row
+	--internal_TRIGGER_SCALER_ROW_SELECT     <= internal_OUTPUT_REGISTERS(4)(ROW_SELECT_BITS-1 downto 0); 
+	--internal_TRIGGER_SCALER_COL_SELECT     <= internal_OUTPUT_REGISTERS(4)(ROW_SELECT_BITS+COL_SELECT_BITS-1 downto ROW_SELECT_BITS);
+	--gen_dac_common_col : for col in 0 to 3 generate
+	--	gen_dac_common_row : for row in 0 to 3 generate 
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(4) <= internal_OUTPUT_REGISTERS( 5)(11 downto 0); --Register  5: TRG_BIAS for all ASICs
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(5) <= internal_OUTPUT_REGISTERS( 6)(11 downto 0); --Register  6: VBIAS for all ASICs
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(0) <= internal_OUTPUT_REGISTERS( 7)(11 downto 0); --Register  7: TRGTHREF for all ASICs	
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(1) <= internal_OUTPUT_REGISTERS( 8)(11 downto 0); --Register  8: ISEL for all ASICs	
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(2) <= internal_OUTPUT_REGISTERS( 9)(11 downto 0); --Register  9: SBBIAS for all ASICs	
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(3) <= internal_OUTPUT_REGISTERS(10)(11 downto 0); --Register 10: PUBIAS for all ASICs	
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(5) <= internal_OUTPUT_REGISTERS(11)(11 downto 0); --Register 11: CMPBIAS for all ASICs	
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+1)(6) <= internal_OUTPUT_REGISTERS(12)(11 downto 0); --Register 12: PAD_G (spare) for all ASICs	
+	--	end generate;
+	--end generate;
+	--gen_dac_independent_col : for col in 0 to 3 generate
+	--	gen_dac_independent_row : for row in 0 to 3 generate
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(0) <= internal_OUTPUT_REGISTERS( 13+col*4+row)(11 downto 0); --Registers 13 - 28: TRG thresh for channel 0,1; increasing ASIC by row, then col
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(1) <= internal_OUTPUT_REGISTERS( 29+col*4+row)(11 downto 0); --Registers 29 - 44: TRG thresh for channel 2,3; increasing ASIC by row, then col
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(6) <= internal_OUTPUT_REGISTERS( 45+col*4+row)(11 downto 0); --Registers 45 - 60: TRG thresh for channel 4,5; increasing ASIC by row, then col
+	--		internal_DESIRED_DAC_VOLTAGES(col)(row*2+0)(7) <= internal_OUTPUT_REGISTERS( 61+col*4+row)(11 downto 0); --Registers 61 - 76: TRG thresh for channel 6,7; increasing ASIC by row, then col
 
-			internal_WILK_DAC_VALUES_STATIC(col)(row)      <= internal_OUTPUT_REGISTERS( 77+col*4+row)(11 downto 0); --Registers 77 - 92: VDLY (Wilkinson count rate bias), used when feedback is disabled
-			internal_VADJP_DAC_VALUES_STATIC(col)(row)     <= internal_OUTPUT_REGISTERS( 93+col*4+row)(11 downto 0); --Registers 93 - 108: VADJP (Sampling rate PFET bias), used when feedback is disabled
-			internal_VADJN_DAC_VALUES_STATIC(col)(row)     <= internal_OUTPUT_REGISTERS(109+col*4+row)(11 downto 0); --Registers 109 - 124: VADJN (Sampling rate NFET bias), used when feedback is disabled
-			internal_WBIAS_DAC_VALUES_STATIC(col)(row)     <= internal_OUTPUT_REGISTERS(125+col*4+row)(11 downto 0); --Registers 125 - 140: WBIAS (trigger width bias), used when feedback is disabled
-		end generate;
-	end generate;
-	gen_feedback_enables_col : for col in 0 to 3 generate
-		gen_feedback_enables_row : for row in 0 to 3 generate
-			internal_WILK_FEEDBACK_ENABLES(col)(row)  <= internal_OUTPUT_REGISTERS(141)(col*4+row); --Registers 141: Wilkinson count rate enable bits, increasing by row, then col
-			internal_VADJ_FEEDBACK_ENABLES(col)(row)  <= internal_OUTPUT_REGISTERS(142)(col*4+row); --Registers 142: Sampling rate feedback enable bits, increasing by row, then col
-			internal_WBIAS_FEEDBACK_ENABLES(col)(row) <= internal_OUTPUT_REGISTERS(143)(col*4+row); --Registers 143: Trigger width  feedback enable bits, increasing by row, then col
-		end generate;
-	end generate;
+	--		internal_WILK_DAC_VALUES_STATIC(col)(row)      <= internal_OUTPUT_REGISTERS( 77+col*4+row)(11 downto 0); --Registers 77 - 92: VDLY (Wilkinson count rate bias), used when feedback is disabled
+	--		internal_VADJP_DAC_VALUES_STATIC(col)(row)     <= internal_OUTPUT_REGISTERS( 93+col*4+row)(11 downto 0); --Registers 93 - 108: VADJP (Sampling rate PFET bias), used when feedback is disabled
+	--		internal_VADJN_DAC_VALUES_STATIC(col)(row)     <= internal_OUTPUT_REGISTERS(109+col*4+row)(11 downto 0); --Registers 109 - 124: VADJN (Sampling rate NFET bias), used when feedback is disabled
+	--		internal_WBIAS_DAC_VALUES_STATIC(col)(row)     <= internal_OUTPUT_REGISTERS(125+col*4+row)(11 downto 0); --Registers 125 - 140: WBIAS (trigger width bias), used when feedback is disabled
+	--	end generate;
+	--end generate;
+	--gen_feedback_enables_col : for col in 0 to 3 generate
+	--	gen_feedback_enables_row : for row in 0 to 3 generate
+	--		internal_WILK_FEEDBACK_ENABLES(col)(row)  <= internal_OUTPUT_REGISTERS(141)(col*4+row); --Registers 141: Wilkinson count rate enable bits, increasing by row, then col
+	--		internal_VADJ_FEEDBACK_ENABLES(col)(row)  <= internal_OUTPUT_REGISTERS(142)(col*4+row); --Registers 142: Sampling rate feedback enable bits, increasing by row, then col
+	--		internal_WBIAS_FEEDBACK_ENABLES(col)(row) <= internal_OUTPUT_REGISTERS(143)(col*4+row); --Registers 143: Trigger width  feedback enable bits, increasing by row, then col
+	--	end generate;
+	--end generate;
 --	AsicIn_MONITOR_WILK_COUNTER_START <= internal_OUTPUT_REGISTERS(144)(0); --Register 144: Bit 0: start wilkinson monitoring counter (edge sensitive)
 --	AsicIn_MONITOR_WILK_COUNTER_RESET <= internal_OUTPUT_REGISTERS(144)(1); --              Bit 1: reset wilkinson monitoring counter
-	gen_feedback_targets_col : for col in 0 to 3 generate
-		gen_feedback_targets_row : for row in 0 to 3 generate
-			internal_WILKINSON_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(145+col*4+row); --Registers 145-160: wilkinson counter target values for feedback
-		end generate;
-	end generate;
+	--gen_feedback_targets_col : for col in 0 to 3 generate
+	--	gen_feedback_targets_row : for row in 0 to 3 generate
+	--		internal_WILKINSON_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(145+col*4+row); --Registers 145-160: wilkinson counter target values for feedback
+	--	end generate;
+	--end generate;
 	internal_FIRST_ALLOWED_WINDOW     <= internal_OUTPUT_REGISTERS(161)(internal_FIRST_ALLOWED_WINDOW'length-1 downto 0);     --Register 161: Bits 8-0: First allowed analog storage window
 	internal_LAST_ALLOWED_WINDOW      <= internal_OUTPUT_REGISTERS(162)(internal_LAST_ALLOWED_WINDOW'length-1 downto 0);      --         162: Bits 8-0: Last allowed analog storage window
 	internal_MAX_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(163)(internal_MAX_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --Register 163: Bits 8-0: Maximum number of windows to look back
