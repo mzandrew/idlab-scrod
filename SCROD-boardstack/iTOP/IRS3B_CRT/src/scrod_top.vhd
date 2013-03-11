@@ -131,6 +131,9 @@ architecture Behavioral of scrod_top is
 	signal internal_TRIGGER_SCALER_COL_SELECT : std_logic_vector(COL_SELECT_BITS-1 downto 0);
 	signal internal_ASIC_SCALERS_TO_READ      : ASIC_TRIGGER_SCALERS;
 
+	--ASIC DAC writing
+	signal PCLK_out	: std_logic_vector(15 downto 0);
+
 	--ASIC DAC values
 	--DAC_setting indicates a global for the whole boardstack
 	--DAC_setting_C_R indicates a (4)(4) to set DACs separately by row/col
@@ -374,6 +377,51 @@ begin
 		USB_WAKEUP                   => USB_WAKEUP,
 		USB_CLKOUT		              => USB_CLKOUT
 	);
+	
+	--ASIC DAC writing module
+	Inst_controlAsicDacProgramming : entity work.controlAsicDacProgramming
+    Port map ( 
+		CLK => internal_CLOCK_50MHz_BUFG,
+		LOAD_DACS => '0',
+		ENABLE_DAC_AUTO_LOADING => '0',
+		PCLK	=> PCLK_out,
+		CLEAR_ALL_REGISTERS => AsicIn_CLEAR_ALL_REGISTERS,
+		SCLK => AsicIn_SERIAL_SHIFT_CLOCK,
+		SIN => AsicIn_SERIAL_INPUT,
+		SHOUT => '0',
+		internal_ASIC_TRIG_THRESH =>internal_ASIC_TRIG_THRESH,
+		internal_ASIC_DAC_BUF_BIASES =>internal_ASIC_DAC_BUF_BIASES,
+		internal_ASIC_DAC_BUF_BIAS_ISEL =>internal_ASIC_DAC_BUF_BIAS_ISEL,
+		internal_ASIC_DAC_BUF_BIAS_VADJP =>internal_ASIC_DAC_BUF_BIAS_VADJP,
+		internal_ASIC_DAC_BUF_BIAS_VADJN =>internal_ASIC_DAC_BUF_BIAS_VADJN,
+		internal_ASIC_VBIAS =>internal_ASIC_VBIAS,
+		internal_ASIC_VBIAS2 =>internal_ASIC_VBIAS2,
+		internal_ASIC_REG_TRG =>internal_ASIC_REG_TRG,
+		internal_ASIC_WBIAS =>internal_ASIC_WBIAS,
+		internal_ASIC_VADJP =>internal_ASIC_VADJP,
+		internal_ASIC_VADJN =>internal_ASIC_VADJN,
+		internal_ASIC_VDLY =>internal_ASIC_VDLY,
+		internal_ASIC_TRG_BIAS =>internal_ASIC_TRG_BIAS,
+		internal_ASIC_TRG_BIAS2 =>internal_ASIC_TRG_BIAS2,
+		internal_ASIC_TRGTHREF =>internal_ASIC_TRGTHREF,
+		internal_ASIC_CMPBIAS =>internal_ASIC_CMPBIAS,
+		internal_ASIC_PUBIAS =>internal_ASIC_PUBIAS,
+		internal_ASIC_SBBIAS =>internal_ASIC_SBBIAS,
+		internal_ASIC_ISEL =>internal_ASIC_ISEL,
+		internal_ASIC_TIMING_SSP_LEADING =>internal_ASIC_TIMING_SSP_LEADING,
+		internal_ASIC_TIMING_SSP_TRAILING =>internal_ASIC_TIMING_SSP_TRAILING,
+		internal_ASIC_TIMING_S1_LEADING =>internal_ASIC_TIMING_S1_LEADING,
+		internal_ASIC_TIMING_S1_TRAILING =>internal_ASIC_TIMING_S1_TRAILING,
+		internal_ASIC_TIMING_S2_LEADING =>internal_ASIC_TIMING_S2_LEADING,
+		internal_ASIC_TIMING_S2_TRAILING =>internal_ASIC_TIMING_S2_TRAILING,
+		internal_ASIC_TIMING_PHASE_LEADING =>internal_ASIC_TIMING_PHASE_LEADING,
+		internal_ASIC_TIMING_PHASE_TRAILING =>internal_ASIC_TIMING_PHASE_TRAILING,
+		internal_ASIC_TIMING_GENERATOR_REG =>internal_ASIC_TIMING_GENERATOR_REG
+	 );
+	 AsicIn_PARALLEL_CLOCK_C0_R <= PCLK_out(3 downto 0);
+	 AsicIn_PARALLEL_CLOCK_C1_R <= PCLK_out(7 downto 4);
+	 AsicIn_PARALLEL_CLOCK_C2_R <= PCLK_out(11 downto 8);
+	 AsicIn_PARALLEL_CLOCK_C3_R <= PCLK_out(15 downto 12);
 
 	--------------------------------------------------
 	-------General registers interfaced to DAQ -------
