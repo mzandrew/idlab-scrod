@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------------
 -- Consists of a few components - 
---   0. trigger definitions (see asic_definitions_irs2_carrier_revA.vhd)
+--   0. trigger definitions (see asic_definitions_irs3b_carrier_revB.vhd)
 --   1. trigger_scaler_timing_generator
 --   2. trigger_scaler_single_channel
 --   3. trigger_scaler_asic                            
@@ -12,7 +12,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_timing_generator is
 	Port ( 
@@ -67,7 +67,7 @@ end Behavioral;
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_single_channel is
 	Port ( 
@@ -119,7 +119,7 @@ end Behavioral;
 ----------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_one_asic is
 	Port ( 
@@ -151,7 +151,7 @@ end Behavioral;
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_top is
 	Port ( 

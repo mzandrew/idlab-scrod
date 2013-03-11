@@ -16,8 +16,8 @@ entity irs2_sampling_control is
 		--Single clock signal in
 		CLOCK_SST                                 : in  std_logic;
 		-- Phase sync signals
-		CLK_SSTx2											 : in std_logic; -- LM: added to synchronize WRADDR - here it needs to select between rising or falling edge
-		phaseA_B												 : in std_logic; -- LM: added
+		CLK_SSTx2                                 : in std_logic; -- LM: added to synchronize WRADDR - here it needs to select between rising or falling edge
+		phaseA_B                                  : in std_logic; -- LM: added
 		--Control from general user registers
 		FIRST_ADDRESS_ALLOWED                     : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 		LAST_ADDRESS_ALLOWED                      : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -43,7 +43,6 @@ architecture Behavioral of irs2_sampling_control is
 	signal phaseA_B_old : std_logic;
 	signal initialize_done : std_logic := '0';
 	signal sync_edge : std_logic;
-	
 	
 	signal CLK_SST_div : std_logic_vector(3 downto 0);
 
