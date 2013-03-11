@@ -8,7 +8,7 @@ use IEEE.STD_LOGIC_1164.all;
 use ieee.math_real.log2;
 use ieee.math_real.ceil;
 
-package asic_definitions_irs2_carrier_revA is
+package asic_definitions_irs3b_carrier_revB is
 	-------------General definitions-------------------------
 	--Number of rows and columns, each site corresponding to one ASIC
 	constant ASICS_PER_ROW      : integer := 4;
@@ -54,8 +54,6 @@ package asic_definitions_irs2_carrier_revA is
 	type Column_Row_Enables is array(ASICS_PER_ROW-1 downto 0) of Row_Enables;
 	-------------Sampling and analog storage related---------
 	subtype ASIC_SST_C is std_logic_vector(ASICS_PER_ROW-1 downto 0);
-	subtype ASIC_SSP_C is std_logic_vector(ASICS_PER_ROW-1 downto 0);
-	subtype ASIC_WRITE_STROBE_C is std_logic_vector(ASICS_PER_ROW-1 downto 0);
 	-------------Digitization related------------------------
 	subtype ASIC_START_C is std_logic_vector(ASICS_PER_ROW-1 downto 0);
 	constant SAMPLES_PER_WINDOW : integer := 64;
@@ -66,8 +64,8 @@ package asic_definitions_irs2_carrier_revA is
 	constant MAXIMUM_SEGMENTS_PER_EVENT : integer := 512;
 	constant SEGMENT_COUNTER_BITS       : integer := integer(ceil(log2(real(MAXIMUM_SEGMENTS_PER_EVENT+1))));
 
-end asic_definitions_irs2_carrier_revA;
+end asic_definitions_irs3b_carrier_revB;
 
-package body asic_definitions_irs2_carrier_revA is
+package body asic_definitions_irs3b_carrier_revB is
 --Nothing in the body (yet) 
-end asic_definitions_irs2_carrier_revA;
+end asic_definitions_irs3b_carrier_revB;

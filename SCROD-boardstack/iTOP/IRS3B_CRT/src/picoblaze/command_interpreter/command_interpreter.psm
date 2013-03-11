@@ -28,10 +28,39 @@ CONSTANT out_WAVEFORM_INTERFACE,            0A ;Bit 0 of this selects waveform d
                                                ;Bit 1 is a veto (active when '1') that stops further events from being accepted.
 
 ;Constants for the I2C interface(s) [these are in the GPR address space]
-CONSTANT out_I2C_BUSA_GPR_ADDRESS1, 00
-CONSTANT out_I2C_BUSA_GPR_ADDRESS0, 01
-CONSTANT  in_I2C_BUSA_GPR_ADDRESS1, 01
-CONSTANT  in_I2C_BUSA_GPR_ADDRESS0, 00
+;I2C bus for SCROD temp sensor and EEPROM
+CONSTANT out_I2C_BUS0_GPR_ADDRESS1, 00 ;Register   1 for the write byte
+CONSTANT out_I2C_BUS0_GPR_ADDRESS0, 01
+CONSTANT  in_I2C_BUS0_GPR_ADDRESS1, 02 ;Register 512 for the  read byte
+CONSTANT  in_I2C_BUS0_GPR_ADDRESS0, 00
+CONSTANT slave_addr_I2C_BUS0_STTS0, 94
+;I2C bus for row 0,1 I2C temp sensor and EEPROM
+CONSTANT out_I2C_BUS3_GPR_ADDRESS1, 01 ;Register 500 for the write byte
+CONSTANT out_I2C_BUS3_GPR_ADDRESS0, F4
+CONSTANT  in_I2C_BUS3_GPR_ADDRESS1, 02 ;Register 515 for the  read byte
+CONSTANT  in_I2C_BUS3_GPR_ADDRESS0, 03
+CONSTANT slave_addr_I2C_BUS3_STTS0, 90
+CONSTANT slave_addr_I2C_BUS3_STTS1, 92
+CONSTANT slave_addr_I2C_BUS3_STTS2, 70
+CONSTANT slave_addr_I2C_BUS3_STTS3, 72
+CONSTANT slave_addr_I2C_BUS3_STTS4, 94
+CONSTANT slave_addr_I2C_BUS3_STTS5, 96
+CONSTANT slave_addr_I2C_BUS3_STTS6, 74
+CONSTANT slave_addr_I2C_BUS3_STTS7, 76
+;I2C bus for row 0,1 I2C temp sensor and EEPROM
+CONSTANT out_I2C_BUS4_GPR_ADDRESS1, 01 ;Register 501 for the write byte
+CONSTANT out_I2C_BUS4_GPR_ADDRESS0, F5
+CONSTANT  in_I2C_BUS4_GPR_ADDRESS1, 02 ;Register 516 for the  read byte
+CONSTANT  in_I2C_BUS4_GPR_ADDRESS0, 04
+CONSTANT slave_addr_I2C_BUS4_STTS0, 90
+CONSTANT slave_addr_I2C_BUS4_STTS1, 92
+CONSTANT slave_addr_I2C_BUS4_STTS2, 70
+CONSTANT slave_addr_I2C_BUS4_STTS3, 72
+CONSTANT slave_addr_I2C_BUS4_STTS4, 94
+CONSTANT slave_addr_I2C_BUS4_STTS5, 96
+CONSTANT slave_addr_I2C_BUS4_STTS6, 74
+CONSTANT slave_addr_I2C_BUS4_STTS7, 76
+
 ;GPR space addresses where the SCROD revision and ID are stored
 CONSTANT out_SCROD_ID_GPR_ADDRESS1, 00
 CONSTANT out_SCROD_ID_GPR_ADDRESS0, A6
@@ -98,10 +127,54 @@ start:
 	;For SCROD, we should read the SCROD ID by I2C and store it in the scratchpad.
 	CALL read_eeprom_id ;Reads SCROD_ID from I2C BUS
 	CALL delay_200us
+
 	;We also disable the temperature sensor I2C timeout feature
+	;This has to be done for all buses with the same temperature sensor
+	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1	
+	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS0_STTS0
 	CALL disable_stts_timeout
-	CALL delay_200us
-	
+	LOAD s1, out_I2C_BUS3_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS3_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS3_STTS0
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS1
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS2
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS3
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS4
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS5
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS6
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS3_STTS7
+	CALL disable_stts_timeout
+	LOAD s1, out_I2C_BUS4_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS4_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS4_STTS0
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS1
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS2
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS3
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS4
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS5
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS6
+	CALL disable_stts_timeout
+	LOAD s4, slave_addr_I2C_BUS4_STTS7
+	CALL disable_stts_timeout
+
+
 	;In the board stack firmware, we start the Wilkinson counter going now
 	CALL start_wilkinson_counters
 	
@@ -970,14 +1043,14 @@ start_packet_checksum:
 	LOAD sE, packet_HEADER3
 	RETURN
 
-;Reads two bytes from I2C BUSA and stores it in 
+;Reads two bytes from I2C BUS0 and stores it in 
 ;scratchpad space 00 and 01.
 ;Also store it in GPR space
 read_eeprom_id:
 	;I2C transaction steps (to register 1)
 	;everything is sent to register 1, so set that up
-	LOAD s1, out_I2C_BUSA_GPR_ADDRESS1	
-	LOAD s0, out_I2C_BUSA_GPR_ADDRESS0
+	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1	
+	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
 	CALL set_current_GPR
 	;(Allow waits of 200 us between steps.)
 	;1. Send start:                     0x0100
@@ -1036,15 +1109,15 @@ read_eeprom_id:
 	CALL write_to_current_GPR
 	CALL delay_200us
 	;8. Store the byte that is read back to scratchpad
-	LOAD s1, in_I2C_BUSA_GPR_ADDRESS1
-	LOAD s0, in_I2C_BUSA_GPR_ADDRESS0
+	LOAD s1, in_I2C_BUS0_GPR_ADDRESS1
+	LOAD s0, in_I2C_BUS0_GPR_ADDRESS0
 	CALL set_current_GPR
 	INPUT s0, in_GPR_DATA0
 	STORE s0, sp_addr_SCROD_ID0
 
 	;9. Setup to read byte
-	LOAD s1, out_I2C_BUSA_GPR_ADDRESS1
-	LOAD s0, out_I2C_BUSA_GPR_ADDRESS0
+	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
 	CALL set_current_GPR
 	LOAD s1, 00
 	LOAD s0, 00
@@ -1055,14 +1128,14 @@ read_eeprom_id:
 	CALL write_to_current_GPR
 	CALL delay_200us
 	;10. Store the byte that is read back to scratchpad
-	LOAD s0, in_I2C_BUSA_GPR_ADDRESS0
-	LOAD s1, in_I2C_BUSA_GPR_ADDRESS1
+	LOAD s0, in_I2C_BUS0_GPR_ADDRESS0
+	LOAD s1, in_I2C_BUS0_GPR_ADDRESS1
 	CALL set_current_GPR
 	INPUT s0, in_GPR_DATA0
 	STORE s0, sp_addr_SCROD_ID1	
 	;11. Setup to read byte
-	LOAD s1, out_I2C_BUSA_GPR_ADDRESS1
-	LOAD s0, out_I2C_BUSA_GPR_ADDRESS0
+	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
 	CALL set_current_GPR
 	LOAD s1, 00
 	LOAD s0, 00
@@ -1073,14 +1146,14 @@ read_eeprom_id:
 	CALL write_to_current_GPR
 	CALL delay_200us
 	;12. Store the byte that is read back to scratchpad
-	LOAD s0, in_I2C_BUSA_GPR_ADDRESS0
-	LOAD s1, in_I2C_BUSA_GPR_ADDRESS1
+	LOAD s0, in_I2C_BUS0_GPR_ADDRESS0
+	LOAD s1, in_I2C_BUS0_GPR_ADDRESS1
 	CALL set_current_GPR
 	INPUT s0, in_GPR_DATA0
 	STORE s0, sp_addr_SCROD_REV
 	;13. Send stop                     : 0x1000
-	LOAD s0, out_I2C_BUSA_GPR_ADDRESS0
-	LOAD s1, out_I2C_BUSA_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
+	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1
 	CALL set_current_GPR
 	LOAD s1, 10
 	LOAD s0, 00
@@ -1119,25 +1192,20 @@ read_eeprom_id:
 
 ;Disables the timeout feature on the STTS I2C temperature sensor
 disable_stts_timeout:
-	;I2C transaction steps (to register 1)
-	;everything is sent to register 1, so set that up
-	LOAD s1, out_I2C_BUSA_GPR_ADDRESS1	
-	LOAD s0, out_I2C_BUSA_GPR_ADDRESS0
-	CALL set_current_GPR
 	;(Allow waits of 200 us between steps.)
 	;1. Send start:                     0x0100
 	LOAD s1, 01	
 	LOAD s0, 00
 	CALL write_to_current_GPR
 	CALL delay_200us
-	;2. Setup send device addr + write: 0x0094
+	;2. Setup send device addr + write: use address based on s4 input
 	LOAD s1, 00
-	LOAD s0, 94
+	LOAD s0, s4
 	CALL write_to_current_GPR
 	CALL delay_200us
-	;         Send device addr + write: 0x0294
+	;         Send device addr + write: use address based on s4 input
 	LOAD s1, 02
-	LOAD s0, 94
+	LOAD s0, s4
 	CALL write_to_current_GPR
 	CALL delay_200us
 	;3. Setup send register address   : 0x0022
@@ -1164,6 +1232,7 @@ disable_stts_timeout:
 	LOAD s1, 10
 	LOAD s0, 00
 	CALL write_to_current_GPR
+	CALL delay_200us
 	RETURN
 
 ;Start up the Wilkinson counters

@@ -109,8 +109,8 @@ entity irs2_sampling_digitizing_readout is
 --		 debug_state_i2c_busB : in std_logic_vector(3 downto 0);
 --		 address_debug : in std_logic_vector(6 downto 0);
 --		 pos_debug : in std_logic_vector(2 downto 0);
-		FORCE_ADDRESS_ASIC		: in std_logic_vector(3 downto 0);
-		FORCE_ADDRESS_CHANNEL				: in std_logic_vector(2 downto 0)
+		FORCE_ADDRESS_ASIC      : in std_logic_vector(3 downto 0);
+		FORCE_ADDRESS_CHANNEL   : in std_logic_vector(2 downto 0)
  
 	);
 end irs2_sampling_digitizing_readout;
@@ -208,34 +208,34 @@ signal internal_READOUT_CHANNEL_ADDRESS : STD_LOGIC_VECTOR(CH_SELECT_BITS-1 down
 	end component;
 
 	component update_sample_addr
-		port(
-		CLOCK											: in std_logic;
-		new_sample_address_reached						: out std_logic; --LM: updating sample address 
-		START_NEW_SAMPLE_ADDRESS							: in std_logic; --LM: start new sample address update
-		SAMPLE_COUNTER_RESET								: in std_logic;
-		ASIC_READOUT_CHANNEL_ADDRESS       			: in std_logic_vector(CH_SELECT_BITS-1 downto 0);--LM errors -- see later
-		ASIC_READOUT_SAMPLE_ADDRESS         		: in std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0);
+	port(
+		CLOCK                        : in std_logic;
+		new_sample_address_reached   : out std_logic; --LM: updating sample address 
+		START_NEW_SAMPLE_ADDRESS     : in std_logic; --LM: start new sample address update
+		SAMPLE_COUNTER_RESET         : in std_logic;
+		ASIC_READOUT_CHANNEL_ADDRESS : in std_logic_vector(CH_SELECT_BITS-1 downto 0);--LM errors -- see later
+		ASIC_READOUT_SAMPLE_ADDRESS  : in std_logic_vector(SAMPLE_SELECT_BITS-1 downto 0);
 		-- DO (serial/increment interface for sample / channel select)
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK  :	  out std_logic;
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR : out std_logic;
-	  AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT  : out std_logic
-		);
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic;
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR                : out std_logic;
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT       : out std_logic
+	);
 	end component;
 
 
 	component update_SMPSELANY_GPIO
-		port(
-		CLOCK											: in std_logic;
-		DO_RESET_SMPSEL							:  in std_logic; --LM: start GPIO to reset SMPSEL_ANY
-		DO_SET_SMPSEL								:  in std_logic; --LM: start GPIO to set SMPSEL_ANY
-		ENABLE_SET 									: in std_logic;
-		SELECT_CARRIER 							: in std_logic;
-		FORCE_ADDRESS_ASIC_LOW				: in std_logic_vector(2 downto 0);
-		FORCE_ADDRESS_CHANNEL				: in std_logic_vector(2 downto 0);
-		smpsel_done									:  out std_logic; 
-		GPIO_CAL_SCL									:  out std_logic; 
-		GPIO_CAL_SDA									:  inout std_logic
-			);
+	port(
+		CLOCK                  : in std_logic;
+		DO_RESET_SMPSEL        : in std_logic; --LM: start GPIO to reset SMPSEL_ANY
+		DO_SET_SMPSEL          : in std_logic; --LM: start GPIO to set SMPSEL_ANY
+		ENABLE_SET             : in std_logic;
+		SELECT_CARRIER         : in std_logic;
+		FORCE_ADDRESS_ASIC_LOW : in std_logic_vector(2 downto 0);
+		FORCE_ADDRESS_CHANNEL  : in std_logic_vector(2 downto 0);
+		smpsel_done            : out std_logic; 
+		GPIO_CAL_SCL           : out std_logic; 
+		GPIO_CAL_SDA           : inout std_logic
+	);
 	end component;
 
 	signal internal_ASIC_WILK_RAMP_ACTIVE_dummy : std_logic;
