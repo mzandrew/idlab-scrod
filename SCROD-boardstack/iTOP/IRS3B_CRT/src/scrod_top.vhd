@@ -227,67 +227,67 @@ begin
 		READ_REGISTERS  => internal_I2C_READ_REGISTERS
 	);	
 
---	--Interface to the ASIC serial-to-parallel interfaces
---	map_dac_interfaces : irs3b_dac_interface
---	port map( 
---		--Clock and clock enable used to run the interface
---		CLOCK                      => internal_CLOCK_50MHz_BUFG, 
---		CLOCK_ENABLE               => '1', --We can slow this down to whatever it needs to be...
---		--Direct connections to the IRS3B register programming interface
---		AsicIn_PARALLEL_CLOCK_C0_R => AsicIn_PARALLEL_CLOCK_C0_R,
---		AsicIn_PARALLEL_CLOCK_C1_R => AsicIn_PARALLEL_CLOCK_C1_R,
---		AsicIn_PARALLEL_CLOCK_C2_R => AsicIn_PARALLEL_CLOCK_C2_R,
---		AsicIn_PARALLEL_CLOCK_C3_R => AsicIn_PARALLEL_CLOCK_C3_R,
---		AsicIn_CLEAR_ALL_REGISTERS => AsicIn_CLEAR_ALL_REGISTERS,
---		AsicIn_SERIAL_SHIFT_CLOCK  => AsicIn_SERIAL_SHIFT_CLOCK,
---		AsicIn_SERIAL_INPUT        => AsicIn_SERIAL_INPUT,
---		--Connections to the external DACs for VADJP/VADJN
---		I2C_DAC_SCL_R01            => I2C_DAC_SCL_R01,
---		I2C_DAC_SDA_R01            => I2C_DAC_SDA_R01,
---		I2C_DAC_SCL_R23            => I2C_DAC_SCL_R23,
---		I2C_DAC_SDA_R23            => I2C_DAC_SDA_R23,
---		--A toggle to select the internal or external DACs
---		USE_EXTERNAL_VADJ_DACS     => '0', --Temporarily disabled
---		--DAC values coming from general purpose registers
---		ASIC_TRIG_THRESH           => internal_ASIC_TRIG_THRESH,
---		ASIC_DAC_BUF_BIASES        => internal_ASIC_DAC_BUF_BIASES,    
---		ASIC_DAC_BUF_BIAS_ISEL     => internal_ASIC_DAC_BUF_BIAS_ISEL, 
---		ASIC_DAC_BUF_BIAS_VADJP    => internal_ASIC_DAC_BUF_BIAS_VADJP,
---		ASIC_DAC_BUF_BIAS_VADJN    => internal_ASIC_DAC_BUF_BIAS_VADJN,
---		ASIC_VBIAS                 => internal_ASIC_VBIAS,             
---		ASIC_VBIAS2                => internal_ASIC_VBIAS2,            
---		ASIC_WBIAS                 => internal_ASIC_WBIAS,             
---		ASIC_VADJP                 => internal_ASIC_VADJP,             
---		ASIC_VADJN                 => internal_ASIC_VADJN,             
---		ASIC_VDLY                  => internal_ASIC_VDLY,              
---		ASIC_TRG_BIAS              => internal_ASIC_TRG_BIAS,          
---		ASIC_TRG_BIAS2             => internal_ASIC_TRG_BIAS2,         
---		ASIC_TRGTHREF              => internal_ASIC_TRGTHREF,          
---		ASIC_CMPBIAS               => internal_ASIC_CMPBIAS,           
---		ASIC_PUBIAS                => internal_ASIC_PUBIAS,            
---		ASIC_SBBIAS                => internal_ASIC_SBBIAS,            
---		ASIC_ISEL                  => internal_ASIC_ISEL,              
---		--DAC values coming from feedback loops
---		WBIAS_FB                   => internal_WBIAS_FB,
---		VDLY_FB                    => internal_VDLY_FB,
---		VADJP_FB                   => internal_VADJP_FB,
---		VADJN_FB                   => internal_VADJN_FB,
---		--Multiplex enables to choose between the two above categories
---		VDLY_FEEDBACK_ENABLES      => internal_VDLY_FEEDBACK_ENABLES,
---		VADJ_FEEDBACK_ENABLES      => internal_VADJ_FEEDBACK_ENABLES,
---		WBIAS_FEEDBACK_ENABLES     => internal_WBIAS_FEEDBACK_ENABLES,
---		--Other registers and timing-related signals that live in the ASIC internal registers
---		ASIC_TIMING_SSP_LEADING    => internal_ASIC_TIMING_SSP_LEADING,
---		ASIC_TIMING_SSP_TRAILING   => internal_ASIC_TIMING_SSP_TRAILING,  
---		ASIC_TIMING_S1_LEADING     => internal_ASIC_TIMING_S1_LEADING, 
---		ASIC_TIMING_S1_TRAILING    => internal_ASIC_TIMING_S1_TRAILING,   
---		ASIC_TIMING_S2_LEADING     => internal_ASIC_TIMING_S2_LEADING,    
---		ASIC_TIMING_S2_TRAILING    => internal_ASIC_TIMING_S2_TRAILING,   
---		ASIC_TIMING_PHASE_LEADING  => internal_ASIC_TIMING_PHASE_LEADING, 
---		ASIC_TIMING_PHASE_TRAILING => internal_ASIC_TIMING_PHASE_TRAILING,
---		ASIC_TIMING_GENERATOR_REG  => internal_ASIC_TIMING_GENERATOR_REG, 
---		ASIC_REG_TRG               => internal_ASIC_REG_TRG              
---	);
+	--Interface to the ASIC serial-to-parallel interfaces
+	map_dac_interfaces : entity work.irs3b_dac_interface
+	port map( 
+		--Clock and clock enable used to run the interface
+		CLOCK                      => internal_CLOCK_50MHz_BUFG, 
+		CLOCK_ENABLE               => '1', --We can slow this down to whatever it needs to be...
+		--Direct connections to the IRS3B register programming interface
+		AsicIn_PARALLEL_CLOCK_C0_R => AsicIn_PARALLEL_CLOCK_C0_R,
+		AsicIn_PARALLEL_CLOCK_C1_R => AsicIn_PARALLEL_CLOCK_C1_R,
+		AsicIn_PARALLEL_CLOCK_C2_R => AsicIn_PARALLEL_CLOCK_C2_R,
+		AsicIn_PARALLEL_CLOCK_C3_R => AsicIn_PARALLEL_CLOCK_C3_R,
+		AsicIn_CLEAR_ALL_REGISTERS => AsicIn_CLEAR_ALL_REGISTERS,
+		AsicIn_SERIAL_SHIFT_CLOCK  => AsicIn_SERIAL_SHIFT_CLOCK,
+		AsicIn_SERIAL_INPUT        => AsicIn_SERIAL_INPUT,
+		--Connections to the external DACs for VADJP/VADJN
+		I2C_DAC_SCL_R01            => I2C_DAC_SCL_R01,
+		I2C_DAC_SDA_R01            => I2C_DAC_SDA_R01,
+		I2C_DAC_SCL_R23            => I2C_DAC_SCL_R23,
+		I2C_DAC_SDA_R23            => I2C_DAC_SDA_R23,
+		--A toggle to select the internal or external DACs
+		USE_EXTERNAL_VADJ_DACS     => '0', --Temporarily disabled
+		--DAC values coming from general purpose registers
+		ASIC_TRIG_THRESH           => internal_ASIC_TRIG_THRESH,
+		ASIC_DAC_BUF_BIASES        => internal_ASIC_DAC_BUF_BIASES,    
+		ASIC_DAC_BUF_BIAS_ISEL     => internal_ASIC_DAC_BUF_BIAS_ISEL, 
+		ASIC_DAC_BUF_BIAS_VADJP    => internal_ASIC_DAC_BUF_BIAS_VADJP,
+		ASIC_DAC_BUF_BIAS_VADJN    => internal_ASIC_DAC_BUF_BIAS_VADJN,
+		ASIC_VBIAS                 => internal_ASIC_VBIAS,             
+		ASIC_VBIAS2                => internal_ASIC_VBIAS2,            
+		ASIC_WBIAS                 => internal_ASIC_WBIAS,             
+		ASIC_VADJP                 => internal_ASIC_VADJP,             
+		ASIC_VADJN                 => internal_ASIC_VADJN,             
+		ASIC_VDLY                  => internal_ASIC_VDLY,              
+		ASIC_TRG_BIAS              => internal_ASIC_TRG_BIAS,          
+		ASIC_TRG_BIAS2             => internal_ASIC_TRG_BIAS2,         
+		ASIC_TRGTHREF              => internal_ASIC_TRGTHREF,          
+		ASIC_CMPBIAS               => internal_ASIC_CMPBIAS,           
+		ASIC_PUBIAS                => internal_ASIC_PUBIAS,            
+		ASIC_SBBIAS                => internal_ASIC_SBBIAS,            
+		ASIC_ISEL                  => internal_ASIC_ISEL,              
+		--DAC values coming from feedback loops
+		WBIAS_FB                   => internal_WBIAS_FB,
+		VDLY_FB                    => internal_VDLY_FB,
+		VADJP_FB                   => internal_VADJP_FB,
+		VADJN_FB                   => internal_VADJN_FB,
+		--Multiplex enables to choose between the two above categories
+		VDLY_FEEDBACK_ENABLES      => internal_VDLY_FEEDBACK_ENABLES,
+		VADJ_FEEDBACK_ENABLES      => internal_VADJ_FEEDBACK_ENABLES,
+		WBIAS_FEEDBACK_ENABLES     => internal_WBIAS_FEEDBACK_ENABLES,
+		--Other registers and timing-related signals that live in the ASIC internal registers
+		ASIC_TIMING_SSP_LEADING    => internal_ASIC_TIMING_SSP_LEADING,
+		ASIC_TIMING_SSP_TRAILING   => internal_ASIC_TIMING_SSP_TRAILING,  
+		ASIC_TIMING_S1_LEADING     => internal_ASIC_TIMING_S1_LEADING, 
+		ASIC_TIMING_S1_TRAILING    => internal_ASIC_TIMING_S1_TRAILING,   
+		ASIC_TIMING_S2_LEADING     => internal_ASIC_TIMING_S2_LEADING,    
+		ASIC_TIMING_S2_TRAILING    => internal_ASIC_TIMING_S2_TRAILING,   
+		ASIC_TIMING_PHASE_LEADING  => internal_ASIC_TIMING_PHASE_LEADING, 
+		ASIC_TIMING_PHASE_TRAILING => internal_ASIC_TIMING_PHASE_TRAILING,
+		ASIC_TIMING_GENERATOR_REG  => internal_ASIC_TIMING_GENERATOR_REG, 
+		ASIC_REG_TRG               => internal_ASIC_REG_TRG              
+	);
 	
 	--Scaler monitors for the ASIC channels
 	--First we need to map the scalers into rows/cols
@@ -544,13 +544,6 @@ begin
 
 
 
-	--UNASSIGNED REGISTERS
---	internal_I2C_WRITE_REGISTERS(3)        <= internal_OUTPUT_REGISTERS(4); --Register 4: I2C interface for row 0,1 temperature sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
---	internal_I2C_WRITE_REGISTERS(4)        <= internal_OUTPUT_REGISTERS(5); --Register 5: I2C interface for row 2,3 temperature sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
---	internal_I2C_WRITE_REGISTERS(5)        <= internal_OUTPUT_REGISTERS(6); --Register 6: I2C interface for row 0,1 GPIO serial for ASIC shift out signals
---	internal_I2C_WRITE_REGISTERS(6)        <= internal_OUTPUT_REGISTERS(7); --Register 7: I2C interface for row 2,3 GPIO serial for ASIC shift out signals
---	internal_I2C_WRITE_REGISTERS(7)        <= internal_OUTPUT_REGISTERS(8); --Register 8: I2C interface for interconnect rev C GPIO to control calibration signals
-	
 --	AsicIn_MONITOR_WILK_COUNTER_START <= internal_OUTPUT_REGISTERS(144)(0); --Register 144: Bit 0: start wilkinson monitoring counter (edge sensitive)
 --	AsicIn_MONITOR_WILK_COUNTER_RESET <= internal_OUTPUT_REGISTERS(144)(1); --              Bit 1: reset wilkinson monitoring counter
 	--gen_feedback_targets_col : for col in 0 to 3 generate
@@ -605,45 +598,16 @@ begin
 	internal_INPUT_REGISTERS(N_GPR +   1) <= internal_I2C_READ_REGISTERS(1); --Register 513: I2C interface for SCROD fiber 0 transceiver
 	internal_INPUT_REGISTERS(N_GPR +   2) <= internal_I2C_READ_REGISTERS(2); --Register 514: I2C interface for SCROD fiber 1 transceiver
 	internal_INPUT_REGISTERS(N_GPR +   3) <= internal_I2C_READ_REGISTERS(3); --Register 515: I2C interface for row 0,1 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
-	internal_INPUT_REGISTERS(N_GPR +   4) <= internal_I2C_READ_REGISTERS(4); --Register 514: I2C interface for row 2,3 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
-	internal_INPUT_REGISTERS(N_GPR +   5) <= internal_I2C_READ_REGISTERS(5); --Register 515: I2C interface for row 0,1 GPIO serial for ASIC shift out signals
-	internal_INPUT_REGISTERS(N_GPR +   6) <= internal_I2C_READ_REGISTERS(6); --Register 514: I2C interface for row 2,3 GPIO serial for ASIC shift out signals
-	internal_INPUT_REGISTERS(N_GPR +   7) <= internal_I2C_READ_REGISTERS(7); --Register 515: I2C interface for interconnect rev C GPIO to control cal signals
+	internal_INPUT_REGISTERS(N_GPR +   4) <= internal_I2C_READ_REGISTERS(4); --Register 516: I2C interface for row 2,3 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
+	internal_INPUT_REGISTERS(N_GPR +   5) <= internal_I2C_READ_REGISTERS(5); --Register 517: I2C interface for row 0,1 GPIO serial for ASIC shift out signals
+	internal_INPUT_REGISTERS(N_GPR +   6) <= internal_I2C_READ_REGISTERS(6); --Register 518: I2C interface for row 2,3 GPIO serial for ASIC shift out signals
+	internal_INPUT_REGISTERS(N_GPR +   7) <= internal_I2C_READ_REGISTERS(7); --Register 519: I2C interface for interconnect rev C GPIO to control cal signals
+	                                                                         --Register 520-527: ASIC channel scalers, with ASIC chosen by write register 4
+	gen_TRG_SCALER_CH : for ch in 0 to 7 generate
+		internal_INPUT_REGISTERS(N_GPR + 8 + ch) <= internal_ASIC_SCALERS_TO_READ(ch);
+	end generate;
 
-
---	internal_INPUT_REGISTERS(N_GPR+ 3) <= internal_ASIC_SCALERS_TO_READ(0);                                                                     --Register 258: Trigger scalers, ch0
---	internal_INPUT_REGISTERS(N_GPR+ 4) <= internal_ASIC_SCALERS_TO_READ(1);                                                                     --Register 259: Trigger scalers, ch1
---	internal_INPUT_REGISTERS(N_GPR+ 5) <= internal_ASIC_SCALERS_TO_READ(2);                                                                     --Register 260: Trigger scalers, ch2
---	internal_INPUT_REGISTERS(N_GPR+ 6) <= internal_ASIC_SCALERS_TO_READ(3);                                                                     --Register 261: Trigger scalers, ch3
---	internal_INPUT_REGISTERS(N_GPR+ 7) <= internal_ASIC_SCALERS_TO_READ(4);                                                                     --Register 262: Trigger scalers, ch4
---	internal_INPUT_REGISTERS(N_GPR+ 8) <= internal_ASIC_SCALERS_TO_READ(5);                                                                     --Register 263: Trigger scalers, ch5
---	internal_INPUT_REGISTERS(N_GPR+ 9) <= internal_ASIC_SCALERS_TO_READ(6);                                                                     --Register 264: Trigger scalers, ch6
---	internal_INPUT_REGISTERS(N_GPR+10) <= internal_ASIC_SCALERS_TO_READ(7);                                                                     --Register 265: Trigger scalers, ch7
---	internal_INPUT_REGISTERS(N_GPR+11) <= internal_DAC_UPDATE_STATUSES(0)(1) & internal_DAC_UPDATE_STATUSES(0)(0);                              --Register 267: DAC statuses for col0, row0, upper 8 bits are dac2, lower are dac1
---	internal_INPUT_REGISTERS(N_GPR+12) <= internal_DAC_UPDATE_STATUSES(0)(3) & internal_DAC_UPDATE_STATUSES(0)(2);                              --Register 268: DAC statuses for col0, row1
---	internal_INPUT_REGISTERS(N_GPR+13) <= internal_DAC_UPDATE_STATUSES(0)(5) & internal_DAC_UPDATE_STATUSES(0)(4);                              --Register 269: DAC statuses for col0, row2
---	internal_INPUT_REGISTERS(N_GPR+14) <= internal_DAC_UPDATE_STATUSES(0)(7) & internal_DAC_UPDATE_STATUSES(0)(6);                              --Register 270: DAC statuses for col0, row3
---	internal_INPUT_REGISTERS(N_GPR+15) <= internal_DAC_UPDATE_STATUSES(1)(1) & internal_DAC_UPDATE_STATUSES(1)(0);                              --Register 271: DAC statuses for col1, row0
---	internal_INPUT_REGISTERS(N_GPR+16) <= internal_DAC_UPDATE_STATUSES(1)(3) & internal_DAC_UPDATE_STATUSES(1)(2);                              --Register 272: DAC statuses for col1, row1
---	internal_INPUT_REGISTERS(N_GPR+17) <= internal_DAC_UPDATE_STATUSES(1)(5) & internal_DAC_UPDATE_STATUSES(1)(4);                              --Register 273: DAC statuses for col1, row2
---	internal_INPUT_REGISTERS(N_GPR+18) <= internal_DAC_UPDATE_STATUSES(1)(7) & internal_DAC_UPDATE_STATUSES(1)(6);                              --Register 274: DAC statuses for col1, row3
---	internal_INPUT_REGISTERS(N_GPR+19) <= internal_DAC_UPDATE_STATUSES(2)(1) & internal_DAC_UPDATE_STATUSES(2)(0);                              --Register 275: DAC statuses for col2, row0
---	internal_INPUT_REGISTERS(N_GPR+20) <= internal_DAC_UPDATE_STATUSES(2)(3) & internal_DAC_UPDATE_STATUSES(2)(2);                              --Register 276: DAC statuses for col2, row1
---	internal_INPUT_REGISTERS(N_GPR+21) <= internal_DAC_UPDATE_STATUSES(2)(5) & internal_DAC_UPDATE_STATUSES(2)(4);                              --Register 277: DAC statuses for col2, row2
---	internal_INPUT_REGISTERS(N_GPR+22) <= internal_DAC_UPDATE_STATUSES(2)(7) & internal_DAC_UPDATE_STATUSES(2)(6);                              --Register 278: DAC statuses for col2, row3
---	internal_INPUT_REGISTERS(N_GPR+23) <= internal_DAC_UPDATE_STATUSES(3)(1) & internal_DAC_UPDATE_STATUSES(3)(0);                              --Register 279: DAC statuses for col3, row0
---	internal_INPUT_REGISTERS(N_GPR+24) <= internal_DAC_UPDATE_STATUSES(3)(3) & internal_DAC_UPDATE_STATUSES(3)(2);                              --Register 280: DAC statuses for col3, row1
---	internal_INPUT_REGISTERS(N_GPR+25) <= internal_DAC_UPDATE_STATUSES(3)(5) & internal_DAC_UPDATE_STATUSES(3)(4);                              --Register 281: DAC statuses for col3, row2
---	internal_INPUT_REGISTERS(N_GPR+26) <= internal_DAC_UPDATE_STATUSES(3)(7) & internal_DAC_UPDATE_STATUSES(3)(6);                              --Register 282: DAC statuses for col3, row3
---	gen_feedback_readbacks_col : for col in 0 to 3 generate
---		gen_feedback_readbacks_row : for row in 0 to 3 generate                                                                                  --All the following increase by row, then by col
---			internal_INPUT_REGISTERS(N_GPR+27+col*4+row) <= "0000" & internal_WILK_DAC_VALUES_FEEDBACK(col)(row);                                 --Registers 283-298: Feedback DAC values for VDLY  (Wilkinson count rate)
---			internal_INPUT_REGISTERS(N_GPR+43+col*4+row) <= "0000" & internal_VADJP_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 299-314: Feedback DAC values for VADJP (sampling rate PFET)
---			internal_INPUT_REGISTERS(N_GPR+59+col*4+row) <= "0000" & internal_VADJN_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 315-330: Feedback DAC values for VADJN (sampling rate NFET)
---			internal_INPUT_REGISTERS(N_GPR+75+col*4+row) <= "0000" & internal_WBIAS_DAC_VALUES_FEEDBACK(col)(row);                                --Registers 331-346: Feedback DAC values for WBIAS (Trigger width adjust)
---			internal_INPUT_REGISTERS(N_GPR+91+col*4+row) <= internal_WILKINSON_COUNTERS(col)(row);                                                --Registers 347-362: Wilkinson counters
---		end generate;
---	end generate;
 --	internal_INPUT_REGISTERS(N_GPR+107) <= internal_EVENT_NUMBER(15 downto  0);                                                                 --Register 363: LSBs of current event number
 --	internal_INPUT_REGISTERS(N_GPR+108) <= internal_EVENT_NUMBER(31 downto 16);                                                                 --Register 364: MSBs of current event number
+
 end Behavioral;
