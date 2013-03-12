@@ -151,7 +151,8 @@ begin
 	-- Nominal version with multiplexing
 	map_bufgmux_sst : bufgmux
 	port map (
-		I0 => internal_CLK_FIN_SST,
+--		I0 => internal_CLK_FIN_SST,
+		I0 => internal_FTSW_DERIVED_SST,
 		I1 => internal_BOARD_DERIVED_SST,
 		O  => internal_CLOCK_SST,
 		S  => USE_LOCAL_CLOCK		

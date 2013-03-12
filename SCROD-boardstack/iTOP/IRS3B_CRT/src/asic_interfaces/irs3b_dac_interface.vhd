@@ -73,7 +73,16 @@ end irs3b_dac_interface;
 architecture Behavioral of irs3b_dac_interface is
 
 begin
-
-
+	AsicIn_PARALLEL_CLOCK_C0_R <= (others => '0');
+	AsicIn_PARALLEL_CLOCK_C1_R <= (others => '0');
+	AsicIn_PARALLEL_CLOCK_C2_R <= (others => '0');
+	AsicIn_PARALLEL_CLOCK_C3_R <= (others => '0');
+	AsicIn_CLEAR_ALL_REGISTERS <= '0';
+	AsicIn_SERIAL_SHIFT_CLOCK  <= '0';
+	AsicIn_SERIAL_INPUT        <= '0';
+	I2C_DAC_SCL_R01            <= '0';
+	I2C_DAC_SDA_R01            <= '0';
+	I2C_DAC_SCL_R23            <= '0';
+	I2C_DAC_SDA_R23            <= '0';
+	
 end Behavioral;
-
