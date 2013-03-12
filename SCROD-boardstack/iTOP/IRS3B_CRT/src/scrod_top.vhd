@@ -64,6 +64,16 @@ entity scrod_top is
 		AsicIn_CLEAR_ALL_REGISTERS    : out std_logic;
 		AsicIn_SERIAL_SHIFT_CLOCK     : out std_logic;
 		AsicIn_SERIAL_INPUT           : out std_logic;
+		--ASIC Wilkinson monitor signals
+		AsicOut_MONITOR_WILK_COUNTER_C0_R : in std_logic_vector(3 downto 0);
+		AsicOut_MONITOR_WILK_COUNTER_C1_R : in std_logic_vector(3 downto 0);
+		AsicOut_MONITOR_WILK_COUNTER_C2_R : in std_logic_vector(3 downto 0);
+		AsicOut_MONITOR_WILK_COUNTER_C3_R : in std_logic_vector(3 downto 0);
+		--ASIC Sampling rate monitor signals
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R : in std_logic_vector(3 downto 0);
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R : in std_logic_vector(3 downto 0);
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R : in std_logic_vector(3 downto 0);
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R : in std_logic_vector(3 downto 0);
 		
 		---------------------------------------------
 		------------ Monitoring/feedbacks -----------
@@ -158,15 +168,17 @@ architecture Behavioral of scrod_top is
 	signal internal_ASIC_SBBIAS              : DAC_setting;
 	signal internal_ASIC_ISEL                : DAC_setting;
 	--Timing settings go here too, since they're set with the DACs
-	signal internal_ASIC_TIMING_SSP_LEADING    : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_SSP_TRAILING   : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_S1_LEADING     : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_S1_TRAILING    : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_S2_LEADING     : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_S2_TRAILING    : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_PHASE_LEADING  : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_PHASE_TRAILING : Timing_setting_C_R;
-	signal internal_ASIC_TIMING_GENERATOR_REG  : Timing_setting;
+	signal internal_ASIC_TIMING_SSP_LEADING      : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_SSP_TRAILING     : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_WR_STRB_LEADING  : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_WR_STRB_TRAILING : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_S1_LEADING       : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_S1_TRAILING      : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_S2_LEADING       : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_S2_TRAILING      : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_PHASE_LEADING    : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_PHASE_TRAILING   : Timing_setting_C_R;
+	signal internal_ASIC_TIMING_GENERATOR_REG    : Timing_setting;
 	--DAC signals that come from the feedback sources
 	signal internal_WBIAS_FB              : DAC_setting_C_R;
 	signal internal_VDLY_FB               : DAC_setting_C_R;
@@ -176,6 +188,10 @@ architecture Behavioral of scrod_top is
    signal internal_VDLY_FEEDBACK_ENABLES  : Column_Row_Enables;
 	signal internal_VADJ_FEEDBACK_ENABLES  : Column_Row_Enables;
 	signal internal_WBIAS_FEEDBACK_ENABLES : Column_Row_Enables;
+
+	--Monitoring 
+	signal internal_WILKINSON_TARGETS  : Column_Row_Wilkinson_Counters;
+	signal internal_WILKINSON_COUNTERS : Column_Row_Wilkinson_Counters;
 	
 	--Connections to the general purpose registers
 	signal internal_OUTPUT_REGISTERS : GPR;
@@ -277,16 +293,18 @@ begin
 		VADJ_FEEDBACK_ENABLES      => internal_VADJ_FEEDBACK_ENABLES,
 		WBIAS_FEEDBACK_ENABLES     => internal_WBIAS_FEEDBACK_ENABLES,
 		--Other registers and timing-related signals that live in the ASIC internal registers
-		ASIC_TIMING_SSP_LEADING    => internal_ASIC_TIMING_SSP_LEADING,
-		ASIC_TIMING_SSP_TRAILING   => internal_ASIC_TIMING_SSP_TRAILING,  
-		ASIC_TIMING_S1_LEADING     => internal_ASIC_TIMING_S1_LEADING, 
-		ASIC_TIMING_S1_TRAILING    => internal_ASIC_TIMING_S1_TRAILING,   
-		ASIC_TIMING_S2_LEADING     => internal_ASIC_TIMING_S2_LEADING,    
-		ASIC_TIMING_S2_TRAILING    => internal_ASIC_TIMING_S2_TRAILING,   
-		ASIC_TIMING_PHASE_LEADING  => internal_ASIC_TIMING_PHASE_LEADING, 
-		ASIC_TIMING_PHASE_TRAILING => internal_ASIC_TIMING_PHASE_TRAILING,
-		ASIC_TIMING_GENERATOR_REG  => internal_ASIC_TIMING_GENERATOR_REG, 
-		ASIC_REG_TRG               => internal_ASIC_REG_TRG              
+		ASIC_TIMING_SSP_LEADING      => internal_ASIC_TIMING_SSP_LEADING,
+		ASIC_TIMING_SSP_TRAILING     => internal_ASIC_TIMING_SSP_TRAILING,  
+		ASIC_TIMING_WR_STRB_LEADING  => internal_ASIC_TIMING_WR_STRB_LEADING,
+		ASIC_TIMING_WR_STRB_TRAILING => internal_ASIC_TIMING_WR_STRB_TRAILING,
+		ASIC_TIMING_S1_LEADING       => internal_ASIC_TIMING_S1_LEADING, 
+		ASIC_TIMING_S1_TRAILING      => internal_ASIC_TIMING_S1_TRAILING,   
+		ASIC_TIMING_S2_LEADING       => internal_ASIC_TIMING_S2_LEADING,    
+		ASIC_TIMING_S2_TRAILING      => internal_ASIC_TIMING_S2_TRAILING,   
+		ASIC_TIMING_PHASE_LEADING    => internal_ASIC_TIMING_PHASE_LEADING, 
+		ASIC_TIMING_PHASE_TRAILING   => internal_ASIC_TIMING_PHASE_TRAILING,
+		ASIC_TIMING_GENERATOR_REG    => internal_ASIC_TIMING_GENERATOR_REG, 
+		ASIC_REG_TRG                 => internal_ASIC_REG_TRG              
 	);
 	
 	--Scaler monitors for the ASIC channels
@@ -315,6 +333,27 @@ begin
 		ROW_SELECT      => internal_TRIGGER_SCALER_ROW_SELECT,
 		COL_SELECT      => internal_TRIGGER_SCALER_COL_SELECT,
 		SCALERS         => internal_ASIC_SCALERS_TO_READ
+	);
+
+	--ASIC monitoring and control for potential feedback paths
+	map_asic_feedback_and_monitoring : entity work.feedback_and_monitoring
+	port map (
+		AsicOut_SAMPLING_TRACK_MODE_C0_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
+		AsicOut_SAMPLING_TRACK_MODE_C1_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
+		AsicOut_SAMPLING_TRACK_MODE_C2_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
+		AsicOut_SAMPLING_TRACK_MODE_C3_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R,
+		FEEDBACK_SAMPLING_RATE_ENABLE      => x"0000",
+		FEEDBACK_SAMPLING_RATE_VADJP_C_R   => internal_VADJP_FB,
+		FEEDBACK_SAMPLING_RATE_VADJN_C_R   => internal_VADJN_FB,
+		AsicOut_MONITOR_WILK_COUNTERS_C0_R => AsicOut_MONITOR_WILK_COUNTER_C0_R,
+		AsicOut_MONITOR_WILK_COUNTERS_C1_R => AsicOut_MONITOR_WILK_COUNTER_C1_R,
+		AsicOut_MONITOR_WILK_COUNTERS_C2_R => AsicOut_MONITOR_WILK_COUNTER_C2_R,
+		AsicOut_MONITOR_WILK_COUNTERS_C3_R => AsicOut_MONITOR_WILK_COUNTER_C3_R,
+		FEEDBACK_WILKINSON_ENABLES_C_R     => internal_VDLY_FEEDBACK_ENABLES,
+		FEEDBACK_WILKINSON_GOALS_C_R       => internal_WILKINSON_TARGETS,
+		FEEDBACK_WILKINSON_COUNTERS_C_R    => internal_WILKINSON_COUNTERS,
+		FEEDBACK_WILKINSON_DAC_VALUES_C_R  => internal_VDLY_FB,
+		CLOCK                              => internal_CLOCK_50MHz_BUFG
 	);
 
 	--Interface to the DAQ devices
@@ -378,51 +417,6 @@ begin
 		USB_CLKOUT		              => USB_CLKOUT
 	);
 	
-	--ASIC DAC writing module
-	Inst_controlAsicDacProgramming : entity work.controlAsicDacProgramming
-    Port map ( 
-		CLK => internal_CLOCK_50MHz_BUFG,
-		LOAD_DACS => '0',
-		ENABLE_DAC_AUTO_LOADING => '0',
-		PCLK	=> PCLK_out,
-		CLEAR_ALL_REGISTERS => AsicIn_CLEAR_ALL_REGISTERS,
-		SCLK => AsicIn_SERIAL_SHIFT_CLOCK,
-		SIN => AsicIn_SERIAL_INPUT,
-		SHOUT => '0',
-		internal_ASIC_TRIG_THRESH =>internal_ASIC_TRIG_THRESH,
-		internal_ASIC_DAC_BUF_BIASES =>internal_ASIC_DAC_BUF_BIASES,
-		internal_ASIC_DAC_BUF_BIAS_ISEL =>internal_ASIC_DAC_BUF_BIAS_ISEL,
-		internal_ASIC_DAC_BUF_BIAS_VADJP =>internal_ASIC_DAC_BUF_BIAS_VADJP,
-		internal_ASIC_DAC_BUF_BIAS_VADJN =>internal_ASIC_DAC_BUF_BIAS_VADJN,
-		internal_ASIC_VBIAS =>internal_ASIC_VBIAS,
-		internal_ASIC_VBIAS2 =>internal_ASIC_VBIAS2,
-		internal_ASIC_REG_TRG =>internal_ASIC_REG_TRG,
-		internal_ASIC_WBIAS =>internal_ASIC_WBIAS,
-		internal_ASIC_VADJP =>internal_ASIC_VADJP,
-		internal_ASIC_VADJN =>internal_ASIC_VADJN,
-		internal_ASIC_VDLY =>internal_ASIC_VDLY,
-		internal_ASIC_TRG_BIAS =>internal_ASIC_TRG_BIAS,
-		internal_ASIC_TRG_BIAS2 =>internal_ASIC_TRG_BIAS2,
-		internal_ASIC_TRGTHREF =>internal_ASIC_TRGTHREF,
-		internal_ASIC_CMPBIAS =>internal_ASIC_CMPBIAS,
-		internal_ASIC_PUBIAS =>internal_ASIC_PUBIAS,
-		internal_ASIC_SBBIAS =>internal_ASIC_SBBIAS,
-		internal_ASIC_ISEL =>internal_ASIC_ISEL,
-		internal_ASIC_TIMING_SSP_LEADING =>internal_ASIC_TIMING_SSP_LEADING,
-		internal_ASIC_TIMING_SSP_TRAILING =>internal_ASIC_TIMING_SSP_TRAILING,
-		internal_ASIC_TIMING_S1_LEADING =>internal_ASIC_TIMING_S1_LEADING,
-		internal_ASIC_TIMING_S1_TRAILING =>internal_ASIC_TIMING_S1_TRAILING,
-		internal_ASIC_TIMING_S2_LEADING =>internal_ASIC_TIMING_S2_LEADING,
-		internal_ASIC_TIMING_S2_TRAILING =>internal_ASIC_TIMING_S2_TRAILING,
-		internal_ASIC_TIMING_PHASE_LEADING =>internal_ASIC_TIMING_PHASE_LEADING,
-		internal_ASIC_TIMING_PHASE_TRAILING =>internal_ASIC_TIMING_PHASE_TRAILING,
-		internal_ASIC_TIMING_GENERATOR_REG =>internal_ASIC_TIMING_GENERATOR_REG
-	 );
-	 AsicIn_PARALLEL_CLOCK_C0_R <= PCLK_out(3 downto 0);
-	 AsicIn_PARALLEL_CLOCK_C1_R <= PCLK_out(7 downto 4);
-	 AsicIn_PARALLEL_CLOCK_C2_R <= PCLK_out(11 downto 8);
-	 AsicIn_PARALLEL_CLOCK_C3_R <= PCLK_out(15 downto 12);
-
 	--------------------------------------------------
 	-------General registers interfaced to DAQ -------
 	--------------------------------------------------
@@ -533,8 +527,22 @@ begin
 			internal_ASIC_TIMING_PHASE_TRAILING(col)(row) <= internal_OUTPUT_REGISTERS(347+row+ROWS_PER_COL*col)(15 downto 8);
 		end generate;
 	end generate;
+	                                                                                 --Registers 363-378: Timing signals for PHASE leading/trailing edges
+	WR_STRB_TIMING_REGISTERS_COL : for col in 0 to 3 generate
+		WR_STRB_TIMING_REGISTERS_ROW : for row in 0 to 3 generate
+			internal_ASIC_TIMING_WR_STRB_LEADING(col)(row) <= internal_OUTPUT_REGISTERS(363+row+ROWS_PER_COL*col)(7 downto 0);
+			internal_ASIC_TIMING_WR_STRB_TRAILING(col)(row) <= internal_OUTPUT_REGISTERS(363+row+ROWS_PER_COL*col)(15 downto 8);
+		end generate;
+	end generate;
 	
-	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(363)(7 downto 0); --Register 363: Internal ASIC "timing" register
+	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(379)(7 downto 0); --Register 379: Internal ASIC "timing" register
+
+	                                                                                  --Registers 384-399: wilkinson counter target values for feedback
+	gen_feedback_targets_col : for col in 0 to 3 generate
+		gen_feedback_targets_row : for row in 0 to 3 generate
+			internal_WILKINSON_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(384+row+ROWS_PER_COL*col); 
+		end generate;
+	end generate;
 
 	internal_I2C_WRITE_REGISTERS(3)        <= internal_OUTPUT_REGISTERS(500); --Register 500: I2C interface for row 0,1 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
 	internal_I2C_WRITE_REGISTERS(4)        <= internal_OUTPUT_REGISTERS(501); --Register 501: I2C interface for row 2,3 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
@@ -543,14 +551,6 @@ begin
 	internal_I2C_WRITE_REGISTERS(7)        <= internal_OUTPUT_REGISTERS(504); --Register 504: I2C interface for interconnect rev C GPIO to control calibration signals
 
 
-
---	AsicIn_MONITOR_WILK_COUNTER_START <= internal_OUTPUT_REGISTERS(144)(0); --Register 144: Bit 0: start wilkinson monitoring counter (edge sensitive)
---	AsicIn_MONITOR_WILK_COUNTER_RESET <= internal_OUTPUT_REGISTERS(144)(1); --              Bit 1: reset wilkinson monitoring counter
-	--gen_feedback_targets_col : for col in 0 to 3 generate
-	--	gen_feedback_targets_row : for row in 0 to 3 generate
-	--		internal_WILKINSON_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(145+col*4+row); --Registers 145-160: wilkinson counter target values for feedback
-	--	end generate;
-	--end generate;
 --	internal_FIRST_ALLOWED_WINDOW     <= internal_OUTPUT_REGISTERS(161)(internal_FIRST_ALLOWED_WINDOW'length-1 downto 0);     --Register 161: Bits 8-0: First allowed analog storage window
 --	internal_LAST_ALLOWED_WINDOW      <= internal_OUTPUT_REGISTERS(162)(internal_LAST_ALLOWED_WINDOW'length-1 downto 0);      --         162: Bits 8-0: Last allowed analog storage window
 --	internal_MAX_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(163)(internal_MAX_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --Register 163: Bits 8-0: Maximum number of windows to look back
@@ -606,6 +606,13 @@ begin
 	gen_TRG_SCALER_CH : for ch in 0 to 7 generate
 		internal_INPUT_REGISTERS(N_GPR + 8 + ch) <= internal_ASIC_SCALERS_TO_READ(ch);
 	end generate;
+	                                                                         --Registers 528-543: Wilkinson counters
+	gen_WILK_COUNTER_COL : for col in 0 to 3 generate
+		gen_WILK_COUNTER_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 16 + row + ROWS_PER_COL * col) <= internal_WILKINSON_COUNTERS(col)(row);
+		end generate;
+	end generate;
+																									
 
 --	internal_INPUT_REGISTERS(N_GPR+107) <= internal_EVENT_NUMBER(15 downto  0);                                                                 --Register 363: LSBs of current event number
 --	internal_INPUT_REGISTERS(N_GPR+108) <= internal_EVENT_NUMBER(31 downto 16);                                                                 --Register 364: MSBs of current event number

@@ -34,7 +34,7 @@ CONSTANT out_I2C_BUS0_GPR_ADDRESS0, 01
 CONSTANT  in_I2C_BUS0_GPR_ADDRESS1, 02 ;Register 512 for the  read byte
 CONSTANT  in_I2C_BUS0_GPR_ADDRESS0, 00
 CONSTANT slave_addr_I2C_BUS0_STTS0, 94
-;I2C bus for row 0,1 I2C temp sensor and EEPROM
+;I2C bus for row 0,1 I2C temp sensor, EEPROM, and GPIO
 CONSTANT out_I2C_BUS3_GPR_ADDRESS1, 01 ;Register 500 for the write byte
 CONSTANT out_I2C_BUS3_GPR_ADDRESS0, F4
 CONSTANT  in_I2C_BUS3_GPR_ADDRESS1, 02 ;Register 515 for the  read byte
@@ -47,7 +47,11 @@ CONSTANT slave_addr_I2C_BUS3_STTS4, 94
 CONSTANT slave_addr_I2C_BUS3_STTS5, 96
 CONSTANT slave_addr_I2C_BUS3_STTS6, 74
 CONSTANT slave_addr_I2C_BUS3_STTS7, 76
-;I2C bus for row 0,1 I2C temp sensor and EEPROM
+CONSTANT slave_addr_I2C_BUS3_GPIO0, 7C
+CONSTANT slave_addr_I2C_BUS3_GPIO1, 74
+CONSTANT slave_addr_I2C_BUS3_EEPROM0, A0
+CONSTANT slave_addr_I2C_BUS3_EEPROM1, A2
+;I2C bus for row 0,1 I2C temp sensor, EEPROM, and GPIO
 CONSTANT out_I2C_BUS4_GPR_ADDRESS1, 01 ;Register 501 for the write byte
 CONSTANT out_I2C_BUS4_GPR_ADDRESS0, F5
 CONSTANT  in_I2C_BUS4_GPR_ADDRESS1, 02 ;Register 516 for the  read byte
@@ -60,6 +64,10 @@ CONSTANT slave_addr_I2C_BUS4_STTS4, 94
 CONSTANT slave_addr_I2C_BUS4_STTS5, 96
 CONSTANT slave_addr_I2C_BUS4_STTS6, 74
 CONSTANT slave_addr_I2C_BUS4_STTS7, 76
+CONSTANT slave_addr_I2C_BUS4_GPIO0, 7C
+CONSTANT slave_addr_I2C_BUS4_GPIO1, 74
+CONSTANT slave_addr_I2C_BUS4_EEPROM0, A0
+CONSTANT slave_addr_I2C_BUS4_EEPROM1, A2
 
 ;GPR space addresses where the SCROD revision and ID are stored
 CONSTANT out_SCROD_ID_GPR_ADDRESS1, 00
@@ -69,6 +77,24 @@ CONSTANT out_SCROD_REV_GPR_ADDRESS0, A7
 ;Constants for the LED output interface [in the GPR address space]
 CONSTANT out_LED_GPR_ADDRESS0, 00
 CONSTANT out_LED_GPR_ADDRESS1, 00
+
+;GPR space for registers that store ASIC DAC values
+CONSTANT out_ASIC_DAC_BUFFER_BIASES_GPR_ADDRESS0, 0C
+CONSTANT out_ASIC_DAC_BUFFER_BIASES_GPR_ADDRESS1, 00
+CONSTANT out_ASIC_DAC_ISEL_BUFFER_BIAS_GPR_ADDRESS0, C8
+CONSTANT out_ASIC_DAC_ISEL_BUFFER_BIAS_GPR_ADDRESS1, 00
+;Nominal values for the above
+CONSTANT startup_DAC_BUFFER_BIASES0, 00
+CONSTANT startup_DAC_BUFFER_BIASES1, 04
+CONSTANT startup_DAC_ISEL_BUFFER_BIAS0, 00
+CONSTANT startup_DAC_ISEL_BUFFER_BIAS1, 00
+
+;GPR space for registers that store ASIC timing values
+CONSTANT out_ASIC_TIMING_REG_GPR_ADDRESS0, 7B
+CONSTANT out_ASIC_TIMING_REG_GPR_ADDRESS1, 01
+;Nominal values for the above (monitor PHAB, RCO monitoring of SST generator)
+CONSTANT startup_ASIC_TIMING_REG0, 15
+CONSTANT startup_ASIC_TIMING_REG1, 00
 
 CONSTANT state_FIND_HEADER,                   00
 CONSTANT state_READ_PACKET_SIZE,              01
@@ -124,59 +150,50 @@ start:
 	CALL delay_300ms ;Give some startup time
 	;TODO: Do we want to add the fiber reset here?
 
+	;Set most of the IRS3B internal DAC buffer biases to nominal (0x400)
+	LOAD s0, out_ASIC_DAC_BUFFER_BIASES_GPR_ADDRESS0
+	LOAD s1, out_ASIC_DAC_BUFFER_BIASES_GPR_ADDRESS1
+	CALL set_current_GPR
+	LOAD s0, startup_DAC_BUFFER_BIASES0
+	LOAD s1, startup_DAC_BUFFER_BIASES1
+	OUTPUT s0, out_GPR_DATA0
+	OUTPUT s1, out_GPR_DATA1
+	OUTPUT s1, out_GPR_WRITE_ENABLE
+	
+	;Set the IRS3B internal DAC buffer bias for ISEL to off (it's set with a resistor on the IRS3B carrier revB)
+	LOAD s0, out_ASIC_DAC_ISEL_BUFFER_BIAS_GPR_ADDRESS0
+	LOAD s1, out_ASIC_DAC_ISEL_BUFFER_BIAS_GPR_ADDRESS1
+	CALL set_current_GPR
+	LOAD s0, startup_DAC_ISEL_BUFFER_BIAS0
+	LOAD s1, startup_DAC_ISEL_BUFFER_BIAS1
+	OUTPUT s0, out_GPR_DATA0
+	OUTPUT s1, out_GPR_DATA1
+	OUTPUT s1, out_GPR_WRITE_ENABLE
+
+	;Set the IRS3B timing register to look at RCO (SST) 
+	LOAD s0, out_ASIC_TIMING_REG_GPR_ADDRESS0
+	LOAD s1, out_ASIC_TIMING_REG_GPR_ADDRESS1
+	CALL set_current_GPR
+	LOAD s0, startup_ASIC_TIMING_REG0
+	LOAD s1, startup_ASIC_TIMING_REG1
+	OUTPUT s0, out_GPR_DATA0
+	OUTPUT s1, out_GPR_DATA1
+	OUTPUT s1, out_GPR_WRITE_ENABLE
+
 	;For SCROD, we should read the SCROD ID by I2C and store it in the scratchpad.
 	CALL read_eeprom_id ;Reads SCROD_ID from I2C BUS
 	CALL delay_200us
 
 	;We also disable the temperature sensor I2C timeout feature
 	;This has to be done for all buses with the same temperature sensor
-	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1	
-	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
-	CALL set_current_GPR
-	LOAD s4, slave_addr_I2C_BUS0_STTS0
-	CALL disable_stts_timeout
-	LOAD s1, out_I2C_BUS3_GPR_ADDRESS1
-	LOAD s0, out_I2C_BUS3_GPR_ADDRESS0
-	CALL set_current_GPR
-	LOAD s4, slave_addr_I2C_BUS3_STTS0
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS1
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS2
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS3
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS4
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS5
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS6
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS3_STTS7
-	CALL disable_stts_timeout
-	LOAD s1, out_I2C_BUS4_GPR_ADDRESS1
-	LOAD s0, out_I2C_BUS4_GPR_ADDRESS0
-	CALL set_current_GPR
-	LOAD s4, slave_addr_I2C_BUS4_STTS0
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS1
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS2
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS3
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS4
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS5
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS6
-	CALL disable_stts_timeout
-	LOAD s4, slave_addr_I2C_BUS4_STTS7
 	CALL disable_stts_timeout
 
+	;Set the carrier level GPIOs to set SMPL_SEL_ANY to high
+	CALL set_smpl_sel_any_gpio
 
 	;In the board stack firmware, we start the Wilkinson counter going now
-	CALL start_wilkinson_counters
+	;NOTE: this is now handled by IRS3B ASIC registers.
+	;CALL start_wilkinson_counters
 	
 	;Register sF will store the current state of the command reading.
 	LOAD sF, 00
@@ -1191,7 +1208,102 @@ read_eeprom_id:
 	RETURN
 
 ;Disables the timeout feature on the STTS I2C temperature sensor
-disable_stts_timeout:
+;Corresponds to writing to register 22 with 00
+disable_stts_timeout: 
+	LOAD s1, out_I2C_BUS0_GPR_ADDRESS1	
+	LOAD s0, out_I2C_BUS0_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s2, 00
+	LOAD s3, 22
+	LOAD s4, slave_addr_I2C_BUS0_STTS0
+	CALL i2c_write_addr
+	LOAD s1, out_I2C_BUS3_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS3_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS3_STTS0
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS1
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS2
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS3
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS4
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS5
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS6
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_STTS7
+	CALL i2c_write_addr
+	LOAD s1, out_I2C_BUS4_GPR_ADDRESS1
+	LOAD s0, out_I2C_BUS4_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS4_STTS0
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS1
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS2
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS3
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS4
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS5
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS6
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_STTS7
+	CALL i2c_write_addr	
+	RETURN
+
+;Sets SMPL_SEL_ANY on the GPIOs to be an output and driven high
+;Corresponds to a register write to address 3 with value 00 (set all outputs)
+;           and a register write to address 1 with value 40 (set SMPL_SEL_ANY high)
+set_smpl_sel_any_gpio:
+	;First for rows 0,2
+	LOAD s1, out_I2C_BUS3_GPR_ADDRESS1	
+	LOAD s0, out_I2C_BUS3_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS3_GPIO0
+	LOAD s3, 03
+	LOAD s2, 00
+	CALL i2c_write_addr
+	LOAD s3, 01
+	LOAD s2, 40
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS3_GPIO1
+	LOAD s3, 03
+	LOAD s2, 00
+	CALL i2c_write_addr
+	LOAD s3, 01
+	LOAD s2, 40
+	CALL i2c_write_addr
+	;First for rows 1,3
+	LOAD s1, out_I2C_BUS4_GPR_ADDRESS1	
+	LOAD s0, out_I2C_BUS4_GPR_ADDRESS0
+	CALL set_current_GPR
+	LOAD s4, slave_addr_I2C_BUS4_GPIO0
+	LOAD s3, 03
+	LOAD s2, 00
+	CALL i2c_write_addr
+	LOAD s3, 01
+	LOAD s2, 40
+	CALL i2c_write_addr
+	LOAD s4, slave_addr_I2C_BUS4_GPIO1
+	LOAD s3, 03
+	LOAD s2, 00
+	CALL i2c_write_addr
+	LOAD s3, 01
+	LOAD s2, 40
+	CALL i2c_write_addr	
+	RETURN
+
+;Write to an I2C address.
+;Accepts I2C address in s4
+;Accepts device write address in s3
+;Accepts data to write in s2
+i2c_write_addr:
 	;(Allow waits of 200 us between steps.)
 	;1. Send start:                     0x0100
 	LOAD s1, 01	
@@ -1208,24 +1320,24 @@ disable_stts_timeout:
 	LOAD s0, s4
 	CALL write_to_current_GPR
 	CALL delay_200us
-	;3. Setup send register address   : 0x0022
+	;3. Setup send register address   : use s3
 	LOAD s1, 00
-	LOAD s0, 22
+	LOAD s0, s3
 	CALL write_to_current_GPR
 	CALL delay_200us
-	;         Send register address   : 0x0222
+	;         Send register address   : 0x0200 & 00(s3)
 	LOAD s1, 02
-	LOAD s0, 22
+	LOAD s0, s3
 	CALL write_to_current_GPR
 	CALL delay_200us
-	;4. Setup send register data      : 0x0000
+	;4. Setup send register data      : use s2
 	LOAD s1, 00
-	LOAD s0, 00
+	LOAD s0, s2
 	CALL write_to_current_GPR
 	CALL delay_200us
-	;         Send register data      : 0x0200
+	;         Send register data      : 0x0200 & 00(s2)
 	LOAD s1, 02
-	LOAD s0, 00
+	LOAD s0, s2
 	CALL write_to_current_GPR
 	CALL delay_200us
 	;5. Send stop                     : 0x1000
@@ -1239,15 +1351,15 @@ disable_stts_timeout:
 ;  This is done by asserting a 1 on bit 0 of GPR 144 (hex 90)
 ;  Bit 1 should remain low, as this is the clear.
 ;  Leaves the start in the low state when done
-start_wilkinson_counters:
-	LOAD s1, 00
-	LOAD s0, 90
-	CALL set_current_GPR
-	LOAD s0, 01
-	CALL write_to_current_GPR
-	LOAD s0, 00
-	CALL write_to_current_GPR
-	RETURN
+;start_wilkinson_counters:
+;	LOAD s1, 00
+;	LOAD s0, 90
+;	CALL set_current_GPR
+;	LOAD s0, 01
+;	CALL write_to_current_GPR
+;	LOAD s0, 00
+;	CALL write_to_current_GPR
+;	RETURN
 
 ;Writes s0 and s1 out on GPR_ADDRESS0 and GPR_ADDRESS1
 set_current_GPR:

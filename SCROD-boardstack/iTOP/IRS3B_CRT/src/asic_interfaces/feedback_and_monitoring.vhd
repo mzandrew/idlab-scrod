@@ -15,8 +15,8 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
-use work.CarrierRevA_DAC_definitions.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
+use work.IRS3B_CarrierRevB_DAC_definitions.all;
 
 entity feedback_and_monitoring is
   port (
@@ -27,8 +27,7 @@ entity feedback_and_monitoring is
 --				AsicOut_MONITOR_TRIG_C3_R                 : in std_logic_vector(3 downto 0);
 --
 --				AsicIn_SAMPLING_TRACK_MODE                : in std_logic;
-				
-				
+
 				AsicOut_SAMPLING_TRACK_MODE_C0_R          : in std_logic_vector(3 downto 0);
 				AsicOut_SAMPLING_TRACK_MODE_C1_R          : in std_logic_vector(3 downto 0);
 				AsicOut_SAMPLING_TRACK_MODE_C2_R          : in std_logic_vector(3 downto 0);
@@ -36,8 +35,8 @@ entity feedback_and_monitoring is
 				
 				FEEDBACK_SAMPLING_RATE_ENABLE             : in std_logic_vector(15 downto 0);
 --				FEEDBACK_SAMPLING_RATE_COUNTER_C_R        : out Sampling_Rate_Counters_C_R;
-				FEEDBACK_SAMPLING_RATE_VADJP_C_R          : out Column_Row_DAC_Values;
-				FEEDBACK_SAMPLING_RATE_VADJN_C_R          : out Column_Row_DAC_Values;
+				FEEDBACK_SAMPLING_RATE_VADJP_C_R          : out DAC_Setting_C_R;
+				FEEDBACK_SAMPLING_RATE_VADJN_C_R          : out DAC_Setting_C_R;
 
 				AsicOut_MONITOR_WILK_COUNTERS_C0_R        : in std_logic_vector(3 downto 0);
 				AsicOut_MONITOR_WILK_COUNTERS_C1_R        : in std_logic_vector(3 downto 0);
@@ -47,7 +46,7 @@ entity feedback_and_monitoring is
 				FEEDBACK_WILKINSON_ENABLES_C_R            : in  Column_Row_Enables;
 				FEEDBACK_WILKINSON_GOALS_C_R              : in  Column_Row_Wilkinson_Counters;
 				FEEDBACK_WILKINSON_COUNTERS_C_R           : out Column_Row_Wilkinson_Counters;
-				FEEDBACK_WILKINSON_DAC_VALUES_C_R         : out Column_Row_DAC_Values;
+				FEEDBACK_WILKINSON_DAC_VALUES_C_R         : out DAC_Setting_C_R;
 				
 				CLOCK                                     : in std_logic
 	);
