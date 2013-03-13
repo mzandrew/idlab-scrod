@@ -37,6 +37,8 @@ architecture Behavioral of Board_Stack_Bus_DAC_Control is
 	signal internal_UPDATING 				: std_logic;
 	signal internal_UPDATE_SUCCEEDED    : std_logic;
 
+	signal internal_DAC_ADDR_CH_COUNTER : unsigned(3 downto 0) := (others => '0');
+
 	signal internal_DAC_STATE_MONITOR	: std_logic_vector(2 downto 0);
 
 	type DAC_STATE_TYPE is (SEARCHING_FOR_UPDATES, SETTING_UP_UPDATES, START_UPDATING, WAIT_FOR_UPDATE);
@@ -67,16 +69,18 @@ begin
 
 	internal_COMMAND <= DAC_Write_and_Update when USE_DAC = '1' else
 	                    DAC_Shutdown;
+
+	internal_CHANNEL <= '0' & std_logic_vector(internal_DAC_ADDR_CH_COUNTER(2 downto 0));
+	internal_ADDRESS <= DAC_Address_R02 when internal_DAC_ADDR_CH_COUNTER(3) = '0' else
+	                    DAC_Address_R13;
+	process(internal_CHANNEL, internal_ADDRESS, internal_INTENDED_DAC_VALUES) begin
+		internal_DAC_VALUE <= internal_INTENDED_DAC_VALUES(to_integer(unsigned(internal_ADDRESS)))(to_integer(unsigned(internal_CHANNEL(2 downto 0))));
+	end process;
 	
 	STATE_MONITOR <= internal_DAC_STATE_MONITOR;
 --------------------------------------------------------------
 	
-	process (CLK, CLK_ENABLE) 
-		variable dac_channel : integer range 0 to 7 := 0;
-		variable dac_address : integer range 0 to 1 := 1;
-		constant dac_channels : integer := 8;
-		constant dac_addresses: integer := 2;
-	begin
+	process (CLK, CLK_ENABLE) begin
 		if (CLK_ENABLE = '1') then
 			if (falling_edge(CLK)) then
 				case DAC_STATE is
@@ -85,25 +89,10 @@ begin
 --						if (internal_UPDATE_STATUSES(dac_address)(dac_channel) /= '1') then
 							DAC_STATE <= SETTING_UP_UPDATES;
 --						else 
---							if (dac_channel < dac_channels - 1) then
---								dac_channel := dac_channel + 1;
---							else
---								dac_channel := 0;
---								if (dac_address < dac_addresses - 1) then
---									dac_address := dac_address + 1;
---								else
---									dac_address := 0;
---								end if;
---							end if;
+--							internal_DAC_ADDR_CH_COUNTER <= internal_DAC_ADDR_CH_COUNTER + 1;
 --						end if;
 					when SETTING_UP_UPDATES =>
 						internal_DAC_STATE_MONITOR	<= "001";
-						case dac_address is
-							when 0 => internal_ADDRESS <= DAC_Address_R02;
-							when 1 => internal_ADDRESS <= DAC_Address_R13;
-						end case;
-						internal_CHANNEL <= std_logic_vector(to_unsigned(dac_channel, 4));
-						internal_DAC_VALUE <= internal_INTENDED_DAC_VALUES(dac_address)(dac_channel);
 						DAC_STATE <= START_UPDATING;
 					when START_UPDATING =>
 						internal_DAC_STATE_MONITOR	<= "010";				
@@ -120,16 +109,7 @@ begin
 --							else
 --								internal_UPDATE_STATUSES(dac_address)(dac_channel) <= '0';
 --							end if;
-							if (dac_channel < dac_channels - 1) then
-								dac_channel := dac_channel + 1;
-							else
-								dac_channel := 0;
-								if (dac_address < dac_addresses - 1) then
-									dac_address := dac_address + 1;
-								else
-									dac_address := 0;
-								end if;
-							end if;						
+							internal_DAC_ADDR_CH_COUNTER <= internal_DAC_ADDR_CH_COUNTER + 1;
 							DAC_STATE <= SEARCHING_FOR_UPDATES;
 						end if;
 					when others =>
