@@ -20,8 +20,8 @@ entity scrod_top is
 		RJ45_ACK_N                  : out std_logic;			  
 		RJ45_TRG_P                  :  in std_logic;
 		RJ45_TRG_N                  :  in std_logic;			  			  
-		RJ45_RSV_P                  : out std_logic;
-		RJ45_RSV_N                  : out std_logic;
+		RJ45_RSV_P                  :  in std_logic;
+		RJ45_RSV_N                  :  in std_logic;
 		RJ45_CLK_P                  :  in std_logic;
 		RJ45_CLK_N                  :  in std_logic;
 		---------Jumper for choosing distributed clock------
@@ -64,6 +64,9 @@ entity scrod_top is
 		AsicIn_CLEAR_ALL_REGISTERS    : out std_logic;
 		AsicIn_SERIAL_SHIFT_CLOCK     : out std_logic;
 		AsicIn_SERIAL_INPUT           : out std_logic;
+		---------------------------------------------
+		--------- ASIC monitoring/feedbacks ---------
+		---------------------------------------------	
 		--ASIC Wilkinson monitor signals
 		AsicOut_MONITOR_WILK_COUNTER_C0_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTER_C1_R : in std_logic_vector(3 downto 0);
@@ -75,9 +78,6 @@ entity scrod_top is
 		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R : in std_logic_vector(3 downto 0);
 		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R : in std_logic_vector(3 downto 0);
 		
-		---------------------------------------------
-		------------ Monitoring/feedbacks -----------
-		---------------------------------------------	
 
 		----------------------------------------------
 		------------Fiberoptic Pins ------------------
@@ -188,10 +188,14 @@ architecture Behavioral of scrod_top is
    signal internal_VDLY_FEEDBACK_ENABLES  : Column_Row_Enables;
 	signal internal_VADJ_FEEDBACK_ENABLES  : Column_Row_Enables;
 	signal internal_WBIAS_FEEDBACK_ENABLES : Column_Row_Enables;
+	--Enable to switch between internal and external VadjP/N DAC control
+	signal internal_USE_EXTERNAL_VADJ_DACS : std_logic;
 
 	--Monitoring 
 	signal internal_WILKINSON_TARGETS  : Column_Row_Wilkinson_Counters;
 	signal internal_WILKINSON_COUNTERS : Column_Row_Wilkinson_Counters;
+	signal internal_SAMPLING_RATE_TARGETS  : Column_Row_Sampling_Rate_Counters;
+	signal internal_SAMPLING_RATE_COUNTERS : Column_Row_Sampling_Rate_Counters;
 	
 	--Connections to the general purpose registers
 	signal internal_OUTPUT_REGISTERS : GPR;
@@ -248,7 +252,7 @@ begin
 	port map( 
 		--Clock and clock enable used to run the interface
 		CLOCK                      => internal_CLOCK_50MHz_BUFG, 
-		CLOCK_ENABLE               => '1', --We can slow this down to whatever it needs to be...
+		CLOCK_ENABLE               => internal_CLOCK_ENABLE_I2C,
 		--Direct connections to the IRS3B register programming interface
 		AsicIn_PARALLEL_CLOCK_C0_R => AsicIn_PARALLEL_CLOCK_C0_R,
 		AsicIn_PARALLEL_CLOCK_C1_R => AsicIn_PARALLEL_CLOCK_C1_R,
@@ -263,7 +267,7 @@ begin
 		I2C_DAC_SCL_R23            => I2C_DAC_SCL_R23,
 		I2C_DAC_SDA_R23            => I2C_DAC_SDA_R23,
 		--A toggle to select the internal or external DACs
-		USE_EXTERNAL_VADJ_DACS     => '0', --Temporarily disabled
+		USE_EXTERNAL_VADJ_DACS     => internal_USE_EXTERNAL_VADJ_DACS,
 		--DAC values coming from general purpose registers
 		ASIC_TRIG_THRESH           => internal_ASIC_TRIG_THRESH,
 		ASIC_DAC_BUF_BIASES        => internal_ASIC_DAC_BUF_BIASES,    
@@ -338,22 +342,24 @@ begin
 	--ASIC monitoring and control for potential feedback paths
 	map_asic_feedback_and_monitoring : entity work.feedback_and_monitoring
 	port map (
-		AsicOut_SAMPLING_TRACK_MODE_C0_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
-		AsicOut_SAMPLING_TRACK_MODE_C1_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
-		AsicOut_SAMPLING_TRACK_MODE_C2_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
-		AsicOut_SAMPLING_TRACK_MODE_C3_R   => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R,
-		FEEDBACK_SAMPLING_RATE_ENABLE      => x"0000",
-		FEEDBACK_SAMPLING_RATE_VADJP_C_R   => internal_VADJP_FB,
-		FEEDBACK_SAMPLING_RATE_VADJN_C_R   => internal_VADJN_FB,
-		AsicOut_MONITOR_WILK_COUNTERS_C0_R => AsicOut_MONITOR_WILK_COUNTER_C0_R,
-		AsicOut_MONITOR_WILK_COUNTERS_C1_R => AsicOut_MONITOR_WILK_COUNTER_C1_R,
-		AsicOut_MONITOR_WILK_COUNTERS_C2_R => AsicOut_MONITOR_WILK_COUNTER_C2_R,
-		AsicOut_MONITOR_WILK_COUNTERS_C3_R => AsicOut_MONITOR_WILK_COUNTER_C3_R,
-		FEEDBACK_WILKINSON_ENABLES_C_R     => internal_VDLY_FEEDBACK_ENABLES,
-		FEEDBACK_WILKINSON_GOALS_C_R       => internal_WILKINSON_TARGETS,
-		FEEDBACK_WILKINSON_COUNTERS_C_R    => internal_WILKINSON_COUNTERS,
-		FEEDBACK_WILKINSON_DAC_VALUES_C_R  => internal_VDLY_FB,
-		CLOCK                              => internal_CLOCK_50MHz_BUFG
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
+		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R,
+		FEEDBACK_SAMPLING_RATE_ENABLE              => internal_VADJ_FEEDBACK_ENABLES,
+		FEEDBACK_SAMPLING_RATE_GOALS_C_R           => internal_SAMPLING_RATE_TARGETS,
+		FEEDBACK_SAMPLING_RATE_COUNTER_C_R         => internal_SAMPLING_RATE_COUNTERS,
+		FEEDBACK_SAMPLING_RATE_VADJP_C_R           => internal_VADJP_FB,
+		FEEDBACK_SAMPLING_RATE_VADJN_C_R           => internal_VADJN_FB,
+		AsicOut_MONITOR_WILK_COUNTERS_C0_R         => AsicOut_MONITOR_WILK_COUNTER_C0_R,
+		AsicOut_MONITOR_WILK_COUNTERS_C1_R         => AsicOut_MONITOR_WILK_COUNTER_C1_R,
+		AsicOut_MONITOR_WILK_COUNTERS_C2_R         => AsicOut_MONITOR_WILK_COUNTER_C2_R,
+		AsicOut_MONITOR_WILK_COUNTERS_C3_R         => AsicOut_MONITOR_WILK_COUNTER_C3_R,
+		FEEDBACK_WILKINSON_ENABLES_C_R             => internal_VDLY_FEEDBACK_ENABLES,
+		FEEDBACK_WILKINSON_GOALS_C_R               => internal_WILKINSON_TARGETS,
+		FEEDBACK_WILKINSON_COUNTERS_C_R            => internal_WILKINSON_COUNTERS,
+		FEEDBACK_WILKINSON_DAC_VALUES_C_R          => internal_VDLY_FB,
+		CLOCK                                      => internal_CLOCK_50MHz_BUFG
 	);
 
 	--Interface to the DAQ devices
@@ -538,11 +544,20 @@ begin
 	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(379)(7 downto 0); --Register 379: Internal ASIC "timing" register
 
 	                                                                                  --Registers 384-399: wilkinson counter target values for feedback
-	gen_feedback_targets_col : for col in 0 to 3 generate
-		gen_feedback_targets_row : for row in 0 to 3 generate
+	gen_vdly_feedback_targets_col : for col in 0 to 3 generate
+		gen_vdly_feedback_targets_row : for row in 0 to 3 generate
 			internal_WILKINSON_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(384+row+ROWS_PER_COL*col); 
 		end generate;
 	end generate;
+	                                                                                  --Registers 400-415: sampling rate counter target values for feedback
+	gen_vadj_targets_col : for col in 0 to 3 generate
+		gen_vadj_targets_row : for row in 0 to 3 generate
+			internal_SAMPLING_RATE_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(400+row+ROWS_PER_COL*col); 
+		end generate;
+	end generate;
+
+	internal_USE_EXTERNAL_VADJ_DACS <= internal_OUTPUT_REGISTERS(416)(0);            --Register 416: lsb for using external VadjP/N DACs
+
 
 	internal_I2C_WRITE_REGISTERS(3)        <= internal_OUTPUT_REGISTERS(500); --Register 500: I2C interface for row 0,1 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
 	internal_I2C_WRITE_REGISTERS(4)        <= internal_OUTPUT_REGISTERS(501); --Register 501: I2C interface for row 2,3 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
@@ -612,7 +627,31 @@ begin
 			internal_INPUT_REGISTERS(N_GPR + 16 + row + ROWS_PER_COL * col) <= internal_WILKINSON_COUNTERS(col)(row);
 		end generate;
 	end generate;
-																									
+	                                                                         --Registers 544-559: Wilkinson FB DAC values
+	gen_VDLY_FB_COL : for col in 0 to 3 generate
+		gen_VDLY_FB_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 32 + row + ROWS_PER_COL * col) <= x"0" & internal_VDLY_FB(col)(row);
+		end generate;
+	end generate;																									
+	                                                                         --Registers 560-575: RCO counters
+	gen_RCO_COUNTER_COL : for col in 0 to 3 generate
+		gen_RCO_COUNTER_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 48 + row + ROWS_PER_COL * col) <= internal_SAMPLING_RATE_COUNTERS(col)(row);
+		end generate;
+	end generate;																									
+	                                                                         --Registers 576-591: VADJN feedback values
+	gen_VADJN_FB_COL : for col in 0 to 3 generate
+		gen_VADJN_FB_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 64 + row + ROWS_PER_COL * col) <= x"0" & internal_VADJN_FB(col)(row);
+		end generate;
+	end generate;																									
+	                                                                         --Registers 592-607: VADJP feedback values
+	gen_VADJP_FB_COL : for col in 0 to 3 generate
+		gen_VADJP_FB_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 80 + row + ROWS_PER_COL * col) <= x"0" & internal_VADJP_FB(col)(row);
+		end generate;
+	end generate;																									
+
 
 --	internal_INPUT_REGISTERS(N_GPR+107) <= internal_EVENT_NUMBER(15 downto  0);                                                                 --Register 363: LSBs of current event number
 --	internal_INPUT_REGISTERS(N_GPR+108) <= internal_EVENT_NUMBER(31 downto 16);                                                                 --Register 364: MSBs of current event number

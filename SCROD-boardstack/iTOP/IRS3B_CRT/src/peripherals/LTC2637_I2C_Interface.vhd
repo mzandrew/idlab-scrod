@@ -39,16 +39,16 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity LTC2637_I2C_Interface is
-    Port ( SCL				: out STD_LOGIC;
-			  SDA				: inout STD_LOGIC;
-			  CLK          : in STD_LOGIC;
-			  CLK_ENABLE   : in STD_LOGIC;
-			  ADDRESS      : in STD_LOGIC_VECTOR(6 downto 0);
-			  COMMAND      : in STD_LOGIC_VECTOR(3 downto 0);
-			  CHANNEL      : in STD_LOGIC_VECTOR(3 downto 0);
-			  DAC_VALUE    : in STD_LOGIC_VECTOR(11 downto 0);
-			  UPDATE       : in STD_LOGIC;			  
-			  UPDATING     : out STD_LOGIC;
+    Port ( SCL                 : out STD_LOGIC;
+			  SDA                 : inout STD_LOGIC;
+			  CLK                 : in STD_LOGIC;
+			  CLK_ENABLE          : in STD_LOGIC;
+			  ADDRESS             : in STD_LOGIC_VECTOR(6 downto 0);
+			  COMMAND             : in STD_LOGIC_VECTOR(3 downto 0);
+			  CHANNEL             : in STD_LOGIC_VECTOR(3 downto 0);
+			  DAC_VALUE           : in STD_LOGIC_VECTOR(11 downto 0);
+			  UPDATE              : in STD_LOGIC;			  
+			  UPDATING            : out STD_LOGIC;
 			  UPDATE_SUCCEEDED    : out STD_LOGIC);
 end LTC2637_I2C_Interface;
 
