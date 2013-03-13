@@ -36,7 +36,7 @@ package IRS3B_CarrierRevB_DAC_definitions is
 	constant DAC_Address_R02 : LTC2637_Address := "0010000";
 	constant DAC_Address_R13 : LTC2637_Address := "0010001";
    constant DAC_Write_and_Update : std_logic_vector(3 downto 0) := "0011";
-   constant DAC_Shutdown         : std_logic_vector(3 downto 0) := "0100";
+   constant DAC_Shutdown         : std_logic_vector(3 downto 0) := "0101"; --Power down all channels + ref
 	---------------------------------------------------------------------------
 
 
