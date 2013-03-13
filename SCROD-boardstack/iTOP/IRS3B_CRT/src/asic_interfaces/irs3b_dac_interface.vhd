@@ -11,51 +11,51 @@ use work.asic_definitions_irs3b_carrier_revB.all;
 entity irs3b_dac_interface is
 	Port ( 
 		--Clock and clock enable used to run the interface
-		CLOCK        : in std_logic;
-		CLOCK_ENABLE : in std_logic;
+		CLOCK                        : in std_logic;
+		CLOCK_ENABLE                 : in std_logic;
 		--Direct connections to the IRS3B register programming interface
-		AsicIn_PARALLEL_CLOCK_C0_R : out std_logic_vector(3 downto 0);
-		AsicIn_PARALLEL_CLOCK_C1_R : out std_logic_vector(3 downto 0);
-		AsicIn_PARALLEL_CLOCK_C2_R : out std_logic_vector(3 downto 0);
-		AsicIn_PARALLEL_CLOCK_C3_R : out std_logic_vector(3 downto 0);
-		AsicIn_CLEAR_ALL_REGISTERS : out std_logic;
-		AsicIn_SERIAL_SHIFT_CLOCK  : out std_logic;
-		AsicIn_SERIAL_INPUT        : out std_logic;		
+		AsicIn_PARALLEL_CLOCK_C0_R   : out std_logic_vector(3 downto 0);
+		AsicIn_PARALLEL_CLOCK_C1_R   : out std_logic_vector(3 downto 0);
+		AsicIn_PARALLEL_CLOCK_C2_R   : out std_logic_vector(3 downto 0);
+		AsicIn_PARALLEL_CLOCK_C3_R   : out std_logic_vector(3 downto 0);
+		AsicIn_CLEAR_ALL_REGISTERS   : out std_logic;
+		AsicIn_SERIAL_SHIFT_CLOCK    : out std_logic;
+		AsicIn_SERIAL_INPUT          : out std_logic;		
 		--Connections to the external DACs for VADJP/VADJN
-		I2C_DAC_SCL_R01            : inout std_logic;
-		I2C_DAC_SDA_R01            : inout std_logic;
-		I2C_DAC_SCL_R23            : inout std_logic;
-		I2C_DAC_SDA_R23            : inout std_logic;
+		I2C_DAC_SCL_R01              : inout std_logic;
+		I2C_DAC_SDA_R01              : inout std_logic;
+		I2C_DAC_SCL_R23              : inout std_logic;
+		I2C_DAC_SDA_R23              : inout std_logic;
 		--A toggle to select the internal or external DACs
-		USE_EXTERNAL_VADJ_DACS   : in  std_logic;
+		USE_EXTERNAL_VADJ_DACS       : in  std_logic;
 		--DAC values coming from general purpose registers
-		ASIC_TRIG_THRESH         : in  DAC_setting_C_R_CH;
-		ASIC_DAC_BUF_BIASES      : in  DAC_setting;
-		ASIC_DAC_BUF_BIAS_ISEL   : in  DAC_setting;
-		ASIC_DAC_BUF_BIAS_VADJP  : in  DAC_setting;
-		ASIC_DAC_BUF_BIAS_VADJN  : in  DAC_setting;
-		ASIC_VBIAS               : in  DAC_setting_C_R;
-		ASIC_VBIAS2              : in  DAC_setting_C_R;
-		ASIC_WBIAS               : in  DAC_setting_C_R;
-		ASIC_VADJP               : in  DAC_setting_C_R;
-		ASIC_VADJN               : in  DAC_setting_C_R;
-		ASIC_VDLY                : in  DAC_setting_C_R;
-		ASIC_TRG_BIAS            : in  DAC_setting;
-		ASIC_TRG_BIAS2           : in  DAC_setting;
-		ASIC_TRGTHREF            : in  DAC_setting;
-		ASIC_CMPBIAS             : in  DAC_setting;
-		ASIC_PUBIAS              : in  DAC_setting;
-		ASIC_SBBIAS              : in  DAC_setting;
-		ASIC_ISEL                : in  DAC_setting;
+		ASIC_TRIG_THRESH             : in  DAC_setting_C_R_CH;
+		ASIC_DAC_BUF_BIASES          : in  DAC_setting;
+		ASIC_DAC_BUF_BIAS_ISEL       : in  DAC_setting;
+		ASIC_DAC_BUF_BIAS_VADJP      : in  DAC_setting;
+		ASIC_DAC_BUF_BIAS_VADJN      : in  DAC_setting;
+		ASIC_VBIAS                   : in  DAC_setting_C_R;
+		ASIC_VBIAS2                  : in  DAC_setting_C_R;
+		ASIC_WBIAS                   : in  DAC_setting_C_R;
+		ASIC_VADJP                   : in  DAC_setting_C_R;
+		ASIC_VADJN                   : in  DAC_setting_C_R;
+		ASIC_VDLY                    : in  DAC_setting_C_R;
+		ASIC_TRG_BIAS                : in  DAC_setting;
+		ASIC_TRG_BIAS2               : in  DAC_setting;
+		ASIC_TRGTHREF                : in  DAC_setting;
+		ASIC_CMPBIAS                 : in  DAC_setting;
+		ASIC_PUBIAS                  : in  DAC_setting;
+		ASIC_SBBIAS                  : in  DAC_setting;
+		ASIC_ISEL                    : in  DAC_setting;
 		--DAC values coming from feedback loops
-		WBIAS_FB                 : in  DAC_setting_C_R;
-		VDLY_FB                  : in  DAC_setting_C_R;
-		VADJP_FB                 : in  DAC_setting_C_R;
-		VADJN_FB                 : in  DAC_setting_C_R;		
+		WBIAS_FB                     : in  DAC_setting_C_R;
+		VDLY_FB                      : in  DAC_setting_C_R;
+		VADJP_FB                     : in  DAC_setting_C_R;
+		VADJN_FB                     : in  DAC_setting_C_R;		
 		--Multiplex enables to choose between the two above categories
-		VDLY_FEEDBACK_ENABLES    : in  Column_Row_Enables;
-		VADJ_FEEDBACK_ENABLES    : in  Column_Row_Enables;
-		WBIAS_FEEDBACK_ENABLES   : in  Column_Row_Enables;
+		VDLY_FEEDBACK_ENABLES        : in  Column_Row_Enables;
+		VADJ_FEEDBACK_ENABLES        : in  Column_Row_Enables;
+		WBIAS_FEEDBACK_ENABLES       : in  Column_Row_Enables;
 		--Other registers and timing-related signals that live in the ASIC internal registers
 		ASIC_TIMING_SSP_LEADING      : in  Timing_setting_C_R;
 		ASIC_TIMING_SSP_TRAILING     : in  Timing_setting_C_R;
@@ -81,15 +81,32 @@ architecture Behavioral of irs3b_dac_interface is
 	signal internal_ASIC_VADJP_TO_USE : DAC_setting_C_R;
 	signal internal_ASIC_VADJN_TO_USE : DAC_setting_C_R;
 	signal internal_ASIC_VDLY_TO_USE  : DAC_setting_C_R;	
+
+	--These allow multiplexing between internal and external VadjP/N DACs
+	signal internal_ASIC_DAC_BUF_BIAS_VADJP_TO_USE : DAC_setting;
+	signal internal_ASIC_DAC_BUF_BIAS_VADJN_TO_USE : DAC_setting;
+
 	
 begin
 
-	--Temporary until these are implemented
-	I2C_DAC_SCL_R01            <= '0';
-	I2C_DAC_SDA_R01            <= '0';
-	I2C_DAC_SCL_R23            <= '0';
-	I2C_DAC_SDA_R23            <= '0';
-	
+	--Control for the external DACs that control VadjP/N
+	map_external_dac_control : entity work.IRS3B_CarrierRevB_External_I2C_DAC_Control
+	port map( 
+		VADJP_VALUES      => internal_ASIC_VADJP_TO_USE,
+		VADJN_VALUES      => internal_ASIC_VADJN_TO_USE,
+		USE_EXTERNAL_DACS => USE_EXTERNAL_VADJ_DACS,
+		CLK               => CLOCK,
+		CLK_ENABLE        => CLOCK_ENABLE,
+      SCL_R01	         => I2C_DAC_SCL_R01,
+		SDA_R01           => I2C_DAC_SDA_R01,
+      SCL_R23	         => I2C_DAC_SCL_R23,
+		SDA_R23           => I2C_DAC_SDA_R23
+	);
+	--MUX to turn off the internal VADJP/N biases
+	internal_ASIC_DAC_BUF_BIAS_VADJP_TO_USE <= ASIC_DAC_BUF_BIAS_VADJP when USE_EXTERNAL_VADJ_DACS = '0' else
+			                                     (others => '0');
+	internal_ASIC_DAC_BUF_BIAS_VADJN_TO_USE <= ASIC_DAC_BUF_BIAS_VADJN when USE_EXTERNAL_VADJ_DACS = '0' else
+			                                     (others => '0');
 	
 	--ASIC DAC writing module
 	Inst_controlAsicDacProgramming : entity work.controlAsicDacProgramming
@@ -105,8 +122,8 @@ begin
 		ASIC_TRIG_THRESH             => ASIC_TRIG_THRESH,
 		ASIC_DAC_BUF_BIASES          => ASIC_DAC_BUF_BIASES,
 		ASIC_DAC_BUF_BIAS_ISEL       => ASIC_DAC_BUF_BIAS_ISEL,
-		ASIC_DAC_BUF_BIAS_VADJP      => ASIC_DAC_BUF_BIAS_VADJP,
-		ASIC_DAC_BUF_BIAS_VADJN      => ASIC_DAC_BUF_BIAS_VADJN,
+		ASIC_DAC_BUF_BIAS_VADJP      => internal_ASIC_DAC_BUF_BIAS_VADJP_TO_USE,
+		ASIC_DAC_BUF_BIAS_VADJN      => internal_ASIC_DAC_BUF_BIAS_VADJN_TO_USE,
 		ASIC_VBIAS                   => ASIC_VBIAS,
 		ASIC_VBIAS2                  => ASIC_VBIAS2,
 		ASIC_REG_TRG                 => ASIC_REG_TRG,

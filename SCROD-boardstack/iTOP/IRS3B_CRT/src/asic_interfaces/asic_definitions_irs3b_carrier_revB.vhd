@@ -49,6 +49,11 @@ package asic_definitions_irs3b_carrier_revB is
 	subtype Wilkinson_Counter is std_logic_vector(15 downto 0);
 	type Row_Wilkinson_Counters is array(ROWS_PER_COL-1 downto 0) of Wilkinson_Counter;
 	type Column_Row_Wilkinson_Counters is array(ASICS_PER_ROW-1 downto 0) of Row_Wilkinson_Counters;
+	--Sampling rate monitor counter count values
+	subtype Sampling_Rate_Counter is std_logic_vector(15 downto 0);
+	type Row_Sampling_Rate_Counters is array(ROWS_PER_COL-1 downto 0) of Sampling_Rate_Counter;
+	type Column_Row_Sampling_Rate_Counters is array(ASICS_PER_ROW-1 downto 0) of Row_Sampling_Rate_Counters;
+
 	--Enables for the various feedbacks (1 bit per asic)
 	type Row_Enables is array(ROWS_PER_COL-1 downto 0) of std_logic;
 	type Column_Row_Enables is array(ASICS_PER_ROW-1 downto 0) of Row_Enables;

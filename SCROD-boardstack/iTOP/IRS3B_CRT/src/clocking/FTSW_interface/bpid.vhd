@@ -31,8 +31,8 @@ entity bpid is
     signal ack_p      : out   std_logic;
     signal trg_n      : in    std_logic;
     signal trg_p      : in    std_logic;
-    signal rsv_n      : out   std_logic;
-    signal rsv_p      : out   std_logic;
+    signal rsv_n      : in    std_logic;
+    signal rsv_p      : in    std_logic;
     signal clk_n      : in    std_logic;
     signal clk_p      : in    std_logic;
 
@@ -138,7 +138,7 @@ begin
 --  map_lg: bufg port map ( i => user_clock, o => clk_l );
 
   map_ack: obufds port map ( i => '0', o => ack_p, ob => ack_n );
-  map_rsv: obufds port map ( i => '0', o => rsv_p, ob => rsv_n );
+  map_rsv: ibufds port map ( o => open, i => rsv_p, ib => rsv_n );
   
 --   proc_lclk: process (clk_l)
 --   begin

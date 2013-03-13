@@ -25,6 +25,22 @@ package IRS3B_CarrierRevB_DAC_definitions is
 	type    Timing_setting_R is array (ROWS_PER_COL-1 downto 0) of Timing_setting;
 	type    Timing_setting_C_R is array(ASICS_PER_ROW-1 downto 0) of Timing_setting_R;
 
+
+	--------------- Definitions for the external VadjP/N DACs
+	-- A single LTC2637 has 8 DAC channels, each 12 bits
+	type LTC2637_Voltages is array(7 downto 0) of DAC_Setting;
+	-- There are two DACs per bus
+	type bus_DAC_Values is array(1 downto 0) of LTC2637_Voltages;	
+	-- Address conventions for the board stack DACs
+	subtype LTC2637_Address is std_logic_vector(6 downto 0);
+	constant DAC_Address_R02 : LTC2637_Address := "0010000";
+	constant DAC_Address_R13 : LTC2637_Address := "0010001";
+   constant DAC_Write_and_Update : std_logic_vector(3 downto 0) := "0011";
+   constant DAC_Shutdown         : std_logic_vector(3 downto 0) := "0100";
+	---------------------------------------------------------------------------
+
+
+
 end IRS3B_CarrierRevB_DAC_definitions;
 
 package body IRS3B_CarrierRevB_DAC_definitions is
