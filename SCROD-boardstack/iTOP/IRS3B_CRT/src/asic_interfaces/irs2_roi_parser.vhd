@@ -3,7 +3,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity irs2_roi_parser is
 	Port ( 
