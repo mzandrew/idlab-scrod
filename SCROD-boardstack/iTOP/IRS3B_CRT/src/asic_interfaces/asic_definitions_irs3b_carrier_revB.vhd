@@ -34,25 +34,23 @@ package asic_definitions_irs3b_carrier_revB is
 	-------------Trigger scalers-----------------------------
 	--Clock rate that runs the trigger blocks
 	constant TRIGGER_CLOCK_RATE            : real := 50000000.0;
-	--Clock rate for the clock that defines the integration period
+	--Clock rate for the clock that defines the integration period (in Hz?)
 	constant TRIGGER_INTEGRATION_FREQUENCY : real := 10.0;
-	--Calculate how many bits we need in our counter to get the desired enable period.
-	constant TRIGGER_COUNTER_WIDTH         : integer := integer(ceil(log2(TRIGGER_CLOCK_RATE/TRIGGER_INTEGRATION_FREQUENCY)));
-	--Calculate the desired counter value that we'll use to get our enable.
-	constant TRIGGER_TARGET_COUNT          : integer := integer(ceil(TRIGGER_CLOCK_RATE/TRIGGER_INTEGRATION_FREQUENCY - 2.0));
 	--Bit width for the scalers
 	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 16;
 	--Data type for one asic's worth of trigger scalers
 	type ASIC_TRIGGER_SCALERS is array(TRIGGER_CHANNELS_PER_ASIC-1 downto 0) of std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);	
 	-------------Feedback/monitoring related-----------------
-	--Wilkinson monitor counter count values
-	subtype Wilkinson_Counter is std_logic_vector(15 downto 0);
-	type Row_Wilkinson_Counters is array(ROWS_PER_COL-1 downto 0) of Wilkinson_Counter;
-	type Column_Row_Wilkinson_Counters is array(ASICS_PER_ROW-1 downto 0) of Row_Wilkinson_Counters;
-	--Sampling rate monitor counter count values
-	subtype Sampling_Rate_Counter is std_logic_vector(15 downto 0);
-	type Row_Sampling_Rate_Counters is array(ROWS_PER_COL-1 downto 0) of Sampling_Rate_Counter;
-	type Column_Row_Sampling_Rate_Counters is array(ASICS_PER_ROW-1 downto 0) of Row_Sampling_Rate_Counters;
+	--Generic 16-bit counter types
+	subtype Counter is std_logic_vector(15 downto 0);
+	type Row_Counters is array(ROWS_PER_COL-1 downto 0) of Counter;
+	type Column_Row_Counters is array(ASICS_PER_ROW-1 downto 0) of Row_Counters;
+--	--Wilkinson monitor counter count values
+--	subtype Wilkinson_Counter is Column_Row_Counters;
+--	--Sampling rate (RCO) monitor counter values
+--	subtype Sampling_Rate_Counter is Column_Row_Counters;
+	constant WILKINSON_INTEGRATION_FREQUENCY : real := 10.0;
+	constant RCO_INTEGRATION_FREQUENCY       : real := 600.0;
 
 	--Enables for the various feedbacks (1 bit per asic)
 	type Row_Enables is array(ROWS_PER_COL-1 downto 0) of std_logic;

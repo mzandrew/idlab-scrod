@@ -38,9 +38,37 @@ entity scrod_top is
 		------------ASIC Related Pins-----------------
 		----------------------------------------------
 		--ASIC sampling signals (SST in)
-		AsicIn_SAMPLING_HOLD_MODE_C   : out std_logic_vector(ASICS_PER_ROW-1 downto 0);
+		AsicIn_SAMPLING_HOLD_MODE_C   : out std_logic_vector(3 downto 0);
+--		--ASIC timing monitor (PHASE/PHAB/etc.)
+--		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in std_logic_vector(3 downto 0); --New
+--		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in std_logic_vector(3 downto 0); --New
+--		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in std_logic_vector(3 downto 0); --New
+--		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in std_logic_vector(3 downto 0); --New
+--		--ASIC data buses (one per column) 
+--		AsicOut_DATA_BUS_C0 : in std_logic_vector(11 downto 0); --New
+--		AsicOut_DATA_BUS_C1 : in std_logic_vector(11 downto 0); --New
+--		AsicOut_DATA_BUS_C2 : in std_logic_vector(11 downto 0); --New
+--		AsicOut_DATA_BUS_C3 : in std_logic_vector(11 downto 0); --New
+--		--ASIC data bus output enables (one per row)
+--		AsicIn_DATA_OUTPUT_DISABLE_R : out std_logic_vector(3 downto 0); --New
+--		--ASIC Wilkinson start/clear/ramp signals
+--		AsicIn_WILK_COUNTER_START_C  : out std_logic_vector(3 downto 0); --New
+--		AsicIn_WILK_COUNTER_RESET    : out std_logic; --New
+--		AsicIn_WILK_RAMP_ACTIVE      : out std_logic; --New
+--		--ASIC write address (LSB is now absorbed inside the ASIC) and enable
+--		AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : out std_logic_vector(8 downto 1); --New
+--		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out std_logic; --New
+--		--ASIC read address interface
+--		AsicIn_STORAGE_TO_WILK_ENABLE                     : out std_logic; --New
+--		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic; --New
+--		AsicIn_STORAGE_TO_WILK_ADDRESS_DIR                : out std_logic; --New
+--		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT       : out std_logic; --New
+--		--ASIC channel/sample address interface
+--		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic; --New
+--		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR                : out std_logic; --New
+--		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT       : out std_logic; --New
 		--ASIC trigger interface signals
-		AsicOut_TRIG_OUTPUT_R0_C0_CH	:  in std_logic_vector(7 downto 0);
+		AsicOut_TRIG_OUTPUT_R0_C0_CH	:  in std_logic_vector(7 downto 0); 
 		AsicOut_TRIG_OUTPUT_R0_C1_CH	:  in std_logic_vector(7 downto 0);
 		AsicOut_TRIG_OUTPUT_R0_C2_CH	:  in std_logic_vector(7 downto 0);
 		AsicOut_TRIG_OUTPUT_R0_C3_CH	:  in std_logic_vector(7 downto 0);
@@ -192,10 +220,10 @@ architecture Behavioral of scrod_top is
 	signal internal_USE_EXTERNAL_VADJ_DACS : std_logic;
 
 	--Monitoring 
-	signal internal_WILKINSON_TARGETS  : Column_Row_Wilkinson_Counters;
-	signal internal_WILKINSON_COUNTERS : Column_Row_Wilkinson_Counters;
-	signal internal_SAMPLING_RATE_TARGETS  : Column_Row_Sampling_Rate_Counters;
-	signal internal_SAMPLING_RATE_COUNTERS : Column_Row_Sampling_Rate_Counters;
+	signal internal_WILKINSON_TARGETS      : Column_Row_Counters;
+	signal internal_WILKINSON_COUNTERS     : Column_Row_Counters;
+	signal internal_SAMPLING_RATE_TARGETS  : Column_Row_Counters;
+	signal internal_SAMPLING_RATE_COUNTERS : Column_Row_Counters;
 	
 	--Connections to the general purpose registers
 	signal internal_OUTPUT_REGISTERS : GPR;
@@ -331,6 +359,10 @@ begin
 	internal_ASIC_TRIGGER_BITS_C_R_CH(3)(3) <= AsicOut_TRIG_OUTPUT_R3_C3_CH;
 	--Then we instantiate the trigger scaler block
 	map_asic_trigger_scalers : entity work.trigger_scaler_top
+	generic map (
+		CLOCK_RATE            => 50000000.0,
+		INTEGRATION_FREQUENCY => TRIGGER_INTEGRATION_FREQUENCY
+	)
 	port map (
 		TRIGGER_BITS_IN => internal_ASIC_TRIGGER_BITS_C_R_CH,
 		CLOCK           => internal_CLOCK_50MHz_BUFG,
@@ -351,6 +383,7 @@ begin
 		FEEDBACK_SAMPLING_RATE_COUNTER_C_R         => internal_SAMPLING_RATE_COUNTERS,
 		FEEDBACK_SAMPLING_RATE_VADJP_C_R           => internal_VADJP_FB,
 		FEEDBACK_SAMPLING_RATE_VADJN_C_R           => internal_VADJN_FB,
+		STARTING_SAMPLING_RATE_VADJN_C_R           => internal_ASIC_VADJN,
 		AsicOut_MONITOR_WILK_COUNTERS_C0_R         => AsicOut_MONITOR_WILK_COUNTER_C0_R,
 		AsicOut_MONITOR_WILK_COUNTERS_C1_R         => AsicOut_MONITOR_WILK_COUNTER_C1_R,
 		AsicOut_MONITOR_WILK_COUNTERS_C2_R         => AsicOut_MONITOR_WILK_COUNTER_C2_R,
@@ -359,6 +392,7 @@ begin
 		FEEDBACK_WILKINSON_GOALS_C_R               => internal_WILKINSON_TARGETS,
 		FEEDBACK_WILKINSON_COUNTERS_C_R            => internal_WILKINSON_COUNTERS,
 		FEEDBACK_WILKINSON_DAC_VALUES_C_R          => internal_VDLY_FB,
+		STARTING_WILKINSON_DAC_VALUES_C_R          => internal_ASIC_VDLY,
 		CLOCK                                      => internal_CLOCK_50MHz_BUFG
 	);
 
