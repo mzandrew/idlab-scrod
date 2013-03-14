@@ -19,7 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -30,7 +30,7 @@ use work.asic_definitions_irs2_carrier_revA.all;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 	entity update_read_addr is
-		port(
+	port(
 		CLOCK         					 			: in std_logic;
 		new_address_reached						: out std_logic; --LM: updating address feedback
 		START_NEW_ADDRESS							: in std_logic; --LM: start new address update
@@ -71,7 +71,7 @@ end Behavioral;
 	
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.asic_definitions_irs2_carrier_revA.all;
+use work.asic_definitions_irs3b_carrier_revB.all;
 	entity update_sample_addr is
 		port(
 		CLOCK         					 			: in std_logic;

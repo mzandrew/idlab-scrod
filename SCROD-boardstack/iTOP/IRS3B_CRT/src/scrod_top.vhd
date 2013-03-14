@@ -39,34 +39,34 @@ entity scrod_top is
 		----------------------------------------------
 		--ASIC sampling signals (SST in)
 		AsicIn_SAMPLING_HOLD_MODE_C   : out std_logic_vector(3 downto 0);
---		--ASIC timing monitor (PHASE/PHAB/etc.)
---		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in std_logic_vector(3 downto 0); --New
---		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in std_logic_vector(3 downto 0); --New
---		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in std_logic_vector(3 downto 0); --New
---		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in std_logic_vector(3 downto 0); --New
---		--ASIC data buses (one per column) 
---		AsicOut_DATA_BUS_C0 : in std_logic_vector(11 downto 0); --New
---		AsicOut_DATA_BUS_C1 : in std_logic_vector(11 downto 0); --New
---		AsicOut_DATA_BUS_C2 : in std_logic_vector(11 downto 0); --New
---		AsicOut_DATA_BUS_C3 : in std_logic_vector(11 downto 0); --New
---		--ASIC data bus output enables (one per row)
---		AsicIn_DATA_OUTPUT_DISABLE_R : out std_logic_vector(3 downto 0); --New
---		--ASIC Wilkinson start/clear/ramp signals
---		AsicIn_WILK_COUNTER_START_C  : out std_logic_vector(3 downto 0); --New
---		AsicIn_WILK_COUNTER_RESET    : out std_logic; --New
---		AsicIn_WILK_RAMP_ACTIVE      : out std_logic; --New
---		--ASIC write address (LSB is now absorbed inside the ASIC) and enable
---		AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : out std_logic_vector(8 downto 1); --New
---		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out std_logic; --New
---		--ASIC read address interface
---		AsicIn_STORAGE_TO_WILK_ENABLE                     : out std_logic; --New
---		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic; --New
---		AsicIn_STORAGE_TO_WILK_ADDRESS_DIR                : out std_logic; --New
---		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT       : out std_logic; --New
---		--ASIC channel/sample address interface
---		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic; --New
---		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR                : out std_logic; --New
---		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT       : out std_logic; --New
+		--ASIC timing monitor (PHASE/PHAB/etc.)
+		AsicOut_SAMPLING_TIMING_MONITOR_C0_R : in std_logic_vector(3 downto 0); --New
+		AsicOut_SAMPLING_TIMING_MONITOR_C1_R : in std_logic_vector(3 downto 0); --New
+		AsicOut_SAMPLING_TIMING_MONITOR_C2_R : in std_logic_vector(3 downto 0); --New
+		AsicOut_SAMPLING_TIMING_MONITOR_C3_R : in std_logic_vector(3 downto 0); --New
+		--ASIC data buses (one per column) 
+		AsicOut_DATA_BUS_C0 : in std_logic_vector(11 downto 0); --New
+		AsicOut_DATA_BUS_C1 : in std_logic_vector(11 downto 0); --New
+		AsicOut_DATA_BUS_C2 : in std_logic_vector(11 downto 0); --New
+		AsicOut_DATA_BUS_C3 : in std_logic_vector(11 downto 0); --New
+		--ASIC data bus output enables (one per row)
+		AsicIn_DATA_OUTPUT_DISABLE_R : out std_logic_vector(3 downto 0); --New
+		--ASIC Wilkinson start/clear/ramp signals
+		AsicIn_WILK_COUNTER_START_C  : out std_logic_vector(3 downto 0); --New
+		AsicIn_WILK_COUNTER_RESET    : out std_logic; --New
+		AsicIn_WILK_RAMP_ACTIVE      : out std_logic; --New
+		--ASIC write address (LSB is now absorbed inside the ASIC) and enable
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB : out std_logic_vector(8 downto 1); --New
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out std_logic; --New
+		--ASIC read address interface
+		AsicIn_STORAGE_TO_WILK_ENABLE                     : out std_logic; --New
+		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic; --New
+		AsicIn_STORAGE_TO_WILK_ADDRESS_DIR                : out std_logic; --New
+		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT       : out std_logic; --New
+		--ASIC channel/sample address interface
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK : out std_logic; --New
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR                : out std_logic; --New
+		AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT       : out std_logic; --New
 		--ASIC trigger interface signals
 		AsicOut_TRIG_OUTPUT_R0_C0_CH	:  in std_logic_vector(7 downto 0); 
 		AsicOut_TRIG_OUTPUT_R0_C1_CH	:  in std_logic_vector(7 downto 0);
@@ -219,6 +219,9 @@ architecture Behavioral of scrod_top is
 	--Enable to switch between internal and external VadjP/N DAC control
 	signal internal_USE_EXTERNAL_VADJ_DACS : std_logic;
 
+	--ASIC timing monitors for PHASE information (not enables but same dimensionality)
+	signal internal_ASIC_PHASE_MONITORS    : Column_Row_Enables;
+
 	--Monitoring 
 	signal internal_WILKINSON_TARGETS      : Column_Row_Counters;
 	signal internal_WILKINSON_COUNTERS     : Column_Row_Counters;
@@ -231,6 +234,37 @@ architecture Behavioral of scrod_top is
 
 	--Miscellaneous connections
 	signal internal_SCROD_REV_AND_ID_WORD : std_logic_vector(31 downto 0);
+	--registers related to ASIC readout
+	signal internal_FIRST_ALLOWED_WINDOW                 : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_LAST_ALLOWED_WINDOW                  : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_MAX_WINDOWS_TO_LOOK_BACK             : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_MIN_WINDOWS_TO_LOOK_BACK             : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_PEDESTAL_WINDOW                      : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_PEDESTAL_MODE                        : STD_LOGIC;
+	signal internal_ROI_ADDRESS_ADJUST                   : std_logic_vector(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
+	--Trigger readout
+	signal internal_SOFTWARE_TRIGGER : std_logic;
+	--Vetoes for the triggers
+	signal internal_SOFTWARE_TRIGGER_VETO : std_logic;
+	signal internal_HARDWARE_TRIGGER_VETO : std_logic;
+	--registers related to ASIC readout
+	signal internal_EVENT_NUMBER_TO_SET          : STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); --This is what event number will be set to when set event number is enabled
+	signal internal_SET_EVENT_NUMBER             : STD_LOGIC;
+	signal internal_EVENT_NUMBER                 : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+	signal internal_FORCE_CHANNEL_MASK           : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
+	signal internal_IGNORE_CHANNEL_MASK          : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);	
+	--ASIC readout signals
+	signal internal_ASIC_READOUT_DATA             : ASIC_DATA_C;
+	signal internal_ASIC_DATA_OUTPUT_DISABLE_R    : Row_Enables;
+	--indirectly related to ASIC readout
+	signal internal_WAVEFORM_FIFO_DATA_OUT       : std_logic_vector(31 downto 0);
+	signal internal_WAVEFORM_FIFO_EMPTY          : std_logic;
+	signal internal_WAVEFORM_FIFO_DATA_VALID     : std_logic;
+	signal internal_WAVEFORM_FIFO_READ_CLOCK     : std_logic;
+	signal internal_WAVEFORM_FIFO_READ_ENABLE    : std_logic;
+	signal internal_WAVEFORM_PACKET_BUILDER_BUSY : std_logic;
+	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
 
 begin 
 	--Clock generation
@@ -395,6 +429,66 @@ begin
 		STARTING_WILKINSON_DAC_VALUES_C_R          => internal_ASIC_VDLY,
 		CLOCK                                      => internal_CLOCK_50MHz_BUFG
 	);
+	
+	--Guts of the interface for digitization and readout
+	--ASIC sampling, digitization, and readout (SDR)
+	--This includes sampling, selection of ROIs, digitizing, and readout
+	internal_ASIC_READOUT_DATA(0) <= AsicOut_DATA_BUS_C0;
+	internal_ASIC_READOUT_DATA(1) <= AsicOut_DATA_BUS_C1;
+	internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
+	internal_ASIC_READOUT_DATA(3) <= AsicOut_DATA_BUS_C3;
+	gen_readout_signals : for i in 0 to 3 generate
+		AsicIn_DATA_OUTPUT_DISABLE_R(i) <= internal_ASIC_DATA_OUTPUT_DISABLE_R(i);
+	end generate;
+	--
+	map_irs3b_sdr : entity work.irs3b_sampling_digitizing_readout
+	port map (
+		CLOCK_SAMPLING_HOLD_MODE                           => internal_CLOCK_SST_BUFG,
+		CLOCK_TRIGGER_MEMORY                               => internal_CLOCK_4xSST_BUFG,
+		CLOCK_2xSST_CLOCK_ENABLE                           => internal_CLOCK_2xSST_CE,
+		CLOCK                                              => internal_CLOCK_50MHz_BUFG,
+		SOFTWARE_TRIGGER_IN                                => internal_SOFTWARE_TRIGGER,
+		HARDWARE_TRIGGER_IN                                => internal_HARDWARE_TRIGGER,
+		SOFTWARE_TRIGGER_VETO                              => internal_SOFTWARE_TRIGGER_VETO,
+		HARDWARE_TRIGGER_VETO                              => internal_HARDWARE_TRIGGER_VETO,
+		FIRST_ALLOWED_WINDOW                               => internal_FIRST_ALLOWED_WINDOW,
+		LAST_ALLOWED_WINDOW                                => internal_LAST_ALLOWED_WINDOW,
+		ROI_ADDRESS_ADJUST                                 => internal_ROI_ADDRESS_ADJUST,
+		MAX_WINDOWS_TO_LOOK_BACK                           => internal_MAX_WINDOWS_TO_LOOK_BACK,
+		MIN_WINDOWS_TO_LOOK_BACK                           => internal_MIN_WINDOWS_TO_LOOK_BACK,
+		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER               => internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER,
+		PEDESTAL_WINDOW                                    => internal_PEDESTAL_WINDOW,
+		PEDESTAL_MODE                                      => internal_PEDESTAL_MODE,
+		SCROD_REV_AND_ID_WORD                              => internal_SCROD_REV_AND_ID_WORD,
+		EVENT_NUMBER_TO_SET                                => internal_EVENT_NUMBER_TO_SET,
+		SET_EVENT_NUMBER                                   => internal_SET_EVENT_NUMBER,
+		EVENT_NUMBER                                       => internal_EVENT_NUMBER,
+		FORCE_CHANNEL_MASK                                 => internal_FORCE_CHANNEL_MASK,
+		IGNORE_CHANNEL_MASK                                => internal_IGNORE_CHANNEL_MASK,
+		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB            => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
+		ASIC_SAMPLING_TO_STORAGE_ENABLE                    => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
+		ASIC_SAMPLING_TIMING_MONITOR                       => internal_ASIC_PHASE_MONITORS,
+		ASIC_STORAGE_TO_WILK_ENABLE                        => AsicIn_STORAGE_TO_WILK_ENABLE,
+		ASIC_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK    => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK,
+		ASIC_STORAGE_TO_WILK_ADDRESS_DIR                   => AsicIn_STORAGE_TO_WILK_ADDRESS_DIR,
+		ASIC_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT          => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT,
+		ASIC_WILK_COUNTER_RESET                            => AsicIn_WILK_COUNTER_RESET,
+		ASIC_WILK_COUNTER_START                            => AsicIn_WILK_COUNTER_START_C,
+		ASIC_WILK_RAMP_ACTIVE                              => AsicIn_WILK_RAMP_ACTIVE,
+		ASIC_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_SHIFT_CLOCK,
+		ASIC_CHANNEL_AND_SAMPLE_ADDRESS_DIR                => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_DIR,
+		ASIC_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT       => AsicIn_CHANNEL_AND_SAMPLE_ADDRESS_SERIAL_INPUT,
+		ASIC_READOUT_TRISTATE_DISABLE                      => internal_ASIC_DATA_OUTPUT_DISABLE_R,
+		ASIC_READOUT_DATA                                  => internal_ASIC_READOUT_DATA,
+		ASIC_TRIGGER_BITS                                  => internal_ASIC_TRIGGER_BITS_C_R_CH,
+		EVENT_FIFO_DATA_OUT                                => internal_WAVEFORM_FIFO_DATA_OUT,
+		EVENT_FIFO_DATA_VALID                              => internal_WAVEFORM_FIFO_DATA_VALID,
+		EVENT_FIFO_EMPTY                                   => internal_WAVEFORM_FIFO_EMPTY,
+		EVENT_FIFO_READ_CLOCK                              => internal_WAVEFORM_FIFO_READ_CLOCK,
+		EVENT_FIFO_READ_ENABLE                             => internal_WAVEFORM_FIFO_READ_ENABLE,
+		EVENT_PACKET_BUILDER_BUSY                          => internal_WAVEFORM_PACKET_BUILDER_BUSY,
+		EVENT_PACKET_BUILDER_VETO                          => internal_WAVEFORM_PACKET_BUILDER_VETO
+	);
 
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
@@ -404,22 +498,22 @@ begin
 		OUTPUT_REGISTERS             => internal_OUTPUT_REGISTERS,
 		INPUT_REGISTERS              => internal_INPUT_REGISTERS,
 	
-		--super temporary -- disable waveform interface to event builder
-		--WAVEFORM_FIFO_DATA_IN        => internal_WAVEFORM_FIFO_DATA_OUT,
-		--WAVEFORM_FIFO_EMPTY          => internal_WAVEFORM_FIFO_EMPTY,
-		--WAVEFORM_FIFO_DATA_VALID     => internal_WAVEFORM_FIFO_DATA_VALID,
-		--WAVEFORM_FIFO_READ_CLOCK     => internal_WAVEFORM_FIFO_READ_CLOCK,
-		--WAVEFORM_FIFO_READ_ENABLE    => internal_WAVEFORM_FIFO_READ_ENABLE,
-		--WAVEFORM_PACKET_BUILDER_BUSY => internal_WAVEFORM_PACKET_BUILDER_BUSY,
-		--WAVEFORM_PACKET_BUILDER_VETO => internal_WAVEFORM_PACKET_BUILDER_VETO,
-		--WAVEFORM ROI readout disable for now
-		WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
-		WAVEFORM_FIFO_EMPTY          => '1',
-		WAVEFORM_FIFO_DATA_VALID     => '0',
-		WAVEFORM_FIFO_READ_CLOCK     => open,
-		WAVEFORM_FIFO_READ_ENABLE    => open,
-		WAVEFORM_PACKET_BUILDER_BUSY => '0',
-		WAVEFORM_PACKET_BUILDER_VETO => open,
+		--Standard way to run the interface
+		WAVEFORM_FIFO_DATA_IN        => internal_WAVEFORM_FIFO_DATA_OUT,
+		WAVEFORM_FIFO_EMPTY          => internal_WAVEFORM_FIFO_EMPTY,
+		WAVEFORM_FIFO_DATA_VALID     => internal_WAVEFORM_FIFO_DATA_VALID,
+		WAVEFORM_FIFO_READ_CLOCK     => internal_WAVEFORM_FIFO_READ_CLOCK,
+		WAVEFORM_FIFO_READ_ENABLE    => internal_WAVEFORM_FIFO_READ_ENABLE,
+		WAVEFORM_PACKET_BUILDER_BUSY => internal_WAVEFORM_PACKET_BUILDER_BUSY,
+		WAVEFORM_PACKET_BUILDER_VETO => internal_WAVEFORM_PACKET_BUILDER_VETO,
+		--Can disable this interface if needed for testing
+		--WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
+		--WAVEFORM_FIFO_EMPTY          => '1',
+		--WAVEFORM_FIFO_DATA_VALID     => '0',
+		--WAVEFORM_FIFO_READ_CLOCK     => open,
+		--WAVEFORM_FIFO_READ_ENABLE    => open,
+		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
+		--WAVEFORM_PACKET_BUILDER_VETO => open,
 
 		FIBER_0_RXP                  => FIBER_0_RXP,
 		FIBER_0_RXN                  => FIBER_0_RXN,
@@ -496,8 +590,44 @@ begin
 		end generate;
 	end generate;
 
+	internal_FIRST_ALLOWED_WINDOW     <= internal_OUTPUT_REGISTERS(161)(internal_FIRST_ALLOWED_WINDOW'length-1 downto 0);     --Register 161: Bits 8-0: First allowed analog storage window
+	internal_LAST_ALLOWED_WINDOW      <= internal_OUTPUT_REGISTERS(162)(internal_LAST_ALLOWED_WINDOW'length-1 downto 0);      --         162: Bits 8-0: Last allowed analog storage window
+	internal_MAX_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(163)(internal_MAX_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --Register 163: Bits 8-0: Maximum number of windows to look back
+	internal_MIN_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(164)(internal_MIN_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --         164: Bits 8-0: Minimum number of windows to look back
+
+	                                                                                              --Register 165: Trigger flags and pedestal mode settings
+	internal_PEDESTAL_WINDOW          <= internal_OUTPUT_REGISTERS(165)(internal_PEDESTAL_WINDOW'length-1 downto 0);          -- Bits 8-0: Window to read out in pedestal mode
+	internal_PEDESTAL_MODE            <= internal_OUTPUT_REGISTERS(165)(15);                                                  -- Bit  15:   Operate in pedestal mode    
+	internal_SOFTWARE_TRIGGER         <= internal_OUTPUT_REGISTERS(165)(14);                                                  -- Bit  14:   Software trigger
+	internal_SOFTWARE_TRIGGER_VETO    <= internal_OUTPUT_REGISTERS(165)(13);                                                  -- Bit  13:   Software trigger veto
+	internal_HARDWARE_TRIGGER_VETO    <= internal_OUTPUT_REGISTERS(165)(12);                                                  -- Bit  12:   Hardware trigger veto
+
 	internal_SCROD_REV_AND_ID_WORD(15 downto  0) <= internal_OUTPUT_REGISTERS(166); --Register 166: copy of the SCROD ID
 	internal_SCROD_REV_AND_ID_WORD(31 downto 16) <= internal_OUTPUT_REGISTERS(167); --Register 167: copy of the SCORD revision
+
+	internal_EVENT_NUMBER_TO_SET(15 downto  0)   <= internal_OUTPUT_REGISTERS(168);    --Register 168: LSBs of event number to set
+	internal_EVENT_NUMBER_TO_SET(31 downto 16)   <= internal_OUTPUT_REGISTERS(169);    --Register 169: MSBs of event number to set
+	internal_SET_EVENT_NUMBER                    <= internal_OUTPUT_REGISTERS(170)(0); --Register 170: bit 0 - set the event number
+	internal_FORCE_CHANNEL_MASK( 15 downto   0)  <= internal_OUTPUT_REGISTERS(171);    --Registers 171-178: Force channel masks
+	internal_FORCE_CHANNEL_MASK( 31 downto  16)  <= internal_OUTPUT_REGISTERS(172);
+	internal_FORCE_CHANNEL_MASK( 47 downto  32)  <= internal_OUTPUT_REGISTERS(173);
+	internal_FORCE_CHANNEL_MASK( 63 downto  48)  <= internal_OUTPUT_REGISTERS(174);
+	internal_FORCE_CHANNEL_MASK( 79 downto  64)  <= internal_OUTPUT_REGISTERS(175);
+	internal_FORCE_CHANNEL_MASK( 95 downto  80)  <= internal_OUTPUT_REGISTERS(176);
+	internal_FORCE_CHANNEL_MASK(111 downto  96)  <= internal_OUTPUT_REGISTERS(177);
+	internal_FORCE_CHANNEL_MASK(127 downto 112)  <= internal_OUTPUT_REGISTERS(178);
+	internal_IGNORE_CHANNEL_MASK( 15 downto   0) <= internal_OUTPUT_REGISTERS(179);    ----Registers 179-186: Ignore channel masks
+	internal_IGNORE_CHANNEL_MASK( 31 downto  16) <= internal_OUTPUT_REGISTERS(180);
+	internal_IGNORE_CHANNEL_MASK( 47 downto  32) <= internal_OUTPUT_REGISTERS(181);
+	internal_IGNORE_CHANNEL_MASK( 63 downto  48) <= internal_OUTPUT_REGISTERS(182);
+	internal_IGNORE_CHANNEL_MASK( 79 downto  64) <= internal_OUTPUT_REGISTERS(183);
+	internal_IGNORE_CHANNEL_MASK( 95 downto  80) <= internal_OUTPUT_REGISTERS(184);
+	internal_IGNORE_CHANNEL_MASK(111 downto  96) <= internal_OUTPUT_REGISTERS(185);
+	internal_IGNORE_CHANNEL_MASK(127 downto 112) <= internal_OUTPUT_REGISTERS(186);
+	internal_ROI_ADDRESS_ADJUST                   <= internal_OUTPUT_REGISTERS(187)(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);  --Register 187: 10-bit signed adjust window for the trigger memory
+	internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER <= internal_OUTPUT_REGISTERS(188)(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);  --Register 188: 9 bit unsigned number of window pairs to sample after receiving a trigger
+
+
 
 	internal_ASIC_DAC_BUF_BIAS_ISEL  <= internal_OUTPUT_REGISTERS(200)(11 downto 0); --Register 200: Internal ASIC DAC buffer bias for driving ISEL - shared for all ASICs
 	internal_ASIC_DAC_BUF_BIAS_VADJP <= internal_OUTPUT_REGISTERS(201)(11 downto 0); --Register 201: Internal ASIC DAC buffer bias for driving VADJP - shared for all ASICs
@@ -599,38 +729,6 @@ begin
 	internal_I2C_WRITE_REGISTERS(6)        <= internal_OUTPUT_REGISTERS(503); --Register 503: I2C interface for row 2,3 GPIO serial for ASIC shift out signals
 	internal_I2C_WRITE_REGISTERS(7)        <= internal_OUTPUT_REGISTERS(504); --Register 504: I2C interface for interconnect rev C GPIO to control calibration signals
 
-
---	internal_FIRST_ALLOWED_WINDOW     <= internal_OUTPUT_REGISTERS(161)(internal_FIRST_ALLOWED_WINDOW'length-1 downto 0);     --Register 161: Bits 8-0: First allowed analog storage window
---	internal_LAST_ALLOWED_WINDOW      <= internal_OUTPUT_REGISTERS(162)(internal_LAST_ALLOWED_WINDOW'length-1 downto 0);      --         162: Bits 8-0: Last allowed analog storage window
---	internal_MAX_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(163)(internal_MAX_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --Register 163: Bits 8-0: Maximum number of windows to look back
---	internal_MIN_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(164)(internal_MIN_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --         164: Bits 8-0: Minimum number of windows to look back
---	internal_PEDESTAL_WINDOW          <= internal_OUTPUT_REGISTERS(165)(internal_PEDESTAL_WINDOW'length-1 downto 0);          --Register 165: Bits 8-0:  Window to read out in pedestal mode
---	internal_PEDESTAL_MODE            <= internal_OUTPUT_REGISTERS(165)(15);                                                  --              Bit  15:   Operate in pedestal mode    
---	internal_SOFTWARE_TRIGGER         <= internal_OUTPUT_REGISTERS(165)(14);                                                  --              Bit  14:   Software trigger
---	internal_SOFTWARE_TRIGGER_VETO    <= internal_OUTPUT_REGISTERS(165)(13);                                                  --              Bit  13:   Software trigger veto
---	internal_HARDWARE_TRIGGER_VETO    <= internal_OUTPUT_REGISTERS(165)(12);                                                  --              Bit  12:   Hardware trigger veto
---	internal_EVENT_NUMBER_TO_SET(15 downto  0)   <= internal_OUTPUT_REGISTERS(168);    --Register 168: LSBs of event number to set
---	internal_EVENT_NUMBER_TO_SET(31 downto 16)   <= internal_OUTPUT_REGISTERS(169);    --Register 169: MSBs of event number to set
---	internal_SET_EVENT_NUMBER                    <= internal_OUTPUT_REGISTERS(170)(0); --Register 170: bit 0 - set the event number
---	internal_FORCE_CHANNEL_MASK( 15 downto   0)  <= internal_OUTPUT_REGISTERS(171);    --Registers 171-178: Force channel masks
---	internal_FORCE_CHANNEL_MASK( 31 downto  16)  <= internal_OUTPUT_REGISTERS(172);
---	internal_FORCE_CHANNEL_MASK( 47 downto  32)  <= internal_OUTPUT_REGISTERS(173);
---	internal_FORCE_CHANNEL_MASK( 63 downto  48)  <= internal_OUTPUT_REGISTERS(174);
---	internal_FORCE_CHANNEL_MASK( 79 downto  64)  <= internal_OUTPUT_REGISTERS(175);
---	internal_FORCE_CHANNEL_MASK( 95 downto  80)  <= internal_OUTPUT_REGISTERS(176);
---	internal_FORCE_CHANNEL_MASK(111 downto  96)  <= internal_OUTPUT_REGISTERS(177);
---	internal_FORCE_CHANNEL_MASK(127 downto 112)  <= internal_OUTPUT_REGISTERS(178);
---	internal_IGNORE_CHANNEL_MASK( 15 downto   0) <= internal_OUTPUT_REGISTERS(179);    ----Registers 179-186: Ignore channel masks
---	internal_IGNORE_CHANNEL_MASK( 31 downto  16) <= internal_OUTPUT_REGISTERS(180);
---	internal_IGNORE_CHANNEL_MASK( 47 downto  32) <= internal_OUTPUT_REGISTERS(181);
---	internal_IGNORE_CHANNEL_MASK( 63 downto  48) <= internal_OUTPUT_REGISTERS(182);
---	internal_IGNORE_CHANNEL_MASK( 79 downto  64) <= internal_OUTPUT_REGISTERS(183);
---	internal_IGNORE_CHANNEL_MASK( 95 downto  80) <= internal_OUTPUT_REGISTERS(184);
---	internal_IGNORE_CHANNEL_MASK(111 downto  96) <= internal_OUTPUT_REGISTERS(185);
---	internal_IGNORE_CHANNEL_MASK(127 downto 112) <= internal_OUTPUT_REGISTERS(186);
---	internal_ROI_ADDRESS_ADJUST                   <= internal_OUTPUT_REGISTERS(187)(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);  --Register 187: 10-bit signed adjust window for the trigger memory
---	internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER <= internal_OUTPUT_REGISTERS(188)(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);  --Register 188: 9 bit unsigned number of window pairs to sample after receiving a trigger
-
 	--------Input register mapping--------------------
 	--Map the first N_GPR output registers to the first set of read registers
 	gen_OUTREG_to_INREG: for i in 0 to N_GPR-1 generate
@@ -686,8 +784,7 @@ begin
 		end generate;
 	end generate;																									
 
-
---	internal_INPUT_REGISTERS(N_GPR+107) <= internal_EVENT_NUMBER(15 downto  0);                                                                 --Register 363: LSBs of current event number
---	internal_INPUT_REGISTERS(N_GPR+108) <= internal_EVENT_NUMBER(31 downto 16);                                                                 --Register 364: MSBs of current event number
+	internal_INPUT_REGISTERS(N_GPR+96) <= internal_EVENT_NUMBER(15 downto  0); --Register 608: LSBs of current event number
+	internal_INPUT_REGISTERS(N_GPR+97) <= internal_EVENT_NUMBER(31 downto 16); --Register 609: MSBs of current event number
 
 end Behavioral;
