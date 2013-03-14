@@ -12,9 +12,15 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+use ieee.math_real.log2;
+use ieee.math_real.ceil;
 use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_timing_generator is
+	Generic (
+		CLOCK_RATE            : real := 50000000.0; --In Hz
+		INTEGRATION_FREQUENCY : real := 10.0       --In Hz
+	);
 	Port ( 
 		CLOCK           : in  STD_LOGIC;
 		READ_ENABLE     : out STD_LOGIC;
@@ -23,7 +29,9 @@ entity trigger_scaler_timing_generator is
 end trigger_scaler_timing_generator;
 
 architecture Behavioral of trigger_scaler_timing_generator is
-	signal internal_COUNTER          : unsigned(TRIGGER_COUNTER_WIDTH-1 downto 0) := (others => '0');
+	constant COUNTER_WIDTH  : integer := integer(ceil(log2(CLOCK_RATE/INTEGRATION_FREQUENCY)));	
+	constant TARGET_COUNT   : integer := integer(ceil(CLOCK_RATE/INTEGRATION_FREQUENCY - 2.0));
+	signal internal_COUNTER          : unsigned(COUNTER_WIDTH-1 downto 0) := (others => '0');
 	signal internal_COUNTER_RESET    : std_logic := '0';
 	signal internal_ENABLE_OUT       : std_logic := '0';
 	signal internal_ENABLE_OUT_DELAY : std_logic := '0';
@@ -41,7 +49,7 @@ begin
 	--comparator
 	process(CLOCK) begin
 		if (rising_edge(CLOCK)) then
-			if (internal_COUNTER = to_unsigned(TRIGGER_TARGET_COUNT,TRIGGER_COUNTER_WIDTH)) then
+			if (internal_COUNTER = to_unsigned(TARGET_COUNT,COUNTER_WIDTH)) then
 				internal_COUNTER_RESET <= '1';
 			else 
 				internal_COUNTER_RESET <= '0';
@@ -70,19 +78,23 @@ use IEEE.NUMERIC_STD.ALL;
 use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_single_channel is
+	Generic (
+		BIT_WIDTH       : integer := 16
+	);
 	Port ( 
 		SIGNAL_TO_COUNT : in  STD_LOGIC;
 		CLOCK           : in  STD_LOGIC;
 		READ_ENABLE     : in  STD_LOGIC;
 		RESET_COUNTER   : in  STD_LOGIC;
-		SCALER          : out STD_LOGIC_VECTOR(TRIGGER_SCALER_BIT_WIDTH-1 downto 0)
+		SCALER          : out STD_LOGIC_VECTOR(BIT_WIDTH-1 downto 0)
 	);
 end trigger_scaler_single_channel;
 
 architecture Behavioral of trigger_scaler_single_channel is
+	constant MAX_COUNT             : unsigned(BIT_WIDTH-1 downto 0) := (others => '1');
 	signal internal_PULSE_TO_COUNT : std_logic := '0';
-	signal internal_COUNTER        : unsigned(TRIGGER_SCALER_BIT_WIDTH-1 downto 0) := (others => '0');
-	signal internal_COUNTER_OUT    : std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0) := (others => '0');
+	signal internal_COUNTER        : unsigned(BIT_WIDTH-1 downto 0) := (others => '0');
+	signal internal_COUNTER_OUT    : std_logic_vector(BIT_WIDTH-1 downto 0) := (others => '0');
 begin
 	--This takes asynchronous trigger bits and produces pulses
 	--with a width of one CLOCK period.
@@ -98,7 +110,7 @@ begin
 		if (rising_edge(CLOCK)) then
 			if (RESET_COUNTER = '1') then
 				internal_COUNTER <= (others => '0');
-			elsif (internal_PULSE_TO_COUNT = '1') then
+			elsif (internal_PULSE_TO_COUNT = '1' and internal_COUNTER /= MAX_COUNT) then
 				internal_COUNTER <= internal_COUNTER + 1;
 			end if;
 		end if;
@@ -154,6 +166,10 @@ use IEEE.NUMERIC_STD.ALL;
 use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity trigger_scaler_top is
+	Generic (
+		CLOCK_RATE            : real := 50000000.0; --In Hz
+		INTEGRATION_FREQUENCY : real := 10.0        --In Hz
+	);
 	Port ( 
 		TRIGGER_BITS_IN  : in  COL_ROW_TRIGGER_BITS;
 		CLOCK            : in  STD_LOGIC;
@@ -183,6 +199,10 @@ begin
 	);
 	
 	map_trigger_scaler_timing_gen : entity work.trigger_scaler_timing_generator
+	generic map(
+		CLOCK_RATE            => CLOCK_RATE,
+		INTEGRATION_FREQUENCY => INTEGRATION_FREQUENCY
+	)
 	port map(
 		CLOCK         => CLOCK,
 		READ_ENABLE   => internal_READ_ENABLE,

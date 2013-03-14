@@ -1,5 +1,64 @@
 ----------------------------------------------------------------------------------
--- Single feedback loop (1 ASIC)
+-- Single feedback loop (1 ASIC) - simple version that moves by 1
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use work.asic_definitions_irs3b_carrier_revB.all;
+use work.IRS3B_CarrierRevB_DAC_definitions.all;
+
+entity simple_feedback is
+	generic (
+		DEADBAND_SIZE   : signed(16 downto 0) := to_signed(10,17)
+	);
+	port (
+		CLOCK           : in  std_logic;
+		CLOCK_ENABLE    : in  std_logic;
+		FEEDBACK_ENABLE : in  std_logic;
+		CURRENT_VALUE   : in  Counter;
+		TARGET_VALUE    : in  Counter;
+		DAC_VALUE       : out DAC_Setting;
+		STARTING_VALUE  : in  DAC_Setting
+	);
+end simple_feedback;
+
+architecture Behavioral of simple_feedback is
+	signal   internal_DAC_VALUE               : DAC_Setting;
+	signal   internal_CURRENT_DIFFERENCE      : signed(16 downto 0);
+begin
+	--Map the signals to the output
+	DAC_VALUE <= internal_DAC_VALUE;
+	--Calculate the difference between what we have and what we want
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			if (CLOCK_ENABLE = '1') then
+				internal_CURRENT_DIFFERENCE <= signed('0' & TARGET_VALUE) - signed ('0' & CURRENT_VALUE);
+			end if;
+		end if;
+	end process;
+
+	--Apply the correction
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			if (CLOCK_ENABLE = '1') then
+				if (FEEDBACK_ENABLE = '0') then
+					internal_DAC_VALUE <= STARTING_VALUE;
+				else
+					if (unsigned(internal_DAC_VALUE) > 0 and internal_CURRENT_DIFFERENCE < -DEADBAND_SIZE/2) then
+						internal_DAC_VALUE <= std_logic_vector(unsigned(internal_DAC_VALUE) - 1);
+					elsif (unsigned(internal_DAC_VALUE) < 4095 and internal_CURRENT_DIFFERENCE >  DEADBAND_SIZE/2) then
+						internal_DAC_VALUE <= std_logic_vector(unsigned(internal_DAC_VALUE) + 1);
+					else
+						internal_DAC_VALUE <= internal_DAC_VALUE;
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
+end Behavioral;
+
+----------------------------------------------------------------------------------
+-- Single feedback loop (1 ASIC) - more complicated version that moves proportionally
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -12,16 +71,16 @@ entity wilkinson_feedback is
 		CLOCK           : in  std_logic;
 		CLOCK_ENABLE    : in  std_logic;
 		FEEDBACK_ENABLE : in  std_logic;
-		CURRENT_VALUE   : in  Wilkinson_Counter;
-		TARGET_VALUE    : in  Wilkinson_Counter;
-		DAC_VALUE       : out DAC_Setting
+		CURRENT_VALUE   : in  Counter;
+		TARGET_VALUE    : in  Counter;
+		DAC_VALUE       : out DAC_Setting;
+		STARTING_VALUE  : in  DAC_Setting
 	);
 end wilkinson_feedback;
 
 architecture Behavioral of wilkinson_feedback is
 	signal   internal_DAC_VALUE               : DAC_Setting;
 	signal   internal_NEXT_DAC_VALUE          : signed(13 downto 0);
-	constant starting_dac_value               : DAC_Setting := x"AF0";
 	signal   internal_CURRENT_DIFFERENCE      : signed(16 downto 0);
 	signal   internal_STEP                    : signed(11 downto 0);
 begin
@@ -43,7 +102,7 @@ begin
 		if (rising_edge(CLOCK)) then
 			if (CLOCK_ENABLE = '1') then
 				if (FEEDBACK_ENABLE = '0') then
-					internal_DAC_VALUE <= starting_dac_value;
+					internal_DAC_VALUE <= STARTING_VALUE;
 				else
 					if (internal_NEXT_DAC_VALUE < 0) then
 						internal_DAC_VALUE <= (others => '0');
@@ -67,6 +126,11 @@ use work.asic_definitions_irs3b_carrier_revB.all;
 use work.IRS3B_CarrierRevB_DAC_definitions.all;
 
 entity wilkinson_monitoring is
+	generic (
+		USE_SIMPLE_FEEDBACK   : integer := 1;
+		CLOCK_RATE            : real := 50000000.0; --In Hz
+		INTEGRATION_FREQUENCY : real := 10.0       --In Hz
+	);
 	port (
 		AsicOut_MONITOR_WILK_COUNTERS_C0_R : in std_logic_vector(3 downto 0);
 		AsicOut_MONITOR_WILK_COUNTERS_C1_R : in std_logic_vector(3 downto 0);
@@ -74,9 +138,10 @@ entity wilkinson_monitoring is
 		AsicOut_MONITOR_WILK_COUNTERS_C3_R : in std_logic_vector(3 downto 0);				
 
 		FEEDBACK_WILKINSON_ENABLES_C_R     : in  Column_Row_Enables;
-		FEEDBACK_WILKINSON_GOALS_C_R       : in  Column_Row_Wilkinson_Counters;
-		FEEDBACK_WILKINSON_COUNTERS_C_R    : out Column_Row_Wilkinson_Counters;
+		FEEDBACK_WILKINSON_GOALS_C_R       : in  Column_Row_Counters;
+		FEEDBACK_WILKINSON_COUNTERS_C_R    : out Column_Row_Counters;
 		FEEDBACK_WILKINSON_DAC_VALUES_C_R  : out DAC_setting_C_R;
+		STARTING_WILKINSON_DAC_VALUES_C_R  : in  DAC_setting_C_R;
 
 		CLOCK                              : in std_logic
 	);
@@ -85,7 +150,7 @@ end wilkinson_monitoring;
 architecture Behavioral of wilkinson_monitoring is
 	signal internal_READ_ENABLE            : std_logic := '0';
 	signal internal_RESET_COUNTER          : std_logic := '0';
-	signal internal_WILKINSON_COUNTERS_C_R : Column_Row_Wilkinson_Counters;
+	signal internal_WILKINSON_COUNTERS_C_R : Column_Row_Counters;
 begin
 	--Map to output ports
 	FEEDBACK_WILKINSON_COUNTERS_C_R <= internal_WILKINSON_COUNTERS_C_R;
@@ -93,6 +158,10 @@ begin
 	--Create the read enables for the Wilkinson counter monitoring
 	--This reuses the trigger scaler related stuff, since the logic is identical
 	map_trigger_scaler_timing_gen : entity work.trigger_scaler_timing_generator
+	generic map(
+		CLOCK_RATE            => CLOCK_RATE,
+		INTEGRATION_FREQUENCY => INTEGRATION_FREQUENCY
+	)
 	port map(
 		CLOCK         => CLOCK,
 		READ_ENABLE   => internal_READ_ENABLE,
@@ -137,18 +206,38 @@ begin
 	end generate;
 
 	--Now instantiate the logic that actually performs the feedback
-	gen_wilk_feedback_col : for col in 0 to 3 generate
-		gen_wilk_feedback_row : for row in 0 to 3 generate
-			map_wilk_feedback : entity work.wilkinson_feedback
-				port map(
-					CLOCK           => CLOCK,
-					CLOCK_ENABLE    => internal_RESET_COUNTER,
-					FEEDBACK_ENABLE => FEEDBACK_WILKINSON_ENABLES_C_R(col)(row),
-					CURRENT_VALUE   => internal_WILKINSON_COUNTERS_C_R(col)(row),
-					TARGET_VALUE    => FEEDBACK_WILKINSON_GOALS_C_R(col)(row),
-					DAC_VALUE       => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row)
-				);
+	gen_proportional_feedback : if (USE_SIMPLE_FEEDBACK = 0) generate
+		gen_wilk_feedback_col : for col in 0 to 3 generate
+			gen_wilk_feedback_row : for row in 0 to 3 generate
+				map_wilk_feedback : entity work.wilkinson_feedback
+					port map(
+						CLOCK           => CLOCK,
+						CLOCK_ENABLE    => internal_RESET_COUNTER,
+						FEEDBACK_ENABLE => FEEDBACK_WILKINSON_ENABLES_C_R(col)(row),
+						CURRENT_VALUE   => internal_WILKINSON_COUNTERS_C_R(col)(row),
+						TARGET_VALUE    => FEEDBACK_WILKINSON_GOALS_C_R(col)(row),
+						DAC_VALUE       => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row),
+						STARTING_VALUE  => STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)
+					);
+			end generate;
 		end generate;
+	end generate;
+	--Another version if we prefer simple feedback
+	gen_simple_feedback : if (USE_SIMPLE_FEEDBACK = 1) generate
+		gen_simple_feedback_col : for col in 0 to 3 generate
+			gen_simple_feedback_row : for row in 0 to 3 generate
+				map_simple_feedback : entity work.simple_feedback
+					port map(
+						CLOCK           => CLOCK,
+						CLOCK_ENABLE    => internal_RESET_COUNTER,
+						FEEDBACK_ENABLE => FEEDBACK_WILKINSON_ENABLES_C_R(col)(row),
+						CURRENT_VALUE   => internal_WILKINSON_COUNTERS_C_R(col)(row),
+						TARGET_VALUE    => FEEDBACK_WILKINSON_GOALS_C_R(col)(row),
+						DAC_VALUE       => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row),
+						STARTING_VALUE  => STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)
+					);
+			end generate;
+		end generate;	
 	end generate;
 
 end Behavioral;
