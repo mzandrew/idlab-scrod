@@ -149,7 +149,7 @@ begin
 	process(CLOCK) begin
 		if (rising_edge(CLOCK) and CLOCK_ENABLE = '1') then
 			for row in 0 to ROWS_PER_COL-1 loop
-				if   internal_ROW_TO_READ = std_logic_vector(to_unsigned(row,internal_COL_TO_READ'length))  then
+				if   internal_ROW_TO_READ = std_logic_vector(to_unsigned(row,internal_ROW_TO_READ'length))  then
 					 internal_ASIC_READOUT_TRISTATE_DISABLE(row) <= '0';
 				else
 					 internal_ASIC_READOUT_TRISTATE_DISABLE(row) <= '1';					

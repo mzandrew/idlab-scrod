@@ -32,6 +32,7 @@ use work.asic_definitions_irs3b_carrier_revB.all;
 	entity update_read_addr is
 	port(
 		CLOCK         					 			: in std_logic;
+		CLOCK_ENABLE                        : in std_logic;
 		new_address_reached						: out std_logic; --LM: updating address feedback
 		START_NEW_ADDRESS							: in std_logic; --LM: start new address update
 		NEW_ADDRESS  : in std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -55,6 +56,7 @@ inst_irs_block_readout_addr_v3b :  entity work.irs_block_readout_addr_v3b
 port map(
 
  clk_i => CLOCK, 							--% System clock.
+ clk_en => CLOCK_ENABLE,
  rst_i => zero,							--% Local reset.
  
 
@@ -75,6 +77,7 @@ use work.asic_definitions_irs3b_carrier_revB.all;
 	entity update_sample_addr is
 		port(
 		CLOCK         					 			: in std_logic;
+		CLOCK_ENABLE                        : in std_logic;
 		new_sample_address_reached						: out std_logic; --LM: updating sample address 
 		START_NEW_SAMPLE_ADDRESS							: in std_logic; --LM: start new sample address update
 		SAMPLE_COUNTER_RESET								: in std_logic;
@@ -97,6 +100,7 @@ use work.asic_definitions_irs3b_carrier_revB.all;
 inst_irs_readout_control_v4 : entity work.irs_readout_control_v4
 port map(
  clk_i => CLOCK, 							--% System clock
+ clk_en => CLOCK_ENABLE,
  rst_i => zero, 							--% Local reset
  start_i => START_NEW_SAMPLE_ADDRESS,							--% Signal to begin readout.
  increment => SAMPLE_COUNTER_RESET, -- it restarts at the beginning of the channel indicated by ASIC_READOUT_CHANNEL_ADDRESS

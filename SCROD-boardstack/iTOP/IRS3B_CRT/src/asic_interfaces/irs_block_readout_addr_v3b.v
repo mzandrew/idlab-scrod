@@ -54,6 +54,7 @@
 //% Note that only one of irs_rd_o or the IRS3B control pins are valid, depending on mode.
 module irs_block_readout_addr_v3b(
 		input clk_i, 							//% System clock.
+		input clk_en,                    //% Kurtis added clock enable to sync up with next block up
 		input rst_i,							//% Local reset.
 //		output rst_ack_o,						//% Reset acknowledge.
 
@@ -143,8 +144,9 @@ module irs_block_readout_addr_v3b(
 	assign irs_mode_i  = 1;
 	//% FSM logic. For the IRS3 this resets the counter and advances each time. Will improve later.
 	always @(posedge clk_i) begin : FSM
-		if (do_reset) state <= RESETTING;
-		else begin
+		if (do_reset) 
+			state <= RESETTING;
+		else if (clk_en) begin
 			case(state)
 				IDLE: if (raddr_stb_i) begin
 					if (irs_mode_i == IRS3) state <= SHIFT_START;
@@ -171,45 +173,51 @@ module irs_block_readout_addr_v3b(
 	//% @brief Reset logic. in_reset=1 when rst_i is high, 0 when in RESET_WAIT and rst_i is low.
 	always @(posedge clk_i) begin : IN_RESET_LOGIC
 		if (do_reset) in_reset <= 1;
-		else if (!rst_i && (state == RESET_WAIT)) in_reset <= 0;
+		else if (!rst_i && (state == RESET_WAIT) && clk_en) in_reset <= 0;
    end
 	
 	//% @brief Counter logic. Counts up to the various delays.
 	always @(posedge clk_i) begin : COUNTER_LOGIC
-		if (state == ASSERT) begin
-			if (counter == ASSERT_SETUP) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_START) begin
-			if (counter == RD_DIR_SETUP) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_HIGH) begin
-			if (counter == RD_SCLK_HIGH) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_LOW) begin
-			if (counter == RD_SCLK_LOW) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_DONE) begin
-			if (counter == RD_SHIFT_HOLD) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else 
-			counter <= {8{1'b0}};
+		if (clk_en) begin
+			if (state == ASSERT) begin
+				if (counter == ASSERT_SETUP) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_START) begin
+				if (counter == RD_DIR_SETUP) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_HIGH) begin
+				if (counter == RD_SCLK_HIGH) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_LOW) begin
+				if (counter == RD_SCLK_LOW) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_DONE) begin
+				if (counter == RD_SHIFT_HOLD) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else 
+				counter <= {8{1'b0}};
+		end
 	end
 	
 	//% @brief Shift register logic.
 	always @(posedge clk_i) begin : ADDRESS_LOGIC
-		if (state == ASSERT || state == SHIFT_START)
-			irs_shift_register <= raddr_i;
-		else if (state == SHIFT_HIGH && counter == RD_SCLK_HIGH)
-			irs_shift_register <= {irs_shift_register[7:0],1'b0};
-		else if (state == RESETTING)
-			irs_shift_register <= {9{1'b0}};
+		if (clk_en) begin
+			if (state == ASSERT || state == SHIFT_START)
+				irs_shift_register <= raddr_i;
+			else if (state == SHIFT_HIGH && counter == RD_SCLK_HIGH)
+				irs_shift_register <= {irs_shift_register[7:0],1'b0};
+			else if (state == RESETTING)
+				irs_shift_register <= {9{1'b0}};
+		end
 	end
 	//% @brief Shift register counter.
 	always @(posedge clk_i) begin : SHREG_COUNT_LOGIC
-		if (state == SHIFT_HIGH && counter == RD_SCLK_HIGH)
-			irs_shift_counter <= irs_shift_counter + 1;
-		else if (state == IDLE)
-			irs_shift_counter <= {4{1'b0}};
+		if (clk_en) begin
+			if (state == SHIFT_HIGH && counter == RD_SCLK_HIGH)
+				irs_shift_counter <= irs_shift_counter + 1;
+			else if (state == IDLE)
+				irs_shift_counter <= {4{1'b0}};
+		end
 	end
 	
 	//% ramp_done rising edge flag

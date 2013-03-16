@@ -302,6 +302,7 @@ begin
 	inst_update_read_addr : entity work.update_read_addr 
 	port map(
 		CLOCK                                              => CLOCK,
+		CLOCK_ENABLE                                       => internal_DIGITIZER_CLOCK_ENABLE,
 		new_address_reached                                => internal_NEW_ADDRESS_REACHED,
 		START_NEW_ADDRESS                                  => internal_START_NEW_ADDRESS,
 		NEW_ADDRESS                                        => internal_STORAGE_TO_WILK_ADDRESS,
@@ -313,6 +314,7 @@ begin
 	inst_update_sample_addr : entity work.update_sample_addr 
 	port map(
 		CLOCK                                                => CLOCK,
+		CLOCK_ENABLE                                         => internal_DIGITIZER_CLOCK_ENABLE,
 		new_sample_address_reached                           => internal_NEW_SAMPLE_ADDRESS_REACHED,
 		START_NEW_SAMPLE_ADDRESS                             => internal_START_NEW_SAMPLE_ADDRESS,
 		SAMPLE_COUNTER_RESET                                 => internal_SAMPLE_COUNTER_RESET,
