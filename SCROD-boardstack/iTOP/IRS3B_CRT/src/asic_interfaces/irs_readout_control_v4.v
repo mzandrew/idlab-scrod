@@ -10,6 +10,7 @@
 //% for data settling are contained here as well.
 module irs_readout_control_v4(
 		input clk_i, 							//% System clock
+		input clk_en,                    //% Kurtis added a clock enable to sync with the digitizing block
 		input rst_i, 							//% Local reset
 //		input test_mode_i,					//% Bypass input data, replace with test pattern (STACK,CH,SMP)
 		input start_i,							//% Signal to begin readout.
@@ -116,7 +117,7 @@ module irs_readout_control_v4(
 	//% FSM logic. For the IRS3B this resets the counter to 0 and uses increment each time. 
 	always @(posedge clk_i) begin : FSM
 		if (rst_i) state <= IDLE;
-		else begin
+		else if (clk_en) begin
 			case(state)
 				IDLE: if (start_i) begin
 					if (increment)
@@ -147,34 +148,38 @@ module irs_readout_control_v4(
 	
 	//% @brief Counter logic. Counts up to the various delays.
 	always @(posedge clk_i) begin : COUNTER_LOGIC
-		if (state == SHIFT_START) begin
-			if (counter == DO_DIR_SETUP) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_HIGH) begin
-			if (counter == DO_SCLK_HIGH) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_LOW) begin
-			if (counter == DO_SCLK_LOW) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == SHIFT_DONE) begin
-			if (counter == DO_SHIFT_HOLD) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == INCREMENT_WAIT) begin
-			if (counter == INCREMENT_WAIT_TIME) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else if (state == INCREMENT) begin
-			if (counter == INCREMENT_TIME) counter <= {8{1'b0}};
-			else counter <= counter + 1;
-		end else 
-			counter <= {8{1'b0}};
+		if (clk_en) begin
+			if (state == SHIFT_START) begin
+				if (counter == DO_DIR_SETUP) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_HIGH) begin
+				if (counter == DO_SCLK_HIGH) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_LOW) begin
+				if (counter == DO_SCLK_LOW) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == SHIFT_DONE) begin
+				if (counter == DO_SHIFT_HOLD) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == INCREMENT_WAIT) begin
+				if (counter == INCREMENT_WAIT_TIME) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else if (state == INCREMENT) begin
+				if (counter == INCREMENT_TIME) counter <= {8{1'b0}};
+				else counter <= counter + 1;
+			end else 
+				counter <= {8{1'b0}};
+		end
 	end
 
 	//% @brief Shift register counter. - the input is set to 0 to reset
 	always @(posedge clk_i) begin : SHREG_COUNT_LOGIC
-		if (state == SHIFT_HIGH && counter == DO_SCLK_HIGH)
-				irs_shift_counter <= irs_shift_counter + 1;
-		else if (state == IDLE)
-			irs_shift_counter <= {4{1'b0}};
+		if (clk_en) begin
+			if (state == SHIFT_HIGH && counter == DO_SCLK_HIGH)
+					irs_shift_counter <= irs_shift_counter + 1;
+			else if (state == IDLE)
+				irs_shift_counter <= {4{1'b0}};
+		end
 	end
 ////% @brief Tot sample register counter. - the input is set to 0 to reset
 //	always @(posedge clk_i) begin : TOT_SAMPLE_COUNT_LOGIC

@@ -10,6 +10,14 @@
 # 2013-01-24 fixed 6 typos
 # 2013-01-29 answered one question and renamed DOE to be DOE_active_low, since it's inverted on the new carriers
 
+#Timing constraints specific to our application
+#Those related to the Aurora interface are below
+
+#Timing constraints for I2C (multi-cycle)
+NET "map_i2c_bus*/*CLOCK_ENABLE*" TNM_NET = FFS "I2C_ENABLES";
+NET "map_dac_interfaces/map_external_dac_control/*CLK_ENABLE*" TNM_NET = FFS "I2C_ENABLES";
+TIMESPEC TS_I2C_ENABLES = FROM "I2C_ENABLES" TO "I2C_ENABLES" TS_BOARD_CLOCK*40;
+NET "map_readout_interfaces/internal_GPR*" TIG;
 
 ###############ASIC CONNECTIONS########################
 # SST_IN
