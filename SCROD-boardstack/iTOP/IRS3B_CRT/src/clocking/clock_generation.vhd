@@ -35,7 +35,9 @@ entity clock_generation is
 		--ASIC output clocks (sent through ODDR2)
 		ASIC_SST         : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
 		--Output clock enable for I2C things
-		I2C_CLOCK_ENABLE : out STD_LOGIC
+		I2C_CLOCK_ENABLE : out STD_LOGIC;
+		--Output clock enable for ASIC DAC interface
+		ASIC_SERIAL_CLOCK_ENABLE : out STD_LOGIC
 	);
 end clock_generation;
 
@@ -183,17 +185,18 @@ begin
 	CLOCK_50MHz_BUFG <= internal_CLOCK_50MHz_BUFG;
    CLOCK_SST_BUFG   <= internal_CLOCK_SST;
 	
-	------------------------------------------------------
-	--Logic to generate slow clock enable(e.g., for I2C)--
-	------------------------------------------------------
-	map_sstx2_clock_enable : entity work.clock_enable_generator
-	generic map( 
-		DIVIDE_RATIO => 2
-	)
-	port map (
-		CLOCK_IN         => internal_CLOCK_SSTx4_BUFG,
-		CLOCK_ENABLE_OUT => CLOCK_SSTx2_CE
-	);
+	-------------------------------------------------------
+	--Logic to generate slow clock enables(e.g., for I2C)--
+	-------------------------------------------------------
+	process(internal_CLOCK_SSTx4_BUFG) 
+		variable toggle_bit : std_logic := '0';
+	begin
+		if (rising_edge(internal_CLOCK_SSTx4_BUFG)) then
+			CLOCK_SSTx2_CE <= toggle_bit;
+			toggle_bit := not(toggle_bit);
+		end if;
+	end process;
+
 	map_i2c_clock_enable : entity work.clock_enable_generator
 	generic map (
 --		DIVIDE_RATIO => 20 --This is suitable for a 4 MHz clock divided by 20 ==> 200 kHz
