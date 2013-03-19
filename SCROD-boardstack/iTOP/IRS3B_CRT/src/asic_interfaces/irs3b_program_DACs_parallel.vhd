@@ -99,7 +99,22 @@ begin
 	--Primary state machine--
 	-------------------------
 	--Output logic
-	process(internal_STATE) begin
+	process(internal_STATE,internal_SERIAL_VALUE,internal_REGISTER_COUNTER,reg_map,internal_BIT_COUNTER) begin
+		--Defaults here
+		internal_LATCH_REG_VALUE    <= '0';
+		internal_PCLK_SINGLE        <= '0';
+		internal_SCLK               <= '0';
+		internal_SIN                <= '0';
+		internal_RESET_ROWCOL       <= '0';
+		internal_RESET_BIT_COUNTER  <= '0';
+		internal_RESET_ROWCOL       <= '0';
+		internal_INCREMENT_BIT      <= '0';
+		internal_INCREMENT_REGISTER <= '0';
+		internal_RESET_COUNTER      <= '0';
+		internal_INCREMENT_COUNTER  <= '0';
+		internal_RESET_REGISTER     <= '0';
+		internal_INCREMENT_ROWCOL   <= '0';
+		--
 		case(internal_STATE) is
 			when IDLE =>
 				internal_LATCH_REG_VALUE    <= '1';
@@ -133,23 +148,11 @@ begin
 					internal_RESET_ROWCOL       <= '1';
 					internal_INCREMENT_REGISTER <= '1';
 				end if;
-			when others => --Defaults here
-				internal_LATCH_REG_VALUE    <= '0';
-				internal_PCLK_SINGLE        <= '0';
-				internal_SCLK               <= '0';
-				internal_SIN                <= '0';
-				internal_RESET_ROWCOL       <= '0';
-				internal_RESET_BIT_COUNTER  <= '0';
-				internal_RESET_ROWCOL       <= '0';
-				internal_INCREMENT_BIT      <= '0';
-				internal_INCREMENT_REGISTER <= '0';
-				internal_RESET_COUNTER      <= '0';
-				internal_INCREMENT_COUNTER  <= '0';
 		end case;
 	end process;
 
 	--Next state selection logic
-	process(internal_STATE) begin
+	process(internal_STATE, internal_BIT_COUNTER, internal_GENERIC_COUNTER,reg_map,internal_REGISTER_COUNTER, internal_ROW_COl_COUNTER) begin
 		case(internal_STATE) is
 			when IDLE =>      
 				internal_NEXT_STATE <= LOAD_BIT;
@@ -260,7 +263,7 @@ begin
 	reg_map(46) <= global; --62: Start_WilkMon
 
 	--Register increment
-	process(CLK, CE) begin
+	process(CLK, CE, internal_INCREMENT_REGISTER) begin
 		if (CE = '1' and internal_INCREMENT_REGISTER = '1') then
 			if (rising_edge(CLK)) then
 				if (internal_RESET_REGISTER = '1') then
@@ -331,7 +334,14 @@ begin
 	--Choose which register value to use
 	--Numbers in the comments correspond to Gary's notation in the register map spreadsheet
 	--Actual address choice is chosen by "internal_REG_ADDR" (see above)
-	process(internal_ROW, internal_COL, internal_REG_ADDR) begin
+	process(internal_ROW, internal_COL, internal_REG_ADDR, ASIC_TRIG_THRESH, internal_COL, internal_ROW,
+	        ASIC_DAC_BUF_BIASES, ASIC_VBIAS, ASIC_VBIAS2, ASIC_REG_TRG, ASIC_WBIAS, ASIC_TRG_BIAS, 
+	        ASIC_TRG_BIAS2, ASIC_TRGTHREF, ASIC_TIMING_SSP_LEADING, ASIC_TIMING_SSP_TRAILING, 
+	        ASIC_TIMING_S1_LEADING, ASIC_TIMING_S1_TRAILING, ASIC_TIMING_S2_LEADING,
+	        ASIC_TIMING_S2_TRAILING, ASIC_TIMING_PHASE_LEADING, ASIC_TIMING_PHASE_TRAILING, 
+	        ASIC_TIMING_WR_STRB_LEADING, ASIC_TIMING_WR_STRB_TRAILING, ASIC_TIMING_GENERATOR_REG, 
+	        ASIC_CMPBIAS, ASIC_PUBIAS, ASIC_SBBIAS, ASIC_DAC_BUF_BIAS_ISEL, ASIC_ISEL, 
+	        ASIC_VDLY, ASIC_DAC_BUF_BIAS_VADJP, ASIC_VADJP, ASIC_DAC_BUF_BIAS_VADJN, ASIC_VADJN) begin
 		case(to_integer(unsigned(internal_REG_ADDR))) is
 			when  0 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH(internal_COL)(internal_ROW)(0); -- 1: THR1
 			when  1 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH(internal_COL)(internal_ROW)(1); -- 2: THR2
@@ -392,10 +402,10 @@ begin
 		end if;
 	end process;
 	--Map out the full register
-	internal_SERIAL_VALUE <= internal_REG_ADDR & internal_REG_VALUE_TO_LOAD;
+	internal_SERIAL_VALUE <= internal_REG_ADDR & internal_LATCHED_REG_VALUE;
 	
 	--Choose PCLK outputs based on which register we're reading
-	process(internal_REGISTER_COUNTER, internal_PCLK_SINGLE) begin
+	process(internal_REGISTER_COUNTER, internal_PCLK_SINGLE, reg_map, internal_ROW, internal_COL) begin
 		if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
 			internal_PCLK(15 downto 0) <= (others => internal_PCLK_SINGLE);
 		elsif(reg_map(to_integer(internal_REGISTER_COUNTER)) = unique) then
