@@ -19,8 +19,6 @@ use work.IRS3B_CarrierRevB_DAC_definitions.all; -- Definitions in irs3b_carrierR
 entity controlAsicDacProgramming is
    Port ( 
 		CLK                     :  in STD_LOGIC;
-		LOAD_DACS               :  in STD_LOGIC;
-		ENABLE_DAC_AUTO_LOADING :  in STD_LOGIC;
 		PCLK                    : out STD_LOGIC_VECTOR(15 downto 0);
 		CLEAR_ALL_REGISTERS     : out STD_LOGIC;
 		SCLK                    : out STD_LOGIC;
