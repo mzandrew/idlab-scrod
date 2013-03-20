@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 13.2
-# Date: Thu Mar 14 11:09:11 2013
+# Date: Wed Mar 20 06:24:52 2013
 #
 ##############################################################
 #
@@ -12,7 +12,7 @@
 #
 ##############################################################
 #
-#  Generated from component: xilinx.com:ip:chipscope_ila:1.03.a
+#  Generated from component: xilinx.com:ip:chipscope_ila:1.04.a
 #
 ##############################################################
 #
@@ -36,7 +36,7 @@ SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
-SELECT ILA_(ChipScope_Pro_-_Integrated_Logic_Analyzer) family Xilinx,_Inc. 1.03.a
+SELECT ILA_(ChipScope_Pro_-_Integrated_Logic_Analyzer) family Xilinx,_Inc. 1.04.a
 # END Select
 # BEGIN Parameters
 CSET check_bramcount=false
@@ -59,7 +59,7 @@ CSET counter_width_8=Disabled
 CSET counter_width_9=Disabled
 CSET data_port_width=0
 CSET data_same_as_trigger=true
-CSET disable_save_keep=false
+CSET disable_save_keep=true
 CSET enable_storage_qualification=true
 CSET enable_trigger_output_port=false
 CSET example_design=false
@@ -134,4 +134,4 @@ CSET trigger_port_width_9=8
 CSET use_rpms=true
 # END Parameters
 GENERATE
-# CRC: 3e7d0463
+# CRC: 8a73ea39
