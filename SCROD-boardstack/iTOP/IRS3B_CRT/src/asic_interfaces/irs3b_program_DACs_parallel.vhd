@@ -1,41 +1,54 @@
+----For simulation only.  Also change libraries (see comment on line ~18)
+----                      and comment/uncomment lines 364-461
+--library IEEE;
+--use IEEE.STD_LOGIC_1164.ALL;
+--package simulate_dac is
+--	subtype DAC_setting_C_R_CH is std_logic_vector(11 downto 0);
+--	subtype DAC_setting_C_R    is std_logic_vector(11 downto 0);
+--	subtype DAC_setting        is std_logic_vector(11 downto 0);
+--	subtype Timing_setting     is std_logic_vector(7 downto 0);
+--	subtype Timing_setting_C_R is std_logic_vector(7 downto 0);
+--end simulate_dac;
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
 use IEEE.NUMERIC_STD.ALL;
 use work.IRS3B_CarrierRevB_DAC_definitions.all; -- Definitions in irs3b_carrierRevB_DAC_definitions.vhd
+--use work.simulate_dac.all; --Simulation only... uncomment above if you're going to use this
 
 entity irs3b_program_dacs_parallel is
    Port ( 
-		CLK                      :  in STD_LOGIC;
-		CE                       :  in STD_LOGIC;
-		PCLK                     : out STD_LOGIC_VECTOR(15 downto 0);
-		SCLK                     : out STD_LOGIC;
-		SIN                      : out STD_LOGIC;
-		SHOUT                    :  in STD_LOGIC;
+		CLK                          :  in STD_LOGIC;
+		CE                           :  in STD_LOGIC;
+		PCLK                         : out STD_LOGIC_VECTOR(15 downto 0);
+		SCLK                         : out STD_LOGIC;
+		SIN                          : out STD_LOGIC;
+		SHOUT                        :  in STD_LOGIC;
 		--ASIC DAC values
 		--DAC_setting indicates a global for the whole boardstack
 		--DAC_setting_C_R indicates a (4)(4) to set DACs separately by row/col
 		--DAC_setting_C_R_CH indicates a (4)(4)(8) to set DACs separately by row/col/ch
-		ASIC_TRIG_THRESH         : in DAC_setting_C_R_CH;
-		ASIC_DAC_BUF_BIASES      : in DAC_setting;
-		ASIC_DAC_BUF_BIAS_ISEL   : in DAC_setting;
-		ASIC_DAC_BUF_BIAS_VADJP  : in DAC_setting;
-		ASIC_DAC_BUF_BIAS_VADJN  : in DAC_setting;
-		ASIC_VBIAS               : in DAC_setting_C_R;
-		ASIC_VBIAS2              : in DAC_setting_C_R;
-		ASIC_REG_TRG             : in Timing_setting; --Not a DAC but set with the DACs.  Global for all ASICs.
-		ASIC_WBIAS               : in DAC_setting_C_R;
-		ASIC_VADJP               : in DAC_setting_C_R;
-		ASIC_VADJN               : in DAC_setting_C_R;
-		ASIC_VDLY                : in DAC_setting_C_R;
-		ASIC_TRG_BIAS            : in DAC_setting;
-		ASIC_TRG_BIAS2           : in DAC_setting;
-		ASIC_TRGTHREF            : in DAC_setting;
-		ASIC_CMPBIAS             : in DAC_setting;
-		ASIC_PUBIAS              : in DAC_setting;
-		ASIC_SBBIAS              : in DAC_setting;
-		ASIC_ISEL                : in DAC_setting;
+		ASIC_TRIG_THRESH             : in DAC_setting_C_R_CH;
+		ASIC_DAC_BUF_BIASES          : in DAC_setting;
+		ASIC_DAC_BUF_BIAS_ISEL       : in DAC_setting;
+		ASIC_DAC_BUF_BIAS_VADJP      : in DAC_setting;
+		ASIC_DAC_BUF_BIAS_VADJN      : in DAC_setting;
+		ASIC_VBIAS                   : in DAC_setting_C_R;
+		ASIC_VBIAS2                  : in DAC_setting_C_R;
+		ASIC_REG_TRG                 : in Timing_setting; --Not a DAC but set with the DACs.  Global for all ASICs.
+		ASIC_WBIAS                   : in DAC_setting_C_R;
+		ASIC_VADJP                   : in DAC_setting_C_R;
+		ASIC_VADJN                   : in DAC_setting_C_R;
+		ASIC_VDLY                    : in DAC_setting_C_R;
+		ASIC_TRG_BIAS                : in DAC_setting;
+		ASIC_TRG_BIAS2               : in DAC_setting;
+		ASIC_TRGTHREF                : in DAC_setting;
+		ASIC_CMPBIAS                 : in DAC_setting;
+		ASIC_PUBIAS                  : in DAC_setting;
+		ASIC_SBBIAS                  : in DAC_setting;
+		ASIC_ISEL                    : in DAC_setting;
 		--Timing settings go here too, since they're set with the DACs
 		ASIC_TIMING_SSP_LEADING      : in Timing_setting_C_R;
 		ASIC_TIMING_SSP_TRAILING     : in Timing_setting_C_R;
@@ -73,7 +86,7 @@ architecture Behavioral of irs3b_program_dacs_parallel is
 	signal internal_RESET_REGISTER     : std_logic := '0';
 	signal internal_REG_ADDR           : std_logic_vector(5 downto 0);
 	--Counter for choosing which bit to send
-	signal internal_BIT_COUNTER        : unsigned(5 downto 0) := (others => '0');
+	signal internal_BIT_COUNTER        : integer range 0 to 17 := 0;
 	signal internal_INCREMENT_BIT      : std_logic := '0';
 	signal internal_RESET_BIT_COUNTER  : std_logic := '0';
 	--Generic counter for delays
@@ -122,12 +135,12 @@ begin
 				internal_RESET_BIT_COUNTER  <= '1';
 				internal_RESET_ROWCOL       <= '1';
 			when LOAD_BIT =>
-				internal_SIN                <= internal_SERIAL_VALUE(to_integer(internal_BIT_COUNTER));
+				internal_SIN                <= internal_SERIAL_VALUE(17-internal_BIT_COUNTER);
 			when SEND_BIT => 
-				internal_SIN                <= internal_SERIAL_VALUE(to_integer(internal_BIT_COUNTER));
+				internal_SIN                <= internal_SERIAL_VALUE(17-internal_BIT_COUNTER);
 				internal_SCLK               <= '1';
 			when NEXT_BIT =>
-				internal_SIN                <= internal_SERIAL_VALUE(to_integer(internal_BIT_COUNTER));
+				internal_SIN                <= internal_SERIAL_VALUE(17-internal_BIT_COUNTER);
 				internal_INCREMENT_BIT      <= '1';
 			when PREPARE_LATCH =>
 				internal_RESET_COUNTER      <= '1';
@@ -141,9 +154,15 @@ begin
 				internal_PCLK_SINGLE        <= '1';
 				internal_SIN                <= '1';
 				internal_INCREMENT_COUNTER  <= '1';
+				internal_RESET_BIT_COUNTER  <= '1';
 			when INCREMENT =>
 				if (reg_map(to_integer(internal_REGISTER_COUNTER)) = unique) then
-					internal_INCREMENT_ROWCOL   <= '1';
+					if (internal_ROW_COL_COUNTER < 15) then
+						internal_INCREMENT_ROWCOL   <= '1';
+					else
+						internal_INCREMENT_REGISTER <= '1';
+						internal_RESET_ROWCOL       <= '1';
+					end if;
 				else 
 					internal_RESET_ROWCOL       <= '1';
 					internal_INCREMENT_REGISTER <= '1';
@@ -161,7 +180,7 @@ begin
 			when SEND_BIT => 
 				internal_NEXT_STATE <= NEXT_BIT;
 			when NEXT_BIT =>
-				if (internal_BIT_COUNTER < 15) then --CHECK VALUE HERE
+				if (internal_BIT_COUNTER < 17) then
 					internal_NEXT_STATE <= LOAD_BIT;
 				else
 					internal_NEXT_STATE <= PREPARE_LATCH;
@@ -264,11 +283,11 @@ begin
 
 	--Register increment
 	process(CLK, CE, internal_INCREMENT_REGISTER) begin
-		if (CE = '1' and internal_INCREMENT_REGISTER = '1') then
+		if (CE = '1') then
 			if (rising_edge(CLK)) then
 				if (internal_RESET_REGISTER = '1') then
 					internal_REGISTER_COUNTER <= (others => '0');
-				else
+				elsif (internal_INCREMENT_REGISTER = '1') then
 					internal_REGISTER_COUNTER <= internal_REGISTER_COUNTER + 1;
 				end if;
 			end if;
@@ -289,11 +308,11 @@ begin
 	
 	--Row/column counter increment
 	process(CLK, CE, internal_INCREMENT_ROWCOL) begin
-		if (CE = '1' and internal_INCREMENT_ROWCOL = '1') then
+		if (CE = '1') then
 			if (rising_edge(CLK)) then
 				if (internal_RESET_ROWCOL = '1') then
 					internal_ROW_COL_COUNTER <= (others => '0');
-				else
+				elsif (internal_INCREMENT_ROWCOL = '1') then
 					internal_ROW_COL_COUNTER <= internal_ROW_COL_COUNTER + 1;
 				end if;
 			end if;
@@ -307,11 +326,11 @@ begin
 
 	--Bit counter increment
 	process(CLK,CE,internal_INCREMENT_BIT) begin
-		if (CE = '1' and internal_INCREMENT_BIT = '1') then
+		if (CE = '1') then
 			if (rising_edge(CLK)) then
 				if (internal_RESET_BIT_COUNTER = '1') then
-					internal_BIT_COUNTER <= (others => '0');
-				else
+					internal_BIT_COUNTER <= 0;
+				elsif (internal_INCREMENT_BIT = '1' and internal_BIT_COUNTER < 17) then
 					internal_BIT_COUNTER <= internal_BIT_COUNTER + 1;
 				end if;
 			end if;
@@ -320,11 +339,11 @@ begin
 
 	--Generic counter for setting long PCLK, e.g.,
 	process(CLK,CE,internal_INCREMENT_COUNTER) begin
-		if (CE = '1' and internal_INCREMENT_COUNTER = '1') then
+		if (CE = '1') then
 			if (rising_edge(CLK)) then
 				if (internal_RESET_COUNTER = '1') then
 					internal_GENERIC_COUNTER <= (others => '0');
-				else
+				elsif (internal_INCREMENT_COUNTER = '1') then
 					internal_GENERIC_COUNTER <= internal_GENERIC_COUNTER + 1;
 				end if;
 			end if;
@@ -391,6 +410,55 @@ begin
 			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN(internal_COL)(internal_ROW);          --46: VadjN
 			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --62: Start_WilkMon
 			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');
+			-------------------------
+--			when  0 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 1: THR1
+--			when  1 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 2: THR2
+--			when  2 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 3: THR3
+--			when  3 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 4: THR4
+--			when  4 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 5: THR5
+--			when  5 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 6: THR6
+--			when  6 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 7: THR7
+--			when  7 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 8: THR8
+--			when  8 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   -- 9: VBDBIAS
+--			when  9 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS;            --10: VBIAS
+--			when 10 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS2;           --11: VBIAS2
+--			when 11 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_REG_TRG; --12: MiscReg (LSB: TRG_SIGN)
+--			when 12 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --13: WBDbias
+--			when 13 => internal_REG_VALUE_TO_LOAD <= ASIC_WBIAS;            --14: Wbias
+--			when 14 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --15: TCDbias
+--			when 15 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS;         --16: TRGbias
+--			when 16 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --17: THDbias
+--			when 17 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --18: Tbbias
+--			when 18 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --19: TRGDbias
+--			when 19 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS2;        --20: TRGbias2
+--			when 20 => internal_REG_VALUE_TO_LOAD <= ASIC_TRGTHREF;         --21: TRGthref
+--			when 21 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_SSP_LEADING;      --22: LeadSSPin
+--			when 22 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_SSP_TRAILING;     --23: TrailSSPin
+--			when 23 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S1_LEADING;       --24: LeadS1
+--			when 24 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S1_TRAILING;      --25: TrailS1
+--			when 25 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S2_LEADING;       --26: LeadS2
+--			when 26 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S2_TRAILING;      --27: TrailS2
+--			when 27 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_PHASE_LEADING;    --28: LeadPHASE
+--			when 28 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_PHASE_TRAILING;   --29: TrailPHASE
+--			when 29 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_WR_STRB_LEADING;  --30: LeadWR_STRB
+--			when 30 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_WR_STRB_TRAILING; --31: TrailWR_STRB
+--			when 31 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_GENERATOR_REG;              --32: TimGenReg
+--			when 32 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --33: PDDbias
+--			when 33 => internal_REG_VALUE_TO_LOAD <= ASIC_CMPBIAS;                                    --34: CMPbias
+--			when 34 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --35: PUDbias
+--			when 35 => internal_REG_VALUE_TO_LOAD <= ASIC_PUBIAS;                                     --36: PUbias
+--			when 36 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --37: SBDbias
+--			when 37 => internal_REG_VALUE_TO_LOAD <= ASIC_SBBIAS;                                     --38: Sbbias
+--			when 38 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_ISEL;                          --39: ISDbias
+--			when 39 => internal_REG_VALUE_TO_LOAD <= ASIC_ISEL;                                       --40: ISEL
+--			when 40 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --41: VDDbias
+--			when 41 => internal_REG_VALUE_TO_LOAD <= ASIC_VDLY;           --42: Vdly
+--			when 42 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJP;                         --43: VAPDbias
+--			when 43 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJP;          --44: VadjP
+--			when 44 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJN;                         --45: VANDbias
+--			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN;          --46: VadjN
+--			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --62: Start_WilkMon
+--			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');
 		end case;
 	end process;
 	--Latch that choice 
@@ -405,14 +473,16 @@ begin
 	internal_SERIAL_VALUE <= internal_REG_ADDR & internal_LATCHED_REG_VALUE;
 	
 	--Choose PCLK outputs based on which register we're reading
-	process(internal_REGISTER_COUNTER, internal_PCLK_SINGLE, reg_map, internal_ROW, internal_COL) begin
-		if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
-			internal_PCLK(15 downto 0) <= (others => internal_PCLK_SINGLE);
-		elsif(reg_map(to_integer(internal_REGISTER_COUNTER)) = unique) then
-			internal_PCLK(15 downto 0) <= (others => '0');
-			internal_PCLK(internal_COL*3 + internal_ROW) <= internal_PCLK_SINGLE;
-		else
-			internal_PCLK(15 downto 0) <= (others => '0');
+	process(CLK,CE) begin
+		if (CE = '1') then
+			if (rising_edge(CLK)) then
+				internal_PCLK(15 downto 0) <= (others => '0');
+				if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
+					internal_PCLK(15 downto 0) <= (others => internal_PCLK_SINGLE);
+				else
+					internal_PCLK(to_integer(internal_ROW_COL_COUNTER)) <= internal_PCLK_SINGLE;
+				end if;
+			end if;
 		end if;
 	end process;
 	
