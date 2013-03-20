@@ -114,55 +114,12 @@ begin
 	AsicIn_PARALLEL_CLOCK_C2_R <= internal_PCLK_OUT(11 downto  8);
 	AsicIn_PARALLEL_CLOCK_C3_R <= internal_PCLK_OUT(15 downto 12);	
 	
---	--ASIC DAC writing module (round-robin-by-ASIC)
---	Inst_controlAsicDacProgramming : entity work.controlAsicDacProgramming
---	port map ( 
---		CLK                          => CLOCK,
---		PCLK	                       => internal_PCLK_OUT,
---		CLEAR_ALL_REGISTERS          => AsicIn_CLEAR_ALL_REGISTERS,
---		SCLK                         => AsicIn_SERIAL_SHIFT_CLOCK,
---		SIN                          => AsicIn_SERIAL_INPUT,
---		SHOUT                        => '0',
---		ASIC_TRIG_THRESH             => ASIC_TRIG_THRESH,
---		ASIC_DAC_BUF_BIASES          => ASIC_DAC_BUF_BIASES,
---		ASIC_DAC_BUF_BIAS_ISEL       => ASIC_DAC_BUF_BIAS_ISEL,
---		ASIC_DAC_BUF_BIAS_VADJP      => internal_ASIC_DAC_BUF_BIAS_VADJP_TO_USE,
---		ASIC_DAC_BUF_BIAS_VADJN      => internal_ASIC_DAC_BUF_BIAS_VADJN_TO_USE,
---		ASIC_VBIAS                   => ASIC_VBIAS,
---		ASIC_VBIAS2                  => ASIC_VBIAS2,
---		ASIC_REG_TRG                 => ASIC_REG_TRG,
---		ASIC_WBIAS                   => internal_ASIC_WBIAS_TO_USE,
---		ASIC_VADJP                   => internal_ASIC_VADJP_TO_USE,
---		ASIC_VADJN                   => internal_ASIC_VADJN_TO_USE,
---		ASIC_VDLY                    => internal_ASIC_VDLY_TO_USE,
---		ASIC_TRG_BIAS                => ASIC_TRG_BIAS,
---		ASIC_TRG_BIAS2               => ASIC_TRG_BIAS2,
---		ASIC_TRGTHREF                => ASIC_TRGTHREF,
---		ASIC_CMPBIAS                 => ASIC_CMPBIAS,
---		ASIC_PUBIAS                  => ASIC_PUBIAS,
---		ASIC_SBBIAS                  => ASIC_SBBIAS,
---		ASIC_ISEL                    => ASIC_ISEL,
---		ASIC_TIMING_SSP_LEADING      => ASIC_TIMING_SSP_LEADING,
---		ASIC_TIMING_SSP_TRAILING     => ASIC_TIMING_SSP_TRAILING,
---		ASIC_TIMING_WR_STRB_LEADING  => ASIC_TIMING_WR_STRB_LEADING,
---		ASIC_TIMING_WR_STRB_TRAILING => ASIC_TIMING_WR_STRB_TRAILING,
---		ASIC_TIMING_S1_LEADING       => ASIC_TIMING_S1_LEADING,
---		ASIC_TIMING_S1_TRAILING      => ASIC_TIMING_S1_TRAILING,
---		ASIC_TIMING_S2_LEADING       => ASIC_TIMING_S2_LEADING,
---		ASIC_TIMING_S2_TRAILING      => ASIC_TIMING_S2_TRAILING,
---		ASIC_TIMING_PHASE_LEADING    => ASIC_TIMING_PHASE_LEADING,
---		ASIC_TIMING_PHASE_TRAILING   => ASIC_TIMING_PHASE_TRAILING,
---		ASIC_TIMING_GENERATOR_REG    => ASIC_TIMING_GENERATOR_REG
---	 );
-
-	--ASIC DAC writing module (round-robin-by-register, parallel when appropriate to a register)
-	AsicIn_CLEAR_ALL_REGISTERS <= '0';
-	--
-	map_irs3b_program_dacs_parallel : entity work.irs3b_program_dacs_parallel
-	port map(
+	--ASIC DAC writing module (round-robin-by-ASIC)
+	Inst_controlAsicDacProgramming : entity work.controlAsicDacProgramming
+	port map ( 
 		CLK                          => CLOCK,
-		CE                           => '1',
-		PCLK                         => internal_PCLK_OUT,
+		PCLK	                       => internal_PCLK_OUT,
+		CLEAR_ALL_REGISTERS          => AsicIn_CLEAR_ALL_REGISTERS,
 		SCLK                         => AsicIn_SERIAL_SHIFT_CLOCK,
 		SIN                          => AsicIn_SERIAL_INPUT,
 		SHOUT                        => '0',
@@ -196,7 +153,50 @@ begin
 		ASIC_TIMING_PHASE_LEADING    => ASIC_TIMING_PHASE_LEADING,
 		ASIC_TIMING_PHASE_TRAILING   => ASIC_TIMING_PHASE_TRAILING,
 		ASIC_TIMING_GENERATOR_REG    => ASIC_TIMING_GENERATOR_REG
-	);
+	 );
+
+--	--ASIC DAC writing module (round-robin-by-register, parallel when appropriate to a register)
+--	AsicIn_CLEAR_ALL_REGISTERS <= '0';
+--	--
+--	map_irs3b_program_dacs_parallel : entity work.irs3b_program_dacs_parallel
+--	port map(
+--		CLK                          => CLOCK,
+--		CE                           => '1',
+--		PCLK                         => internal_PCLK_OUT,
+--		SCLK                         => AsicIn_SERIAL_SHIFT_CLOCK,
+--		SIN                          => AsicIn_SERIAL_INPUT,
+--		SHOUT                        => '0',
+--		ASIC_TRIG_THRESH             => ASIC_TRIG_THRESH,
+--		ASIC_DAC_BUF_BIASES          => ASIC_DAC_BUF_BIASES,
+--		ASIC_DAC_BUF_BIAS_ISEL       => ASIC_DAC_BUF_BIAS_ISEL,
+--		ASIC_DAC_BUF_BIAS_VADJP      => internal_ASIC_DAC_BUF_BIAS_VADJP_TO_USE,
+--		ASIC_DAC_BUF_BIAS_VADJN      => internal_ASIC_DAC_BUF_BIAS_VADJN_TO_USE,
+--		ASIC_VBIAS                   => ASIC_VBIAS,
+--		ASIC_VBIAS2                  => ASIC_VBIAS2,
+--		ASIC_REG_TRG                 => ASIC_REG_TRG,
+--		ASIC_WBIAS                   => internal_ASIC_WBIAS_TO_USE,
+--		ASIC_VADJP                   => internal_ASIC_VADJP_TO_USE,
+--		ASIC_VADJN                   => internal_ASIC_VADJN_TO_USE,
+--		ASIC_VDLY                    => internal_ASIC_VDLY_TO_USE,
+--		ASIC_TRG_BIAS                => ASIC_TRG_BIAS,
+--		ASIC_TRG_BIAS2               => ASIC_TRG_BIAS2,
+--		ASIC_TRGTHREF                => ASIC_TRGTHREF,
+--		ASIC_CMPBIAS                 => ASIC_CMPBIAS,
+--		ASIC_PUBIAS                  => ASIC_PUBIAS,
+--		ASIC_SBBIAS                  => ASIC_SBBIAS,
+--		ASIC_ISEL                    => ASIC_ISEL,
+--		ASIC_TIMING_SSP_LEADING      => ASIC_TIMING_SSP_LEADING,
+--		ASIC_TIMING_SSP_TRAILING     => ASIC_TIMING_SSP_TRAILING,
+--		ASIC_TIMING_WR_STRB_LEADING  => ASIC_TIMING_WR_STRB_LEADING,
+--		ASIC_TIMING_WR_STRB_TRAILING => ASIC_TIMING_WR_STRB_TRAILING,
+--		ASIC_TIMING_S1_LEADING       => ASIC_TIMING_S1_LEADING,
+--		ASIC_TIMING_S1_TRAILING      => ASIC_TIMING_S1_TRAILING,
+--		ASIC_TIMING_S2_LEADING       => ASIC_TIMING_S2_LEADING,
+--		ASIC_TIMING_S2_TRAILING      => ASIC_TIMING_S2_TRAILING,
+--		ASIC_TIMING_PHASE_LEADING    => ASIC_TIMING_PHASE_LEADING,
+--		ASIC_TIMING_PHASE_TRAILING   => ASIC_TIMING_PHASE_TRAILING,
+--		ASIC_TIMING_GENERATOR_REG    => ASIC_TIMING_GENERATOR_REG
+--	);
 
 	
 	--------------------------------------------------

@@ -108,6 +108,7 @@ begin
 	map_wilkinson_monitoring : entity work.wilkinson_monitoring 
 	generic map (
 		USE_SIMPLE_FEEDBACK   => 0,
+		USE_RCO_COUNTER       => 0,
 		CLOCK_RATE            => CLOCK_RATE,
 		INTEGRATION_FREQUENCY => WILKINSON_INTEGRATION_FREQUENCY
 	)
@@ -129,6 +130,7 @@ begin
 	map_rco_monitoring : entity work.wilkinson_monitoring
 	generic map (
 		USE_SIMPLE_FEEDBACK   => 1,
+		USE_RCO_COUNTER       => 1,
 		CLOCK_RATE            => CLOCK_RATE,
 		INTEGRATION_FREQUENCY => RCO_INTEGRATION_FREQUENCY
 	)
