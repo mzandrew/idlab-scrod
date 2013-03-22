@@ -246,7 +246,7 @@ begin
 				);
 		end generate;
 		--Latch in the count values when signaled by the read enables
-		process(internal_COUNT_READ_ENABLES) begin
+		process(internal_COUNT_READ_ENABLES, CLOCK) begin
 			for col in 0 to 3 loop
 				for row in 0 to 3 loop
 					if (internal_COUNT_READ_ENABLES(col)(row) = '1') then

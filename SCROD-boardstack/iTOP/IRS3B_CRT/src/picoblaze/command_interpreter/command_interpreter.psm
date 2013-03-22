@@ -187,9 +187,11 @@ start:
 	;We also disable the temperature sensor I2C timeout feature
 	;This has to be done for all buses with the same temperature sensor
 	CALL disable_stts_timeout
+	CALL delay_200us
 
 	;Set the carrier level GPIOs to set SMPL_SEL_ANY to high
 	CALL set_smpl_sel_any_gpio
+	CALL delay_200us
 
 	;In the board stack firmware, we start the Wilkinson counter going now
 	;NOTE: this is now handled by IRS3B ASIC registers.
@@ -1266,36 +1268,36 @@ set_smpl_sel_any_gpio:
 	LOAD s0, out_I2C_BUS3_GPR_ADDRESS0
 	CALL set_current_GPR
 	LOAD s4, slave_addr_I2C_BUS3_GPIO0
-	LOAD s3, 03
-	LOAD s2, 00
-	CALL i2c_write_addr
 	LOAD s3, 01
 	LOAD s2, 40
+	CALL i2c_write_addr
+	LOAD s3, 03
+	LOAD s2, 00
 	CALL i2c_write_addr
 	LOAD s4, slave_addr_I2C_BUS3_GPIO1
-	LOAD s3, 03
-	LOAD s2, 00
-	CALL i2c_write_addr
 	LOAD s3, 01
 	LOAD s2, 40
+	CALL i2c_write_addr
+	LOAD s3, 03
+	LOAD s2, 00
 	CALL i2c_write_addr
 	;First for rows 1,3
 	LOAD s1, out_I2C_BUS4_GPR_ADDRESS1	
 	LOAD s0, out_I2C_BUS4_GPR_ADDRESS0
 	CALL set_current_GPR
 	LOAD s4, slave_addr_I2C_BUS4_GPIO0
-	LOAD s3, 03
-	LOAD s2, 00
-	CALL i2c_write_addr
 	LOAD s3, 01
 	LOAD s2, 40
+	CALL i2c_write_addr
+	LOAD s3, 03
+	LOAD s2, 00
 	CALL i2c_write_addr
 	LOAD s4, slave_addr_I2C_BUS4_GPIO1
-	LOAD s3, 03
-	LOAD s2, 00
-	CALL i2c_write_addr
 	LOAD s3, 01
 	LOAD s2, 40
+	CALL i2c_write_addr
+	LOAD s3, 03
+	LOAD s2, 00
 	CALL i2c_write_addr	
 	RETURN
 

@@ -104,10 +104,10 @@ architecture Behavioral of irs3b_program_dacs_parallel is
 	signal internal_LATCH_REG_VALUE   : std_logic := '0';
 	signal internal_SERIAL_VALUE      : std_logic_vector(17 downto 0);
 	
-	--Chipscope debugging signals
-	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
-	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
-	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
+--	--Chipscope debugging signals
+--	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+--	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
+--	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
 	
 
 begin
@@ -511,29 +511,29 @@ begin
 									  "1001" when internal_STATE = LATCH_NEXT_VALUE else
 									  "1111";
 
-	--DEBUGGING CRAP
-	map_ILA : entity work.s6_ila
-	port map (
-		CONTROL => internal_CHIPSCOPE_CONTROL,
-		CLK     => CLK,
-		TRIG0   => internal_CHIPSCOPE_ILA_REG
-	);
-	map_ICON : entity work.s6_icon
-	port map (
-		CONTROL0 => internal_CHIPSCOPE_CONTROL
-	);
-	
-	--Workaround for CS/picoblaze stupidness
-	process(CLK) begin
-		if (rising_edge(CLK)) then
-			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
-		end if;
-	end process;
-	
-	internal_CHIPSCOPE_ILA(           0) <= internal_SIN;
-	internal_CHIPSCOPE_ILA(           1) <= internal_SCLK;
-	internal_CHIPSCOPE_ILA(17 downto  2) <= internal_PCLK;
-	internal_CHIPSCOPE_ILA(21 downto 18) <= internal_STATE_MONITOR;
-	internal_CHIPSCOPE_ILA(39 downto 22) <= internal_SERIAL_VALUE;
+--	--DEBUGGING CRAP
+--	map_ILA : entity work.s6_ila
+--	port map (
+--		CONTROL => internal_CHIPSCOPE_CONTROL,
+--		CLK     => CLK,
+--		TRIG0   => internal_CHIPSCOPE_ILA_REG
+--	);
+--	map_ICON : entity work.s6_icon
+--	port map (
+--		CONTROL0 => internal_CHIPSCOPE_CONTROL
+--	);
+--	
+--	--Workaround for CS/picoblaze stupidness
+--	process(CLK) begin
+--		if (rising_edge(CLK)) then
+--			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
+--		end if;
+--	end process;
+--	
+--	internal_CHIPSCOPE_ILA(           0) <= internal_SIN;
+--	internal_CHIPSCOPE_ILA(           1) <= internal_SCLK;
+--	internal_CHIPSCOPE_ILA(17 downto  2) <= internal_PCLK;
+--	internal_CHIPSCOPE_ILA(21 downto 18) <= internal_STATE_MONITOR;
+--	internal_CHIPSCOPE_ILA(39 downto 22) <= internal_SERIAL_VALUE;
 	
 end Behavioral;
