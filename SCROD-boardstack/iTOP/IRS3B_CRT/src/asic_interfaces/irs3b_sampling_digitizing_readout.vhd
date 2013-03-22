@@ -136,10 +136,10 @@ architecture Behavioral of irs3b_sampling_digitizing_readout is
 	--Debugging output for digitizing block
 	signal internal_DIGITIZER_STATE : std_logic_vector(3 downto 0);
 	
-	--Chipscope debugging signals
-	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
-	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
-	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
+--	--Chipscope debugging signals
+--	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+--	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
+--	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
 
 begin
 	EVENT_FIFO_DATA_OUT             <= internal_EVENT_FIFO_DATA_OUT;
@@ -415,54 +415,54 @@ begin
 		internal_DIGITIZER_CLOCK_ENABLE <= shift(0) and not(shift(1));
 	end process;
 
-	--DEBUGGING CRAP
-	map_ILA : entity work.s6_ila
-	port map (
-		CONTROL => internal_CHIPSCOPE_CONTROL,
-		CLK     => CLOCK,
-		TRIG0   => internal_CHIPSCOPE_ILA_REG
-	);
-	map_ICON : entity work.s6_icon
-	port map (
-		CONTROL0 => internal_CHIPSCOPE_CONTROL
-	);
-	
-	--Workaround for CS/picoblaze stupidness
-	process(CLOCK) begin
-		if (rising_edge(CLOCK)) then
-			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
-		end if;
-	end process;
-	
-	internal_CHIPSCOPE_ILA(0) <= internal_ROI_PARSER_START;                     
-	internal_CHIPSCOPE_ILA(1) <= internal_ROI_PARSER_READY;                     
-	internal_CHIPSCOPE_ILA(2) <= internal_ROI_PARSER_DONE;                      
-	internal_CHIPSCOPE_ILA(3) <= internal_ROI_PARSER_MAKE_READY;                
-	internal_CHIPSCOPE_ILA(4) <= internal_ROI_PARSER_VETO;                      
-	internal_CHIPSCOPE_ILA(5) <= internal_ROI_TRUNCATED_FLAG;                   
-	internal_CHIPSCOPE_ILA(15 downto 6) <= internal_NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT; 
-	internal_CHIPSCOPE_ILA(16) <= internal_NEXT_WINDOW_FIFO_EMPTY;
-	internal_CHIPSCOPE_ILA(17) <= internal_NEXT_WINDOW_FIFO_READ_ENABLE;
-	internal_CHIPSCOPE_ILA(18) <= internal_DIGITIZER_BUSY;
-	internal_CHIPSCOPE_ILA(19) <= '0';
-	internal_CHIPSCOPE_ILA(35 downto 20) <= internal_NEXT_WINDOW_FIFO_READ_DATA;
-	internal_CHIPSCOPE_ILA(67 downto 36) <= internal_WAVEFORM_FIFO_DATA;
-	internal_CHIPSCOPE_ILA(68) <= internal_WAVEFORM_FIFO_EMPTY;
-	internal_CHIPSCOPE_ILA(69) <= '0';
-	internal_CHIPSCOPE_ILA(70) <= internal_WAVEFORM_FIFO_READ_ENABLE;
-	internal_CHIPSCOPE_ILA(71) <= internal_WAVEFORM_FIFO_VALID;
-	internal_CHIPSCOPE_ILA(72) <= internal_EVENT_FIFO_EMPTY;
-	internal_CHIPSCOPE_ILA(73) <= internal_EVENT_FIFO_DATA_VALID;
-	internal_CHIPSCOPE_ILA(105 downto 74) <= internal_EVENT_FIFO_DATA_OUT;
-	internal_CHIPSCOPE_ILA(106) <= internal_EVENT_FIFO_READ_ENABLE;
-	internal_CHIPSCOPE_ILA(107) <= internal_CURRENTLY_SAMPLING;
-	internal_CHIPSCOPE_ILA(116 downto 108) <= internal_LAST_WINDOW_SAMPLED;
-	internal_CHIPSCOPE_ILA(117) <= internal_DONE_SENDING_EVENT;
-	internal_CHIPSCOPE_ILA(118) <= SOFTWARE_TRIGGER_IN;
-	internal_CHIPSCOPE_ILA(119) <= SOFTWARE_TRIGGER_VETO;
-	internal_CHIPSCOPE_ILA(120) <= HARDWARE_TRIGGER_IN;
-	internal_CHIPSCOPE_ILA(121) <= HARDWARE_TRIGGER_VETO;	
-	internal_CHIPSCOPE_ILA(125 downto 122) <= internal_DIGITIZER_STATE;
+--	--DEBUGGING CRAP
+--	map_ILA : entity work.s6_ila
+--	port map (
+--		CONTROL => internal_CHIPSCOPE_CONTROL,
+--		CLK     => CLOCK,
+--		TRIG0   => internal_CHIPSCOPE_ILA_REG
+--	);
+--	map_ICON : entity work.s6_icon
+--	port map (
+--		CONTROL0 => internal_CHIPSCOPE_CONTROL
+--	);
+--	
+--	--Workaround for CS/picoblaze stupidness
+--	process(CLOCK) begin
+--		if (rising_edge(CLOCK)) then
+--			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
+--		end if;
+--	end process;
+--	
+--	internal_CHIPSCOPE_ILA(0) <= internal_ROI_PARSER_START;                     
+--	internal_CHIPSCOPE_ILA(1) <= internal_ROI_PARSER_READY;                     
+--	internal_CHIPSCOPE_ILA(2) <= internal_ROI_PARSER_DONE;                      
+--	internal_CHIPSCOPE_ILA(3) <= internal_ROI_PARSER_MAKE_READY;                
+--	internal_CHIPSCOPE_ILA(4) <= internal_ROI_PARSER_VETO;                      
+--	internal_CHIPSCOPE_ILA(5) <= internal_ROI_TRUNCATED_FLAG;                   
+--	internal_CHIPSCOPE_ILA(15 downto 6) <= internal_NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT; 
+--	internal_CHIPSCOPE_ILA(16) <= internal_NEXT_WINDOW_FIFO_EMPTY;
+--	internal_CHIPSCOPE_ILA(17) <= internal_NEXT_WINDOW_FIFO_READ_ENABLE;
+--	internal_CHIPSCOPE_ILA(18) <= internal_DIGITIZER_BUSY;
+--	internal_CHIPSCOPE_ILA(19) <= '0';
+--	internal_CHIPSCOPE_ILA(35 downto 20) <= internal_NEXT_WINDOW_FIFO_READ_DATA;
+--	internal_CHIPSCOPE_ILA(67 downto 36) <= internal_WAVEFORM_FIFO_DATA;
+--	internal_CHIPSCOPE_ILA(68) <= internal_WAVEFORM_FIFO_EMPTY;
+--	internal_CHIPSCOPE_ILA(69) <= '0';
+--	internal_CHIPSCOPE_ILA(70) <= internal_WAVEFORM_FIFO_READ_ENABLE;
+--	internal_CHIPSCOPE_ILA(71) <= internal_WAVEFORM_FIFO_VALID;
+--	internal_CHIPSCOPE_ILA(72) <= internal_EVENT_FIFO_EMPTY;
+--	internal_CHIPSCOPE_ILA(73) <= internal_EVENT_FIFO_DATA_VALID;
+--	internal_CHIPSCOPE_ILA(105 downto 74) <= internal_EVENT_FIFO_DATA_OUT;
+--	internal_CHIPSCOPE_ILA(106) <= internal_EVENT_FIFO_READ_ENABLE;
+--	internal_CHIPSCOPE_ILA(107) <= internal_CURRENTLY_SAMPLING;
+--	internal_CHIPSCOPE_ILA(116 downto 108) <= internal_LAST_WINDOW_SAMPLED;
+--	internal_CHIPSCOPE_ILA(117) <= internal_DONE_SENDING_EVENT;
+--	internal_CHIPSCOPE_ILA(118) <= SOFTWARE_TRIGGER_IN;
+--	internal_CHIPSCOPE_ILA(119) <= SOFTWARE_TRIGGER_VETO;
+--	internal_CHIPSCOPE_ILA(120) <= HARDWARE_TRIGGER_IN;
+--	internal_CHIPSCOPE_ILA(121) <= HARDWARE_TRIGGER_VETO;	
+--	internal_CHIPSCOPE_ILA(125 downto 122) <= internal_DIGITIZER_STATE;
 
 end Behavioral;
 

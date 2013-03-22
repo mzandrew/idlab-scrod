@@ -66,9 +66,10 @@ end irs3b_program_dacs_parallel;
 
 architecture Behavioral of irs3b_program_dacs_parallel is
 	--State machine signals
-	type dac_state is (IDLE, LOAD_BIT, SEND_BIT, NEXT_BIT, PREPARE_LATCH, LATCH_BUS_DATA, PREPARE_LOAD, LOAD_DESTINATION, INCREMENT);
+	type dac_state is (IDLE, LOAD_BIT, SEND_BIT, NEXT_BIT, PREPARE_LATCH, LATCH_BUS_DATA, PREPARE_LOAD, LOAD_DESTINATION, INCREMENT, LATCH_NEXT_VALUE);
 	signal internal_STATE      : dac_state := IDLE;
 	signal internal_NEXT_STATE : dac_state := IDLE;
+	signal internal_STATE_MONITOR : std_logic_vector(3 downto 0);
 	--Internal copies of signals so we can monitor via chipscope if needed
 	signal internal_PCLK_SINGLE : std_logic;
 	signal internal_PCLK  : std_logic_vector(15 downto 0);
@@ -102,6 +103,13 @@ architecture Behavioral of irs3b_program_dacs_parallel is
 	signal internal_LATCHED_REG_VALUE : std_logic_vector(11 downto 0);
 	signal internal_LATCH_REG_VALUE   : std_logic := '0';
 	signal internal_SERIAL_VALUE      : std_logic_vector(17 downto 0);
+	
+	--Chipscope debugging signals
+	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
+	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
+	
+
 begin
 	--Connections to the top
 	PCLK <= internal_PCLK;
@@ -167,6 +175,8 @@ begin
 					internal_RESET_ROWCOL       <= '1';
 					internal_INCREMENT_REGISTER <= '1';
 				end if;
+			when LATCH_NEXT_VALUE =>
+				internal_LATCH_REG_VALUE <= '1';
 		end case;
 	end process;
 
@@ -205,13 +215,15 @@ begin
 				if (reg_map(to_integer(internal_REGISTER_COUNTER)) = global or
 				                             internal_ROW_COL_COUNTER = 15) then
 					if (internal_REGISTER_COUNTER < 46) then
-						internal_NEXT_STATE <= LOAD_BIT;
+						internal_NEXT_STATE <= LATCH_NEXT_VALUE;
 					else
 						internal_NEXT_STATE <= IDLE;
 					end if;
 				else 
-					internal_NEXT_STATE <= LOAD_BIT;
+					internal_NEXT_STATE <= LATCH_NEXT_VALUE;
 				end if;
+			when LATCH_NEXT_VALUE =>
+				internal_NEXT_STATE <= LOAD_BIT;
 			when others =>
 				internal_NEXT_STATE <= IDLE;
 		end case;
@@ -373,7 +385,7 @@ begin
 			when  8 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             -- 9: VBDBIAS
 			when  9 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS(internal_COL)(internal_ROW);          --10: VBIAS
 			when 10 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS2(internal_COL)(internal_ROW);         --11: VBIAS2
-			when 11 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_REG_TRG;                           --12: MiscReg (LSB: TRG_SIGN)
+			when 11 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_REG_TRG;                             --12: MiscReg (LSB: TRG_SIGN)
 			when 12 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --13: WBDbias
 			when 13 => internal_REG_VALUE_TO_LOAD <= ASIC_WBIAS(internal_COL)(internal_ROW);          --14: Wbias
 			when 14 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --15: TCDbias
@@ -383,17 +395,17 @@ begin
 			when 18 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --19: TRGDbias
 			when 19 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS2;                                  --20: TRGbias2
 			when 20 => internal_REG_VALUE_TO_LOAD <= ASIC_TRGTHREF;                                   --21: TRGthref
-			when 21 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_SSP_LEADING(internal_COL)(internal_ROW);      --22: LeadSSPin
-			when 22 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_SSP_TRAILING(internal_COL)(internal_ROW);     --23: TrailSSPin
-			when 23 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S1_LEADING(internal_COL)(internal_ROW);       --24: LeadS1
-			when 24 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S1_TRAILING(internal_COL)(internal_ROW);      --25: TrailS1
-			when 25 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S2_LEADING(internal_COL)(internal_ROW);       --26: LeadS2
-			when 26 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S2_TRAILING(internal_COL)(internal_ROW);      --27: TrailS2
-			when 27 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_PHASE_LEADING(internal_COL)(internal_ROW);    --28: LeadPHASE
-			when 28 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_PHASE_TRAILING(internal_COL)(internal_ROW);   --29: TrailPHASE
-			when 29 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_WR_STRB_LEADING(internal_COL)(internal_ROW);  --30: LeadWR_STRB
-			when 30 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_WR_STRB_TRAILING(internal_COL)(internal_ROW); --31: TrailWR_STRB
-			when 31 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_GENERATOR_REG;              --32: TimGenReg
+			when 21 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_SSP_LEADING(internal_COL)(internal_ROW);      --22: LeadSSPin
+			when 22 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_SSP_TRAILING(internal_COL)(internal_ROW);     --23: TrailSSPin
+			when 23 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S1_LEADING(internal_COL)(internal_ROW);       --24: LeadS1
+			when 24 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S1_TRAILING(internal_COL)(internal_ROW);      --25: TrailS1
+			when 25 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S2_LEADING(internal_COL)(internal_ROW);       --26: LeadS2
+			when 26 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S2_TRAILING(internal_COL)(internal_ROW);      --27: TrailS2
+			when 27 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_PHASE_LEADING(internal_COL)(internal_ROW);    --28: LeadPHASE
+			when 28 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_PHASE_TRAILING(internal_COL)(internal_ROW);   --29: TrailPHASE
+			when 29 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_WR_STRB_LEADING(internal_COL)(internal_ROW);  --30: LeadWR_STRB
+			when 30 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_WR_STRB_TRAILING(internal_COL)(internal_ROW); --31: TrailWR_STRB
+			when 31 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_GENERATOR_REG;              --32: TimGenReg
 			when 32 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --33: PDDbias
 			when 33 => internal_REG_VALUE_TO_LOAD <= ASIC_CMPBIAS;                                    --34: CMPbias
 			when 34 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --35: PUDbias
@@ -411,53 +423,53 @@ begin
 			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --62: Start_WilkMon
 			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');
 			-------------------------
---			when  0 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 1: THR1
---			when  1 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 2: THR2
---			when  2 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 3: THR3
---			when  3 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 4: THR4
---			when  4 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 5: THR5
---			when  5 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 6: THR6
---			when  6 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 7: THR7
---			when  7 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;      -- 8: THR8
---			when  8 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   -- 9: VBDBIAS
---			when  9 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS;            --10: VBIAS
---			when 10 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS2;           --11: VBIAS2
---			when 11 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_REG_TRG; --12: MiscReg (LSB: TRG_SIGN)
---			when 12 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --13: WBDbias
---			when 13 => internal_REG_VALUE_TO_LOAD <= ASIC_WBIAS;            --14: Wbias
---			when 14 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --15: TCDbias
---			when 15 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS;         --16: TRGbias
---			when 16 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --17: THDbias
---			when 17 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --18: Tbbias
---			when 18 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;   --19: TRGDbias
---			when 19 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS2;        --20: TRGbias2
---			when 20 => internal_REG_VALUE_TO_LOAD <= ASIC_TRGTHREF;         --21: TRGthref
---			when 21 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_SSP_LEADING;      --22: LeadSSPin
---			when 22 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_SSP_TRAILING;     --23: TrailSSPin
---			when 23 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S1_LEADING;       --24: LeadS1
---			when 24 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S1_TRAILING;      --25: TrailS1
---			when 25 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S2_LEADING;       --26: LeadS2
---			when 26 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_S2_TRAILING;      --27: TrailS2
---			when 27 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_PHASE_LEADING;    --28: LeadPHASE
---			when 28 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_PHASE_TRAILING;   --29: TrailPHASE
---			when 29 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_WR_STRB_LEADING;  --30: LeadWR_STRB
---			when 30 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_WR_STRB_TRAILING; --31: TrailWR_STRB
---			when 31 => internal_REG_VALUE_TO_LOAD <= "0000" & ASIC_TIMING_GENERATOR_REG;              --32: TimGenReg
---			when 32 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --33: PDDbias
---			when 33 => internal_REG_VALUE_TO_LOAD <= ASIC_CMPBIAS;                                    --34: CMPbias
---			when 34 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --35: PUDbias
---			when 35 => internal_REG_VALUE_TO_LOAD <= ASIC_PUBIAS;                                     --36: PUbias
---			when 36 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --37: SBDbias
---			when 37 => internal_REG_VALUE_TO_LOAD <= ASIC_SBBIAS;                                     --38: Sbbias
---			when 38 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_ISEL;                          --39: ISDbias
---			when 39 => internal_REG_VALUE_TO_LOAD <= ASIC_ISEL;                                       --40: ISEL
---			when 40 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --41: VDDbias
---			when 41 => internal_REG_VALUE_TO_LOAD <= ASIC_VDLY;           --42: Vdly
---			when 42 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJP;                         --43: VAPDbias
---			when 43 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJP;          --44: VadjP
---			when 44 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJN;                         --45: VANDbias
---			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN;          --46: VadjN
---			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --62: Start_WilkMon
+--			when  0 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 1: THR1
+--			when  1 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 2: THR2
+--			when  2 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 3: THR3
+--			when  3 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 4: THR4
+--			when  4 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 5: THR5
+--			when  5 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 6: THR6
+--			when  6 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 7: THR7
+--			when  7 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 8: THR8
+--			when  8 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   -- 9: VBDBIAS
+--			when  9 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS;                            --10: VBIAS
+--			when 10 => internal_REG_VALUE_TO_LOAD <= ASIC_VBIAS2;                           --11: VBIAS2
+--			when 11 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_REG_TRG;                   --12: MiscReg (LSB: TRG_SIGN)
+--			when 12 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --13: WBDbias
+--			when 13 => internal_REG_VALUE_TO_LOAD <= ASIC_WBIAS;                            --14: Wbias
+--			when 14 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --15: TCDbias
+--			when 15 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS;                         --16: TRGbias
+--			when 16 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --17: THDbias
+--			when 17 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --18: Tbbias
+--			when 18 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --19: TRGDbias
+--			when 19 => internal_REG_VALUE_TO_LOAD <= ASIC_TRG_BIAS2;                        --20: TRGbias2
+--			when 20 => internal_REG_VALUE_TO_LOAD <= ASIC_TRGTHREF;                         --21: TRGthref
+--			when 21 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_SSP_LEADING;        --22: LeadSSPin
+--			when 22 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_SSP_TRAILING;       --23: TrailSSPin
+--			when 23 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S1_LEADING;         --24: LeadS1
+--			when 24 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S1_TRAILING;        --25: TrailS1
+--			when 25 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S2_LEADING;         --26: LeadS2
+--			when 26 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_S2_TRAILING;        --27: TrailS2
+--			when 27 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_PHASE_LEADING;      --28: LeadPHASE
+--			when 28 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_PHASE_TRAILING;     --29: TrailPHASE
+--			when 29 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_WR_STRB_LEADING;    --30: LeadWR_STRB
+--			when 30 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_WR_STRB_TRAILING;   --31: TrailWR_STRB
+--			when 31 => internal_REG_VALUE_TO_LOAD <= x"0" & ASIC_TIMING_GENERATOR_REG;      --32: TimGenReg
+--			when 32 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --33: PDDbias
+--			when 33 => internal_REG_VALUE_TO_LOAD <= ASIC_CMPBIAS;                          --34: CMPbias
+--			when 34 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --35: PUDbias
+--			when 35 => internal_REG_VALUE_TO_LOAD <= ASIC_PUBIAS;                           --36: PUbias
+--			when 36 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --37: SBDbias
+--			when 37 => internal_REG_VALUE_TO_LOAD <= ASIC_SBBIAS;                           --38: Sbbias
+--			when 38 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_ISEL;                --39: ISDbias
+--			when 39 => internal_REG_VALUE_TO_LOAD <= ASIC_ISEL;                             --40: ISEL
+--			when 40 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                   --41: VDDbias
+--			when 41 => internal_REG_VALUE_TO_LOAD <= ASIC_VDLY;                             --42: Vdly
+--			when 42 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJP;               --43: VAPDbias
+--			when 43 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJP;                            --44: VadjP
+--			when 44 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJN;               --45: VANDbias
+--			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN;                            --46: VadjN
+--			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                       --62: Start_WilkMon
 --			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');
 		end case;
 	end process;
@@ -485,5 +497,43 @@ begin
 			end if;
 		end if;
 	end process;
+
+	--Signal to monitor the state machine internal state
+	internal_STATE_MONITOR <= "0000" when internal_STATE = IDLE else
+	                          "0001" when internal_STATE = LOAD_BIT else
+	                          "0010" when internal_STATE = SEND_BIT else
+	                          "0011" when internal_STATE = NEXT_BIT else
+	                          "0100" when internal_STATE = PREPARE_LATCH else
+	                          "0101" when internal_STATE = LATCH_BUS_DATA else
+	                          "0110" when internal_STATE = PREPARE_LOAD else
+	                          "0111" when internal_STATE = LOAD_DESTINATION else
+	                          "1000" when internal_STATE = INCREMENT else
+									  "1001" when internal_STATE = LATCH_NEXT_VALUE else
+									  "1111";
+
+	--DEBUGGING CRAP
+	map_ILA : entity work.s6_ila
+	port map (
+		CONTROL => internal_CHIPSCOPE_CONTROL,
+		CLK     => CLK,
+		TRIG0   => internal_CHIPSCOPE_ILA_REG
+	);
+	map_ICON : entity work.s6_icon
+	port map (
+		CONTROL0 => internal_CHIPSCOPE_CONTROL
+	);
+	
+	--Workaround for CS/picoblaze stupidness
+	process(CLK) begin
+		if (rising_edge(CLK)) then
+			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
+		end if;
+	end process;
+	
+	internal_CHIPSCOPE_ILA(           0) <= internal_SIN;
+	internal_CHIPSCOPE_ILA(           1) <= internal_SCLK;
+	internal_CHIPSCOPE_ILA(17 downto  2) <= internal_PCLK;
+	internal_CHIPSCOPE_ILA(21 downto 18) <= internal_STATE_MONITOR;
+	internal_CHIPSCOPE_ILA(39 downto 22) <= internal_SERIAL_VALUE;
 	
 end Behavioral;
