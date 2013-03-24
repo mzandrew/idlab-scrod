@@ -163,6 +163,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CLOCK_2xSST_CE   : std_logic;
 	signal internal_CLOCK_SST_BUFG   : std_logic;
 	signal internal_CLOCK_ENABLE_I2C : std_logic;
+	signal internal_SECONDS_SST_PLL_LOCKED : std_logic_vector(15 downto 0);
 	--Connections to the I2C interfaces
 	signal internal_I2C_WRITE_REGISTERS : i2c_rw_registers;
 	signal internal_I2C_READ_REGISTERS  : i2c_rw_registers;
@@ -232,6 +233,17 @@ architecture Behavioral of scrod_top is
 	signal internal_WILKINSON_COUNTERS     : Column_Row_Counters;
 	signal internal_SAMPLING_RATE_TARGETS  : Column_Row_Counters;
 	signal internal_SAMPLING_RATE_COUNTERS : Column_Row_Counters;
+
+	--Signals to allow flexibility for monitoring
+	signal internal_MON_HEADER_MONTIMING_ROW_SELECT : std_logic_vector(ROW_SELECT_BITS-1 downto 0);
+	signal internal_MON_HEADER_MONTIMING_COL_SELECT : std_logic_vector(COL_SELECT_BITS-1 downto 0);
+	signal internal_MON_HEADER_RCOSSX_ROW_SELECT    : std_logic_vector(ROW_SELECT_BITS-1 downto 0);
+	signal internal_MON_HEADER_RCOSSX_COL_SELECT    : std_logic_vector(COL_SELECT_BITS-1 downto 0);
+	signal internal_MON_HEADER_MONTIMING_R          : std_logic_vector(3 downto 0);
+	signal internal_MON_HEADER_MONTIMING            : std_logic;
+	signal internal_MON_HEADER_RCOSSX_R             : std_logic_vector(3 downto 0);
+	signal internal_MON_HEADER_RCOSSX               : std_logic;
+
 	
 	--Connections to the general purpose registers
 	signal internal_OUTPUT_REGISTERS : GPR;
@@ -278,39 +290,69 @@ architecture Behavioral of scrod_top is
 
 begin 
 	--Monitor pins (CHANGE FOR INTERCONNECT REV C)!!!!  (Luca's notes are in comments)
-	MON(0) <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(0); -- MONTIMING for chip 0 column 0
-	MON(1) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(8); -- WR_EN
+	-- These are Luca's originals:
+	--MON(0) <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(0); -- MONTIMING for chip 0 column 0
+	--MON(1) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(8); -- WR_EN
+	--MON(2) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3); -- WR_ADDR(*SHOULD BE* LS)
+	-- Choose your favorites to monitor here:
+	MON(0) <= internal_MON_HEADER_MONTIMING;
+	MON(1) <= internal_MON_HEADER_RCOSSX;
 	MON(2) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3); -- WR_ADDR(*SHOULD BE* LS)
+	--MUX for MONTIMING signals
+	internal_MON_HEADER_MONTIMING_R <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "00" else 
+	                                   AsicOut_SAMPLING_TIMING_MONITOR_C1_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "01" else 
+	                                   AsicOut_SAMPLING_TIMING_MONITOR_C2_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "10" else 
+	                                   AsicOut_SAMPLING_TIMING_MONITOR_C3_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "11" else
+	                                   "XXXX";
+	internal_MON_HEADER_MONTIMING   <= internal_MON_HEADER_MONTIMING_R(0) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "00" else 
+	                                   internal_MON_HEADER_MONTIMING_R(1) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "01" else 
+	                                   internal_MON_HEADER_MONTIMING_R(2) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "10" else 
+	                                   internal_MON_HEADER_MONTIMING_R(3) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "11" else 
+	                                   'X';
+	--Likewise for RCOSSX signals
+	internal_MON_HEADER_RCOSSX_R <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R when internal_MON_HEADER_RCOSSX_COL_SELECT = "00" else 
+	                                AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R when internal_MON_HEADER_RCOSSX_COL_SELECT = "01" else 
+	                                AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R when internal_MON_HEADER_RCOSSX_COL_SELECT = "10" else 
+	                                AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C3_R when internal_MON_HEADER_RCOSSX_COL_SELECT = "11" else
+	                                "XXXX";
+	internal_MON_HEADER_RCOSSX   <= internal_MON_HEADER_RCOSSX_R(0) when internal_MON_HEADER_RCOSSX_ROW_SELECT = "00" else 
+	                                internal_MON_HEADER_RCOSSX_R(1) when internal_MON_HEADER_RCOSSX_ROW_SELECT = "01" else 
+	                                internal_MON_HEADER_RCOSSX_R(2) when internal_MON_HEADER_RCOSSX_ROW_SELECT = "10" else 
+	                                internal_MON_HEADER_RCOSSX_R(3) when internal_MON_HEADER_RCOSSX_ROW_SELECT = "11" else 
+	                                'X';	
+
 
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
 	port map ( 
 		--Raw board clock input
-		BOARD_CLOCKP         => BOARD_CLOCKP,
-		BOARD_CLOCKN         => BOARD_CLOCKN,
+		BOARD_CLOCKP           => BOARD_CLOCKP,
+		BOARD_CLOCKN           => BOARD_CLOCKN,
 		--FTSW inputs
-		RJ45_ACK_P           => RJ45_ACK_P,
-		RJ45_ACK_N           => RJ45_ACK_N,			  
-		RJ45_TRG_P           => RJ45_TRG_P,
-		RJ45_TRG_N           => RJ45_TRG_N,			  			  
-		RJ45_RSV_P           => RJ45_RSV_P,
-		RJ45_RSV_N           => RJ45_RSV_N,
-		RJ45_CLK_P           => RJ45_CLK_P,
-		RJ45_CLK_N           => RJ45_CLK_N,
+		RJ45_ACK_P             => RJ45_ACK_P,
+		RJ45_ACK_N             => RJ45_ACK_N,			  
+		RJ45_TRG_P             => RJ45_TRG_P,
+		RJ45_TRG_N             => RJ45_TRG_N,			  			  
+		RJ45_RSV_P             => RJ45_RSV_P,
+		RJ45_RSV_N             => RJ45_RSV_N,
+		RJ45_CLK_P             => RJ45_CLK_P,
+		RJ45_CLK_N             => RJ45_CLK_N,
 		--Trigger outputs from FTSW
-		EXT_TRIGGER          => internal_HARDWARE_TRIGGER,
+		EXT_TRIGGER            => internal_HARDWARE_TRIGGER,
 		--Select signal between the two
-		USE_LOCAL_CLOCK      => USE_LOCAL_CLOCK_JUMPER,
+		USE_LOCAL_CLOCK        => USE_LOCAL_CLOCK_JUMPER,
 		--General output clocks
-		CLOCK_50MHz_BUFG     => internal_CLOCK_50MHz_BUFG,
+		CLOCK_50MHz_BUFG       => internal_CLOCK_50MHz_BUFG,
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG     => internal_CLOCK_4xSST_BUFG,
-		CLOCK_SSTx2_CE       => internal_CLOCK_2xSST_CE,
-		CLOCK_SST_BUFG       => internal_CLOCK_SST_BUFG,
+		CLOCK_SSTx4_BUFG       => internal_CLOCK_4xSST_BUFG,
+		CLOCK_SSTx2_CE         => internal_CLOCK_2xSST_CE,
+		CLOCK_SST_BUFG         => internal_CLOCK_SST_BUFG,
+		--Check SST PLL stability
+		SECONDS_SST_PLL_LOCKED => internal_SECONDS_SST_PLL_LOCKED,
 		--ASIC output clocks
-		ASIC_SST             => AsicIn_SAMPLING_HOLD_MODE_C,
+		ASIC_SST               => AsicIn_SAMPLING_HOLD_MODE_C,
 		--Output clock enable for I2C things
-		I2C_CLOCK_ENABLE     => internal_CLOCK_ENABLE_I2C
+		I2C_CLOCK_ENABLE       => internal_CLOCK_ENABLE_I2C
 	);	
 	
 	--Interface to I2C devices
@@ -726,6 +768,13 @@ begin
 	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(379)(7 downto 0);   -- bits  7:0 Internal ASIC "timing" register
 	internal_DO_SAMPLING_SYNC          <= internal_OUTPUT_REGISTERS(379)(8);            -- bit     8 Signal for the sampling block to perform the sync  - set to one after all taps/biases are programmed
 	internal_CHOOSE_SAMPLING_PHASE     <= internal_OUTPUT_REGISTERS(379)(10 downto 9);  -- bits 10:9 Choose which phase to use among 4 PHAB phases
+
+	                                                                                  --Register 380:
+	internal_MON_HEADER_MONTIMING_ROW_SELECT <= internal_OUTPUT_REGISTERS(380)(1 downto 0); -- bits 1:0 choose row for MONTIMING signal appearing on mon header
+	internal_MON_HEADER_MONTIMING_COL_SELECT <= internal_OUTPUT_REGISTERS(380)(3 downto 2); -- bits 3:2 choose col for MONTIMING  ""
+	internal_MON_HEADER_RCOSSX_ROW_SELECT    <= internal_OUTPUT_REGISTERS(380)(5 downto 4); -- bits 5:4 choose row for RCOSSX     ""
+	internal_MON_HEADER_RCOSSX_COL_SELECT    <= internal_OUTPUT_REGISTERS(380)(7 downto 6); -- bits 7:6 choose col for RCOSSX     ""
+
 	
 	                                                                                  --Registers 384-399: wilkinson counter target values for feedback
 	gen_vdly_feedback_targets_col : for col in 0 to 3 generate
@@ -806,5 +855,6 @@ begin
 
 	internal_INPUT_REGISTERS(N_GPR+96) <= internal_EVENT_NUMBER(15 downto  0); --Register 608: LSBs of current event number
 	internal_INPUT_REGISTERS(N_GPR+97) <= internal_EVENT_NUMBER(31 downto 16); --Register 609: MSBs of current event number
+	internal_INPUT_REGISTERS(N_GPR+98) <= internal_SECONDS_SST_PLL_LOCKED;     --Register 610: Number of seconds that SST PLL has been locked
 
 end Behavioral;

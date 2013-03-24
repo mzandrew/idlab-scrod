@@ -32,10 +32,12 @@ entity clock_generation is
 		CLOCK_SSTx4_BUFG : out STD_LOGIC;
 		CLOCK_SSTx2_CE   : out STD_LOGIC;
 		CLOCK_SST_BUFG   : out STD_LOGIC;
+		--Monitor to check PLL stability 
+		SECONDS_SST_PLL_LOCKED   : out std_logic_vector(15 downto 0);
 		--ASIC output clocks (sent through ODDR2)
-		ASIC_SST         : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
+		ASIC_SST                 : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
 		--Output clock enable for I2C things
-		I2C_CLOCK_ENABLE : out STD_LOGIC;
+		I2C_CLOCK_ENABLE         : out STD_LOGIC;
 		--Output clock enable for ASIC DAC interface
 		ASIC_SERIAL_CLOCK_ENABLE : out STD_LOGIC
 	);
@@ -46,7 +48,6 @@ architecture Behavioral of clock_generation is
 	signal internal_BOARD_CLOCK_FB      : std_logic;
 	signal internal_BOARD_CLOCK_FB_BUFG : std_logic;
 	signal internal_BOARD_DERIVED_SST   : std_logic;
-	signal internal_BOARD_DERIVED_SST_GBUF : std_logic;
 	signal internal_FTSW_DERIVED_SST    : std_logic;
 	signal internal_CLK_FIN_SST         : std_logic;
 	signal internal_CLOCK_SST           : std_logic;
@@ -59,7 +60,10 @@ architecture Behavioral of clock_generation is
 	signal internal_CLK_FIN_TRIGGER       : std_logic;
 	--
 	signal internal_CLOCK_50MHz_BUFG    : std_logic;
-	
+	--
+	signal internal_PLL_COUNTER_ENABLE  : std_logic;
+	signal internal_PLL_LOCKED_COUNTER  : unsigned(15 downto 0) := (others => '0');
+	signal internal_PLL_LOCKED          : std_logic;
 begin
 	--Simple mappings from internals to output ports
 	CLOCK_SSTx4_BUFG <= internal_CLOCK_SSTx4_BUFG;
@@ -180,7 +184,7 @@ begin
 		CLK_50MHz_BUFG   => internal_CLOCK_50MHz_BUFG,
 		CLK_SSTx4_BUFG   => internal_CLOCK_SSTx4_BUFG,
 		-- Status and control signals
-		LOCKED           => open
+		LOCKED           => internal_PLL_LOCKED
 	);
 	CLOCK_50MHz_BUFG <= internal_CLOCK_50MHz_BUFG;
    CLOCK_SST_BUFG   <= internal_CLOCK_SST;
@@ -207,6 +211,29 @@ begin
 		CLOCK_IN         => internal_CLOCK_50MHz_BUFG,
 		CLOCK_ENABLE_OUT => I2C_CLOCK_ENABLE
 	);
+
+	----------------------------------------------------------------------
+	--CE and COUNTER to monitor how many seconds SST PLL has been locked--
+	----------------------------------------------------------------------
+	SECONDS_SST_PLL_LOCKED <= std_logic_vector(internal_PLL_LOCKED_COUNTER);
+	map_pll_lock_counter_ce : entity work.clock_enable_generator
+	generic map (
+		DIVIDE_RATIO     => 21203000
+	)
+	port map (
+		CLOCK_IN         => internal_BOARD_DERIVED_SST,
+		CLOCK_ENABLE_OUT => internal_PLL_COUNTER_ENABLE
+	);
+	process(internal_BOARD_DERIVED_SST) begin
+		if (internal_PLL_LOCKED = '0') then
+			internal_PLL_LOCKED_COUNTER <= (others => '0');
+		elsif (rising_edge(internal_BOARD_DERIVED_SST) and internal_PLL_COUNTER_ENABLE = '1') then
+			if (internal_PLL_LOCKED_COUNTER /= x"FFFF") then
+				internal_PLL_LOCKED_COUNTER <= internal_PLL_LOCKED_COUNTER + 1;
+			end if;
+		end if;
+	end process;
+	
 	
 	------------------------------------------------------------
 	--Map out the ASIC control signals that are on clock nets --
