@@ -35,6 +35,8 @@ entity irs3b_sampling_digitizing_readout is
 		EVENT_NUMBER_TO_SET                   : in  STD_LOGIC_VECTOR(31 downto 0);
 		SET_EVENT_NUMBER                      : in  STD_LOGIC;
 		EVENT_NUMBER                          : out STD_LOGIC_VECTOR(31 downto 0);
+		DO_SAMPLING_SYNC                      : in  STD_LOGIC;
+		CHOOSE_SAMPLING_PHASE                 : in  STD_LOGIC_VECTOR(1 downto 0);
 		--Masks to force a readout and prohibit a readout
 		FORCE_CHANNEL_MASK                    : in  STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
 		IGNORE_CHANNEL_MASK                   : in  STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
@@ -129,6 +131,10 @@ architecture Behavioral of irs3b_sampling_digitizing_readout is
 	signal internal_EVENT_FIFO_DATA_VALID     : std_logic;
 	signal internal_EVENT_FIFO_READ_ENABLE    : std_logic;
 	signal internal_DONE_SENDING_EVENT        : std_logic;
+
+	--Addresses are scrambled for the IRS3B... this signals are used to correct this
+	--SAMPLING_TO_STORAGE also scrambled, handled at the mapping to the upper level
+	signal internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS            : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 
 	--Trying to slow down some processes
 	signal internal_DIGITIZER_CLOCK_ENABLE         : std_logic := '0';
@@ -230,6 +236,8 @@ begin
 	---------------------------------------------------------------------
 	--             SAMPLING                                            --
 	---------------------------------------------------------------------	
+	--Scramble the address to match internal IRS3B expectations
+	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 4) & internal_SAMPLING_TO_STORAGE_ADDRESS(1) & internal_SAMPLING_TO_STORAGE_ADDRESS(3 downto 2);
 	map_sampling_control : entity work.irs3b_sampling_control
 	port map(
 		CURRENTLY_WRITING                         => internal_CURRENTLY_SAMPLING,
@@ -239,11 +247,14 @@ begin
 		CLOCK_SST                                 => CLOCK_SAMPLING_HOLD_MODE,
 		CLK_SSTx4                                 => CLOCK_TRIGGER_MEMORY,
 		CLK_SSTx2_CE                              => CLOCK_2xSST_CLOCK_ENABLE,
-		phaseA_B                                  => ASIC_SAMPLING_TIMING_MONITOR(0)(0), --TEMPORARY!  
+		phaseA_B                                  => ASIC_SAMPLING_TIMING_MONITOR(0)(0), --TEMPORARY!  Should be expanded to all.
+		do_synchronize										=> DO_SAMPLING_SYNC,
+		choose_phase										=> CHOOSE_SAMPLING_PHASE,
 		FIRST_ADDRESS_ALLOWED                     => FIRST_ALLOWED_WINDOW,
 		LAST_ADDRESS_ALLOWED                      => LAST_ALLOWED_WINDOW,
+		SAMPLING_TO_STORAGE_ADDRESS_LSB           => internal_SAMPLING_TO_STORAGE_ADDRESS(0),
 		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER      => WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER,
-		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE => ASIC_SAMPLING_TO_STORAGE_ENABLE,
 		state_debug											=> open
 	);
@@ -298,6 +309,8 @@ begin
 	---------------------------------------------------------------------
 	--             DIGITIZATION AND READOUT                            --
 	---------------------------------------------------------------------
+	--Scrambling of address space to match what IRS3B expects
+	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3 downto 2) & internal_STORAGE_TO_WILK_ADDRESS(0);
 	--Luca's new serial interface to the IRS3B "read" address
 	inst_update_read_addr : entity work.update_read_addr 
 	port map(
@@ -305,7 +318,7 @@ begin
 		CLOCK_ENABLE                                       => internal_DIGITIZER_CLOCK_ENABLE,
 		new_address_reached                                => internal_NEW_ADDRESS_REACHED,
 		START_NEW_ADDRESS                                  => internal_START_NEW_ADDRESS,
-		NEW_ADDRESS                                        => internal_STORAGE_TO_WILK_ADDRESS,
+		NEW_ADDRESS                                        => internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS,
 		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK  => ASIC_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK,
 		AsicIn_STORAGE_TO_WILK_ADDRESS_DIR                 => ASIC_STORAGE_TO_WILK_ADDRESS_DIR,
 		AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT        => ASIC_STORAGE_TO_WILK_ADDRESS_SERIAL_INPUT 		
