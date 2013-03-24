@@ -145,7 +145,12 @@ entity scrod_top is
 		USB_RDY0                    : out STD_LOGIC;
 		USB_RDY1                    : out STD_LOGIC;
 		USB_WAKEUP                  : in  STD_LOGIC;
-		USB_CLKOUT		             : in  STD_LOGIC
+		USB_CLKOUT		             : in  STD_LOGIC;
+		
+		---------------------------------------------
+		--------------MONITOR HEADER PINS------------
+		---------------------------------------------
+		MON                         : out std_logic_vector(2 downto 0)
 				
 	);
 end scrod_top;
@@ -234,6 +239,9 @@ architecture Behavioral of scrod_top is
 
 	--Miscellaneous connections
 	signal internal_SCROD_REV_AND_ID_WORD : std_logic_vector(31 downto 0);
+	--registers related to ASIC sampling
+	signal internal_DO_SAMPLING_SYNC      : std_logic;
+	signal internal_CHOOSE_SAMPLING_PHASE : std_logic_vector(1 downto 0);
 	--registers related to ASIC readout
 	signal internal_FIRST_ALLOWED_WINDOW                 : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_LAST_ALLOWED_WINDOW                  : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -265,8 +273,15 @@ architecture Behavioral of scrod_top is
 	signal internal_WAVEFORM_FIFO_READ_ENABLE    : std_logic;
 	signal internal_WAVEFORM_PACKET_BUILDER_BUSY : std_logic;
 	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
+	--Monitoring signal
+	signal internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB : std_logic_vector(8 downto 1);
 
 begin 
+	--Monitor pins (CHANGE FOR INTERCONNECT REV C)!!!!  (Luca's notes are in comments)
+	MON(0) <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R(0); -- MONTIMING for chip 0 column 0
+	MON(1) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(8); -- WR_EN
+	MON(2) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3); -- WR_ADDR(*SHOULD BE* LS)
+
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
 	port map ( 
@@ -463,6 +478,8 @@ begin
 		EVENT_NUMBER_TO_SET                                => internal_EVENT_NUMBER_TO_SET,
 		SET_EVENT_NUMBER                                   => internal_SET_EVENT_NUMBER,
 		EVENT_NUMBER                                       => internal_EVENT_NUMBER,
+		DO_SAMPLING_SYNC                                   => internal_DO_SAMPLING_SYNC,
+		CHOOSE_SAMPLING_PHASE                              => internal_CHOOSE_SAMPLING_PHASE,
 		FORCE_CHANNEL_MASK                                 => internal_FORCE_CHANNEL_MASK,
 		IGNORE_CHANNEL_MASK                                => internal_IGNORE_CHANNEL_MASK,
 		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB            => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
@@ -704,9 +721,12 @@ begin
 			internal_ASIC_TIMING_WR_STRB_TRAILING(col)(row) <= internal_OUTPUT_REGISTERS(363+row+ROWS_PER_COL*col)(15 downto 8);
 		end generate;
 	end generate;
-	
-	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(379)(7 downto 0); --Register 379: Internal ASIC "timing" register
 
+	                                                                                  --Register 379: 
+	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(379)(7 downto 0);   -- bits  7:0 Internal ASIC "timing" register
+	internal_DO_SAMPLING_SYNC          <= internal_OUTPUT_REGISTERS(379)(8);            -- bit     8 Signal for the sampling block to perform the sync  - set to one after all taps/biases are programmed
+	internal_CHOOSE_SAMPLING_PHASE     <= internal_OUTPUT_REGISTERS(379)(10 downto 9);  -- bits 10:9 Choose which phase to use among 4 PHAB phases
+	
 	                                                                                  --Registers 384-399: wilkinson counter target values for feedback
 	gen_vdly_feedback_targets_col : for col in 0 to 3 generate
 		gen_vdly_feedback_targets_row : for row in 0 to 3 generate
