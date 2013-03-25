@@ -68,7 +68,7 @@ begin
 		case internal_SAMPLING_STATE is
 			when INITIALIZE =>
 				state_debug <= "00";
-				CURRENTLY_WRITING <= '0';
+				CURRENTLY_WRITING <= '1'; --KN: this was set to '0' but this is used to handshake with other blocks.  '0' indicates we've had a trigger of some type
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';
 				internal_CONTINUE_WRITING <= '0';
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '1'; --LM added, otherwise never active
