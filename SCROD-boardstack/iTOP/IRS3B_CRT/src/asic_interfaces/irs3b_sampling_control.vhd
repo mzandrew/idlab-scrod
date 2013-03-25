@@ -201,18 +201,41 @@ begin
 	
 --	internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r when sync_edge = '1'
 --																	else internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
-	
-	process(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r, internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2, internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f,
-	internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2, choose_phase)
-	begin
-	case choose_phase is
-	when "00" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
-	when "01" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2;
-	when "10" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
-	when "11" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2;
-	when others => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
-	end case;
-	end process;
+
+-- Commented out as per Luca's advice	
+--	process(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r, internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2, internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f,
+--	internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2, choose_phase)
+--	begin
+--	case choose_phase is
+--	when "00" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+--	when "01" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2;
+--	when "10" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
+--	when "11" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2;
+--	when others => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+--	end case;
+--	end process;
+
+-- This replaces the above process
+process(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r, internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2, internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f,
+        internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2, choose_phase, sync_edge) begin
+	if sync_edge = '1' then
+		case choose_phase is
+			when "00" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+			when "01" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2;
+			when "10" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
+			when "11" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2;
+			when others => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+		end case;
+	else
+		case choose_phase is
+			when "00" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
+			when "01" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2;
+			when "10" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+			when "11" => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2;
+			when others => internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+		end case;
+	end if;
+end process;	
 	
 --	internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
 			
