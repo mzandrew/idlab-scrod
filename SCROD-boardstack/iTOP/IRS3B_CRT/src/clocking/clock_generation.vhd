@@ -36,6 +36,7 @@ entity clock_generation is
 		SECONDS_SST_PLL_LOCKED   : out std_logic_vector(15 downto 0);
 		--ASIC output clocks (sent through ODDR2)
 		ASIC_SST                 : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
+		ASIC_SST_MON             : out STD_LOGIC;
 		--Output clock enable for I2C things
 		I2C_CLOCK_ENABLE         : out STD_LOGIC;
 		--Output clock enable for ASIC DAC interface
@@ -218,16 +219,16 @@ begin
 	SECONDS_SST_PLL_LOCKED <= std_logic_vector(internal_PLL_LOCKED_COUNTER);
 	map_pll_lock_counter_ce : entity work.clock_enable_generator
 	generic map (
-		DIVIDE_RATIO     => 21203000
+		DIVIDE_RATIO     => 250000000
 	)
 	port map (
-		CLOCK_IN         => internal_BOARD_DERIVED_SST,
+		CLOCK_IN         => internal_BOARD_CLOCK,
 		CLOCK_ENABLE_OUT => internal_PLL_COUNTER_ENABLE
 	);
-	process(internal_BOARD_DERIVED_SST) begin
+	process(internal_BOARD_CLOCK) begin
 		if (internal_PLL_LOCKED = '0') then
 			internal_PLL_LOCKED_COUNTER <= (others => '0');
-		elsif (rising_edge(internal_BOARD_DERIVED_SST) and internal_PLL_COUNTER_ENABLE = '1') then
+		elsif (rising_edge(internal_BOARD_CLOCK) and internal_PLL_COUNTER_ENABLE = '1') then
 			if (internal_PLL_LOCKED_COUNTER /= x"FFFF") then
 				internal_PLL_LOCKED_COUNTER <= internal_PLL_LOCKED_COUNTER + 1;
 			end if;
@@ -255,6 +256,22 @@ begin
 				S  => '0'                      -- 1-bit set input
 		);
 	end generate;
+
+	map_sst_to_col : ODDR2
+		generic map(
+			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+		port map (
+			Q  => ASIC_SST_MON,            -- 1-bit output data
+			C0 => internal_CLOCK_SST,      -- 1-bit clock input
+			C1 => not(internal_CLOCK_SST), -- 1-bit clock input
+			CE => '1',                     -- 1-bit clock enable input
+			D0 => '1',                     -- 1-bit data input (associated with C0)
+			D1 => '0',                     -- 1-bit data input (associated with C1)
+			R  => '0',                     -- 1-bit reset input
+			S  => '0'                      -- 1-bit set input
+	);
 
 end Behavioral;
 
