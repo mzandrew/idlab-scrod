@@ -88,6 +88,7 @@ architecture Behavioral of irs3b_sampling_digitizing_readout is
 	signal internal_CURRENTLY_SAMPLING                   : std_logic;
 	signal internal_LAST_WINDOW_SAMPLED                  : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS          : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_SAMPLING_STATE                       : std_logic_vector(1 downto 0);
 	--Signal between the trigger memory and ROI block
 	signal internal_TRIGGER_MEMORY_READ_CLOCK            : std_logic;
 	signal internal_TRIGGER_MEMORY_READ_ENABLE           : std_logic;
@@ -188,7 +189,7 @@ begin
 		port map(
 			INPUT_EDGE   => internal_TRIGGER,
 			OUTPUT_PULSE => internal_TRIGGER_TO_SAMPLER,
-			CLOCK        => CLOCK_SAMPLING_HOLD_MODE,
+			CLOCK        => not(CLOCK_SAMPLING_HOLD_MODE), --This needs to match the edge where this is checked in sampling block
 			CLOCK_ENABLE => '1'
 		);
 
@@ -476,6 +477,7 @@ begin
 	internal_CHIPSCOPE_ILA(120) <= HARDWARE_TRIGGER_IN;
 	internal_CHIPSCOPE_ILA(121) <= HARDWARE_TRIGGER_VETO;	
 	internal_CHIPSCOPE_ILA(125 downto 122) <= internal_DIGITIZER_STATE;
+	internal_CHIPSCOPE_ILA(127 downto 126) <= internal_SAMPLING_STATE;
 
 end Behavioral;
 
