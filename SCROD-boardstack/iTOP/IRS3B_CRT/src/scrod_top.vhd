@@ -228,9 +228,6 @@ architecture Behavioral of scrod_top is
 	--SST signals out
 	signal internal_SST_MON                : std_logic;
 
-	--ASIC timing monitors for PHASE information (not enables but same dimensionality)
-	signal internal_ASIC_PHASE_MONITORS    : Column_Row_Enables;
-
 	--Monitoring 
 	signal internal_WILKINSON_TARGETS      : Column_Row_Counters;
 	signal internal_WILKINSON_COUNTERS     : Column_Row_Counters;
@@ -536,7 +533,7 @@ begin
 		IGNORE_CHANNEL_MASK                                => internal_IGNORE_CHANNEL_MASK,
 		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB            => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
 		ASIC_SAMPLING_TO_STORAGE_ENABLE                    => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
-		ASIC_SAMPLING_TIMING_MONITOR                       => internal_ASIC_PHASE_MONITORS,
+		ASIC_SAMPLING_TIMING_MONITOR                       => internal_MON_HEADER_MONTIMING,
 		ASIC_STORAGE_TO_WILK_ENABLE                        => AsicIn_STORAGE_TO_WILK_ENABLE,
 		ASIC_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK    => AsicIn_STORAGE_TO_WILK_ADDRESS_SERIAL_SHIFT_CLOCK,
 		ASIC_STORAGE_TO_WILK_ADDRESS_DIR                   => AsicIn_STORAGE_TO_WILK_ADDRESS_DIR,

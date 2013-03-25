@@ -44,7 +44,7 @@ entity irs3b_sampling_digitizing_readout is
 		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB : out STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
 		ASIC_SAMPLING_TO_STORAGE_ENABLE         : out STD_LOGIC;
 		--Signals to monitor PHASE/PHAB
-		ASIC_SAMPLING_TIMING_MONITOR            : in Column_Row_Enables; --New: not enable but same dimensions
+		ASIC_SAMPLING_TIMING_MONITOR            : in std_logic; 
 		--Digitization signals
 		ASIC_STORAGE_TO_WILK_ENABLE                     : out std_logic;
 		ASIC_STORAGE_TO_WILK_ADDRESS_ENABLE             : out std_logic;
@@ -248,7 +248,7 @@ begin
 		CLOCK_SST                                 => CLOCK_SAMPLING_HOLD_MODE,
 		CLK_SSTx4                                 => CLOCK_TRIGGER_MEMORY,
 		CLK_SSTx2_CE                              => CLOCK_2xSST_CLOCK_ENABLE,
-		phaseA_B                                  => ASIC_SAMPLING_TIMING_MONITOR(0)(0), --TEMPORARY!  Should be expanded to all.
+		phaseA_B                                  => ASIC_SAMPLING_TIMING_MONITOR, --MUXed to col/row at top level
 		do_synchronize										=> DO_SAMPLING_SYNC,
 		choose_phase										=> CHOOSE_SAMPLING_PHASE,
 		FIRST_ADDRESS_ALLOWED                     => FIRST_ALLOWED_WINDOW,
