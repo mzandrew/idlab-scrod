@@ -13,6 +13,8 @@ entity irs3b_dac_interface is
 		--Clock and clock enable used to run the interface
 		CLOCK                        : in std_logic;
 		CLOCK_ENABLE                 : in std_logic;
+		--SST clock for generating PCLK for ASIC sync purposes
+		SST_CLOCK                    : in std_logic;
 		--Direct connections to the IRS3B register programming interface
 		AsicIn_PARALLEL_CLOCK_C0_R   : out std_logic_vector(3 downto 0);
 		AsicIn_PARALLEL_CLOCK_C1_R   : out std_logic_vector(3 downto 0);
@@ -162,6 +164,7 @@ begin
 	port map(
 		CLK                          => CLOCK,
 		CE                           => '1',
+		SST_CLK                      => SST_CLOCK,
 		PCLK                         => internal_PCLK_OUT,
 		SCLK                         => AsicIn_SERIAL_SHIFT_CLOCK,
 		SIN                          => AsicIn_SERIAL_INPUT,

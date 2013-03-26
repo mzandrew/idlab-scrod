@@ -378,6 +378,8 @@ begin
 		--Clock and clock enable used to run the interface
 		CLOCK                      => internal_CLOCK_50MHz_BUFG, 
 		CLOCK_ENABLE               => internal_CLOCK_ENABLE_I2C,
+		--SST clock for generating PCLK for ASIC sync purposes
+		SST_CLOCK                  => internal_CLOCK_SST_BUFG,
 		--Direct connections to the IRS3B register programming interface
 		AsicIn_PARALLEL_CLOCK_C0_R => AsicIn_PARALLEL_CLOCK_C0_R,
 		AsicIn_PARALLEL_CLOCK_C1_R => AsicIn_PARALLEL_CLOCK_C1_R,
