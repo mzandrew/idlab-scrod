@@ -86,6 +86,11 @@ To remove the executable permission from a file in the repository, do this:
 svn propdel svn:executable src/read_CAMAC.c 
 }}}
 
+To set the executable permission on a script that you want to run, do this:
+{{{
+svn propset svn:executable yes irs3b-dac-defaults-2714.py
+}}}
+
 ===reintegrating a branch into the trunk===
 
 Once you have something you like in a branch of the svn, you can reintegrate it into the trunk as follows:
