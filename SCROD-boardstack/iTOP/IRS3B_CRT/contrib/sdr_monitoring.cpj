@@ -1,12 +1,12 @@
 #ChipScope Pro Analyzer Project File, Version 3.0
-#Mon Mar 25 00:37:36 PDT 2013
+#Mon Mar 25 22:03:51 PDT 2013
 deviceChain.deviceName0=XC6SLX150T
 deviceChain.iRLength0=6
 deviceChain.name0=MyDevice0
 deviceIds=3403d093
 mdiAreaHeight=0.7605263157894737
 mdiAreaHeightLast=0.6973684210526315
-mdiCount=0
+mdiCount=2
 mdiDevice0=0
 mdiDevice1=0
 mdiType0=1
@@ -56,6 +56,7 @@ unit.0.0.TCOutputMode0=0
 unit.0.0.browser_tree_state<Data\ Port>=1
 unit.0.0.browser_tree_state<EVENT_FIFO_DATA>=0
 unit.0.0.browser_tree_state<ROI_N_WAVEFORMS_FOUND>=0
+unit.0.0.browser_tree_state<SAMPLER_STATE>=1
 unit.0.0.browser_tree_state<Trigger\ Ports>=0
 unit.0.0.browser_tree_state<WAVEFORM_FIFO_DATA>=0
 unit.0.0.coretype=ILA

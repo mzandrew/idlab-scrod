@@ -22,6 +22,7 @@ entity irs3b_program_dacs_parallel is
    Port ( 
 		CLK                          :  in STD_LOGIC;
 		CE                           :  in STD_LOGIC;
+		SST_CLK                      :  in STD_LOGIC;
 		PCLK                         : out STD_LOGIC_VECTOR(15 downto 0);
 		SCLK                         : out STD_LOGIC;
 		SIN                          : out STD_LOGIC;
@@ -72,6 +73,7 @@ architecture Behavioral of irs3b_program_dacs_parallel is
 	signal internal_STATE_MONITOR : std_logic_vector(3 downto 0);
 	--Internal copies of signals so we can monitor via chipscope if needed
 	signal internal_PCLK_SINGLE : std_logic;
+	signal internal_DO_PCLK  : std_logic;
 	signal internal_PCLK  : std_logic_vector(15 downto 0);
 	signal internal_SCLK  : std_logic;
 	signal internal_SIN   : std_logic;
@@ -96,7 +98,7 @@ architecture Behavioral of irs3b_program_dacs_parallel is
 	signal internal_RESET_COUNTER      : std_logic := '0';
 	--Types for different register updates
 	type reg_type is (global, unique); 
-	type all_reg_types is array(46 downto 0) of reg_type;
+	type all_reg_types is array(47 downto 0) of reg_type;
 	signal reg_map : all_reg_types;
 	--Register that has the DAC value we'd like to load
 	signal internal_REG_VALUE_TO_LOAD : std_logic_vector(11 downto 0);
@@ -214,7 +216,7 @@ begin
 			when INCREMENT =>
 				if (reg_map(to_integer(internal_REGISTER_COUNTER)) = global or
 				                             internal_ROW_COL_COUNTER = 15) then
-					if (internal_REGISTER_COUNTER < 46) then
+					if (internal_REGISTER_COUNTER < 47) then
 						internal_NEXT_STATE <= LATCH_NEXT_VALUE;
 					else
 						internal_NEXT_STATE <= IDLE;
@@ -292,6 +294,7 @@ begin
 	reg_map(44) <= global; --45: VANDbias
 	reg_map(45) <= unique; --46: VadjN
 	reg_map(46) <= global; --62: Start_WilkMon
+	reg_map(47) <= global; --64: Pulse test trigger
 
 	--Register increment
 	process(CLK, CE, internal_INCREMENT_REGISTER) begin
@@ -310,9 +313,12 @@ begin
 	--  we skip ahead to register 61 to start the Wilk monitor.
 	process(internal_REGISTER_COUNTER) 
 		constant reg61 : integer := 61;
+		constant reg63 : integer := 63;
 	begin
 		if (internal_REGISTER_COUNTER = 46) then
 			internal_REG_ADDR <= std_logic_vector(to_unsigned(reg61,internal_REG_ADDR'length));
+		elsif (internal_REGISTER_COUNTER = 47) then
+			internal_REG_ADDR <= std_logic_vector(to_unsigned(reg63,internal_REG_ADDR'length));
 		else 
 			internal_REG_ADDR <= std_logic_vector(internal_REGISTER_COUNTER);
 		end if;
@@ -421,6 +427,7 @@ begin
 			when 44 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJN;                         --45: VANDbias
 			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN(internal_COL)(internal_ROW);          --46: VadjN
 			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --62: Start_WilkMon
+			when 63 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --64: Pulse test trigger
 			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');
 			-------------------------
 --			when  0 => internal_REG_VALUE_TO_LOAD <= ASIC_TRIG_THRESH;                      -- 1: THR1
@@ -470,6 +477,7 @@ begin
 --			when 44 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJN;               --45: VANDbias
 --			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN;                            --46: VadjN
 --			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                       --62: Start_WilkMon
+--			when 63 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --64: Pulse test trigger
 --			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');
 		end case;
 	end process;
@@ -485,15 +493,15 @@ begin
 	internal_SERIAL_VALUE <= internal_REG_ADDR & internal_LATCHED_REG_VALUE;
 	
 	--Choose PCLK outputs based on which register we're reading
-	process(CLK,CE) begin
-		if (CE = '1') then
-			if (rising_edge(CLK)) then
-				internal_PCLK(15 downto 0) <= (others => '0');
-				if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
-					internal_PCLK(15 downto 0) <= (others => internal_PCLK_SINGLE);
-				else
-					internal_PCLK(to_integer(internal_ROW_COL_COUNTER)) <= internal_PCLK_SINGLE;
-				end if;
+	--This is done on the SST clock domain so that the timing register sync-ing
+	--is done synchronously to the sampling.
+	process(SST_CLK) begin
+		if (rising_edge(SST_CLK)) then
+			internal_PCLK(15 downto 0) <= (others => '0');
+			if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
+				internal_PCLK(15 downto 0) <= (others => internal_PCLK_SINGLE);
+			else
+				internal_PCLK(to_integer(internal_ROW_COL_COUNTER)) <= internal_PCLK_SINGLE;
 			end if;
 		end if;
 	end process;
