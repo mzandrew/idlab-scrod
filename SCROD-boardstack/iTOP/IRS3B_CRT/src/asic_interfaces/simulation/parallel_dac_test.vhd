@@ -43,6 +43,7 @@ ARCHITECTURE behavior OF parallel_dac_test IS
     PORT(
          CLK : IN  std_logic;
          CE : IN  std_logic;
+			SST_CLK : IN STD_LOGIC;
          PCLK : OUT  std_logic_vector(15 downto 0);
          SCLK : OUT  std_logic;
          SIN : OUT  std_logic;
@@ -84,6 +85,7 @@ ARCHITECTURE behavior OF parallel_dac_test IS
    --Inputs
    signal CLK : std_logic := '0';
    signal CE : std_logic := '1';
+	signal SST_CLK : std_logic := '0';
    signal SHOUT : std_logic := '0';
    signal ASIC_TRIG_THRESH : std_logic_vector(11 downto 0)        := "111111111110";
    signal ASIC_DAC_BUF_BIASES : std_logic_vector(11 downto 0)     := "111111111101";
@@ -123,13 +125,15 @@ ARCHITECTURE behavior OF parallel_dac_test IS
 
    -- Clock period definitions
    constant CLK_period : time := 20 ns;
+   constant SST_CLK_period : time := 47 ns;
  
 BEGIN
- 
+
 	-- Instantiate the Unit Under Test (UUT)
    uut: irs3b_program_dacs_parallel PORT MAP (
           CLK => CLK,
           CE => CE,
+			 SST_CLK => SST_CLK,
           PCLK => PCLK,
           SCLK => SCLK,
           SIN => SIN,
@@ -174,7 +178,14 @@ BEGIN
 		CLK <= '1';
 		wait for CLK_period/2;
    end process;
- 
+   SST_CLK_process :process
+   begin
+		SST_CLK <= '0';
+		wait for SST_CLK_period/2;
+		SST_CLK <= '1';
+		wait for SST_CLK_period/2;
+   end process;
+  
  
    -- Stimulus process
    stim_proc: process

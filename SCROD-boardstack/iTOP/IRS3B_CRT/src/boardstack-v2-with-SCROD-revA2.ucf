@@ -18,12 +18,15 @@ NET "map_i2c_bus*/*CLOCK_ENABLE*" TNM_NET = FFS "I2C_ENABLES";
 NET "map_dac_interfaces/map_external_dac_control/*CLK_ENABLE*" TNM_NET = FFS "I2C_ENABLES";
 TIMESPEC TS_I2C_ENABLES = FROM "I2C_ENABLES" TO "I2C_ENABLES" TS_BOARD_CLOCK*40;
 #Timing constraints that can be ignored since they're related to slow control with use registers
-NET "map_readout_interfaces/internal_GPR*" TIG;
-TIMESPEC TS_POST_TRIG_SAMPL = FROM "map_readout_interfaces/internal_GPR_188_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-TIMESPEC TS_LAST_ALLOWED    = FROM "map_readout_interfaces/internal_GPR_162_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-TIMESPEC TS_SAMP_SYNC1      = FROM "map_readout_interfaces/internal_GPR_379_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-TIMESPEC TS_SAMP_SYNC2      = FROM "map_readout_interfaces/internal_GPR_380_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-NET "map_clock_generation/internal_PLL_LOCKED_COUNTER*" TIG;
+#NET "map_readout_interfaces/internal_GPR*" TIG;
+#TIMESPEC TS_POST_TRIG_SAMPL = FROM "map_readout_interfaces/internal_GPR_188_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
+#TIMESPEC TS_LAST_ALLOWED    = FROM "map_readout_interfaces/internal_GPR_162_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
+#TIMESPEC TS_SAMP_SYNC1      = FROM "map_readout_interfaces/internal_GPR_379_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
+#TIMESPEC TS_SAMP_SYNC2      = FROM "map_readout_interfaces/internal_GPR_380_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
+#NET "map_clock_generation/internal_PLL_LOCKED_COUNTER*" TIG;
+NET "internal_OUTPUT_REGISTERS*" TIG;
+#TIMESPEC TS_PCLK_COUNTER = FROM "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_REGISTER_COUNTER*" TO "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_PCLK*" TIG;
+
 
 ###############ASIC CONNECTIONS########################
 # SST_IN

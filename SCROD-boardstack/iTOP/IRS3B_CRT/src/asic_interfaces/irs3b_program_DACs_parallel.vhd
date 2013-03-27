@@ -67,13 +67,19 @@ end irs3b_program_dacs_parallel;
 
 architecture Behavioral of irs3b_program_dacs_parallel is
 	--State machine signals
-	type dac_state is (IDLE, LOAD_BIT, SEND_BIT, NEXT_BIT, PREPARE_LATCH, LATCH_BUS_DATA, PREPARE_LOAD, LOAD_DESTINATION, INCREMENT, LATCH_NEXT_VALUE);
+	type dac_state is (IDLE, LOAD_BIT, SEND_BIT, NEXT_BIT, PREPARE_LATCH, LATCH_BUS_DATA, WAIT_FOR_LATCH_BUS_DATA, PREPARE_LOAD, LOAD_DESTINATION, WAIT_FOR_LOAD_DESTINATION, INCREMENT, LATCH_NEXT_VALUE);
 	signal internal_STATE      : dac_state := IDLE;
 	signal internal_NEXT_STATE : dac_state := IDLE;
 	signal internal_STATE_MONITOR : std_logic_vector(3 downto 0);
-	--Internal copies of signals so we can monitor via chipscope if needed
-	signal internal_PCLK_SINGLE : std_logic;
-	signal internal_DO_PCLK  : std_logic;
+	--PCLK state machine (on SST domain)
+	type pclk_state is (IDLE, ARM, ACTIVE);
+	signal internal_PCLK_STATE      : pclk_state := IDLE;
+	signal internal_NEXT_PCLK_STATE : pclk_state := IDLE;
+	--PCLK/SCLK signals.  PCLK is coordinated between two state machines
+	--to sync up to SST.
+	signal internal_SET_PCLK_SINGLE : std_logic;
+	signal internal_PCLK_READY      : std_logic;
+	signal internal_PCLK_SINGLE     : std_logic;
 	signal internal_PCLK  : std_logic_vector(15 downto 0);
 	signal internal_SCLK  : std_logic;
 	signal internal_SIN   : std_logic;
@@ -125,7 +131,7 @@ begin
 	process(internal_STATE,internal_SERIAL_VALUE,internal_REGISTER_COUNTER,reg_map,internal_BIT_COUNTER) begin
 		--Defaults here
 		internal_LATCH_REG_VALUE    <= '0';
-		internal_PCLK_SINGLE        <= '0';
+		internal_SET_PCLK_SINGLE    <= '0';
 		internal_SCLK               <= '0';
 		internal_SIN                <= '0';
 		internal_RESET_ROWCOL       <= '0';
@@ -133,8 +139,6 @@ begin
 		internal_RESET_ROWCOL       <= '0';
 		internal_INCREMENT_BIT      <= '0';
 		internal_INCREMENT_REGISTER <= '0';
-		internal_RESET_COUNTER      <= '0';
-		internal_INCREMENT_COUNTER  <= '0';
 		internal_RESET_REGISTER     <= '0';
 		internal_INCREMENT_ROWCOL   <= '0';
 		--
@@ -153,18 +157,18 @@ begin
 				internal_SIN                <= internal_SERIAL_VALUE(17-internal_BIT_COUNTER);
 				internal_INCREMENT_BIT      <= '1';
 			when PREPARE_LATCH =>
-				internal_RESET_COUNTER      <= '1';
 			when LATCH_BUS_DATA =>
-				internal_PCLK_SINGLE        <= '1';
-				internal_INCREMENT_COUNTER  <= '1';
+				internal_SET_PCLK_SINGLE    <= '1';
+			when WAIT_FOR_LATCH_BUS_DATA => 
+			--
 			when PREPARE_LOAD =>
 				internal_SIN                <= '1';
-				internal_RESET_COUNTER      <= '1';
 			when LOAD_DESTINATION => 
-				internal_PCLK_SINGLE        <= '1';
+				internal_SET_PCLK_SINGLE    <= '1';
 				internal_SIN                <= '1';
-				internal_INCREMENT_COUNTER  <= '1';
 				internal_RESET_BIT_COUNTER  <= '1';
+			when WAIT_FOR_LOAD_DESTINATION =>
+				internal_SIN                <= '1';
 			when INCREMENT =>
 				if (reg_map(to_integer(internal_REGISTER_COUNTER)) = unique) then
 					if (internal_ROW_COL_COUNTER < 15) then
@@ -200,22 +204,33 @@ begin
 			when PREPARE_LATCH =>
 				internal_NEXT_STATE <= LATCH_BUS_DATA;
 			when LATCH_BUS_DATA =>
-				if (internal_GENERIC_COUNTER < 9) then
+				if (internal_PCLK_SINGLE = '0') then
 					internal_NEXT_STATE <= LATCH_BUS_DATA;
+				else 
+					internal_NEXT_STATE <= WAIT_FOR_LATCH_BUS_DATA;
+				end if;
+			when WAIT_FOR_LATCH_BUS_DATA => 
+				if (internal_PCLK_READY = '0') then
+					internal_NEXT_STATE <= WAIT_FOR_LATCH_BUS_DATA;
 				else 
 					internal_NEXT_STATE <= PREPARE_LOAD;
 				end if;
 			when PREPARE_LOAD =>
 				internal_NEXT_STATE <= LOAD_DESTINATION;
 			when LOAD_DESTINATION => 
-				if (internal_GENERIC_COUNTER < 9) then
+				if (internal_PCLK_SINGLE = '0') then
 					internal_NEXT_STATE <= LOAD_DESTINATION;
 				else 
+					internal_NEXT_STATE <= WAIT_FOR_LOAD_DESTINATION;
+				end if;
+			when WAIT_FOR_LOAD_DESTINATION =>
+				if (internal_PCLK_READY = '0') then
+					internal_NEXT_STATE <= WAIT_FOR_LOAD_DESTINATION;
+				else
 					internal_NEXT_STATE <= INCREMENT;
 				end if;
 			when INCREMENT =>
-				if (reg_map(to_integer(internal_REGISTER_COUNTER)) = global or
-				                             internal_ROW_COL_COUNTER = 15) then
+				if (reg_map(to_integer(internal_REGISTER_COUNTER)) = global or internal_ROW_COL_COUNTER = 15) then
 					if (internal_REGISTER_COUNTER < 47) then
 						internal_NEXT_STATE <= LATCH_NEXT_VALUE;
 					else
@@ -355,18 +370,72 @@ begin
 		end if;
 	end process;
 
-	--Generic counter for setting long PCLK, e.g.,
-	process(CLK,CE,internal_INCREMENT_COUNTER) begin
-		if (CE = '1') then
-			if (rising_edge(CLK)) then
-				if (internal_RESET_COUNTER = '1') then
-					internal_GENERIC_COUNTER <= (others => '0');
-				elsif (internal_INCREMENT_COUNTER = '1') then
-					internal_GENERIC_COUNTER <= internal_GENERIC_COUNTER + 1;
-				end if;
+	--Generic counter for setting length of PCLK
+	--This is done on the SST clock domain now
+	process(SST_CLK,internal_INCREMENT_COUNTER) begin
+		if (rising_edge(SST_CLK)) then
+			if (internal_RESET_COUNTER = '1') then
+				internal_GENERIC_COUNTER <= (others => '0');
+			elsif (internal_INCREMENT_COUNTER = '1') then
+				internal_GENERIC_COUNTER <= internal_GENERIC_COUNTER + 1;
 			end if;
 		end if;
 	end process;	
+
+	--Simple state machine for setting PCLK, coordinates between SST domain
+	--domain and main clock domain
+	process(internal_PCLK_STATE, internal_SET_PCLK_SINGLE, internal_GENERIC_COUNTER) 
+		constant constant_PCLK_CYCLES_HIGH : integer := 10;
+	begin
+		case(internal_PCLK_STATE) is
+			when IDLE =>
+				internal_PCLK_READY        <= '1';
+				internal_PCLK_SINGLE       <= '0';
+				internal_RESET_COUNTER     <= '1';
+				internal_INCREMENT_COUNTER <= '0';
+				if (internal_SET_PCLK_SINGLE = '1') then
+					internal_NEXT_PCLK_STATE <= ACTIVE;
+				else
+					internal_NEXT_PCLK_STATE <= IDLE;
+				end if;
+			when ARM =>
+				internal_PCLK_READY        <= '0';
+				internal_PCLK_SINGLE       <= '0';
+				internal_RESET_COUNTER     <= '1';
+				internal_INCREMENT_COUNTER <= '0';
+				internal_NEXT_PCLK_STATE   <= ACTIVE;
+			when ACTIVE =>
+				internal_PCLK_READY        <= '0';
+				internal_PCLK_SINGLE       <= '1';
+				internal_RESET_COUNTER     <= '0';
+				internal_INCREMENT_COUNTER <= '1';
+				if (internal_GENERIC_COUNTER < constant_PCLK_CYCLES_HIGH) then
+					internal_NEXT_PCLK_STATE <= ACTIVE;
+				else
+					internal_NEXT_PCLK_STATE <= IDLE;
+				end if;
+		end case;
+	end process;
+	process(SST_CLK) begin
+		if (rising_edge(SST_CLK)) then
+			internal_PCLK_STATE <= internal_NEXT_PCLK_STATE;
+		end if;
+	end process;
+	
+	--Choose PCLK outputs based on which register we're reading
+	--This is done on the SST clock domain so that the timing register sync-ing
+	--is done synchronously to the sampling.
+	process(SST_CLK) begin
+		if (rising_edge(SST_CLK)) then
+			internal_PCLK(15 downto 0) <= (others => '0');
+			if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
+				internal_PCLK <= (others => internal_PCLK_SINGLE);
+			else
+				internal_PCLK(to_integer(internal_ROW_COL_COUNTER)) <= internal_PCLK_SINGLE;
+			end if;
+		end if;
+	end process;	
+	
 	
 	--Choose which register value to use
 	--Numbers in the comments correspond to Gary's notation in the register map spreadsheet
@@ -492,20 +561,6 @@ begin
 	--Map out the full register
 	internal_SERIAL_VALUE <= internal_REG_ADDR & internal_LATCHED_REG_VALUE;
 	
-	--Choose PCLK outputs based on which register we're reading
-	--This is done on the SST clock domain so that the timing register sync-ing
-	--is done synchronously to the sampling.
-	process(SST_CLK) begin
-		if (rising_edge(SST_CLK)) then
-			internal_PCLK(15 downto 0) <= (others => '0');
-			if(reg_map(to_integer(internal_REGISTER_COUNTER)) = global) then
-				internal_PCLK(15 downto 0) <= (others => internal_PCLK_SINGLE);
-			else
-				internal_PCLK(to_integer(internal_ROW_COL_COUNTER)) <= internal_PCLK_SINGLE;
-			end if;
-		end if;
-	end process;
-
 	--Signal to monitor the state machine internal state
 	internal_STATE_MONITOR <= "0000" when internal_STATE = IDLE else
 	                          "0001" when internal_STATE = LOAD_BIT else
