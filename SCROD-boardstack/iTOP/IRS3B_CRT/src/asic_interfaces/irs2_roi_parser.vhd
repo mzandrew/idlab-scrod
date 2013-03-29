@@ -218,7 +218,7 @@ begin
 		end case;		
 	end process;
 	--Next state logic
-	process(internal_ROI_STATE, BEGIN_PARSING_FOR_WINDOWS, internal_TRIGGER_MEMORY_WORD_MASKED, internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW, internal_ENDING_WINDOW_REG, VETO_NEW_EVENTS, PEDESTAL_MODE, MAKE_READY_FOR_NEXT_EVENT, FORCE_CHANNEL_MASK) begin
+	process(internal_ROI_STATE, BEGIN_PARSING_FOR_WINDOWS, internal_TRIGGER_MEMORY_WORD_MASKED, internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW, internal_ENDING_WINDOW_REG, VETO_NEW_EVENTS, PEDESTAL_MODE, MAKE_READY_FOR_NEXT_EVENT, FORCE_CHANNEL_MASK, internal_THIS_TRIGGER_BIT, internal_THIS_TRIGGER_BIT_FORCED, internal_SEGMENT_COUNTER) begin
 		case(internal_ROI_STATE) is
 			when IDLE =>
 				if (BEGIN_PARSING_FOR_WINDOWS = '1' and VETO_NEW_EVENTS = '0') then
@@ -345,7 +345,7 @@ begin
 --  outside of the allowed range.
 --				if (internal_CURRENT_WINDOW < unsigned(LAST_ALLOWED_WINDOW & '1')) then
 --  We can try this condition instead to force our scan of memory to end on odd windows.
-				if (internal_CURRENT_WINDOW < unsigned(LAST_ALLOWED_WINDOW(LAST_ALLOWED_WINDOW'length-1 downto 1) & '1' & '1')) then
+				if (internal_CURRENT_WINDOW < unsigned(LAST_ALLOWED_WINDOW(LAST_ALLOWED_WINDOW'length-1 downto 1) & '1')) then
 					internal_CURRENT_WINDOW <= internal_CURRENT_WINDOW + 1;
 				else 
 					internal_CURRENT_WINDOW <= unsigned(FIRST_ALLOWED_WINDOW);
@@ -361,9 +361,9 @@ begin
 		internal_THIS_TRIGGER_BIT        <= internal_TRIGGER_MEMORY_WORD_MASKED(to_integer(internal_CHANNEL_COUNTER));
 	end process;
 	--Logic for the current pedestal bit or the force channel bit
-	process(FORCE_CHANNEL_MASK, internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW) begin
+	process(FORCE_CHANNEL_MASK, internal_CHANNEL_COUNTER) begin
 		internal_THIS_PEDESTAL_BIT       <= FORCE_CHANNEL_MASK(to_integer(internal_CHANNEL_COUNTER));
-		internal_THIS_TRIGGER_BIT_FORCED <= FORCE_CHANNEL_MASK(to_integer(internal_CHANNEL_COUNTER)) and not(internal_CURRENT_WINDOW(0));
+		internal_THIS_TRIGGER_BIT_FORCED <= FORCE_CHANNEL_MASK(to_integer(internal_CHANNEL_COUNTER));
 	end process;
 
 	--The word that will be written to the FIFO if we see something
@@ -450,8 +450,8 @@ begin
 	internal_TRIGGER_MEMORY_READ_ADDRESS_TOO_LOW   <= internal_ADJUSTED_ADDRESS_SIGNED + internal_MAX_MINUS_MIN_PLUS_ONE;
 	--These change only when user registers change
 	internal_ADDRESS_ADJUST_SIGNED   <= resize(signed(ROI_ADDRESS_ADJUST),internal_ADDRESS_ADJUST_SIGNED'length);
-	internal_MAX_ADDRESS_SIGNED      <= signed(resize(unsigned(LAST_ALLOWED_WINDOW & '1'),internal_MAX_ADDRESS_SIGNED'length));
-	internal_MIN_ADDRESS_SIGNED      <= signed(resize(unsigned(FIRST_ALLOWED_WINDOW & '0'),internal_MIN_ADDRESS_SIGNED'length));
+	internal_MAX_ADDRESS_SIGNED      <= signed(resize(unsigned(LAST_ALLOWED_WINDOW(8 downto 1) & '1'),internal_MAX_ADDRESS_SIGNED'length));
+	internal_MIN_ADDRESS_SIGNED      <= signed(resize(unsigned(FIRST_ALLOWED_WINDOW(8 downto 1) & '0'),internal_MIN_ADDRESS_SIGNED'length));
 	internal_MAX_MINUS_MIN_PLUS_ONE  <= internal_MAX_ADDRESS_SIGNED - internal_MIN_ADDRESS_SIGNED + 1;
 	--Logic to see if we're on the high or low side of the range
 	process(internal_ADJUSTED_ADDRESS_SIGNED, internal_MAX_ADDRESS_SIGNED, internal_MIN_ADDRESS_SIGNED) begin
