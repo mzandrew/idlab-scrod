@@ -50,7 +50,9 @@ use work.asic_definitions_irs3b_carrier_revB.all;
 	begin
 	 
 	 
-	 NEW_ADDRESS_scrambled<= NEW_ADDRESS(8 downto 3) &  NEW_ADDRESS(0) &  NEW_ADDRESS(2 downto 1);
+--	 NEW_ADDRESS_scrambled<= NEW_ADDRESS(8 downto 3) &  NEW_ADDRESS(0) &  NEW_ADDRESS(2 downto 1);
+--	 NEW_ADDRESS_scrambled<= NEW_ADDRESS(8 downto 3) &  NEW_ADDRESS(1) &  NEW_ADDRESS(0) & NEW_ADDRESS(2);
+	 NEW_ADDRESS_scrambled<= NEW_ADDRESS(8 downto 0);
 	 
 inst_irs_block_readout_addr_v3b :  entity work.irs_block_readout_addr_v3b
 port map(
@@ -60,8 +62,8 @@ port map(
  rst_i => zero,							--% Local reset.
  
 
- raddr_i => NEW_ADDRESS,					--% Address that we're selecting.
--- raddr_i => NEW_ADDRESS_scrambled,					--% Address that we're selecting.
+-- raddr_i => NEW_ADDRESS,					--% Address that we're selecting.
+ raddr_i => NEW_ADDRESS_scrambled,					--% Address that we're selecting.
  raddr_stb_i => START_NEW_ADDRESS,					--% If '1', go to "raddr_i" address
  raddr_reached_o => new_address_reached,				--% If '1', we have reached "raddr_i" (but no Wilkinson)
 

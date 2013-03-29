@@ -159,8 +159,7 @@ architecture Behavioral of scrod_top is
 	--Conections to the clock generation block
 	signal internal_HARDWARE_TRIGGER : std_logic;
 	signal internal_CLOCK_50MHz_BUFG : std_logic;
-	signal internal_CLOCK_4xSST_BUFG : std_logic;
-	signal internal_CLOCK_2xSST_CE   : std_logic;
+	signal internal_CLOCK_2xSST_BUFG : std_logic;
 	signal internal_CLOCK_SST_BUFG   : std_logic;
 	signal internal_CLOCK_ENABLE_I2C : std_logic;
 	signal internal_SECONDS_SST_PLL_LOCKED : std_logic_vector(15 downto 0);
@@ -235,8 +234,8 @@ architecture Behavioral of scrod_top is
 	signal internal_SAMPLING_RATE_COUNTERS : Column_Row_Counters;
 
 	--Signals to allow flexibility for monitoring
-	signal internal_MON_HEADER_MONTIMING_ROW_SELECT : std_logic_vector(ROW_SELECT_BITS-1 downto 0);
-	signal internal_MON_HEADER_MONTIMING_COL_SELECT : std_logic_vector(COL_SELECT_BITS-1 downto 0);
+	signal internal_MON_HEADER_MONTIMING_ROW_SELECT : std_logic_vector(1 downto 0);
+	signal internal_MON_HEADER_MONTIMING_COL_SELECT : std_logic_vector(1 downto 0);
 	signal internal_MON_HEADER_MONTIMING_R          : std_logic_vector(3 downto 0);
 	signal internal_MON_HEADER_MONTIMING            : std_logic;
 	signal internal_MON_HEADER_RCOSSX_R             : std_logic_vector(3 downto 0);
@@ -244,6 +243,11 @@ architecture Behavioral of scrod_top is
 	signal internal_MON_HEADER_MONTIMING_RCO_SEL    : std_logic;
 	signal internal_MON_HEADER_MONTIMING_RCO        : std_logic;
 	signal internal_MON_HEADER_MONTIMING_SEL        : std_logic;
+	signal internal_MON_HEADER2_MONTIMING_ROW_SELECT : std_logic_vector(1 downto 0);
+	signal internal_MON_HEADER2_MONTIMING_COL_SELECT : std_logic_vector(1 downto 0);
+	signal internal_MON_HEADER2_MONTIMING_R          : std_logic_vector(3 downto 0);
+	signal internal_MON_HEADER2_MONTIMING            : std_logic;
+	signal internal_MON_HEADER2_OUTPUT               : std_logic;
 	
 	--Connections to the general purpose registers
 	signal internal_OUTPUT_REGISTERS : GPR;
@@ -261,7 +265,7 @@ architecture Behavioral of scrod_top is
 	signal internal_MIN_WINDOWS_TO_LOOK_BACK             : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_PEDESTAL_WINDOW                      : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_PEDESTAL_MODE                        : STD_LOGIC;
-	signal internal_ROI_ADDRESS_ADJUST                   : std_logic_vector(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_ROI_ADDRESS_ADJUST                   : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
 	--Trigger readout
 	signal internal_SOFTWARE_TRIGGER : std_logic;
@@ -297,9 +301,9 @@ begin
 	--MON(2) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3); -- WR_ADDR(*SHOULD BE* LS)
 	-- Choose your favorites to monitor here:
 	MON(0) <= internal_MON_HEADER_MONTIMING_RCO;
-	MON(1) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3); -- WR_ADDR(*SHOULD BE* LS)
+	MON(1) <= internal_MON_HEADER2_MONTIMING;
 	MON(2) <= internal_SST_MON;
-	--MUX between MONTIMING and RCO
+	--MUX between MONTIMING and RCO on monitor header pin 0
 	internal_MON_HEADER_MONTIMING_RCO <= internal_MON_HEADER_MONTIMING when internal_MON_HEADER_MONTIMING_SEL = '0' else
 	                                     internal_MON_HEADER_RCOSSX    when internal_MON_HEADER_MONTIMING_SEL = '1' else
 	                                     'X';
@@ -314,6 +318,17 @@ begin
 	                                   internal_MON_HEADER_MONTIMING_R(2) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "10" else 
 	                                   internal_MON_HEADER_MONTIMING_R(3) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "11" else 
 	                                   'X';
+	--MUX for MONTIMING2 signals
+	internal_MON_HEADER2_MONTIMING_R <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "00" else 
+	                                    AsicOut_SAMPLING_TIMING_MONITOR_C1_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "01" else 
+	                                    AsicOut_SAMPLING_TIMING_MONITOR_C2_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "10" else 
+	                                    AsicOut_SAMPLING_TIMING_MONITOR_C3_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "11" else
+	                                    "XXXX";
+	internal_MON_HEADER2_MONTIMING   <= internal_MON_HEADER_MONTIMING_R(0) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "00" else 
+	                                    internal_MON_HEADER_MONTIMING_R(1) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "01" else 
+	                                    internal_MON_HEADER_MONTIMING_R(2) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "10" else 
+	                                    internal_MON_HEADER_MONTIMING_R(3) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "11" else 
+	                                    'X';
 	--Likewise for RCOSSX signals
 	internal_MON_HEADER_RCOSSX_R <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "00" else 
 	                                AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "01" else 
@@ -349,8 +364,7 @@ begin
 		--General output clocks
 		CLOCK_50MHz_BUFG       => internal_CLOCK_50MHz_BUFG,
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG       => internal_CLOCK_4xSST_BUFG,
-		CLOCK_SSTx2_CE         => internal_CLOCK_2xSST_CE,
+		CLOCK_SSTx2_BUFG       => internal_CLOCK_2xSST_BUFG,
 		CLOCK_SST_BUFG         => internal_CLOCK_SST_BUFG,
 		--Check SST PLL stability
 		SECONDS_SST_PLL_LOCKED => internal_SECONDS_SST_PLL_LOCKED,
@@ -510,8 +524,7 @@ begin
 	map_irs3b_sdr : entity work.irs3b_sampling_digitizing_readout
 	port map (
 		CLOCK_SAMPLING_HOLD_MODE                           => internal_CLOCK_SST_BUFG,
-		CLOCK_TRIGGER_MEMORY                               => internal_CLOCK_4xSST_BUFG,
-		CLOCK_2xSST_CLOCK_ENABLE                           => internal_CLOCK_2xSST_CE,
+		CLOCK_2xSST                                        => internal_CLOCK_2xSST_BUFG,
 		CLOCK                                              => internal_CLOCK_50MHz_BUFG,
 		SOFTWARE_TRIGGER_IN                                => internal_SOFTWARE_TRIGGER,
 		HARDWARE_TRIGGER_IN                                => internal_HARDWARE_TRIGGER,
@@ -692,7 +705,7 @@ begin
 	internal_IGNORE_CHANNEL_MASK( 95 downto  80) <= internal_OUTPUT_REGISTERS(184);
 	internal_IGNORE_CHANNEL_MASK(111 downto  96) <= internal_OUTPUT_REGISTERS(185);
 	internal_IGNORE_CHANNEL_MASK(127 downto 112) <= internal_OUTPUT_REGISTERS(186);
-	internal_ROI_ADDRESS_ADJUST                   <= internal_OUTPUT_REGISTERS(187)(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);  --Register 187: 10-bit signed adjust window for the trigger memory
+	internal_ROI_ADDRESS_ADJUST                   <= internal_OUTPUT_REGISTERS(187)(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);  --Register 187: 9-bit signed adjust window for the trigger memory
 	internal_WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER <= internal_OUTPUT_REGISTERS(188)(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);  --Register 188: 9 bit unsigned number of window pairs to sample after receiving a trigger
 
 
@@ -779,10 +792,11 @@ begin
 	internal_CHOOSE_SAMPLING_PHASE     <= internal_OUTPUT_REGISTERS(379)(10 downto 9);  -- bits 10:9 Choose which phase to use among 4 PHAB phases
 
 	                                                                                  --Register 380:
-	internal_MON_HEADER_MONTIMING_ROW_SELECT <= internal_OUTPUT_REGISTERS(380)(1 downto 0); -- bits 1:0 choose row for MONTIMING signal appearing on mon header
-	internal_MON_HEADER_MONTIMING_COL_SELECT <= internal_OUTPUT_REGISTERS(380)(3 downto 2); -- bits 3:2 choose col for MONTIMING  ""
-	internal_MON_HEADER_MONTIMING_SEL        <= internal_OUTPUT_REGISTERS(380)(4);          -- bit  4   choose between RCO_SSX or MONTIMING for monitor header
-
+	internal_MON_HEADER_MONTIMING_ROW_SELECT  <= internal_OUTPUT_REGISTERS(380)(1 downto 0);   -- bits  1: 0 choose row for MONTIMING signal appearing on mon header
+	internal_MON_HEADER_MONTIMING_COL_SELECT  <= internal_OUTPUT_REGISTERS(380)(3 downto 2);   -- bits  3: 2 choose col for MONTIMING  ""
+	internal_MON_HEADER_MONTIMING_SEL         <= internal_OUTPUT_REGISTERS(380)(4);            -- bit      4 choose between RCO_SSX or MONTIMING for monitor header
+	internal_MON_HEADER2_MONTIMING_ROW_SELECT <= internal_OUTPUT_REGISTERS(380)( 9  downto 8); -- bits  9: 8 choose row for MONTIMING signal appearing on mon header
+	internal_MON_HEADER2_MONTIMING_COL_SELECT <= internal_OUTPUT_REGISTERS(380)(11 downto 10); -- bits 11:10 choose col for MONTIMING  ""
 	
 	                                                                                  --Registers 384-399: wilkinson counter target values for feedback
 	gen_vdly_feedback_targets_col : for col in 0 to 3 generate

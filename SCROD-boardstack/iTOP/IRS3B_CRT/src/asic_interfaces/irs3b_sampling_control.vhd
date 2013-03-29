@@ -16,8 +16,7 @@ entity irs3b_sampling_control is
 		--Single clock signal in
 		CLOCK_SST                                 : in  std_logic;
 		-- Phase sync signals
-		CLK_SSTx4                                 : in std_logic; -- LM: added to synchronize WRADDR - here it needs to select between rising or falling edge
-		CLK_SSTx2_CE                              : in std_logic; -- Kurtis - changed from SSTx2 to SSTx4 with a clock enable
+		CLK_SSTx2                                 : in std_logic; -- LM: added to synchronize WRADDR - here it needs to select between rising or falling edge
 		phaseA_B                                  : in std_logic; -- LM: added
 		do_synchronize										: in std_logic; -- LM: added
 		choose_phase										: in std_logic_vector(1 downto 0); -- LM: added
@@ -62,6 +61,8 @@ begin
 --	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS) & '1';
 	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f) & '1';
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS);
+	--For now we just use PHAB as the LSB for the write address.
+	SAMPLING_TO_STORAGE_ADDRESS_LSB <= phaseA_B;
 
 	--State outputs
 	process(internal_SAMPLING_STATE) begin
@@ -142,20 +143,18 @@ begin
 	end if;
 	end process;
 	
-	delayed_PHAB: process(CLK_SSTx4,CLK_SSTx2_CE) begin
-		if (CLK_SSTx2_CE = '1') then
-			if rising_edge(CLK_SSTx4) then 
-				CLK_SST_div(1) <= CLK_SST_div(0);
-				CLK_SST_div(2) <= CLK_SST_div(1);
-				CLK_SST_div(3) <= CLK_SST_div(2);
-				phaseA_B_old <= phaseA_B;
-				if  (phaseA_B = '1' and phaseA_B_old = '0')  and   do_synchronize = '1'  and initialize_done = '0' then 
-					initialize_done <= '1';
-					if (CLK_SST_div = "1001"  or CLK_SST_div = "0110" ) then
-						sync_edge <= '1';
-					else 
-						sync_edge <='0'; -- it should be ok as it is 90 degrees off... 
-					end if;
+	delayed_PHAB: process(CLK_SSTx2) begin
+		if rising_edge(CLK_SSTx2) then 
+			CLK_SST_div(1) <= CLK_SST_div(0);
+			CLK_SST_div(2) <= CLK_SST_div(1);
+			CLK_SST_div(3) <= CLK_SST_div(2);
+			phaseA_B_old <= phaseA_B;
+			if  (phaseA_B = '1' and phaseA_B_old = '0')  and   do_synchronize = '1'  and initialize_done = '0' then 
+				initialize_done <= '1';
+				if (CLK_SST_div = "1001"  or CLK_SST_div = "0110" ) then
+					sync_edge <= '1';
+				else 
+					sync_edge <='0'; -- it should be ok as it is 90 degrees off... 
 				end if;
 			end if;
 		end if;

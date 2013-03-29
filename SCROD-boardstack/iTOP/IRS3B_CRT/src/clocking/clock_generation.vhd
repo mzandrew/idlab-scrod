@@ -29,8 +29,7 @@ entity clock_generation is
 		--General output clocks
 		CLOCK_50MHz_BUFG : out STD_LOGIC;
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG : out STD_LOGIC;
-		CLOCK_SSTx2_CE   : out STD_LOGIC;
+		CLOCK_SSTx2_BUFG : out STD_LOGIC;
 		CLOCK_SST_BUFG   : out STD_LOGIC;
 		--Monitor to check PLL stability 
 		SECONDS_SST_PLL_LOCKED   : out std_logic_vector(15 downto 0);
@@ -52,7 +51,7 @@ architecture Behavioral of clock_generation is
 	signal internal_FTSW_DERIVED_SST    : std_logic;
 	signal internal_CLK_FIN_SST         : std_logic;
 	signal internal_CLOCK_SST           : std_logic;
-	signal internal_CLOCK_SSTx4_BUFG    : std_logic;
+	signal internal_CLOCK_SSTx2_BUFG    : std_logic;
 	--
 	signal internal_FTSW_INTERFACE_READY  : std_logic;
 	signal internal_FTSW_INTERFACE_STABLE : std_logic;
@@ -67,7 +66,7 @@ architecture Behavioral of clock_generation is
 	signal internal_PLL_LOCKED          : std_logic;
 begin
 	--Simple mappings from internals to output ports
-	CLOCK_SSTx4_BUFG <= internal_CLOCK_SSTx4_BUFG;
+	CLOCK_SSTx2_BUFG <= internal_CLOCK_SSTx2_BUFG;
 
 
 	------------------------------------------------------
@@ -175,15 +174,15 @@ begin
 	--        PLLs to generate all other clocks         --
 	------------------------------------------------------
 	--this takes in 21.2027 MHz in
-	--     generates General use clock @ 50.0000 MHz @  0 degrees
-	--               SSTx4             @ 84.8108 MHz @ 90 degrees
+	--     generates General use clock @ 49.890 MHz @  0 degrees
+	--               SSTx2             @ 42.406 MHz @ 90 degrees
 	map_clockgen_ASIC : entity work.clockgen_asic_A
 	port map (
 		-- Clock in ports
 		CLK_SST          => internal_CLOCK_SST,
 		-- Clock out ports
 		CLK_50MHz_BUFG   => internal_CLOCK_50MHz_BUFG,
-		CLK_SSTx4_BUFG   => internal_CLOCK_SSTx4_BUFG,
+		CLK_SSTx2_BUFG   => internal_CLOCK_SSTx2_BUFG,
 		-- Status and control signals
 		LOCKED           => internal_PLL_LOCKED
 	);
@@ -193,15 +192,6 @@ begin
 	-------------------------------------------------------
 	--Logic to generate slow clock enables(e.g., for I2C)--
 	-------------------------------------------------------
-	process(internal_CLOCK_SSTx4_BUFG) 
-		variable toggle_bit : std_logic := '0';
-	begin
-		if (rising_edge(internal_CLOCK_SSTx4_BUFG)) then
-			CLOCK_SSTx2_CE <= toggle_bit;
-			toggle_bit := not(toggle_bit);
-		end if;
-	end process;
-
 	map_i2c_clock_enable : entity work.clock_enable_generator
 	generic map (
 --		DIVIDE_RATIO => 20 --This is suitable for a 4 MHz clock divided by 20 ==> 200 kHz

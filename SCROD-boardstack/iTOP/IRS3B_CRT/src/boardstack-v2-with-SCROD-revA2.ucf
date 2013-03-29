@@ -17,15 +17,33 @@
 NET "map_i2c_bus*/*CLOCK_ENABLE*" TNM_NET = FFS "I2C_ENABLES";
 NET "map_dac_interfaces/map_external_dac_control/*CLK_ENABLE*" TNM_NET = FFS "I2C_ENABLES";
 TIMESPEC TS_I2C_ENABLES = FROM "I2C_ENABLES" TO "I2C_ENABLES" TS_BOARD_CLOCK*40;
-#Timing constraints that can be ignored since they're related to slow control with use registers
-#NET "map_readout_interfaces/internal_GPR*" TIG;
-#TIMESPEC TS_POST_TRIG_SAMPL = FROM "map_readout_interfaces/internal_GPR_188_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-#TIMESPEC TS_LAST_ALLOWED    = FROM "map_readout_interfaces/internal_GPR_162_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-#TIMESPEC TS_SAMP_SYNC1      = FROM "map_readout_interfaces/internal_GPR_379_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-#TIMESPEC TS_SAMP_SYNC2      = FROM "map_readout_interfaces/internal_GPR_380_*" TO "map_irs3b_sdr/map_sampling_control/*" TIG;
-#NET "map_clock_generation/internal_PLL_LOCKED_COUNTER*" TIG;
+#The PLL locked counter runs off of a local board-related, but is read off of the system clock, which may be distributed.
+#It only changes once per second... ignoring this as a timing constraint.
+NET "map_clock_generation/internal_PLL_LOCKED_COUNTER*" TIG;
+#Another similar to the above for checking FTSW stability
+NET "map_clock_generation/internal_FTSW_STABLE_COUNTER*" TIG;
+#Registers are slow control... we can accept some timing glitches immediately after writing one.
 NET "internal_OUTPUT_REGISTERS*" TIG;
-#TIMESPEC TS_PCLK_COUNTER = FROM "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_REGISTER_COUNTER*" TO "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_PCLK*" TIG;
+#Path from LAST_WINDOW_SAMPLED from sampler to digitizer has a very long delay in between
+#(i.e., the full time for the ROI parser to find the first segment of interest).
+#It is effectively a false path, so ignore this path.  The same is true, though not quite as
+#long of a path, to the ROI block.
+NET "map_irs3b_sdr/internal_LAST_WINDOW_SAMPLED*" TIG;
+#Path from sampling state machine to ROI and event builder are also effectively false paths, like above
+NET "map_irs3b_sdr/map_sampling_control/*" TNM_NET = FFS "SAMP_SIGNALS";
+NET "map_irs3b_sdr/map_irs2_roi_parser/*"  TNM_NET = FFS "ROI_SIGNALS";
+NET "map_irs3b_sdr/map_event_builder/*"    TNM_NET = FFS "EVT_BUILDER_SIGNALS";
+TIMESPEC TS_SAMP_TO_ROI = FROM "SAMP_SIGNALS" TO "ROI_SIGNALS" TIG;
+TIMESPEC TS_SAMP_TO_EVT = FROM "SAMP_SIGNALS" TO "EVT_BUILDER_SIGNALS" TIG;
+TIMESPEC TS_EVT_TO_SAMP = FROM "EVT_BUILDER_SIGNALS" TO "SAMP_SIGNALS" TIG;
+#Path from regular 50 MHz clock to SST CLK for the purposes of generating PCLK
+#There's handshaking done there, so I'm not too worried about this.
+NET "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_REGISTER_COUNTER*" TNM_NET = FFS "CLK50_DAC";
+NET "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_STATE_FSM*"        TNM_NET = FFS "CLK50_DAC";
+NET "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_PCLK_*"            TNM_NET = FFS "CLKSST_DAC";
+NET "map_dac_interfaces/map_irs3b_program_dacs_parallel/internal_PCLK_STATE_FSM*"   TNM_NET = FFS "CLKSST_DAC";
+TIMESPEC TS_DAC_CLK_TO_SST = FROM  "CLK50_DAC" TO "CLKSST_DAC" TIG;
+TIMESPEC TS_DAC_SST_TO_CLK = FROM "CLKSST_DAC" TO "CLK50_DAC" TIG;
 
 
 ###############ASIC CONNECTIONS########################

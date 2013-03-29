@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 13.2
-# Date: Mon Mar 11 00:37:05 2013
+# Date: Thu Mar 28 20:06:18 2013
 #
 ##############################################################
 #
@@ -43,7 +43,7 @@ CSET calc_done=DONE
 CSET clk_in_sel_port=CLK_IN_SEL
 CSET clk_out1_port=CLK_50MHz_BUFG
 CSET clk_out1_use_fine_ps_gui=false
-CSET clk_out2_port=CLK_SSTx4_BUFG
+CSET clk_out2_port=CLK_SSTx2_BUFG
 CSET clk_out2_use_fine_ps_gui=false
 CSET clk_out3_port=CLK_SST_BUFG
 CSET clk_out3_use_fine_ps_gui=false
@@ -74,7 +74,7 @@ CSET clkout1_requested_out_freq=50.000
 CSET clkout1_requested_phase=0.000
 CSET clkout2_drives=BUFG
 CSET clkout2_requested_duty_cycle=50.0
-CSET clkout2_requested_out_freq=84.808
+CSET clkout2_requested_out_freq=42.4054
 CSET clkout2_requested_phase=90.000
 CSET clkout2_used=true
 CSET clkout3_drives=BUFG
@@ -203,7 +203,7 @@ CSET pll_clkin_period=47.163
 CSET pll_clkout0_divide=17
 CSET pll_clkout0_duty_cycle=0.500
 CSET pll_clkout0_phase=0.000
-CSET pll_clkout1_divide=10
+CSET pll_clkout1_divide=20
 CSET pll_clkout1_duty_cycle=0.500
 CSET pll_clkout1_phase=90.000
 CSET pll_clkout2_divide=20
@@ -263,4 +263,4 @@ CSET use_status=false
 MISC pkg_timestamp=2011-03-09T16:42:33.000Z
 # END Extra information
 GENERATE
-# CRC: 878e8b80
+# CRC: 1f34488a
