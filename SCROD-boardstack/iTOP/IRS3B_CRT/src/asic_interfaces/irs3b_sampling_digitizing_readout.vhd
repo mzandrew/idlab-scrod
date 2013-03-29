@@ -35,6 +35,7 @@ entity irs3b_sampling_digitizing_readout is
 		EVENT_NUMBER                          : out STD_LOGIC_VECTOR(31 downto 0);
 		DO_SAMPLING_SYNC                      : in  STD_LOGIC;
 		CHOOSE_SAMPLING_PHASE                 : in  STD_LOGIC_VECTOR(1 downto 0);
+		SAMPLING_TO_STORAGE_LSB_PHASE         : in  STD_LOGIC;
 		--Masks to force a readout and prohibit a readout
 		FORCE_CHANNEL_MASK                    : in  STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
 		IGNORE_CHANNEL_MASK                   : in  STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
@@ -251,6 +252,7 @@ begin
 		FIRST_ADDRESS_ALLOWED                     => FIRST_ALLOWED_WINDOW,
 		LAST_ADDRESS_ALLOWED                      => LAST_ALLOWED_WINDOW,
 		SAMPLING_TO_STORAGE_ADDRESS_LSB           => internal_SAMPLING_TO_STORAGE_ADDRESS(0),
+		LSB_PHASE                                 => SAMPLING_TO_STORAGE_LSB_PHASE,
 		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER      => WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER,
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE => ASIC_SAMPLING_TO_STORAGE_ENABLE,

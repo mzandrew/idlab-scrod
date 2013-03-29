@@ -26,6 +26,8 @@ entity irs3b_sampling_control is
 		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER      : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
 		--LSB of sampling to storage address must be tracked here
 		SAMPLING_TO_STORAGE_ADDRESS_LSB           : out std_logic;
+		--User interface to choose LSB phase
+		LSB_PHASE                                 : in std_logic;
 		--Outputs to the ASIC
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB : out	std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out	std_logic;
@@ -65,7 +67,9 @@ begin
 	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f) & '1';
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS);
 	--For now we just use PHAB as the LSB for the write address.
-	SAMPLING_TO_STORAGE_ADDRESS_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS_LSB;
+	SAMPLING_TO_STORAGE_ADDRESS_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS_LSB when LSB_PHASE = '0' else
+	                                   not(internal_SAMPLING_TO_STORAGE_ADDRESS_LSB) when LSB_PHASE = '1' else
+	                                   'X';
 
 	--State outputs
 	process(internal_SAMPLING_STATE) begin
