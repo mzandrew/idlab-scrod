@@ -68,7 +68,6 @@ begin
 	--Simple mappings from internals to output ports
 	CLOCK_SSTx2_BUFG <= internal_CLOCK_SSTx2_BUFG;
 
-
 	------------------------------------------------------
 	--            Board derived clocking                --
 	------------------------------------------------------

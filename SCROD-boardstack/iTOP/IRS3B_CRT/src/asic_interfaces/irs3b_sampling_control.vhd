@@ -44,6 +44,9 @@ architecture Behavioral of irs3b_sampling_control is
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET  : std_logic := '0';	
 	signal internal_CONTINUE_WRITING                          : std_logic := '0';
 
+	signal internal_SAMPLING_TO_STORAGE_ADDRESS_LSB           : std_logic := '0';
+	signal internal_SAMPLING_TO_STORAGE_ADDRESS_RESET         : std_logic := '1';
+
 	signal phaseA_B_old : std_logic;
 	signal initialize_done : std_logic := '0';
 	signal sync_edge : std_logic;
@@ -62,7 +65,7 @@ begin
 	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f) & '1';
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS);
 	--For now we just use PHAB as the LSB for the write address.
-	SAMPLING_TO_STORAGE_ADDRESS_LSB <= phaseA_B;
+	SAMPLING_TO_STORAGE_ADDRESS_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS_LSB;
 
 	--State outputs
 	process(internal_SAMPLING_STATE) begin
@@ -156,6 +159,17 @@ begin
 				else 
 					sync_edge <='0'; -- it should be ok as it is 90 degrees off... 
 				end if;
+			end if;
+		end if;
+	end process;
+
+	internal_SAMPLING_TO_STORAGE_ADDRESS_RESET <= not(initialize_done);
+	LSB_sync : process(CLK_SSTx2) begin
+		if rising_edge(CLK_SSTx2) then
+			if (internal_SAMPLING_TO_STORAGE_ADDRESS_RESET = '1') then
+				internal_SAMPLING_TO_STORAGE_ADDRESS_LSB <= '0';
+			else 
+				internal_SAMPLING_TO_STORAGE_ADDRESS_LSB <= not(internal_SAMPLING_TO_STORAGE_ADDRESS_LSB);
 			end if;
 		end if;
 	end process;
