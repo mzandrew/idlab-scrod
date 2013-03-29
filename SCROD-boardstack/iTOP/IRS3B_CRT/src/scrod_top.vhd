@@ -1,3 +1,10 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.ALL;
+package revision is
+	constant constant_FIRMWARE_REVISION : integer := 325;
+	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
+end revision;
 ----------------------------------------------------------------------------------
 --
 ----------------------------------------------------------------------------------
@@ -9,6 +16,7 @@ use work.readout_definitions.all; --Definitions in readout_definitions.vhd
 use work.asic_definitions_irs3b_carrier_revB.all;
 use work.i2c_types.all; --Definitions in i2c_general_interfaces.vhd
 use work.IRS3B_CarrierRevB_DAC_definitions.all; -- Definitions in irs3b_carrierRevB_DAC_definitions.vhd
+use work.revision.all;
 
 entity scrod_top is
 	Port(
@@ -258,6 +266,7 @@ architecture Behavioral of scrod_top is
 	--registers related to ASIC sampling
 	signal internal_DO_SAMPLING_SYNC      : std_logic;
 	signal internal_CHOOSE_SAMPLING_PHASE : std_logic_vector(1 downto 0);
+	signal internal_SAMPLING_TO_STORAGE_LSB_PHASE : std_logic;
 	--registers related to ASIC readout
 	signal internal_FIRST_ALLOWED_WINDOW                 : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_LAST_ALLOWED_WINDOW                  : STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -544,6 +553,7 @@ begin
 		EVENT_NUMBER                                       => internal_EVENT_NUMBER,
 		DO_SAMPLING_SYNC                                   => internal_DO_SAMPLING_SYNC,
 		CHOOSE_SAMPLING_PHASE                              => internal_CHOOSE_SAMPLING_PHASE,
+		SAMPLING_TO_STORAGE_LSB_PHASE                      => internal_SAMPLING_TO_STORAGE_LSB_PHASE,
 		FORCE_CHANNEL_MASK                                 => internal_FORCE_CHANNEL_MASK,
 		IGNORE_CHANNEL_MASK                                => internal_IGNORE_CHANNEL_MASK,
 		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB            => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
@@ -787,9 +797,10 @@ begin
 	end generate;
 
 	                                                                                  --Register 379: 
-	internal_ASIC_TIMING_GENERATOR_REG <= internal_OUTPUT_REGISTERS(379)(7 downto 0);   -- bits  7:0 Internal ASIC "timing" register
-	internal_DO_SAMPLING_SYNC          <= internal_OUTPUT_REGISTERS(379)(8);            -- bit     8 Signal for the sampling block to perform the sync  - set to one after all taps/biases are programmed
-	internal_CHOOSE_SAMPLING_PHASE     <= internal_OUTPUT_REGISTERS(379)(10 downto 9);  -- bits 10:9 Choose which phase to use among 4 PHAB phases
+	internal_ASIC_TIMING_GENERATOR_REG     <= internal_OUTPUT_REGISTERS(379)(7 downto 0);   -- bits  7:0 Internal ASIC "timing" register
+	internal_DO_SAMPLING_SYNC              <= internal_OUTPUT_REGISTERS(379)(8);            -- bit     8 Signal for the sampling block to perform the sync  - set to one after all taps/biases are programmed
+	internal_CHOOSE_SAMPLING_PHASE         <= internal_OUTPUT_REGISTERS(379)(10 downto 9);  -- bits 10:9 Choose which phase to use among 4 PHAB phases
+	internal_SAMPLING_TO_STORAGE_LSB_PHASE <= internal_OUTPUT_REGISTERS(379)(11);           -- bit    11 Choose between two possible phases of LSB for WR_ADDR
 
 	                                                                                  --Register 380:
 	internal_MON_HEADER_MONTIMING_ROW_SELECT  <= internal_OUTPUT_REGISTERS(380)(1 downto 0);   -- bits  1: 0 choose row for MONTIMING signal appearing on mon header
@@ -878,5 +889,6 @@ begin
 	internal_INPUT_REGISTERS(N_GPR+96) <= internal_EVENT_NUMBER(15 downto  0); --Register 608: LSBs of current event number
 	internal_INPUT_REGISTERS(N_GPR+97) <= internal_EVENT_NUMBER(31 downto 16); --Register 609: MSBs of current event number
 	internal_INPUT_REGISTERS(N_GPR+98) <= internal_SECONDS_SST_PLL_LOCKED;     --Register 610: Number of seconds that SST PLL has been locked
+	internal_INPUT_REGISTERS(N_GPR+99) <= word_FIRMWARE_REVISION;              --Register 611: Firmware revision, currently based on google code commit #
 
 end Behavioral;
