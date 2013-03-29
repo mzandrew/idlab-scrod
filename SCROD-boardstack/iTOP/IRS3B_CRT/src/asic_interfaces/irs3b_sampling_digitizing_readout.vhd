@@ -10,10 +10,8 @@ entity irs3b_sampling_digitizing_readout is
 	Port ( 
 		--SST clock for performing sampling address control
 		CLOCK_SAMPLING_HOLD_MODE              : in  STD_LOGIC;
-		--4xSST clock for trigger memory monitoring
-		CLOCK_TRIGGER_MEMORY                  : in  STD_LOGIC;
-		--2xSST clock enable for use for phase monitoring (if needed)
-		CLOCK_2xSST_CLOCK_ENABLE              : in  STD_LOGIC;
+		--2xSST clock for trigger memory monitoring
+		CLOCK_2xSST                           : in  STD_LOGIC;
 		--General clock for ROI parsing, waveform builidng, event building
 		CLOCK                                 : in  STD_LOGIC;
 		--Trigger in
@@ -25,7 +23,7 @@ entity irs3b_sampling_digitizing_readout is
 		--User registers
 		FIRST_ALLOWED_WINDOW                  : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 		LAST_ALLOWED_WINDOW                   : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
-		ROI_ADDRESS_ADJUST                    : in  STD_LOGIC_VECTOR(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);
+		ROI_ADDRESS_ADJUST                    : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 		MAX_WINDOWS_TO_LOOK_BACK              : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 		MIN_WINDOWS_TO_LOOK_BACK              : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER  : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
@@ -84,7 +82,6 @@ architecture Behavioral of irs3b_sampling_digitizing_readout is
 	signal internal_HARDWARE_TRIGGER_FLAG                : std_logic;
 	signal internal_SOFTWARE_TRIGGER_FLAG                : std_logic;
 	--Signals from the sampler
-	signal internal_ASIC_SAMPLING_TO_STORAGE_ADDRESS_LSB : std_logic;  --We have to track this internally now
 	signal internal_CURRENTLY_SAMPLING                   : std_logic;
 	signal internal_LAST_WINDOW_SAMPLED                  : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS          : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -92,7 +89,7 @@ architecture Behavioral of irs3b_sampling_digitizing_readout is
 	--Signal between the trigger memory and ROI block
 	signal internal_TRIGGER_MEMORY_READ_CLOCK            : std_logic;
 	signal internal_TRIGGER_MEMORY_READ_ENABLE           : std_logic;
-	signal internal_TRIGGER_MEMORY_READ_ADDRESS          : std_logic_vector(TRIGGER_MEMORY_ADDRESS_BITS-1 downto 0);
+	signal internal_TRIGGER_MEMORY_READ_ADDRESS          : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_TRIGGER_MEMORY_READ_DATA             : std_logic_vector(TOTAL_TRIGGER_BITS-1 downto 0);
 	--Connections to/from the ROI parser
 	signal internal_ROI_PARSER_START                     : std_logic;
@@ -143,10 +140,10 @@ architecture Behavioral of irs3b_sampling_digitizing_readout is
 	--Debugging output for digitizing block
 	signal internal_DIGITIZER_STATE : std_logic_vector(3 downto 0);
 	
-	--Chipscope debugging signals
-	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
-	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
-	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
+--	--Chipscope debugging signals
+--	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+--	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
+--	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
 
 begin
 	EVENT_FIFO_DATA_OUT             <= internal_EVENT_FIFO_DATA_OUT;
@@ -221,12 +218,12 @@ begin
 	map_trigger_memory : entity work.trigger_memory
 	port map(
 		--Primary clock for this block
-		CLOCK_4xSST                              => CLOCK_TRIGGER_MEMORY,
+		CLOCK_2xSST                              => CLOCK_2xSST,
 		--ASIC trigger bits in
 		ASIC_TRIGGER_BITS                        => ASIC_TRIGGER_BITS,
 		--Sampling monitoring
 		CONTINUE_WRITING                         => internal_CURRENTLY_SAMPLING,
-		CURRENT_ASIC_SAMPLING_TO_STORAGE_ADDRESS => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1) & internal_ASIC_SAMPLING_TO_STORAGE_ADDRESS_LSB,
+		CURRENT_ASIC_SAMPLING_TO_STORAGE_ADDRESS => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0),
 		--BRAM interface to read from trigger memory from the ROI parser
 		TRIGGER_MEMORY_READ_CLOCK                => internal_TRIGGER_MEMORY_READ_CLOCK,
 		TRIGGER_MEMORY_READ_ENABLE               => internal_TRIGGER_MEMORY_READ_ENABLE,
@@ -238,7 +235,8 @@ begin
 	--             SAMPLING                                            --
 	---------------------------------------------------------------------	
 	--Scramble the address to match internal IRS3B expectations
-	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 4) & internal_SAMPLING_TO_STORAGE_ADDRESS(1) & internal_SAMPLING_TO_STORAGE_ADDRESS(3 downto 2);
+	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 4) & internal_SAMPLING_TO_STORAGE_ADDRESS(2 downto 1) & internal_SAMPLING_TO_STORAGE_ADDRESS(3);
+	--
 	map_sampling_control : entity work.irs3b_sampling_control
 	port map(
 		CURRENTLY_WRITING                         => internal_CURRENTLY_SAMPLING,
@@ -246,8 +244,7 @@ begin
 		RESUME_WRITING                            => internal_DONE_SENDING_EVENT,
 		LAST_WINDOW_SAMPLED                       => internal_LAST_WINDOW_SAMPLED,
 		CLOCK_SST                                 => CLOCK_SAMPLING_HOLD_MODE,
-		CLK_SSTx4                                 => CLOCK_TRIGGER_MEMORY,
-		CLK_SSTx2_CE                              => CLOCK_2xSST_CLOCK_ENABLE,
+		CLK_SSTx2                                 => CLOCK_2xSST,
 		phaseA_B                                  => ASIC_SAMPLING_TIMING_MONITOR, --MUXed to col/row at top level
 		do_synchronize										=> DO_SAMPLING_SYNC,
 		choose_phase										=> CHOOSE_SAMPLING_PHASE,
@@ -311,7 +308,7 @@ begin
 	--             DIGITIZATION AND READOUT                            --
 	---------------------------------------------------------------------
 	--Scrambling of address space to match what IRS3B expects
-	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3 downto 2) & internal_STORAGE_TO_WILK_ADDRESS(0);
+	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3) & internal_STORAGE_TO_WILK_ADDRESS(2);
 	--Luca's new serial interface to the IRS3B "read" address
 	inst_update_read_addr : entity work.update_read_addr 
 	port map(
@@ -429,55 +426,55 @@ begin
 		internal_DIGITIZER_CLOCK_ENABLE <= shift(0) and not(shift(1));
 	end process;
 
-	--DEBUGGING CRAP
-	map_ILA : entity work.s6_ila
-	port map (
-		CONTROL => internal_CHIPSCOPE_CONTROL,
-		CLK     => CLOCK,
-		TRIG0   => internal_CHIPSCOPE_ILA_REG
-	);
-	map_ICON : entity work.s6_icon
-	port map (
-		CONTROL0 => internal_CHIPSCOPE_CONTROL
-	);
-	
-	--Workaround for CS/picoblaze stupidness
-	process(CLOCK) begin
-		if (rising_edge(CLOCK)) then
-			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
-		end if;
-	end process;
-	
-	internal_CHIPSCOPE_ILA(0) <= internal_ROI_PARSER_START;                     
-	internal_CHIPSCOPE_ILA(1) <= internal_ROI_PARSER_READY;                     
-	internal_CHIPSCOPE_ILA(2) <= internal_ROI_PARSER_DONE;                      
-	internal_CHIPSCOPE_ILA(3) <= internal_ROI_PARSER_MAKE_READY;                
-	internal_CHIPSCOPE_ILA(4) <= internal_ROI_PARSER_VETO;                      
-	internal_CHIPSCOPE_ILA(5) <= internal_ROI_TRUNCATED_FLAG;                   
-	internal_CHIPSCOPE_ILA(15 downto 6) <= internal_NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT; 
-	internal_CHIPSCOPE_ILA(16) <= internal_NEXT_WINDOW_FIFO_EMPTY;
-	internal_CHIPSCOPE_ILA(17) <= internal_NEXT_WINDOW_FIFO_READ_ENABLE;
-	internal_CHIPSCOPE_ILA(18) <= internal_DIGITIZER_BUSY;
-	internal_CHIPSCOPE_ILA(19) <= '0';
-	internal_CHIPSCOPE_ILA(35 downto 20) <= internal_NEXT_WINDOW_FIFO_READ_DATA;
-	internal_CHIPSCOPE_ILA(67 downto 36) <= internal_WAVEFORM_FIFO_DATA;
-	internal_CHIPSCOPE_ILA(68) <= internal_WAVEFORM_FIFO_EMPTY;
-	internal_CHIPSCOPE_ILA(69) <= '0';
-	internal_CHIPSCOPE_ILA(70) <= internal_WAVEFORM_FIFO_READ_ENABLE;
-	internal_CHIPSCOPE_ILA(71) <= internal_WAVEFORM_FIFO_VALID;
-	internal_CHIPSCOPE_ILA(72) <= internal_EVENT_FIFO_EMPTY;
-	internal_CHIPSCOPE_ILA(73) <= internal_EVENT_FIFO_DATA_VALID;
-	internal_CHIPSCOPE_ILA(105 downto 74) <= internal_EVENT_FIFO_DATA_OUT;
-	internal_CHIPSCOPE_ILA(106) <= internal_EVENT_FIFO_READ_ENABLE;
-	internal_CHIPSCOPE_ILA(107) <= internal_CURRENTLY_SAMPLING;
-	internal_CHIPSCOPE_ILA(116 downto 108) <= internal_LAST_WINDOW_SAMPLED;
-	internal_CHIPSCOPE_ILA(117) <= internal_DONE_SENDING_EVENT;
-	internal_CHIPSCOPE_ILA(118) <= SOFTWARE_TRIGGER_IN;
-	internal_CHIPSCOPE_ILA(119) <= SOFTWARE_TRIGGER_VETO;
-	internal_CHIPSCOPE_ILA(120) <= HARDWARE_TRIGGER_IN;
-	internal_CHIPSCOPE_ILA(121) <= HARDWARE_TRIGGER_VETO;	
-	internal_CHIPSCOPE_ILA(125 downto 122) <= internal_DIGITIZER_STATE;
-	internal_CHIPSCOPE_ILA(127 downto 126) <= internal_SAMPLING_STATE;
+--	--DEBUGGING CRAP
+--	map_ILA : entity work.s6_ila
+--	port map (
+--		CONTROL => internal_CHIPSCOPE_CONTROL,
+--		CLK     => CLOCK,
+--		TRIG0   => internal_CHIPSCOPE_ILA_REG
+--	);
+--	map_ICON : entity work.s6_icon
+--	port map (
+--		CONTROL0 => internal_CHIPSCOPE_CONTROL
+--	);
+--	
+--	--Workaround for CS/picoblaze stupidness
+--	process(CLOCK) begin
+--		if (rising_edge(CLOCK)) then
+--			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
+--		end if;
+--	end process;
+--	
+--	internal_CHIPSCOPE_ILA(0) <= internal_ROI_PARSER_START;                     
+--	internal_CHIPSCOPE_ILA(1) <= internal_ROI_PARSER_READY;                     
+--	internal_CHIPSCOPE_ILA(2) <= internal_ROI_PARSER_DONE;                      
+--	internal_CHIPSCOPE_ILA(3) <= internal_ROI_PARSER_MAKE_READY;                
+--	internal_CHIPSCOPE_ILA(4) <= internal_ROI_PARSER_VETO;                      
+--	internal_CHIPSCOPE_ILA(5) <= internal_ROI_TRUNCATED_FLAG;                   
+--	internal_CHIPSCOPE_ILA(15 downto 6) <= internal_NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT; 
+--	internal_CHIPSCOPE_ILA(16) <= internal_NEXT_WINDOW_FIFO_EMPTY;
+--	internal_CHIPSCOPE_ILA(17) <= internal_NEXT_WINDOW_FIFO_READ_ENABLE;
+--	internal_CHIPSCOPE_ILA(18) <= internal_DIGITIZER_BUSY;
+--	internal_CHIPSCOPE_ILA(19) <= '0';
+--	internal_CHIPSCOPE_ILA(35 downto 20) <= internal_NEXT_WINDOW_FIFO_READ_DATA;
+--	internal_CHIPSCOPE_ILA(67 downto 36) <= internal_WAVEFORM_FIFO_DATA;
+--	internal_CHIPSCOPE_ILA(68) <= internal_WAVEFORM_FIFO_EMPTY;
+--	internal_CHIPSCOPE_ILA(69) <= '0';
+--	internal_CHIPSCOPE_ILA(70) <= internal_WAVEFORM_FIFO_READ_ENABLE;
+--	internal_CHIPSCOPE_ILA(71) <= internal_WAVEFORM_FIFO_VALID;
+--	internal_CHIPSCOPE_ILA(72) <= internal_EVENT_FIFO_EMPTY;
+--	internal_CHIPSCOPE_ILA(73) <= internal_EVENT_FIFO_DATA_VALID;
+--	internal_CHIPSCOPE_ILA(105 downto 74) <= internal_EVENT_FIFO_DATA_OUT;
+--	internal_CHIPSCOPE_ILA(106) <= internal_EVENT_FIFO_READ_ENABLE;
+--	internal_CHIPSCOPE_ILA(107) <= internal_CURRENTLY_SAMPLING;
+--	internal_CHIPSCOPE_ILA(116 downto 108) <= internal_LAST_WINDOW_SAMPLED;
+--	internal_CHIPSCOPE_ILA(117) <= internal_DONE_SENDING_EVENT;
+--	internal_CHIPSCOPE_ILA(118) <= SOFTWARE_TRIGGER_IN;
+--	internal_CHIPSCOPE_ILA(119) <= SOFTWARE_TRIGGER_VETO;
+--	internal_CHIPSCOPE_ILA(120) <= HARDWARE_TRIGGER_IN;
+--	internal_CHIPSCOPE_ILA(121) <= HARDWARE_TRIGGER_VETO;	
+--	internal_CHIPSCOPE_ILA(125 downto 122) <= internal_DIGITIZER_STATE;
+--	internal_CHIPSCOPE_ILA(127 downto 126) <= internal_SAMPLING_STATE;
 
 end Behavioral;
 

@@ -88,6 +88,8 @@ architecture Behavioral of irs3b_dac_interface is
 	signal internal_ASIC_DAC_BUF_BIAS_VADJP_TO_USE : DAC_setting;
 	signal internal_ASIC_DAC_BUF_BIAS_VADJN_TO_USE : DAC_setting;
 
+	--Clock enable for slowing down the ASIC DAC interface
+	signal internal_ASIC_DAC_CE : std_logic := '0';
 	
 begin
 
@@ -159,11 +161,17 @@ begin
 
 	--ASIC DAC writing module (round-robin-by-register, parallel when appropriate to a register)
 	AsicIn_CLEAR_ALL_REGISTERS <= '0';
+	--Generate a clock enable for the DAC interface
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			internal_ASIC_DAC_CE <= not(internal_ASIC_DAC_CE);
+		end if;
+	end process;
 	--
 	map_irs3b_program_dacs_parallel : entity work.irs3b_program_dacs_parallel
 	port map(
 		CLK                          => CLOCK,
-		CE                           => '1',
+		CE                           => internal_ASIC_DAC_CE,
 		SST_CLK                      => SST_CLOCK,
 		PCLK                         => internal_PCLK_OUT,
 		SCLK                         => AsicIn_SERIAL_SHIFT_CLOCK,

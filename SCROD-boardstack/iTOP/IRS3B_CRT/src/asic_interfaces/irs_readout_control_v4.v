@@ -116,33 +116,35 @@ module irs_readout_control_v4(
 	//LM new from here
 	//% FSM logic. For the IRS3B this resets the counter to 0 and uses increment each time. 
 	always @(posedge clk_i) begin : FSM
-		if (rst_i) state <= IDLE;
-		else if (clk_en) begin
-			case(state)
-				IDLE: if (start_i) begin
-					if (increment)
-						state <= SHIFT_START;
-					else
-						state <= INCREMENT;
-				end
-				SHIFT_START: if (counter == DO_DIR_SETUP) state <= SHIFT_LOW;
-				SHIFT_HIGH: if (counter == DO_SCLK_HIGH) state <= SHIFT_LOW;
-				SHIFT_LOW: if (counter == DO_SCLK_LOW) begin
-					if (irs_shift_counter == DO_NUM_SHIFTS) state <= SHIFT_DONE;
-					else state <= SHIFT_HIGH;
-				end
-				SHIFT_DONE: state <= IDLE;
-//				SHIFT_DONE: if (counter == DO_SHIFT_HOLD) state <= INCREMENT_WAIT;
-				INCREMENT_WAIT: if (counter == INCREMENT_WAIT_TIME) begin
-//						if (number_increments == TOT_SAMPLES) state <= READ_DONE;
-				 state <= READ_DONE; // only one increment!
-//					else state <= INCREMENT;
-				end
-				INCREMENT: if (counter == INCREMENT_TIME)
-					 state <= INCREMENT_WAIT;	
-				READ_DONE: state <= IDLE;
-				default: state <= IDLE;
-			endcase
+		if (clk_en) begin
+			if (rst_i) state <= IDLE;
+			else begin
+				case(state)
+					IDLE: if (start_i) begin
+						if (increment)
+							state <= SHIFT_START;
+						else
+							state <= INCREMENT;
+					end
+					SHIFT_START: if (counter == DO_DIR_SETUP) state <= SHIFT_LOW;
+					SHIFT_HIGH: if (counter == DO_SCLK_HIGH) state <= SHIFT_LOW;
+					SHIFT_LOW: if (counter == DO_SCLK_LOW) begin
+						if (irs_shift_counter == DO_NUM_SHIFTS) state <= SHIFT_DONE;
+						else state <= SHIFT_HIGH;
+					end
+					SHIFT_DONE: state <= IDLE;
+	//				SHIFT_DONE: if (counter == DO_SHIFT_HOLD) state <= INCREMENT_WAIT;
+					INCREMENT_WAIT: if (counter == INCREMENT_WAIT_TIME) begin
+	//						if (number_increments == TOT_SAMPLES) state <= READ_DONE;
+					 state <= READ_DONE; // only one increment!
+	//					else state <= INCREMENT;
+					end
+					INCREMENT: if (counter == INCREMENT_TIME)
+						 state <= INCREMENT_WAIT;	
+					READ_DONE: state <= IDLE;
+					default: state <= IDLE;
+				endcase
+			end
 		end
 	end
 	
@@ -199,7 +201,8 @@ module irs_readout_control_v4(
 	reg DO_SIN_int;
 //	assign DO_SIN = DO_SIN_int;
 	wire [9:0] START_ADDRESS_EXTENDED = {START_ADDRESS, 1'b0};
-	assign DO_SIN = START_ADDRESS_EXTENDED[irs_shift_counter];
+//	assign DO_SIN = START_ADDRESS_EXTENDED[irs_shift_counter];  //KN: I think this is a bug... just use the address!  No need to extend by a bit.
+	assign DO_SIN = START_ADDRESS[irs_shift_counter];           //KN: I think this version is correct.
 //	always @(irs_shift_counter) begin
 //		DO_SIN_int <= START_ADDRESS[irs_shift_counter];
 //	end
