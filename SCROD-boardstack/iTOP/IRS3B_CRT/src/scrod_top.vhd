@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 325;
+	constant constant_FIRMWARE_REVISION : integer := 326;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
@@ -92,6 +92,11 @@ entity scrod_top is
 		AsicOut_TRIG_OUTPUT_R3_C1_CH	:  in std_logic_vector(7 downto 0);
 		AsicOut_TRIG_OUTPUT_R3_C2_CH	:  in std_logic_vector(7 downto 0);
 		AsicOut_TRIG_OUTPUT_R3_C3_CH	:  in std_logic_vector(7 downto 0);
+		--Trigger monitor outputs
+		AsicOut_MONITOR_TRIG_C0_R     :  in std_logic_vector(3 downto 0);
+		AsicOut_MONITOR_TRIG_C1_R     :  in std_logic_vector(3 downto 0);
+		AsicOut_MONITOR_TRIG_C2_R     :  in std_logic_vector(3 downto 0);
+		AsicOut_MONITOR_TRIG_C3_R     :  in std_logic_vector(3 downto 0);
 		--Serial-to-parallel interface
 		AsicIn_PARALLEL_CLOCK_C0_R    : out std_logic_vector(3 downto 0);
 		AsicIn_PARALLEL_CLOCK_C1_R    : out std_logic_vector(3 downto 0);
@@ -240,6 +245,8 @@ architecture Behavioral of scrod_top is
 	signal internal_WILKINSON_COUNTERS     : Column_Row_Counters;
 	signal internal_SAMPLING_RATE_TARGETS  : Column_Row_Counters;
 	signal internal_SAMPLING_RATE_COUNTERS : Column_Row_Counters;
+	signal internal_TRIG_WIDTH_TARGETS     : Column_Row_Counters;
+	signal internal_TRIG_WIDTH_COUNTERS    : Column_Row_Counters;
 
 	--Signals to allow flexibility for monitoring
 	signal internal_MON_HEADER_MONTIMING_ROW_SELECT : std_logic_vector(1 downto 0);
@@ -255,6 +262,9 @@ architecture Behavioral of scrod_top is
 	signal internal_MON_HEADER2_MONTIMING_COL_SELECT : std_logic_vector(1 downto 0);
 	signal internal_MON_HEADER2_MONTIMING_R          : std_logic_vector(3 downto 0);
 	signal internal_MON_HEADER2_MONTIMING            : std_logic;
+	signal internal_MON_HEADER2_WR_ADDR_BIT          : std_logic;
+	signal internal_MON_HEADER2_WR_ADDR_BIT_SELECT   : std_logic_vector(2 downto 0);
+	signal internal_MON_HEADER2_SELECT_WR_ADDR       : std_logic;
 	signal internal_MON_HEADER2_OUTPUT               : std_logic;
 	
 	--Connections to the general purpose registers
@@ -310,7 +320,7 @@ begin
 	--MON(2) <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3); -- WR_ADDR(*SHOULD BE* LS)
 	-- Choose your favorites to monitor here:
 	MON(0) <= internal_MON_HEADER_MONTIMING_RCO;
-	MON(1) <= internal_MON_HEADER2_MONTIMING;
+	MON(1) <= internal_MON_HEADER2_OUTPUT;
 	MON(2) <= internal_SST_MON;
 	--MUX between MONTIMING and RCO on monitor header pin 0
 	internal_MON_HEADER_MONTIMING_RCO <= internal_MON_HEADER_MONTIMING when internal_MON_HEADER_MONTIMING_SEL = '0' else
@@ -328,6 +338,18 @@ begin
 	                                   internal_MON_HEADER_MONTIMING_R(3) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "11" else 
 	                                   'X';
 	--MUX for MONTIMING2 signals
+	internal_MON_HEADER2_OUTPUT      <= internal_MON_HEADER2_MONTIMING   when internal_MON_HEADER2_SELECT_WR_ADDR = '0' else
+	                                    internal_MON_HEADER2_WR_ADDR_BIT when internal_MON_HEADER2_SELECT_WR_ADDR = '1' else
+	                                    'X';
+	internal_MON_HEADER2_WR_ADDR_BIT <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(1) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "000" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(2) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "001" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(3) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "010" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(4) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "011" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(5) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "100" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(6) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "101" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(7) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "110" else
+	                                    internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB(8) when internal_MON_HEADER2_WR_ADDR_BIT_SELECT = "111" else
+	                                    'X';
 	internal_MON_HEADER2_MONTIMING_R <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "00" else 
 	                                    AsicOut_SAMPLING_TIMING_MONITOR_C1_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "01" else 
 	                                    AsicOut_SAMPLING_TIMING_MONITOR_C2_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "10" else 
@@ -496,6 +518,15 @@ begin
 	--ASIC monitoring and control for potential feedback paths
 	map_asic_feedback_and_monitoring : entity work.feedback_and_monitoring
 	port map (
+		AsicOut_MONITOR_TRIG_C0_R                  => AsicOut_MONITOR_TRIG_C0_R,
+		AsicOut_MONITOR_TRIG_C1_R                  => AsicOut_MONITOR_TRIG_C1_R,
+		AsicOut_MONITOR_TRIG_C2_R                  => AsicOut_MONITOR_TRIG_C2_R,
+      AsicOut_MONITOR_TRIG_C3_R                  => AsicOut_MONITOR_TRIG_C3_R,
+      FEEDBACK_WBIAS_ENABLES_C_R                 => internal_WBIAS_FEEDBACK_ENABLES,
+      FEEDBACK_WBIAS_GOALS_C_R                   => internal_TRIG_WIDTH_TARGETS,
+      FEEDBACK_WBIAS_COUNTERS_C_R                => internal_TRIG_WIDTH_COUNTERS,
+      FEEDBACK_WBIAS_DAC_VALUES_C_R              => internal_WBIAS_FB,
+      STARTING_WBIAS_DAC_VALUES_C_R              => internal_ASIC_WBIAS,
 		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R,
 		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C1_R,
 		AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R => AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C2_R,
@@ -521,10 +552,13 @@ begin
 	--Guts of the interface for digitization and readout
 	--ASIC sampling, digitization, and readout (SDR)
 	--This includes sampling, selection of ROIs, digitizing, and readout
+	--
+	--Connections to top level pins
 	internal_ASIC_READOUT_DATA(0) <= AsicOut_DATA_BUS_C0;
 	internal_ASIC_READOUT_DATA(1) <= AsicOut_DATA_BUS_C1;
 	internal_ASIC_READOUT_DATA(2) <= AsicOut_DATA_BUS_C2;
 	internal_ASIC_READOUT_DATA(3) <= AsicOut_DATA_BUS_C3;
+	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB;
 	--
 	gen_readout_signals : for i in 0 to 3 generate
 		AsicIn_DATA_OUTPUT_DISABLE_R(i) <= internal_ASIC_DATA_OUTPUT_DISABLE_R(i);
@@ -556,7 +590,7 @@ begin
 		SAMPLING_TO_STORAGE_LSB_PHASE                      => internal_SAMPLING_TO_STORAGE_LSB_PHASE,
 		FORCE_CHANNEL_MASK                                 => internal_FORCE_CHANNEL_MASK,
 		IGNORE_CHANNEL_MASK                                => internal_IGNORE_CHANNEL_MASK,
-		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB            => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
+		ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB            => internal_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB,
 		ASIC_SAMPLING_TO_STORAGE_ENABLE                    => AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE,
 		ASIC_SAMPLING_TIMING_MONITOR                       => internal_MON_HEADER_MONTIMING,
 		ASIC_STORAGE_TO_WILK_ENABLE                        => AsicIn_STORAGE_TO_WILK_ENABLE,
@@ -808,6 +842,8 @@ begin
 	internal_MON_HEADER_MONTIMING_SEL         <= internal_OUTPUT_REGISTERS(380)(4);            -- bit      4 choose between RCO_SSX or MONTIMING for monitor header
 	internal_MON_HEADER2_MONTIMING_ROW_SELECT <= internal_OUTPUT_REGISTERS(380)( 9  downto 8); -- bits  9: 8 choose row for MONTIMING signal appearing on mon header
 	internal_MON_HEADER2_MONTIMING_COL_SELECT <= internal_OUTPUT_REGISTERS(380)(11 downto 10); -- bits 11:10 choose col for MONTIMING  ""
+	internal_MON_HEADER2_SELECT_WR_ADDR       <= internal_OUTPUT_REGISTERS(380)(12);           -- bit     12 '0' to choose MONTIMING, '1' to choose WR_ADDR bits
+	internal_MON_HEADER2_WR_ADDR_BIT_SELECT   <= internal_OUTPUT_REGISTERS(380)(15 downto 13); -- bits 15:13 bit select for MONTIMING2 when looking at WR_ADDR bits
 	
 	                                                                                  --Registers 384-399: wilkinson counter target values for feedback
 	gen_vdly_feedback_targets_col : for col in 0 to 3 generate
@@ -823,6 +859,13 @@ begin
 	end generate;
 
 	internal_USE_EXTERNAL_VADJ_DACS <= internal_OUTPUT_REGISTERS(416)(0);            --Register 416: lsb for using external VadjP/N DACs
+
+	                                                                                 --Registers 417-432: trigger width counter targets for use in feedback
+	gen_trig_width_targets_col : for col in 0 to 3 generate
+		gen_trig_width_targets_row : for row in 0 to 3 generate
+			internal_TRIG_WIDTH_TARGETS(col)(row) <= internal_OUTPUT_REGISTERS(417+row+ROWS_PER_COL*col); 
+		end generate;
+	end generate;
 
 
 	internal_I2C_WRITE_REGISTERS(3)        <= internal_OUTPUT_REGISTERS(500); --Register 500: I2C interface for row 0,1 temp sensors (x8), eeproms (x2), and gpios (x2) for cal signals (and SMPL_SEL_ANY)
@@ -890,5 +933,19 @@ begin
 	internal_INPUT_REGISTERS(N_GPR+97) <= internal_EVENT_NUMBER(31 downto 16); --Register 609: MSBs of current event number
 	internal_INPUT_REGISTERS(N_GPR+98) <= internal_SECONDS_SST_PLL_LOCKED;     --Register 610: Number of seconds that SST PLL has been locked
 	internal_INPUT_REGISTERS(N_GPR+99) <= word_FIRMWARE_REVISION;              --Register 611: Firmware revision, currently based on google code commit #
+
+	                                                                           --Registers 612-627: Trigger width counters
+	gen_TRIG_WIDTH_COUNTER_COL : for col in 0 to 3 generate
+		gen_TRIG_WIDTH_COUNTERS_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 100 + row + ROWS_PER_COL * col) <= internal_TRIG_WIDTH_COUNTERS(col)(row);
+		end generate;
+	end generate;
+	                                                                           --Registers 628-643: WBIAS feedback values
+	gen_WBIAS_FB_COL : for col in 0 to 3 generate
+		gen_WBIAS_FB_ROW : for row in 0 to 3 generate
+			internal_INPUT_REGISTERS(N_GPR + 116 + row + ROWS_PER_COL * col) <= x"0" & internal_WBIAS_FB(col)(row);
+		end generate;
+	end generate;
+
 
 end Behavioral;
