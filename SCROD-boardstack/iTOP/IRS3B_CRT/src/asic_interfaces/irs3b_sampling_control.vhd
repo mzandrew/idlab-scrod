@@ -21,15 +21,15 @@ entity irs3b_sampling_control is
 		do_synchronize										: in std_logic; -- LM: added
 		choose_phase										: in std_logic_vector(1 downto 0); -- LM: added
 		--Control from general user registers
-		FIRST_ADDRESS_ALLOWED                     : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
-		LAST_ADDRESS_ALLOWED                      : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
-		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER      : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
+		FIRST_ADDRESS_ALLOWED                     : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0); -- the LSB of this corresponds to one window
+		LAST_ADDRESS_ALLOWED                      : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0); -- the LSB of this corresponds to one window
+		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER      : in  std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0); -- the LSB of this corresponds to a pair of windows
 		--LSB of sampling to storage address must be tracked here
-		SAMPLING_TO_STORAGE_ADDRESS_LSB           : out std_logic;
+		SAMPLING_TO_STORAGE_ADDRESS_LSB           : out std_logic; -- this corresponds to one window
 		--User interface to choose LSB phase
 		LSB_PHASE                                 : in std_logic;
 		--Outputs to the ASIC
-		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB : out	std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0);
+		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB : out	std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0); -- the LSB of this corresponds to a pair of windows
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : out	std_logic;
 		state_debug											: out std_logic_vector(1 downto 0)
 	);
@@ -39,14 +39,14 @@ architecture Behavioral of irs3b_sampling_control is
 	type sampling_state is (INITIALIZE, NORMAL_SAMPLING, POST_TRIGGER_SAMPLING, DONE);
 	signal internal_SAMPLING_STATE                            : sampling_state := INITIALIZE;
 	signal internal_NEXT_SAMPLING_STATE                       : sampling_state := INITIALIZE;
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
 	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE : std_logic := '0';
-	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER        : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
+	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER        : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE : std_logic := '0';
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET  : std_logic := '0';	
 	signal internal_CONTINUE_WRITING                          : std_logic := '0';
 
-	signal internal_SAMPLING_TO_STORAGE_ADDRESS_LSB           : std_logic := '0';
+	signal internal_SAMPLING_TO_STORAGE_ADDRESS_LSB           : std_logic := '0'; -- this corresponds to one window
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS_RESET         : std_logic := '1';
 
 	signal phaseA_B_old : std_logic;
@@ -55,19 +55,18 @@ architecture Behavioral of irs3b_sampling_control is
 	
 	signal CLK_SST_div : std_logic_vector(3 downto 0);
 
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2 : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
-	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2 : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2 : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
+	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2 : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
 	
 	
 	
 begin
 --	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS) & '1';
 	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f) & '1';
-	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS);
-	--For now we just use PHAB as the LSB for the write address.
-	SAMPLING_TO_STORAGE_ADDRESS_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS_LSB when LSB_PHASE = '0' else
+	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS); -- the LSB of this corresponds to a pair of windows
+	SAMPLING_TO_STORAGE_ADDRESS_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS_LSB when LSB_PHASE = '0' else -- this corresponds to one window
 	                                   not(internal_SAMPLING_TO_STORAGE_ADDRESS_LSB) when LSB_PHASE = '1' else
 	                                   'X';
 
@@ -171,9 +170,9 @@ begin
 	LSB_sync : process(CLK_SSTx2) begin
 		if rising_edge(CLK_SSTx2) then
 			if (internal_SAMPLING_TO_STORAGE_ADDRESS_RESET = '1') then
-				internal_SAMPLING_TO_STORAGE_ADDRESS_LSB <= '0';
+				internal_SAMPLING_TO_STORAGE_ADDRESS_LSB <= '0'; -- this corresponds to one window
 			else 
-				internal_SAMPLING_TO_STORAGE_ADDRESS_LSB <= not(internal_SAMPLING_TO_STORAGE_ADDRESS_LSB);
+				internal_SAMPLING_TO_STORAGE_ADDRESS_LSB <= not(internal_SAMPLING_TO_STORAGE_ADDRESS_LSB); -- this corresponds to one window
 			end if;
 		end if;
 	end process;
@@ -183,9 +182,9 @@ begin
 		if falling_edge(CLOCK_SST) then
 			if (internal_CONTINUE_WRITING = '1') then
 				if (unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f & '1') < unsigned(LAST_ADDRESS_ALLOWED)) then
-					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f + 1;
+					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f + 1; -- the LSB of this corresponds to a pair of windows
 				else
-					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1));
+					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1)); -- the LSB of this corresponds to a pair of windows
 				end if;
 			end if;
 		end if;
@@ -195,12 +194,12 @@ begin
 		if rising_edge(CLOCK_SST) then
 			if (internal_CONTINUE_WRITING = '1') then
 				if (unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r & '1') < unsigned(LAST_ADDRESS_ALLOWED)) then
-					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r + 1;
+					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r + 1; -- the LSB of this corresponds to a pair of windows
 				else
-					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1));
+					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1)); -- the LSB of this corresponds to a pair of windows
 				end if;
 			end if;
-			internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2 <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r;
+			internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2 <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r; -- the LSB of this corresponds to a pair of windows
 		end if;
 	end process;
 
@@ -208,11 +207,11 @@ begin
 	process(CLOCK_SST) begin
 		if (falling_edge(CLOCK_SST)) then
 			if (internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET = '1') then
-				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER <= (others => '0');
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER <= (others => '0'); -- the LSB of this corresponds to a pair of windows
 			elsif (internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE = '1') then
-				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER <= internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER + 1;
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER <= internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER + 1; -- the LSB of this corresponds to a pair of windows
 			end if;
-			internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2 <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f;
+			internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f_2 <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f; -- the LSB of this corresponds to a pair of windows
 		end if;
 	end process;
 	
