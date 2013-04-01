@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 326;
+	constant constant_FIRMWARE_REVISION : integer := 328;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
@@ -355,10 +355,10 @@ begin
 	                                    AsicOut_SAMPLING_TIMING_MONITOR_C2_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "10" else 
 	                                    AsicOut_SAMPLING_TIMING_MONITOR_C3_R when internal_MON_HEADER2_MONTIMING_COL_SELECT = "11" else
 	                                    "XXXX";
-	internal_MON_HEADER2_MONTIMING   <= internal_MON_HEADER_MONTIMING_R(0) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "00" else 
-	                                    internal_MON_HEADER_MONTIMING_R(1) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "01" else 
-	                                    internal_MON_HEADER_MONTIMING_R(2) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "10" else 
-	                                    internal_MON_HEADER_MONTIMING_R(3) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "11" else 
+	internal_MON_HEADER2_MONTIMING   <= internal_MON_HEADER2_MONTIMING_R(0) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "00" else 
+	                                    internal_MON_HEADER2_MONTIMING_R(1) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "01" else 
+	                                    internal_MON_HEADER2_MONTIMING_R(2) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "10" else 
+	                                    internal_MON_HEADER2_MONTIMING_R(3) when internal_MON_HEADER2_MONTIMING_ROW_SELECT = "11" else 
 	                                    'X';
 	--Likewise for RCOSSX signals
 	internal_MON_HEADER_RCOSSX_R <= AsicOut_SAMPLING_TIMING_OUTPUT_SIGNAL_C0_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "00" else 
