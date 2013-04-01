@@ -310,7 +310,8 @@ begin
 	--             DIGITIZATION AND READOUT                            --
 	---------------------------------------------------------------------
 	--Scrambling of address space to match what IRS3B expects
-	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3) & internal_STORAGE_TO_WILK_ADDRESS(2);
+--	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3) & internal_STORAGE_TO_WILK_ADDRESS(2);
+	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(2) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3); --KN 2013-03-31 Trying to account for results of forced WR_ADDR scan.
 	--Luca's new serial interface to the IRS3B "read" address
 	inst_update_read_addr : entity work.update_read_addr 
 	port map(

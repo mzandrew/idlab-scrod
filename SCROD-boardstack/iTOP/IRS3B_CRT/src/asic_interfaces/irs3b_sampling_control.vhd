@@ -180,25 +180,25 @@ begin
 	--Counter for incrementing the analog storage window 
 	process(CLOCK_SST) begin
 		if falling_edge(CLOCK_SST) then
-			if (internal_CONTINUE_WRITING = '1') then
+--			if (internal_CONTINUE_WRITING = '1') then  --Kurtis removing this to try to handle sync issues
 				if (unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f & '1') < unsigned(LAST_ADDRESS_ALLOWED)) then
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f + 1; -- the LSB of this corresponds to a pair of windows
 				else
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_f <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1)); -- the LSB of this corresponds to a pair of windows
 				end if;
-			end if;
+--			end if;
 		end if;
 	end process;
 
 	process(CLOCK_SST) begin
 		if rising_edge(CLOCK_SST) then
-			if (internal_CONTINUE_WRITING = '1') then
+--			if (internal_CONTINUE_WRITING = '1') then  --Kurtis removing this to try to handle sync issues
 				if (unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r & '1') < unsigned(LAST_ADDRESS_ALLOWED)) then
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r + 1; -- the LSB of this corresponds to a pair of windows
 				else
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1)); -- the LSB of this corresponds to a pair of windows
 				end if;
-			end if;
+--			end if;
 			internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r_2 <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS_r; -- the LSB of this corresponds to a pair of windows
 		end if;
 	end process;
