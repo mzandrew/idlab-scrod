@@ -34,8 +34,7 @@ entity irs3b_sampling_digitizing_readout is
 		SET_EVENT_NUMBER                      : in  STD_LOGIC;
 		EVENT_NUMBER                          : out STD_LOGIC_VECTOR(31 downto 0);
 		DO_SAMPLING_SYNC                      : in  STD_LOGIC;
-		CHOOSE_SAMPLING_PHASE                 : in  STD_LOGIC_VECTOR(1 downto 0);
-		SAMPLING_TO_STORAGE_LSB_PHASE         : in  STD_LOGIC;
+		CHOOSE_SAMPLING_PHASE                 : in  STD_LOGIC_VECTOR(2 downto 0);
 		--Masks to force a readout and prohibit a readout
 		FORCE_CHANNEL_MASK                    : in  STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
 		IGNORE_CHANNEL_MASK                   : in  STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
@@ -252,7 +251,6 @@ begin
 		FIRST_ADDRESS_ALLOWED                     => FIRST_ALLOWED_WINDOW,
 		LAST_ADDRESS_ALLOWED                      => LAST_ALLOWED_WINDOW,
 		SAMPLING_TO_STORAGE_ADDRESS_LSB           => internal_SAMPLING_TO_STORAGE_ADDRESS(0),
-		LSB_PHASE                                 => SAMPLING_TO_STORAGE_LSB_PHASE,
 		WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER      => WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER,
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB => internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1),
 		AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE => ASIC_SAMPLING_TO_STORAGE_ENABLE,
@@ -311,7 +309,7 @@ begin
 	---------------------------------------------------------------------
 	--Scrambling of address space to match what IRS3B expects
 --	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3) & internal_STORAGE_TO_WILK_ADDRESS(2);
-	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(2) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(3); --KN 2013-03-31 Trying to account for results of forced WR_ADDR scan.
+	internal_SCRAMBLED_STORAGE_TO_WILK_ADDRESS <= internal_STORAGE_TO_WILK_ADDRESS(8 downto 4) & internal_STORAGE_TO_WILK_ADDRESS(2) & internal_STORAGE_TO_WILK_ADDRESS(1) & internal_STORAGE_TO_WILK_ADDRESS(0) & internal_STORAGE_TO_WILK_ADDRESS(3); --KN 2013-04-01 Trying a new version based on test results from Fuji...
 	--Luca's new serial interface to the IRS3B "read" address
 	inst_update_read_addr : entity work.update_read_addr 
 	port map(
