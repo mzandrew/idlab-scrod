@@ -235,7 +235,8 @@ begin
 	--             SAMPLING                                            --
 	---------------------------------------------------------------------	
 	--Scramble the address to match internal IRS3B expectations
-	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 4) & internal_SAMPLING_TO_STORAGE_ADDRESS(2 downto 1) & internal_SAMPLING_TO_STORAGE_ADDRESS(3);
+--	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 4) & internal_SAMPLING_TO_STORAGE_ADDRESS(2 downto 1) & internal_SAMPLING_TO_STORAGE_ADDRESS(3);
+	ASIC_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 4) & internal_SAMPLING_TO_STORAGE_ADDRESS(1) & internal_SAMPLING_TO_STORAGE_ADDRESS(3 downto 2);
 	--
 	map_sampling_control : entity work.irs3b_sampling_control
 	port map(
