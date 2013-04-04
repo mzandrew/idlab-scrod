@@ -123,10 +123,10 @@ architecture Behavioral of readout_interface is
 	signal internal_WAVEFORM_FIFO_WRITE_ENABLE : std_logic;
 	signal internal_WAVEFORM_FIFO_DATA_IN      : std_logic_vector(31 downto 0);
 	
---	--Chipscope debugging crap
---	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
---	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
---	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);	
+	--Chipscope debugging crap
+	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
+	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);	
 	
 begin
 	OUTPUT_REGISTERS <= internal_GPR;
@@ -391,33 +391,37 @@ begin
 		FIBER_1_LINK_ERR            => FIBER_1_LINK_ERR
 	);
 	
---	--DEBUGGING SHIT
---	map_ILA : entity work.s6_ila
---	port map (
---		CONTROL => internal_CHIPSCOPE_CONTROL,
---		CLK     => internal_PB_CLOCK,
---		TRIG0   => internal_CHIPSCOPE_ILA_REG
---	);
---	map_ICON : entity work.s6_icon
---	port map (
---		CONTROL0 => internal_CHIPSCOPE_CONTROL
---	);
---	
---	--Workaround for CS/picoblaze stupidness
---	process(internal_PB_CLOCK) begin
---		if (rising_edge(internal_PB_CLOCK)) then
---			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
---		end if;
---	end process;
---	
---	internal_CHIPSCOPE_ILA(0) <= internal_SELECT_WAVEFORM_DATA;                     
---	internal_CHIPSCOPE_ILA(32 downto  1) <= internal_WAVEFORM_FIFO_DATA_IN;                     
---	internal_CHIPSCOPE_ILA(64 downto 33) <= internal_EVT_OUT_FIFO_DATA;                      
---	internal_CHIPSCOPE_ILA(65) <= internal_EVT_OUT_FIFO_WRITE_ENABLE;                
---	internal_CHIPSCOPE_ILA(66) <= internal_WAVEFORM_FIFO_WRITE_ENABLE;                      
---	internal_CHIPSCOPE_ILA(67) <= internal_CI_FIFO_WRITE_ENABLE;                   
---	internal_CHIPSCOPE_ILA(68) <= not(WAVEFORM_FIFO_EMPTY) and not(internal_EVT_OUT_FIFO_FULL) and internal_SELECT_WAVEFORM_DATA;
---	internal_CHIPSCOPE_ILA(69) <= WAVEFORM_FIFO_DATA_VALID;
+	--DEBUGGING SHIT
+	map_ILA : entity work.s6_ila
+	port map (
+		CONTROL => internal_CHIPSCOPE_CONTROL,
+		CLK     => internal_PB_CLOCK,
+		TRIG0   => internal_CHIPSCOPE_ILA_REG
+	);
+	map_ICON : entity work.s6_icon
+	port map (
+		CONTROL0 => internal_CHIPSCOPE_CONTROL
+	);
+	
+	--Workaround for CS/picoblaze stupidness
+	process(internal_PB_CLOCK) begin
+		if (rising_edge(internal_PB_CLOCK)) then
+			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
+		end if;
+	end process;
+	
+	internal_CHIPSCOPE_ILA(0) <= internal_SELECT_WAVEFORM_DATA;                     
+	internal_CHIPSCOPE_ILA(32 downto  1) <= internal_WAVEFORM_FIFO_DATA_IN;                     
+	internal_CHIPSCOPE_ILA(64 downto 33) <= internal_EVT_OUT_FIFO_DATA;                      
+	internal_CHIPSCOPE_ILA(65) <= internal_EVT_OUT_FIFO_WRITE_ENABLE;                
+	internal_CHIPSCOPE_ILA(66) <= internal_WAVEFORM_FIFO_WRITE_ENABLE;                      
+	internal_CHIPSCOPE_ILA(67) <= internal_CI_FIFO_WRITE_ENABLE;                   
+	internal_CHIPSCOPE_ILA(68) <= not(WAVEFORM_FIFO_EMPTY) and not(internal_EVT_OUT_FIFO_FULL) and internal_SELECT_WAVEFORM_DATA;
+	internal_CHIPSCOPE_ILA(69) <= WAVEFORM_FIFO_DATA_VALID;
+	internal_CHIPSCOPE_ILA(70) <= internal_EVT_OUT_FIFO_FULL;
+	internal_CHIPSCOPE_ILA(71) <= WAVEFORM_FIFO_EMPTY;
+	internal_CHIPSCOPE_ILA(72) <= internal_EVT_OUT_FIFO_WRITE_ENABLE;
+
 	
 end Behavioral;
 

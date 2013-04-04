@@ -293,7 +293,7 @@ begin
 
 	
 	--Instantiate the OUTPUT FIFOs
-	map_output_fifo_0 : entity work.FIFO_OUT_0 --(Depth is 512 32-bit words)
+	map_output_fifo_0 : entity work.FIFO_OUT_0 --(Depth is 1024 32-bit words)
 	PORT MAP (
 		rst    => '0',
 		wr_clk => FIFO_OUT_0_WR_CLK,
@@ -303,7 +303,8 @@ begin
 		rd_en  => internal_FIFO_OUT_0_READ_ENABLE,
 		dout   => internal_FIFO_OUT_0_READ_DATA,
 		full   => open,
-		almost_full => internal_FIFO_OUT_0_FULL,
+		almost_full => open,
+		prog_full   => internal_FIFO_OUT_0_FULL,
 		empty  => internal_FIFO_OUT_0_EMPTY,
 		valid  => internal_FIFO_OUT_0_VALID
 	);
