@@ -290,14 +290,16 @@ begin
 --						DAC_VALUE       => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row),
 --						STARTING_VALUE  => STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)
 --					);
-				map_simple_feedback : entity work.feedback_RCO
+				map_rco_feedback : entity work.feedback_RCO
 					port map(
-						clk         => CLOCK,
-						num_T       => internal_RAW_WILKINSON_COUNTERS_C_R(col)(row),
-						desirednumT => FEEDBACK_WILKINSON_GOALS_C_R(col)(row),     
-						newnumT     => internal_COUNT_READ_ENABLES(col)(row),
-						update      => open,
-						forcedVadjN => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row)
+						clk             => CLOCK,
+						num_T           => internal_RAW_WILKINSON_COUNTERS_C_R(col)(row),
+						desirednumT     => FEEDBACK_WILKINSON_GOALS_C_R(col)(row),     
+						newnumT         => internal_COUNT_READ_ENABLES(col)(row),
+						enable_feedback => FEEDBACK_WILKINSON_ENABLES_C_R(col)(row),
+						startingVadjN   => STARTING_WILKINSON_DAC_VALUES_C_R(col)(row),
+						update          => open,
+						forcedVadjN     => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row)
 					);
 			end generate;
 		end generate;	

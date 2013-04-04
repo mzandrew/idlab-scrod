@@ -113,9 +113,9 @@ architecture Behavioral of irs2_roi_parser is
 	signal internal_TRIGGER_MEMORY_READ_ADDRESS_TOO_LOW   : signed(ANALOG_MEMORY_ADDRESS_BITS-1+2 downto 0);
 	signal internal_OUTSIDE_OF_RANGE                      : std_logic_vector(1 downto 0);
 	
---	-- Chipscope debugging signals
---	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
---	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
+	-- Chipscope debugging signals
+	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
+	signal internal_CHIPSCOPE_ILA     : std_logic_vector(127 downto 0);
 	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
 	
 	signal state_debug :  STD_LOGIC_VECTOR(3 downto 0);
@@ -177,7 +177,11 @@ begin
 				internal_SEGMENT_COUNTER_RESET  <= '1';
 			when WRITE_WINDOWS      =>
 				state_debug <= "0110";
-				internal_SEGMENT_COUNTER_ENABLE             <= '1';
+				if (internal_THIS_TRIGGER_BIT_FORCED = '1') then
+					internal_SEGMENT_COUNTER_ENABLE             <= '0';
+				else
+					internal_SEGMENT_COUNTER_ENABLE             <= '1';
+				end if;
 				internal_NEXT_WINDOW_FIFO_WRITE_ENABLE      <= '1';
 				internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
 			when INCREMENT_CHANNEL  =>
@@ -246,7 +250,7 @@ begin
 				else
 					internal_ROI_NEXT_STATE <= INCREMENT_CHANNEL;
 				end if;
-			when WRITE_WINDOWS     =>
+			when WRITE_WINDOWS =>
 				if ( internal_THIS_TRIGGER_BIT_FORCED = '1' ) then
 					internal_ROI_NEXT_STATE <= INCREMENT_CHANNEL;
 				elsif ( internal_SEGMENT_COUNTER < constant_NWINDOWS_PER_TRIGGER-1 ) then
@@ -484,43 +488,43 @@ begin
 		valid  => open
 	);
 	
---	--DEBUGGING CRAP
---	map_ILA : entity work.s6_ila
---	port map (
---		CONTROL => internal_CHIPSCOPE_CONTROL,
---		CLK     => CLOCK,
---		TRIG0   => internal_CHIPSCOPE_ILA_REG
---	);
---	map_ICON : entity work.s6_icon
---	port map (
---		CONTROL0 => internal_CHIPSCOPE_CONTROL
---	);
---	
---	--Workaround for CS/picoblaze stupidness
---	process(CLOCK) begin
---		if (rising_edge(CLOCK)) then
---			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
---		end if;
---	end process;
---	
---	internal_CHIPSCOPE_ILA( 9 downto  0) <= internal_TRIGGER_MEMORY_READ_ADDRESS_RAW;
---	internal_CHIPSCOPE_ILA(17 downto 10) <= internal_TRIGGER_MEMORY_WORD(7 downto 0);
---	internal_CHIPSCOPE_ILA(18) <= internal_CHANNEL_COUNTER_RESET;                     
---	internal_CHIPSCOPE_ILA(19) <= internal_CHANNEL_COUNTER_ENABLE;                      
---	internal_CHIPSCOPE_ILA(26 downto 20) <= std_logic_vector(internal_CHANNEL_COUNTER);
---	internal_CHIPSCOPE_ILA(27) <= BEGIN_PARSING_FOR_WINDOWS;
---	internal_CHIPSCOPE_ILA(28) <= MAKE_READY_FOR_NEXT_EVENT;
---	internal_CHIPSCOPE_ILA(29) <= VETO_NEW_EVENTS;
---	internal_CHIPSCOPE_ILA(30) <= internal_DONE_BUILDING_WINDOW_LIST;
---	internal_CHIPSCOPE_ILA(31) <= internal_READY_FOR_TRIGGER;
---	internal_CHIPSCOPE_ILA(47 downto 32) <= internal_NEXT_WINDOW_FIFO_WRITE_DATA;
---	internal_CHIPSCOPE_ILA(48) <= internal_NEXT_WINDOW_FIFO_WRITE_ENABLE;
---	internal_CHIPSCOPE_ILA(58 downto 49) <= std_logic_vector(internal_ENDING_WINDOW_REG);
---	internal_CHIPSCOPE_ILA(59) <= internal_CURRENT_WINDOW_INITIALIZE;
---	internal_CHIPSCOPE_ILA(60) <= internal_CURRENT_WINDOW_COUNT_ENABLE;
---	internal_CHIPSCOPE_ILA(70 downto 61) <= std_logic_vector(internal_CURRENT_WINDOW);
---	internal_CHIPSCOPE_ILA(79 downto 71) <= LAST_WINDOW_SAMPLED;
---	internal_CHIPSCOPE_ILA(89 downto 80) <= internal_TRIGGER_MEMORY_READ_ADDRESS_ADJ;
+	--DEBUGGING CRAP
+	map_ILA : entity work.s6_ila
+	port map (
+		CONTROL => internal_CHIPSCOPE_CONTROL,
+		CLK     => CLOCK,
+		TRIG0   => internal_CHIPSCOPE_ILA_REG
+	);
+	map_ICON : entity work.s6_icon
+	port map (
+		CONTROL0 => internal_CHIPSCOPE_CONTROL
+	);
+	
+	--Workaround for CS/picoblaze stupidness
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			internal_CHIPSCOPE_ILA_REG <= internal_CHIPSCOPE_ILA;
+		end if;
+	end process;
+	
+	internal_CHIPSCOPE_ILA( 9 downto  0) <= '0' & internal_TRIGGER_MEMORY_READ_ADDRESS_RAW;
+	internal_CHIPSCOPE_ILA(17 downto 10) <= internal_TRIGGER_MEMORY_WORD(7 downto 0);
+	internal_CHIPSCOPE_ILA(18) <= internal_CHANNEL_COUNTER_RESET;                     
+	internal_CHIPSCOPE_ILA(19) <= internal_CHANNEL_COUNTER_ENABLE;                      
+	internal_CHIPSCOPE_ILA(26 downto 20) <= std_logic_vector(internal_CHANNEL_COUNTER);
+	internal_CHIPSCOPE_ILA(27) <= BEGIN_PARSING_FOR_WINDOWS;
+	internal_CHIPSCOPE_ILA(28) <= MAKE_READY_FOR_NEXT_EVENT;
+	internal_CHIPSCOPE_ILA(29) <= VETO_NEW_EVENTS;
+	internal_CHIPSCOPE_ILA(30) <= internal_DONE_BUILDING_WINDOW_LIST;
+	internal_CHIPSCOPE_ILA(31) <= internal_READY_FOR_TRIGGER;
+	internal_CHIPSCOPE_ILA(47 downto 32) <= internal_NEXT_WINDOW_FIFO_WRITE_DATA;
+	internal_CHIPSCOPE_ILA(48) <= internal_NEXT_WINDOW_FIFO_WRITE_ENABLE;
+	internal_CHIPSCOPE_ILA(58 downto 49) <= '0' & std_logic_vector(internal_ENDING_WINDOW_REG);
+	internal_CHIPSCOPE_ILA(59) <= internal_CURRENT_WINDOW_INITIALIZE;
+	internal_CHIPSCOPE_ILA(60) <= internal_CURRENT_WINDOW_COUNT_ENABLE;
+	internal_CHIPSCOPE_ILA(70 downto 61) <= '0' & std_logic_vector(internal_CURRENT_WINDOW);
+	internal_CHIPSCOPE_ILA(79 downto 71) <= LAST_WINDOW_SAMPLED;
+	internal_CHIPSCOPE_ILA(89 downto 80) <= '0' & internal_TRIGGER_MEMORY_READ_ADDRESS_ADJ;
 
 --	internal_CHIPSCOPE_ILA(6 downto 0) <= std_logic_vector(internal_CHANNEL_COUNTER);
 --	internal_CHIPSCOPE_ILA(7) <= BEGIN_PARSING_FOR_WINDOWS;
@@ -529,9 +533,9 @@ begin
 --	internal_CHIPSCOPE_ILA(10) <= internal_READY_FOR_TRIGGER;
 --	internal_CHIPSCOPE_ILA(26 downto 11) <= internal_NEXT_WINDOW_FIFO_WRITE_DATA;
 --	internal_CHIPSCOPE_ILA(27) <= internal_NEXT_WINDOW_FIFO_WRITE_ENABLE;
---	internal_CHIPSCOPE_ILA(37 downto 28) <= std_logic_vector(internal_CURRENT_WINDOW);
+--	internal_CHIPSCOPE_ILA(37 downto 28) <= '0' & std_logic_vector(internal_CURRENT_WINDOW);
 --	internal_CHIPSCOPE_ILA(41 downto 38) <=state_debug;
---
---	debug_roi_parser <= internal_CHIPSCOPE_ILA_REG(41 downto 0);
+
+	debug_roi_parser <= internal_CHIPSCOPE_ILA_REG(41 downto 0);
 	
 end Behavioral;

@@ -65,6 +65,14 @@ end feedback_and_monitoring;
 architecture Behavioral of feedback_and_monitoring is 
 
 begin
+	--Unused for now... wiring to zero to avoid warnings
+	gen_vadjp_dummy_col : for col in 0 to 3 generate
+		gen_vadjp_dummy_row : for row in 0 to 3 generate
+			FEEDBACK_SAMPLING_RATE_VADJP_C_R(col)(row) <= (others => '0');
+		end generate;
+	end generate;
+	--
+
 	map_wilkinson_monitoring : entity work.wilkinson_monitoring 
 	generic map (
 		USE_SIMPLE_FEEDBACK   => 0,
