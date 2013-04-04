@@ -34,13 +34,12 @@ entity irs3b_sampling_control is
 end irs3b_sampling_control;
 
 architecture Behavioral of irs3b_sampling_control is
-	type sampling_state is (NORMAL_SAMPLING, POST_TRIGGER_SAMPLING, DONE);
+	type sampling_state is (NORMAL_SAMPLING, POST_TRIGGER_SAMPLING, LATCH_LAST_WINDOW, DONE);
 	signal internal_SAMPLING_STATE                            : sampling_state := NORMAL_SAMPLING;
 	signal internal_NEXT_SAMPLING_STATE                       : sampling_state := NORMAL_SAMPLING;
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER        : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0'); -- the LSB of this corresponds to a pair of windows
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE : std_logic := '0';
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET  : std_logic := '0';	
-	signal internal_CONTINUE_WRITING                          : std_logic := '0';
 
 	type sync_state is (IDLE, SEARCHING, FOUND, DONE);
 	signal internal_SYNC_STATE_RISING       : sync_state;
@@ -77,7 +76,7 @@ begin
 	process(CLOCK_SST) begin
 		if (falling_edge(CLOCK_SST)) then
 			if (internal_LATCH_LAST_WINDOW = '1') then
-				LAST_WINDOW_SAMPLED <= internal_SAMPLING_TO_STORAGE_ADDRESS;
+				LAST_WINDOW_SAMPLED <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1) & '1';
 			end if;
 		end if;
 	end process;
@@ -86,27 +85,31 @@ begin
 	process(internal_SAMPLING_STATE) begin
 		case internal_SAMPLING_STATE is
 			when NORMAL_SAMPLING =>
-				state_debug <= "01";
+				state_debug <= "00";
 				CURRENTLY_WRITING <= '1';
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
-				internal_CONTINUE_WRITING <= '1';
 				internal_LATCH_LAST_WINDOW <= '0';
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '1'; --LM added, otherwise never active
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '0'; --LM added, otherwise never active
 			when POST_TRIGGER_SAMPLING =>
-				state_debug <= "10";
+				state_debug <= "01";
 				CURRENTLY_WRITING <= '1';
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
 				internal_LATCH_LAST_WINDOW <= '0';
-				internal_CONTINUE_WRITING <= '1';
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '0'; --LM added, otherwise never active
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '1'; --LM added, otherwise never active
+			when LATCH_LAST_WINDOW =>
+				state_debug <= "10";
+				CURRENTLY_WRITING <= '1';
+				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
+				internal_LATCH_LAST_WINDOW <= '1';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '0'; --LM added, otherwise never active
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '0'; --LM added, otherwise never active				
 			when DONE =>
 				state_debug <= "11";
 				CURRENTLY_WRITING <= '0';
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';
-				internal_LATCH_LAST_WINDOW <= '1';
-				internal_CONTINUE_WRITING <= '0';
+				internal_LATCH_LAST_WINDOW <= '0';
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '0'; --LM added, otherwise never active
 				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '0'; --LM added, otherwise never active
 		end case;
@@ -124,8 +127,10 @@ begin
 				if (internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER < unsigned(WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER)) then
 					internal_NEXT_SAMPLING_STATE <= POST_TRIGGER_SAMPLING;
 				else
-					internal_NEXT_SAMPLING_STATE <= DONE;
+					internal_NEXT_SAMPLING_STATE <= LATCH_LAST_WINDOW;
 				end if;
+			when LATCH_LAST_WINDOW =>
+				internal_NEXT_SAMPLING_STATE <= DONE;
 			when DONE =>
 				if (RESUME_WRITING = '1') then
 					internal_NEXT_SAMPLING_STATE <= NORMAL_SAMPLING;

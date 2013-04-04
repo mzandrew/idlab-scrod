@@ -38,6 +38,8 @@ num_T : in std_logic_vector(15 downto 0);
 desirednumT : in std_logic_vector(15 downto 0);
 newnumT : in std_logic;
 update : out std_logic;
+enable_feedback : in std_logic;
+startingVadjN : in std_logic_vector(11 downto 0);
 forcedVadjN: out  std_logic_vector(11 downto 0));
 end Feedback_RCO;
 
@@ -52,15 +54,19 @@ begin
 process(clk)
 begin
 if(rising_edge(clk)) then
-	update <='0';
-	if(newnumT = '1') then
-		if cnt_update < 1000 then
-			cnt_update <= cnt_update +1;
-		else
-			cnt_update <= (others => '0');
-			update <='1';
-			if num_T + 10 < desirednumT  then int_VadjN <= int_VadjN - 1;
-			elsif (num_T > desirednumT + 10) then int_VadjN <= int_VadjN + 1;
+	if (enable_feedback = '0') then
+		int_VadjN <= startingVadjN;
+	else
+		update <='0';
+		if(newnumT = '1') then
+			if cnt_update < 1000 then
+				cnt_update <= cnt_update +1;
+			else
+				cnt_update <= (others => '0');
+				update <='1';
+				if num_T + 10 < desirednumT  then int_VadjN <= int_VadjN - 1;
+				elsif (num_T > desirednumT + 10) then int_VadjN <= int_VadjN + 1;
+				end if;
 			end if;
 		end if;
 	end if;
