@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 333;
+	constant constant_FIRMWARE_REVISION : integer := 334;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
@@ -163,7 +163,8 @@ entity scrod_top is
 		---------------------------------------------
 		--------------MONITOR HEADER PINS------------
 		---------------------------------------------
-		MON                         : out std_logic_vector(2 downto 0)
+		MON                         : out std_logic_vector(2 downto 0);
+		SPARE                       : out std_logic
 				
 	);
 end scrod_top;
@@ -318,6 +319,7 @@ begin
 	--Monitor pins 
 	--The first monitor pin is truly dedicated monitoring
 	MON(0) <= internal_MON_HEADER_MONTIMING_RCO;
+	SPARE <= internal_CAL_PULSE;
 	--The second two form an LVDS pair that goes to CAL_EDGE_P/N
 	map_cal_mon_pair : OBUFDS port map(I => internal_MON2_OR_CAL_SIGNAL, O => MON(1), OB => MON(2));
 --	MON(2) <= internal_SST_MON;  --Unfortunately this can't be mapped out easily anymore since it's from a clock buffer and can't be muxed with others signals.

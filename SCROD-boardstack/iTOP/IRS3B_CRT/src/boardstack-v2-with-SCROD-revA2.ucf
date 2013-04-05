@@ -461,7 +461,7 @@ NET RJ45_RSV_N LOC = af15 | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_CLK_P LOC = ae13 | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_CLK_N LOC = af13 | IOSTANDARD = LVDS_25 | diff_term=true;
 
-#NET SPARE LOC = R25;
+NET SPARE LOC = R25;
 
 ########################################################
 
