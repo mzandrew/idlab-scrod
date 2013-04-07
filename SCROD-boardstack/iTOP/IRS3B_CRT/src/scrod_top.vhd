@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 334;
+	constant constant_FIRMWARE_REVISION : integer := 335;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
@@ -314,12 +314,15 @@ architecture Behavioral of scrod_top is
 	signal internal_MON2_OR_CAL_SIGNAL : std_logic;
 	signal internal_CAL_PULSE          : std_logic;
 	signal internal_MON2_OR_CAL_SELECT : std_logic;
+	signal internal_MON0_ENABLE        : std_logic;
 
 begin 
 	--Monitor pins 
 	--The first monitor pin is truly dedicated monitoring
-	MON(0) <= internal_MON_HEADER_MONTIMING_RCO;
-	SPARE <= internal_CAL_PULSE;
+	MON(0) <= internal_MON_HEADER_MONTIMING_RCO when internal_MON0_ENABLE = '1' else
+					'0' when internal_MON0_ENABLE = '0' else
+					'X';
+	SPARE <= internal_MON2_OR_CAL_SIGNAL;
 	--The second two form an LVDS pair that goes to CAL_EDGE_P/N
 	map_cal_mon_pair : OBUFDS port map(I => internal_MON2_OR_CAL_SIGNAL, O => MON(1), OB => MON(2));
 --	MON(2) <= internal_SST_MON;  --Unfortunately this can't be mapped out easily anymore since it's from a clock buffer and can't be muxed with others signals.
@@ -843,6 +846,7 @@ begin
 	internal_MON_HEADER_MONTIMING_ROW_SELECT  <= internal_OUTPUT_REGISTERS(380)(1 downto 0);   -- bits  1: 0 choose row for MONTIMING signal appearing on mon header
 	internal_MON_HEADER_MONTIMING_COL_SELECT  <= internal_OUTPUT_REGISTERS(380)(3 downto 2);   -- bits  3: 2 choose col for MONTIMING  ""
 	internal_MON_HEADER_MONTIMING_SEL         <= internal_OUTPUT_REGISTERS(380)(4);            -- bit      4 choose between RCO_SSX or MONTIMING for monitor header
+	internal_MON0_ENABLE                      <= internal_OUTPUT_REGISTERS(380)(6);            -- bit      6 '0' to turn off MON0 output (lowers EMI)
 	internal_MON2_OR_CAL_SELECT               <= internal_OUTPUT_REGISTERS(380)(7);            -- bit      7 choose between MON_HEADER2 signal ('0') or CAL_PULSE ('1')
 	internal_MON_HEADER2_MONTIMING_ROW_SELECT <= internal_OUTPUT_REGISTERS(380)( 9  downto 8); -- bits  9: 8 choose row for MONTIMING signal appearing on mon header
 	internal_MON_HEADER2_MONTIMING_COL_SELECT <= internal_OUTPUT_REGISTERS(380)(11 downto 10); -- bits 11:10 choose col for MONTIMING  ""
