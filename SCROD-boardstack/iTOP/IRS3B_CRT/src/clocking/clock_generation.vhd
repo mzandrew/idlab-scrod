@@ -33,6 +33,7 @@ entity clock_generation is
 		CLOCK_SST_BUFG   : out STD_LOGIC;
 		--Monitor to check PLL stability 
 		SECONDS_SST_PLL_LOCKED   : out std_logic_vector(15 downto 0);
+		SECONDS_FTSW_LOCKED      : out std_logic_vector(15 downto 0);
 		--ASIC output clocks (sent through ODDR2)
 		ASIC_SST                 : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
 		ASIC_SST_MON             : out STD_LOGIC;
@@ -63,6 +64,7 @@ architecture Behavioral of clock_generation is
 	--
 	signal internal_PLL_COUNTER_ENABLE  : std_logic;
 	signal internal_PLL_LOCKED_COUNTER  : unsigned(15 downto 0) := (others => '0');
+	signal internal_FTSW_LOCKED_COUNTER : unsigned(15 downto 0) := (others => '0');
 	signal internal_PLL_LOCKED          : std_logic;
 begin
 	--Simple mappings from internals to output ports
@@ -214,7 +216,7 @@ begin
 		CLOCK_IN         => internal_BOARD_CLOCK,
 		CLOCK_ENABLE_OUT => internal_PLL_COUNTER_ENABLE
 	);
-	process(internal_BOARD_CLOCK) begin
+	process(internal_BOARD_CLOCK, internal_PLL_LOCKED) begin
 		if (internal_PLL_LOCKED = '0') then
 			internal_PLL_LOCKED_COUNTER <= (others => '0');
 		elsif (rising_edge(internal_BOARD_CLOCK) and internal_PLL_COUNTER_ENABLE = '1') then
@@ -224,6 +226,21 @@ begin
 		end if;
 	end process;
 	
+	----------------------------------------------------------------------
+	--CE and COUNTER to monitor how many seconds SST PLL has been locked--
+	-- uses the same CE as the above PLL stable monitor                 --
+	----------------------------------------------------------------------
+	SECONDS_FTSW_LOCKED <= std_logic_vector(internal_FTSW_LOCKED_COUNTER);	
+	process(internal_BOARD_CLOCK, internal_FTSW_INTERFACE_STABLE) begin
+		if (internal_FTSW_INTERFACE_STABLE = '0') then
+			internal_FTSW_LOCKED_COUNTER <= (others => '0');
+		elsif (rising_edge(internal_BOARD_CLOCK) and internal_PLL_COUNTER_ENABLE = '1') then
+			if (internal_FTSW_LOCKED_COUNTER /= x"FFFF") then
+				internal_FTSW_LOCKED_COUNTER <= internal_FTSW_LOCKED_COUNTER + 1;
+			end if;
+		end if;
+	end process;
+
 	
 	------------------------------------------------------------
 	--Map out the ASIC control signals that are on clock nets --
