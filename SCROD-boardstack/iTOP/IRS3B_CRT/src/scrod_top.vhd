@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 335;
+	constant constant_FIRMWARE_REVISION : integer := 336;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
@@ -177,6 +177,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CLOCK_SST_BUFG   : std_logic;
 	signal internal_CLOCK_ENABLE_I2C : std_logic;
 	signal internal_SECONDS_SST_PLL_LOCKED : std_logic_vector(15 downto 0);
+	signal internal_SECONDS_FTSW_LOCKED    : std_logic_vector(15 downto 0);
 	--Connections to the I2C interfaces
 	signal internal_I2C_WRITE_REGISTERS : i2c_rw_registers;
 	signal internal_I2C_READ_REGISTERS  : i2c_rw_registers;
@@ -407,6 +408,7 @@ begin
 		CLOCK_SST_BUFG         => internal_CLOCK_SST_BUFG,
 		--Check SST PLL stability
 		SECONDS_SST_PLL_LOCKED => internal_SECONDS_SST_PLL_LOCKED,
+		SECONDS_FTSW_LOCKED    => internal_SECONDS_FTSW_LOCKED,
 		--ASIC output clocks
 		ASIC_SST               => AsicIn_SAMPLING_HOLD_MODE_C,
 		ASIC_SST_MON           => internal_SST_MON,
@@ -955,5 +957,6 @@ begin
 		end generate;
 	end generate;
 
+	internal_INPUT_REGISTERS(N_GPR + 132) <= internal_SECONDS_FTSW_LOCKED;     --Register 644: Number of seconds that FTSW_STABLE has been high.
 
 end Behavioral;

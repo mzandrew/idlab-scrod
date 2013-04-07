@@ -22,6 +22,8 @@ TIMESPEC TS_I2C_ENABLES = FROM "I2C_ENABLES" TO "I2C_ENABLES" TS_BOARD_CLOCK*40;
 NET "map_clock_generation/internal_PLL_LOCKED_COUNTER*" TIG;
 #Another similar to the above for checking FTSW stability
 NET "map_clock_generation/internal_FTSW_STABLE_COUNTER*" TIG;
+#Yet another for a similar FTSW counter that's brought out to the top level
+NET "map_clock_generation/internal_FTSW_LOCKED_COUNTER*" TIG;
 #Registers are slow control... we can accept some timing glitches immediately after writing one.
 NET "internal_OUTPUT_REGISTERS*" TIG;
 #Path from LAST_WINDOW_SAMPLED from sampler to digitizer has a very long delay in between
