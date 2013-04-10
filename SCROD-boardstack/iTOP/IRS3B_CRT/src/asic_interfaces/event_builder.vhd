@@ -84,7 +84,7 @@ begin
 		end case;
 	end process;
 	--Next state logic
-	process(internal_EVENT_BUILDER_STATE, internal_START, FIFO_READ_ENABLE, internal_PACKET_COUNTER, WAVEFORM_FIFO_EMPTY, internal_EVENT_HEADER_DATA_VALID) begin
+	process(internal_EVENT_BUILDER_STATE, internal_START, FIFO_READ_ENABLE, internal_PACKET_COUNTER, WAVEFORM_FIFO_EMPTY, internal_EVENT_HEADER_DATA_VALID, MAKE_READY) begin
 		case internal_EVENT_BUILDER_STATE is
 			when IDLE =>
 				if (internal_START = '1') then

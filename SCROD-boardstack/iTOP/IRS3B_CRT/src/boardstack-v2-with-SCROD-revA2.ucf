@@ -20,6 +20,7 @@ TIMESPEC TS_I2C_ENABLES = FROM "I2C_ENABLES" TO "I2C_ENABLES" TS_BOARD_CLOCK*40;
 #The PLL locked counter runs off of a local board-related, but is read off of the system clock, which may be distributed.
 #It only changes once per second... ignoring this as a timing constraint.
 NET "map_clock_generation/internal_PLL_LOCKED_COUNTER*" TIG;
+NET "map_clock_generation/map_pll_lock_counter_ce/internal_COUNTER_RESET" TIG;
 #Another similar to the above for checking FTSW stability
 NET "map_clock_generation/internal_FTSW_STABLE_COUNTER*" TIG;
 #Yet another for a similar FTSW counter that's brought out to the top level

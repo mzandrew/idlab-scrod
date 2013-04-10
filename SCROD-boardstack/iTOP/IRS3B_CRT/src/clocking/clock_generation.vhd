@@ -38,9 +38,7 @@ entity clock_generation is
 		ASIC_SST                 : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
 		ASIC_SST_MON             : out STD_LOGIC;
 		--Output clock enable for I2C things
-		I2C_CLOCK_ENABLE         : out STD_LOGIC;
-		--Output clock enable for ASIC DAC interface
-		ASIC_SERIAL_CLOCK_ENABLE : out STD_LOGIC
+		I2C_CLOCK_ENABLE         : out STD_LOGIC
 	);
 end clock_generation;
 
@@ -62,7 +60,7 @@ architecture Behavioral of clock_generation is
 	--
 	signal internal_CLOCK_50MHz_BUFG    : std_logic;
 	--
-	signal internal_PLL_COUNTER_ENABLE  : std_logic;
+	signal internal_LOCK_COUNTER_ENABLE : std_logic;
 	signal internal_PLL_LOCKED_COUNTER  : unsigned(15 downto 0) := (others => '0');
 	signal internal_FTSW_LOCKED_COUNTER : unsigned(15 downto 0) := (others => '0');
 	signal internal_PLL_LOCKED          : std_logic;
@@ -214,12 +212,12 @@ begin
 	)
 	port map (
 		CLOCK_IN         => internal_BOARD_CLOCK,
-		CLOCK_ENABLE_OUT => internal_PLL_COUNTER_ENABLE
+		CLOCK_ENABLE_OUT => internal_LOCK_COUNTER_ENABLE
 	);
-	process(internal_BOARD_CLOCK, internal_PLL_LOCKED) begin
+	process(internal_BOARD_CLOCK, internal_PLL_LOCKED, internal_LOCK_COUNTER_ENABLE) begin
 		if (internal_PLL_LOCKED = '0') then
 			internal_PLL_LOCKED_COUNTER <= (others => '0');
-		elsif (rising_edge(internal_BOARD_CLOCK) and internal_PLL_COUNTER_ENABLE = '1') then
+		elsif (rising_edge(internal_BOARD_CLOCK) and internal_LOCK_COUNTER_ENABLE = '1') then
 			if (internal_PLL_LOCKED_COUNTER /= x"FFFF") then
 				internal_PLL_LOCKED_COUNTER <= internal_PLL_LOCKED_COUNTER + 1;
 			end if;
@@ -231,10 +229,10 @@ begin
 	-- uses the same CE as the above PLL stable monitor                 --
 	----------------------------------------------------------------------
 	SECONDS_FTSW_LOCKED <= std_logic_vector(internal_FTSW_LOCKED_COUNTER);	
-	process(internal_BOARD_CLOCK, internal_FTSW_INTERFACE_STABLE) begin
+	process(internal_BOARD_CLOCK, internal_FTSW_INTERFACE_STABLE, internal_LOCK_COUNTER_ENABLE) begin
 		if (internal_FTSW_INTERFACE_STABLE = '0') then
 			internal_FTSW_LOCKED_COUNTER <= (others => '0');
-		elsif (rising_edge(internal_BOARD_CLOCK) and internal_PLL_COUNTER_ENABLE = '1') then
+		elsif (rising_edge(internal_BOARD_CLOCK) and internal_LOCK_COUNTER_ENABLE = '1') then
 			if (internal_FTSW_LOCKED_COUNTER /= x"FFFF") then
 				internal_FTSW_LOCKED_COUNTER <= internal_FTSW_LOCKED_COUNTER + 1;
 			end if;

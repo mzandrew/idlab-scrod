@@ -121,7 +121,7 @@ architecture Behavioral of irs3b_digitizing is
 	signal first_sample : std_logic :='1';
 
 	--Workaround since we just leave smp_sel high all the time
-	signal smpsel_done : std_logic := '1';
+	signal internal_SET_SMPL_SEL_ANY_DONE : std_logic := '1';
 
 --	--Chipscope debugging signals
 --	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
@@ -129,6 +129,7 @@ architecture Behavioral of irs3b_digitizing is
 --	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);
 
 begin
+	internal_SET_SMPL_SEL_ANY_DONE <= '1';  --We don't use this anymore.  It's set by GPIO via I2C control either by the Picoblaze or by the user.
 	--Mapping to the top level ports	
 	SAMPLE_COUNTER_RESET <= internal_SAMPLE_COUNTER_RESET;
 	NEXT_WINDOW_FIFO_READ_CLOCK         <= CLOCK;
@@ -146,7 +147,7 @@ begin
 	--LM: modification: We NEED to read all columns together, possibly here stuff gets read multiple times
 	-- at the moment 3 out of 4 bits are redundant
 --	process(internal_COL_TO_READ,internal_ROW_TO_READ) begin
-	process(CLOCK) begin
+	process(CLOCK, CLOCK_ENABLE) begin
 		if (rising_edge(CLOCK) and CLOCK_ENABLE = '1') then
 			for row in 0 to ROWS_PER_COL-1 loop
 				if   internal_ROW_TO_READ = std_logic_vector(to_unsigned(row,internal_ROW_TO_READ'length))  then
@@ -171,7 +172,7 @@ begin
 	end generate;
 
 	--State output logic
-	process(internal_DIGITIZING_STATE, NEXT_WINDOW_FIFO_EMPTY, internal_FORCE_NEXT_DIGITIZE, internal_ADDR_TO_READ, internal_LAST_ADDRESS_DIGITIZED, internal_WILKINSON_COUNTER) begin
+	process(internal_DIGITIZING_STATE, NEXT_WINDOW_FIFO_EMPTY, internal_FORCE_NEXT_DIGITIZE, internal_ADDR_TO_READ, internal_LAST_ADDRESS_DIGITIZED, internal_WILKINSON_COUNTER, CLOCK_ENABLE) begin
 		--Defaults
 		internal_CLEAR_FORCE_NEXT_DIGITIZE  <= '0';
 		internal_WILKINSON_COUNTER_ENABLE   <= '0';
@@ -275,7 +276,7 @@ begin
 	process(internal_DIGITIZING_STATE,NEXT_WINDOW_FIFO_EMPTY,internal_FORCE_NEXT_DIGITIZE,
 	        internal_ADDR_TO_READ,internal_LAST_ADDRESS_DIGITIZED,internal_WILKINSON_COUNTER,
 	        internal_PACKET_COUNTER,internal_SAMPLE_COUNTER, 
-	        new_address_reached, new_sample_address_reached, smpsel_done) 
+	        new_address_reached, new_sample_address_reached, internal_SET_SMPL_SEL_ANY_DONE) 
 	begin
 		START_NEW_SAMPLE_ADDRESS <= '0';
 --		DO_SET_SMPSEL<='0';
@@ -316,7 +317,7 @@ begin
 					internal_NEXT_DIGITIZING_STATE <= BUILD_PACKET_HEADER;
 				end if;
 			when SET_SMPSEL_ANY =>
-				if smpsel_done = '1' then 
+				if internal_SET_SMPL_SEL_ANY_DONE = '1' then 
 						internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN_WAIT;
 						START_NEW_SAMPLE_ADDRESS <= '1';
 					else
@@ -348,7 +349,7 @@ begin
 					internal_NEXT_DIGITIZING_STATE <= READOUT_EVEN_WAIT;
 				end if;
 			when RESET_SMPSEL_ANY =>
-				if smpsel_done = '1' then 
+				if internal_SET_SMPL_SEL_ANY_DONE = '1' then 
 					internal_NEXT_DIGITIZING_STATE <= WRITE_CHECKSUM;
 				else
 						internal_NEXT_DIGITIZING_STATE <= RESET_SMPSEL_ANY;				

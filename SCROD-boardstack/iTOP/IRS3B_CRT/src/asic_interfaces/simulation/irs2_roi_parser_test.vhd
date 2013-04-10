@@ -76,20 +76,20 @@ ARCHITECTURE behavior OF irs2_roi_parser_test IS
    signal BEGIN_PARSING_FOR_WINDOWS : std_logic := '0';
    signal LAST_WINDOW_SAMPLED : std_logic_vector(8 downto 0) := '0' & x"07";
    signal FIRST_ALLOWED_WINDOW : std_logic_vector(8 downto 0) := '0' & x"00";
-   signal LAST_ALLOWED_WINDOW : std_logic_vector(8 downto 0) := '0' & x"07";
-   signal MAX_WINDOWS_TO_LOOK_BACK : std_logic_vector(8 downto 0) := '0' & x"07";
-   signal MIN_WINDOWS_TO_LOOK_BACK : std_logic_vector(8 downto 0) := '0' & x"00";
+   signal LAST_ALLOWED_WINDOW : std_logic_vector(8 downto 0) := '0' & x"3F";
+   signal MAX_WINDOWS_TO_LOOK_BACK : std_logic_vector(8 downto 0) := '0' & x"37";
+   signal MIN_WINDOWS_TO_LOOK_BACK : std_logic_vector(8 downto 0) := '0' & x"08";
 --	signal ROI_ADDRESS_ADJUST : std_logic_vector(8 downto 0) := (others => '0');
-	signal ROI_ADDRESS_ADJUST : std_logic_vector(8 downto 0) := '0' & x"04";
+	signal ROI_ADDRESS_ADJUST : std_logic_vector(8 downto 0) := '0' & x"00";
 
    signal TRIGGER_MEMORY_DATA : std_logic_vector(127 downto 0) := (others => '0');
    signal NEXT_WINDOW_FIFO_READ_CLOCK : std_logic := '0';
 	signal MAKE_READY_FOR_NEXT_EVENT : std_logic := '0';
    signal VETO_NEW_EVENTS : std_logic := '0';
-	signal PEDESTAL_MODE : std_logic := '0';
+	signal PEDESTAL_MODE : std_logic := '1';
 	signal PEDESTAL_WINDOW : std_logic_vector(8 downto 0) := '0' & x"21";
---	signal FORCE_CHANNEL_MASK  : std_logic_vector(127 downto 0) := (7 => '1', others => '0');
-	signal FORCE_CHANNEL_MASK  : std_logic_vector(127 downto 0) := (others => '0');
+	signal FORCE_CHANNEL_MASK  : std_logic_vector(127 downto 0) := (0 => '1', others => '0');
+--	signal FORCE_CHANNEL_MASK  : std_logic_vector(127 downto 0) := (others => '0');
 --	signal IGNORE_CHANNEL_MASK : std_logic_vector(127 downto 0) := (8 => '1', others => '0');
 	signal IGNORE_CHANNEL_MASK : std_logic_vector(127 downto 0) := (others => '0');
 
@@ -167,14 +167,14 @@ BEGIN
 		wait for NEXT_WINDOW_FIFO_READ_CLOCK_period/2;
    end process;
 
---	TRIGGER_MEMORY_DATA <= (others => '0');
-	process(TRIGGER_MEMORY_READ_ADDRESS) begin
-		TRIGGER_MEMORY_DATA <= (others => '0');
-		if (TRIGGER_MEMORY_READ_ADDRESS = "000000011") then
-			TRIGGER_MEMORY_DATA(8)   <= '1';
---			TRIGGER_MEMORY_DATA(121) <= '1';
-		end if;
-	end process;
+	TRIGGER_MEMORY_DATA <= (others => '0');
+--	process(TRIGGER_MEMORY_READ_ADDRESS) begin
+--		TRIGGER_MEMORY_DATA <= (others => '0');
+--		if (TRIGGER_MEMORY_READ_ADDRESS = "000000011") then
+--			TRIGGER_MEMORY_DATA(8)   <= '1';
+----			TRIGGER_MEMORY_DATA(121) <= '1';
+--		end if;
+--	end process;
 
 	process(NEXT_WINDOW_FIFO_READ_CLOCK, NEXT_WINDOW_FIFO_EMPTY) begin
 		if (rising_edge(NEXT_WINDOW_FIFO_READ_CLOCK)) then
