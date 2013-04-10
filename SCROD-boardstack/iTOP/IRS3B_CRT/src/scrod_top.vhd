@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 336;
+	constant constant_FIRMWARE_REVISION : integer := 337;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
@@ -696,6 +696,7 @@ begin
 	internal_I2C_WRITE_REGISTERS(2)        <= internal_OUTPUT_REGISTERS(  3); --Register   3: I2C interface for SCROD fiberoptic transceiver 1
 	                                                                          --Register   4: Select trigger polarity and which ASIC to read scalers from: PXXX XXXX XXXX CCRR, where P is 1/0 for rising/falling edge triggering, and C/R are column and row
 	internal_ASIC_REG_TRG(0)               <= internal_OUTPUT_REGISTERS(  4)(15);
+	internal_ASIC_REG_TRG(7 downto 1)      <= (others => '0');
 	internal_TRIGGER_SCALER_ROW_SELECT     <= internal_OUTPUT_REGISTERS(  4)(ROW_SELECT_BITS-1 downto 0); 
 	internal_TRIGGER_SCALER_COL_SELECT     <= internal_OUTPUT_REGISTERS(  4)(ROW_SELECT_BITS+COL_SELECT_BITS-1 downto ROW_SELECT_BITS);
  	

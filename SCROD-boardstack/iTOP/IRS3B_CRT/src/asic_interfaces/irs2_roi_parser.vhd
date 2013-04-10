@@ -58,10 +58,10 @@ end irs2_roi_parser;
 
 architecture Behavioral of irs2_roi_parser is
 	constant constant_NWINDOWS_PER_TRIGGER             : integer := 4;
+	constant constant_TRIGGER_BIT_SETTLING_TIME        : integer := 2;
 	signal internal_DONE_BUILDING_WINDOW_LIST          : std_logic;
 	signal internal_READY_FOR_TRIGGER                  : std_logic;
---	type roi_parser_state is (IDLE, CALCULATE_FIRST_WINDOW, INITIALIZE_CURRENT_WINDOW, READ_NEXT_TRIGGER_WORD, CHECK_EACH_CHANNEL_A, CHECK_EACH_CHANNEL_B, INCREMENT_WINDOW, GENERATE_PEDESTALS, DONE);
-	type roi_parser_state is (IDLE, CALCULATE_FIRST_WINDOW, INITIALIZE_CURRENT_WINDOW, READ_NEXT_TRIGGER_WORD, CHECK_EACH_CHANNEL, WRITE_WINDOWS, INCREMENT_CHANNEL, INCREMENT_WINDOW, GENERATE_PEDESTALS, DONE);
+	type roi_parser_state is (IDLE, CALCULATE_FIRST_WINDOW, INITIALIZE_CURRENT_WINDOW, READ_NEXT_TRIGGER_WORD, LATCH_NEXT_TRIGGER_BIT, CHECK_EACH_CHANNEL, WRITE_WINDOWS, INCREMENT_CHANNEL, INCREMENT_WINDOW, LATCH_NEXT_PEDESTAL_BIT, GENERATE_PEDESTALS, DONE);
 	signal internal_ROI_STATE                          : roi_parser_state := IDLE;
 	signal internal_ROI_NEXT_STATE                     : roi_parser_state := IDLE;
 	signal internal_STARTING_WINDOW                    : unsigned(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -82,6 +82,9 @@ architecture Behavioral of irs2_roi_parser is
 	signal internal_SEGMENT_COUNTER                    : unsigned(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_SEGMENT_COUNTER_RESET              : std_logic := '1';
 	signal internal_SEGMENT_COUNTER_ENABLE             : std_logic := '0';
+	signal internal_GENERIC_COUNTER                    : unsigned(4 downto 0);
+	signal internal_GENERIC_COUNTER_RESET              : std_logic := '1';
+	signal internal_GENERIC_COUNTER_ENABLE             : std_logic := '0';
 	--Read trigger memory blockram interface
 	signal internal_TRIGGER_MEMORY_READ_ADDRESS_RAW : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0) := (others => '0');
 	signal internal_TRIGGER_MEMORY_READ_ADDRESS_ADJ : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0) := (others => '0');
@@ -89,15 +92,15 @@ architecture Behavioral of irs2_roi_parser is
 	signal internal_TRIGGER_MEMORY_WORD_MASKED    : std_logic_vector(TOTAL_TRIGGER_BITS-1 downto 0);
 	signal internal_TRIGGER_MEMORY_READ_ENABLE    : std_logic := '0';
 	signal internal_THIS_TRIGGER_BIT              : std_logic := '0';
+	signal internal_THIS_TRIGGER_BIT_REG          : std_logic := '0';
 	signal internal_THIS_TRIGGER_BIT_FORCED       : std_logic := '0';
+	signal internal_THIS_TRIGGER_BIT_FORCED_REG   : std_logic := '0';
 	signal internal_THIS_PEDESTAL_BIT             : std_logic := '0';
+	signal internal_THIS_PEDESTAL_BIT_REG         : std_logic := '0';
 	--Digitization window FIFO interface
 	signal internal_NEXT_WINDOW_FIFO_WRITE_DATA   : std_logic_vector(COL_SELECT_BITS+ROW_SELECT_BITS+CH_SELECT_BITS+ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_NEXT_WINDOW_FIFO_WRITE_DATA_T : std_logic_vector(COL_SELECT_BITS+ROW_SELECT_BITS+CH_SELECT_BITS+ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
---	signal internal_NEXT_WINDOW_FIFO_WRITE_DATA_A : std_logic_vector(COL_SELECT_BITS+ROW_SELECT_BITS+CH_SELECT_BITS+ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
---	signal internal_NEXT_WINDOW_FIFO_WRITE_DATA_B : std_logic_vector(COL_SELECT_BITS+ROW_SELECT_BITS+CH_SELECT_BITS+ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_NEXT_WINDOW_FIFO_WRITE_DATA_PEDESTALS : std_logic_vector(COL_SELECT_BITS+ROW_SELECT_BITS+CH_SELECT_BITS+ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
---	signal internal_NEXT_WINDOW_FIFO_MUX_SELECT   : std_logic;
 	signal internal_NEXT_WINDOW_FIFO_WRITE_ENABLE : std_logic := '0';
 	signal internal_NEXT_WINDOW_FIFO_FULL         : std_logic := '0';
 	signal internal_NEXT_WINDOW_FIFO_RESET        : std_logic := '0';
@@ -135,7 +138,7 @@ begin
 	end generate;
 
 	--State outputs
-	process(internal_ROI_STATE, internal_THIS_TRIGGER_BIT, internal_THIS_TRIGGER_BIT_FORCED, internal_THIS_PEDESTAL_BIT, internal_SEGMENTS_THIS_EVENT_COUNTER) begin
+	process(internal_ROI_STATE, internal_THIS_TRIGGER_BIT_REG, internal_THIS_TRIGGER_BIT_FORCED_REG, internal_THIS_PEDESTAL_BIT_REG, internal_SEGMENTS_THIS_EVENT_COUNTER) begin
 		--Default levels for various components of the logic
 		internal_CHANNEL_COUNTER_RESET              <= '0';
 		internal_CHANNEL_COUNTER_ENABLE             <= '0';
@@ -147,12 +150,13 @@ begin
 		internal_SEGMENTS_THIS_EVENT_COUNTER_RESET  <= '0';
 		internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '0';
 		internal_TRIGGER_MEMORY_READ_ENABLE         <= '0';
---		internal_NEXT_WINDOW_FIFO_MUX_SELECT        <= '0';
 		internal_READY_FOR_TRIGGER                  <= '0';
 		internal_DONE_BUILDING_WINDOW_LIST          <= '0';
 		internal_NEXT_WINDOW_FIFO_RESET             <= '0';
 		internal_SEGMENT_COUNTER_ENABLE             <= '0';
 		internal_SEGMENT_COUNTER_RESET              <= '0';
+		internal_GENERIC_COUNTER_RESET              <= '0';
+		internal_GENERIC_COUNTER_ENABLE             <= '0';
 		--
 		case(internal_ROI_STATE) is
 			when IDLE =>
@@ -163,6 +167,7 @@ begin
 				state_debug <= "0010";
 				internal_SEGMENTS_THIS_EVENT_COUNTER_RESET <= '1';
 				internal_CHANNEL_COUNTER_RESET             <= '1';
+				internal_GENERIC_COUNTER_RESET             <= '1';
 				internal_STARTING_WINDOW_READ_ENABLE       <= '1';
 				internal_ENDING_WINDOW_READ_ENABLE         <= '1';
 				--Reset the FIFO here just in case we have junk left over from previous events. Should never happen, but might as well be safe.
@@ -173,12 +178,15 @@ begin
 			when READ_NEXT_TRIGGER_WORD =>
 				state_debug <= "0100";
 				internal_TRIGGER_MEMORY_READ_ENABLE  <= '1';
-			when CHECK_EACH_CHANNEL =>
+			when LATCH_NEXT_TRIGGER_BIT =>
 				state_debug <= "0101";
+				internal_GENERIC_COUNTER_ENABLE <= '1';
+			when CHECK_EACH_CHANNEL =>
+				state_debug <= "0110";
 				internal_SEGMENT_COUNTER_RESET  <= '1';
 			when WRITE_WINDOWS      =>
-				state_debug <= "0110";
-				if (internal_THIS_TRIGGER_BIT_FORCED = '1') then
+				state_debug <= "0111";
+				if (internal_THIS_TRIGGER_BIT_FORCED_REG = '1') then
 					internal_SEGMENT_COUNTER_ENABLE             <= '0';
 				else
 					internal_SEGMENT_COUNTER_ENABLE             <= '1';
@@ -186,44 +194,34 @@ begin
 				internal_NEXT_WINDOW_FIFO_WRITE_ENABLE      <= '1';
 				internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
 			when INCREMENT_CHANNEL  =>
-				state_debug <= "0111";
-				internal_CHANNEL_COUNTER_ENABLE <= '1';
---			when CHECK_EACH_CHANNEL_A =>
---				state_debug <= "0101";
---				internal_CHANNEL_COUNTER_ENABLE      <= '1';
---				if ( (internal_THIS_TRIGGER_BIT = '1') and (unsigned(internal_SEGMENTS_THIS_EVENT_COUNTER) /= MAXIMUM_SEGMENTS_PER_EVENT) ) then
---					internal_NEXT_WINDOW_FIFO_WRITE_ENABLE <= '1';
---					internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
---				end if;
---			when CHECK_EACH_CHANNEL_B =>
---				state_debug <= "0110";
---				internal_CHANNEL_COUNTER_ENABLE      <= '1';
---				internal_NEXT_WINDOW_FIFO_MUX_SELECT <= '1';
---				--When trigger bits are forced, only check them during the "B" cycle, or we'll end up writing multiple windows repeatedly.
---				if ( (internal_THIS_TRIGGER_BIT = '1' or internal_THIS_TRIGGER_BIT_FORCED = '1') and (unsigned(internal_SEGMENTS_THIS_EVENT_COUNTER) /= MAXIMUM_SEGMENTS_PER_EVENT) ) then
---					internal_NEXT_WINDOW_FIFO_WRITE_ENABLE <= '1';
---					internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
---				end if;
-			when INCREMENT_WINDOW =>
 				state_debug <= "1000";
+				internal_CHANNEL_COUNTER_ENABLE <= '1';
+				internal_GENERIC_COUNTER_RESET <= '1';
+			when INCREMENT_WINDOW =>
+				state_debug <= "1001";
 				internal_CURRENT_WINDOW_COUNT_ENABLE <= '1';
 				internal_CHANNEL_COUNTER_RESET       <= '1';
+				internal_GENERIC_COUNTER_RESET       <= '1';
+			when LATCH_NEXT_PEDESTAL_BIT =>
+				state_debug <= "1010";
+				internal_GENERIC_COUNTER_ENABLE <= '1';
 			when GENERATE_PEDESTALS =>
-				state_debug <= "1001";
+				state_debug <= "1011";
 				internal_CHANNEL_COUNTER_ENABLE      <= '1';
-				if ( (internal_THIS_PEDESTAL_BIT = '1') ) then
+				internal_GENERIC_COUNTER_RESET       <= '1';
+				if ( (internal_THIS_PEDESTAL_BIT_REG = '1') ) then
 					internal_NEXT_WINDOW_FIFO_WRITE_ENABLE <= '1';
 					internal_SEGMENTS_THIS_EVENT_COUNTER_ENABLE <= '1';
 				end if;
 			when DONE => 
-				state_debug <= "1010";
+				state_debug <= "1100";
 				internal_DONE_BUILDING_WINDOW_LIST <= '1';
 			when others =>
 				state_debug <= "1111";
 		end case;		
 	end process;
 	--Next state logic
-	process(internal_ROI_STATE, BEGIN_PARSING_FOR_WINDOWS, internal_TRIGGER_MEMORY_WORD_MASKED, internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW, internal_ENDING_WINDOW_REG, VETO_NEW_EVENTS, PEDESTAL_MODE, MAKE_READY_FOR_NEXT_EVENT, FORCE_CHANNEL_MASK, internal_THIS_TRIGGER_BIT, internal_THIS_TRIGGER_BIT_FORCED, internal_SEGMENT_COUNTER) begin
+	process(internal_ROI_STATE, BEGIN_PARSING_FOR_WINDOWS, internal_TRIGGER_MEMORY_WORD_MASKED, internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW, internal_ENDING_WINDOW_REG, VETO_NEW_EVENTS, PEDESTAL_MODE, MAKE_READY_FOR_NEXT_EVENT, FORCE_CHANNEL_MASK, internal_THIS_TRIGGER_BIT, internal_THIS_TRIGGER_BIT_FORCED, internal_SEGMENT_COUNTER, internal_GENERIC_COUNTER) begin
 		case(internal_ROI_STATE) is
 			when IDLE =>
 				if (BEGIN_PARSING_FOR_WINDOWS = '1' and VETO_NEW_EVENTS = '0') then
@@ -233,26 +231,31 @@ begin
 				end if;
 			when CALCULATE_FIRST_WINDOW =>
 				if (PEDESTAL_MODE = '1') then
-					internal_ROI_NEXT_STATE <= GENERATE_PEDESTALS;
+					internal_ROI_NEXT_STATE <= LATCH_NEXT_PEDESTAL_BIT;
 				else
 					internal_ROI_NEXT_STATE <= INITIALIZE_CURRENT_WINDOW;
 				end if;
 			when INITIALIZE_CURRENT_WINDOW =>
 				internal_ROI_NEXT_STATE <= READ_NEXT_TRIGGER_WORD;
 			when READ_NEXT_TRIGGER_WORD =>
---				internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL_A; --Old version from IRS2 firmware
-				internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL;
+				internal_ROI_NEXT_STATE <= LATCH_NEXT_TRIGGER_BIT;
+			when LATCH_NEXT_TRIGGER_BIT =>
+				if (internal_GENERIC_COUNTER < constant_TRIGGER_BIT_SETTLING_TIME) then
+					internal_ROI_NEXT_STATE <= LATCH_NEXT_TRIGGER_BIT;
+				else
+					internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL;
+				end if;
 			when CHECK_EACH_CHANNEL     =>
 				if ( unsigned(internal_TRIGGER_MEMORY_WORD_MASKED) = 0  and unsigned(FORCE_CHANNEL_MASK) = 0) then 
 					--No trigger bits to process, skip ahead to next address
 					internal_ROI_NEXT_STATE <= INCREMENT_WINDOW;
-				elsif ( internal_THIS_TRIGGER_BIT = '1' or internal_THIS_TRIGGER_BIT_FORCED = '1') then
+				elsif ( internal_THIS_TRIGGER_BIT_REG = '1' or internal_THIS_TRIGGER_BIT_FORCED_REG = '1') then
 					internal_ROI_NEXT_STATE <= WRITE_WINDOWS;
 				else
 					internal_ROI_NEXT_STATE <= INCREMENT_CHANNEL;
 				end if;
 			when WRITE_WINDOWS =>
-				if ( internal_THIS_TRIGGER_BIT_FORCED = '1' ) then
+				if ( internal_THIS_TRIGGER_BIT_FORCED_REG = '1' ) then
 					internal_ROI_NEXT_STATE <= INCREMENT_CHANNEL;
 				elsif ( internal_SEGMENT_COUNTER < constant_NWINDOWS_PER_TRIGGER-1 ) then
 					internal_ROI_NEXT_STATE <= WRITE_WINDOWS;
@@ -263,34 +266,25 @@ begin
 				if ( internal_CHANNEL_COUNTER = to_unsigned(TOTAL_TRIGGER_BITS-1,internal_CHANNEL_COUNTER'length) ) then
 					internal_ROI_NEXT_STATE <= INCREMENT_WINDOW;
 				else
-					internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL;
+					internal_ROI_NEXT_STATE <= LATCH_NEXT_TRIGGER_BIT;
 				end if;
---			when CHECK_EACH_CHANNEL_A =>
---				if ( unsigned(internal_TRIGGER_MEMORY_WORD_MASKED) = 0  and unsigned(FORCE_CHANNEL_MASK) = 0) then 
---					--No trigger bits to process, skip ahead to next address
---					internal_ROI_NEXT_STATE <= INCREMENT_WINDOW;
---				elsif ( internal_CHANNEL_COUNTER = to_unsigned(TOTAL_TRIGGER_BITS-1,internal_CHANNEL_COUNTER'length) ) then
---					internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL_B;
---				else
---					internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL_A;
---				end if;
---			when CHECK_EACH_CHANNEL_B =>
---				if ( internal_CHANNEL_COUNTER = to_unsigned(TOTAL_TRIGGER_BITS-1,internal_CHANNEL_COUNTER'length) ) then
---					internal_ROI_NEXT_STATE <= INCREMENT_WINDOW;
---				else
---					internal_ROI_NEXT_STATE <= CHECK_EACH_CHANNEL_B;
---				end if;
 			when INCREMENT_WINDOW =>
 				if ( internal_CURRENT_WINDOW = internal_ENDING_WINDOW_REG ) then
 					internal_ROI_NEXT_STATE <= DONE;
 				else
 					internal_ROI_NEXT_STATE <= READ_NEXT_TRIGGER_WORD;
 				end if;
+			when LATCH_NEXT_PEDESTAL_BIT =>
+				if (internal_GENERIC_COUNTER < constant_TRIGGER_BIT_SETTLING_TIME) then
+					internal_ROI_NEXT_STATE <= LATCH_NEXT_PEDESTAL_BIT;
+				else
+					internal_ROI_NEXT_STATE <= GENERATE_PEDESTALS;
+				end if;
 			when GENERATE_PEDESTALS =>
 				if ( internal_CHANNEL_COUNTER = to_unsigned(TOTAL_TRIGGER_BITS-1,internal_CHANNEL_COUNTER'length) ) then
 					internal_ROI_NEXT_STATE <= DONE;
 				else
-					internal_ROI_NEXT_STATE <= GENERATE_PEDESTALS;
+					internal_ROI_NEXT_STATE <= LATCH_NEXT_PEDESTAL_BIT;
 				end if;				
 			when DONE =>
 				if (MAKE_READY_FOR_NEXT_EVENT = '1') then
@@ -370,6 +364,14 @@ begin
 		internal_THIS_PEDESTAL_BIT       <= FORCE_CHANNEL_MASK(to_integer(internal_CHANNEL_COUNTER));
 		internal_THIS_TRIGGER_BIT_FORCED <= FORCE_CHANNEL_MASK(to_integer(internal_CHANNEL_COUNTER));
 	end process;
+	--Latch the above values onto a clock domain
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			internal_THIS_TRIGGER_BIT_REG        <= internal_THIS_TRIGGER_BIT;
+			internal_THIS_PEDESTAL_BIT_REG       <= internal_THIS_PEDESTAL_BIT;
+			internal_THIS_TRIGGER_BIT_FORCED_REG <= internal_THIS_TRIGGER_BIT_FORCED;
+		end if;
+	end process;
 
 	--The word that will be written to the FIFO if we see something
 	process(internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW, internal_SEGMENT_COUNTER, LAST_ALLOWED_WINDOW) 
@@ -382,32 +384,13 @@ begin
 			internal_NEXT_WINDOW_FIFO_WRITE_DATA_T <= std_logic_vector(internal_CHANNEL_COUNTER) & std_logic_vector(internal_SEGMENT_COUNTER + unsigned(internal_CURRENT_WINDOW));
 		end if;
 	end process;
---	--The word that would be written to the FIFO if we see something
---	--These are for the "A" cycle
---	process(internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW) begin
---		if (internal_CURRENT_WINDOW(0) = '0') then
---			internal_NEXT_WINDOW_FIFO_WRITE_DATA_A <= std_logic_vector(internal_CHANNEL_COUNTER) & std_logic_vector(internal_CURRENT_WINDOW(internal_CURRENT_WINDOW'length-1 downto 1) - 1);
---		else
---			internal_NEXT_WINDOW_FIFO_WRITE_DATA_A <= std_logic_vector(internal_CHANNEL_COUNTER) & std_logic_vector(internal_CURRENT_WINDOW(internal_CURRENT_WINDOW'length-1 downto 1));
---		end if;
---	end process;
---	--These are for the "B" cycle
---	process(internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW) begin
---		if (internal_CURRENT_WINDOW(0) = '0') then
---			internal_NEXT_WINDOW_FIFO_WRITE_DATA_B <= std_logic_vector(internal_CHANNEL_COUNTER) & std_logic_vector(internal_CURRENT_WINDOW(internal_CURRENT_WINDOW'length-1 downto 1));
---		else
---			internal_NEXT_WINDOW_FIFO_WRITE_DATA_B <= std_logic_vector(internal_CHANNEL_COUNTER) & std_logic_vector(internal_CURRENT_WINDOW(internal_CURRENT_WINDOW'length-1 downto 1) + 1);
---		end if;
---	end process;
 	--These are if you're taking pedestals
 	process(internal_CHANNEL_COUNTER, PEDESTAL_WINDOW) begin
 		internal_NEXT_WINDOW_FIFO_WRITE_DATA_PEDESTALS <= std_logic_vector(internal_CHANNEL_COUNTER) & std_logic_vector(PEDESTAL_WINDOW);
 	end process;
-	--Multiplexer to select "A" or "B" or pedestal windows
+	--Multiplexer to select standard or pedestal windows
 	internal_NEXT_WINDOW_FIFO_WRITE_DATA <= internal_NEXT_WINDOW_FIFO_WRITE_DATA_PEDESTALS when PEDESTAL_MODE = '1' else
 	                                        internal_NEXT_WINDOW_FIFO_WRITE_DATA_T         when PEDESTAL_MODE = '0' else
---	                                        internal_NEXT_WINDOW_FIFO_WRITE_DATA_A         when internal_NEXT_WINDOW_FIFO_MUX_SELECT = '0' else
---	                                        internal_NEXT_WINDOW_FIFO_WRITE_DATA_B         when internal_NEXT_WINDOW_FIFO_MUX_SELECT = '1' else
 														 (others => 'X');
 
 	--Flag for truncated output
@@ -418,7 +401,7 @@ begin
 			EVENT_WAS_TRUNCATED <= '0';
 		end if;
 	end process;
-	--Counters (channel counter and segment counter)
+	--Counters (channel counter and segment counters and a generic counter)
 	process(CLOCK) begin
 		if (rising_edge(CLOCK)) then
 			if (internal_SEGMENTS_THIS_EVENT_COUNTER_RESET = '1') then
@@ -443,6 +426,15 @@ begin
 				internal_SEGMENT_COUNTER <= (others => '0');
 			elsif (internal_SEGMENT_COUNTER_ENABLE = '1') then
 				internal_SEGMENT_COUNTER <= internal_SEGMENT_COUNTER + 1;
+			end if;
+		end if;
+	end process;
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			if (internal_GENERIC_COUNTER_RESET = '1') then
+				internal_GENERIC_COUNTER <= (others => '0');
+			elsif (internal_GENERIC_COUNTER_ENABLE = '1') then
+				internal_GENERIC_COUNTER <= internal_GENERIC_COUNTER + 1;
 			end if;
 		end if;
 	end process;
