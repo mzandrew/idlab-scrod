@@ -46,8 +46,15 @@ architecture Behavioral of irs3b_sampling_control is
 	signal internal_NEXT_SYNC_STATE_RISING  : sync_state;
 	signal internal_SYNC_STATE_FALLING      : sync_state;
 	signal internal_NEXT_SYNC_STATE_FALLING : sync_state;
+	--Ensure that these registers are not removed
 	signal internal_PHAB_RECORD_RISING      : std_logic_vector(1 downto 0);
 	signal internal_PHAB_RECORD_FALLING     : std_logic_vector(1 downto 0);
+	attribute equivalent_register_removal: string; 
+	attribute keep:string;
+	attribute equivalent_register_removal of internal_PHAB_RECORD_RISING : signal is "no";
+	attribute equivalent_register_removal of internal_PHAB_RECORD_FALLING : signal is "no";
+	attribute keep of internal_PHAB_RECORD_RISING :signal is "true";
+	attribute keep of internal_PHAB_RECORD_FALLING :signal is "true";
 
 	type address_choice is array(3 downto 0) of std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS                 : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
