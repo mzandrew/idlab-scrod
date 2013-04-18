@@ -49,12 +49,6 @@ architecture Behavioral of irs3b_sampling_control is
 	--Ensure that these registers are not removed
 	signal internal_PHAB_RECORD_RISING      : std_logic_vector(1 downto 0);
 	signal internal_PHAB_RECORD_FALLING     : std_logic_vector(1 downto 0);
-	attribute equivalent_register_removal: string; 
-	attribute keep:string;
-	attribute equivalent_register_removal of internal_PHAB_RECORD_RISING : signal is "no";
-	attribute equivalent_register_removal of internal_PHAB_RECORD_FALLING : signal is "no";
-	attribute keep of internal_PHAB_RECORD_RISING :signal is "true";
-	attribute keep of internal_PHAB_RECORD_FALLING :signal is "true";
 
 	type address_choice is array(3 downto 0) of std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 	signal internal_SAMPLING_TO_STORAGE_ADDRESS                 : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -276,7 +270,7 @@ begin
 
 	--FALLING EDGE COUNTERS
 	process(CLK_SSTx2) begin
-		if (rising_edge(CLK_SSTx2)) then
+		if (falling_edge(CLK_SSTx2)) then
 			if (internal_SAMPLING_TO_STORAGE_ADDRESS_RESET_FALLING = '1') then
 				internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(0) <= FIRST_ADDRESS_ALLOWED;
 			elsif (unsigned(internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(0)) < unsigned(LAST_ADDRESS_ALLOWED)) then
