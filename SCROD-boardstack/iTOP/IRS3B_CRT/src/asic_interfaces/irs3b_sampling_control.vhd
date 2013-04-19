@@ -64,14 +64,23 @@ begin
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= internal_SAMPLING_TO_STORAGE_ADDRESS(ANALOG_MEMORY_ADDRESS_BITS-1 downto 1);
 	SAMPLING_TO_STORAGE_ADDRESS_LSB           <= internal_SAMPLING_TO_STORAGE_ADDRESS(0);
 	--Signals that should be MUXED out
-	internal_SAMPLING_TO_STORAGE_ADDRESS    <= internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(0)  when choose_phase = "000" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(1)  when choose_phase = "001" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(2)  when choose_phase = "010" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(3)  when choose_phase = "011" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(0) when choose_phase = "100" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(1) when choose_phase = "101" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(2) when choose_phase = "110" else
-                                              internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(3) when choose_phase = "111" else
+--	internal_SAMPLING_TO_STORAGE_ADDRESS    <= internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(0)  when choose_phase = "000" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(1)  when choose_phase = "001" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(2)  when choose_phase = "010" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(3)  when choose_phase = "011" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(0) when choose_phase = "100" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(1) when choose_phase = "101" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(2) when choose_phase = "110" else
+--	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(3) when choose_phase = "111" else
+--	                                           (others => 'X');
+	internal_SAMPLING_TO_STORAGE_ADDRESS    <= internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(3)  when choose_phase = "000" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(3) when choose_phase = "001" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(2)  when choose_phase = "010" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(2) when choose_phase = "011" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(1)  when choose_phase = "100" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(1) when choose_phase = "101" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_RISING(0)  when choose_phase = "110" else
+	                                           internal_SAMPLING_TO_STORAGE_ADDRESS_CHOICES_FALLING(0) when choose_phase = "111" else
 	                                           (others => 'X');
 	--Simple process to latch the last window sampled
 	process(CLOCK_SST) begin
