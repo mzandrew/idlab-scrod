@@ -47,6 +47,11 @@ NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVDS_25;
 NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25;
 NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
+###Quick hack to allow external triggering at Fuji Hall without the rest of the FTSW firmware
+#NET RJ45_TRG_P		LOC = "ae15" | IOSTANDARD = LVDS_25 | diff_term=true;
+#NET RJ45_TRG_N		LOC = "af15" | IOSTANDARD = LVDS_25 | diff_term=true;
+#NET RJ45_RSV_P		LOC = "ab14" | IOSTANDARD = LVDS_25;
+#NET RJ45_RSV_N		LOC = "ac14" | IOSTANDARD = LVDS_25;
 
 ####I2C Pin Mappings#######
 #Bus A - SCROD general purpose EEPROM and temp sensor
@@ -83,6 +88,21 @@ TIMESPEC TS_EVT_NUMBER = FROM "event_builder_grp" TO "sampling_grp" TIG;
 NET "map_asic_feedback_and_monitoring/map_wilkinson_monitoring/gen_wilk_feedback*" TNM_NET = FFS "wilk_feedback_grp";
 NET "map_CarrierRevA_I2C_DAC_Control/map_DAC_Control_*" TNM_NET = FFS "dac_setting_grp";
 TIMESPEC TS_WILK_FEEDBACK = FROM "wilk_feedback_grp" TO "dac_setting_grp" TIG;
+##Effectively false paths from sampling control to digitization and readout, since handshaking happens in between
+#TIMESPEC TS_SAMPLING_TO_DIGITIZING = FROM "map_irs2_sdr/map_sampling_control/internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS*" TO "map_irs2_sdr/map_irs2_digitization_and_readout/*" TIG;
+
+#Path from LAST_WINDOW_SAMPLED from sampler to digitizer has a very long delay in between
+#(i.e., the full time for the ROI parser to find the first segment of interest).
+#It is effectively a false path, so ignore this path. The same is true, though not quite as
+#long of a path, to the ROI block.
+NET "map_irs2_sdr/map_sampling_control/LAST_WINDOW_SAMPLED*" TIG;
+#Path from sampling state machine to ROI and event builder are also effectively false paths, like above
+NET "map_irs2_sdr/map_sampling_control/*" TNM_NET = FFS "SAMP_SIGNALS";
+NET "map_irs2_sdr/map_irs2_roi_parser/*" TNM_NET = FFS "ROI_SIGNALS";
+NET "map_irs2_sdr/map_event_builder/*" TNM_NET = FFS "EVT_BUILDER_SIGNALS";
+TIMESPEC TS_SAMP_TO_ROI = FROM "SAMP_SIGNALS" TO "ROI_SIGNALS" TIG;
+TIMESPEC TS_SAMP_TO_EVT = FROM "SAMP_SIGNALS" TO "EVT_BUILDER_SIGNALS" TIG;
+TIMESPEC TS_EVT_TO_SAMP = FROM "EVT_BUILDER_SIGNALS" TO "SAMP_SIGNALS" TIG;
 
 #The last window sampled causes some issues when passing from the SST domain to the general 50 MHz clock.  The timing here is meant to be enforced by the handshaking between modules, so this is not a real synchronous path
 #NET "map_irs2_sdr/map_sampling_control/*" TNM_NET = FFS "sampling";

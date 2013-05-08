@@ -158,7 +158,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CLOCK_4MHz_BUFG  : std_logic;
 	signal internal_CLOCK_ENABLE_I2C : std_logic;
 	signal internal_CLOCK_SST_BUFG   : std_logic;
-	signal internal_CLOCK_4xSST_BUFG : std_logic;
+	signal internal_CLOCK_2xSST_BUFG : std_logic;
 	
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
@@ -277,7 +277,7 @@ begin
 		CLOCK_50MHz_BUFG  => internal_CLOCK_50MHz_BUFG,
 		CLOCK_4MHz_BUFG   => internal_CLOCK_4MHz_BUFG,
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG  => internal_CLOCK_4xSST_BUFG,
+		CLOCK_SSTx2_BUFG  => internal_CLOCK_2xSST_BUFG,
 		CLOCK_SST_BUFG    => internal_CLOCK_SST_BUFG,
 		--ASIC output clocks
 		ASIC_SST          => AsicIn_SAMPLING_HOLD_MODE_C,
@@ -413,7 +413,7 @@ begin
 		--Clock for running the analog memory manager
 		CLOCK_SAMPLING_HOLD_MODE              => internal_CLOCK_SST_BUFG,
 		--Clock for monitoring the trigger memory
-		CLOCK_TRIGGER_MEMORY                  => internal_CLOCK_4xSST_BUFG,
+		CLOCK_TRIGGER_MEMORY                  => internal_CLOCK_2xSST_BUFG,
 		--Primary clock for ROI and digitizing (set nominally for 50 MHz)
 		CLOCK                                 => internal_CLOCK_50MHz_BUFG,
 		--Trigger inputs
