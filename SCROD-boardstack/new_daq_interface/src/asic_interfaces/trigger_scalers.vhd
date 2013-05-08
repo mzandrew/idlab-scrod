@@ -83,6 +83,7 @@ architecture Behavioral of trigger_scaler_single_channel is
 	signal internal_PULSE_TO_COUNT : std_logic := '0';
 	signal internal_COUNTER        : unsigned(TRIGGER_SCALER_BIT_WIDTH-1 downto 0) := (others => '0');
 	signal internal_COUNTER_OUT    : std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0) := (others => '0');
+	constant max_counter_value     : unsigned(TRIGGER_SCALER_BIT_WIDTH-1 downto 0) := (others => '1');
 begin
 	--This takes asynchronous trigger bits and produces pulses
 	--with a width of one CLOCK period.
@@ -98,7 +99,7 @@ begin
 		if (rising_edge(CLOCK)) then
 			if (RESET_COUNTER = '1') then
 				internal_COUNTER <= (others => '0');
-			elsif (internal_PULSE_TO_COUNT = '1') then
+			elsif (internal_PULSE_TO_COUNT = '1' and internal_COUNTER < max_counter_value) then
 				internal_COUNTER <= internal_COUNTER + 1;
 			end if;
 		end if;

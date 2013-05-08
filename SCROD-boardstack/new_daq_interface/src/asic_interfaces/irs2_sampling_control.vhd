@@ -26,7 +26,7 @@ entity irs2_sampling_control is
 end irs2_sampling_control;
 
 architecture Behavioral of irs2_sampling_control is
-	type sampling_state is (NORMAL_SAMPLING, POST_TRIGGER_SAMPLING, DONE);
+	type sampling_state is (NORMAL_SAMPLING, POST_TRIGGER_SAMPLING, LATCH_LAST_WINDOW, DONE);
 	signal internal_SAMPLING_STATE                            : sampling_state := NORMAL_SAMPLING;
 	signal internal_NEXT_SAMPLING_STATE                       : sampling_state := NORMAL_SAMPLING;
 	signal internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS        : unsigned(ANALOG_MEMORY_ADDRESS_BITS-2 downto 0) := (others => '0');
@@ -35,10 +35,20 @@ architecture Behavioral of irs2_sampling_control is
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE : std_logic := '0';
 	signal internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET  : std_logic := '0';	
 	signal internal_CONTINUE_WRITING                          : std_logic := '0';
+	signal internal_LATCH_LAST_WINDOW                         : std_logic := '1';
 
 begin
-	LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS) & '1';
 	AsicIn_SAMPLING_TO_STORAGE_ADDRESS_NO_LSB <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS);
+	
+	--Simple process to latch the last window sampled
+	process(CLOCK_SST) begin
+		if (falling_edge(CLOCK_SST)) then
+			if (internal_LATCH_LAST_WINDOW = '1') then
+				LAST_WINDOW_SAMPLED <= std_logic_vector(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS) & '1';
+			end if;
+		end if;
+	end process;
+
 
 	--State outputs
 	process(internal_SAMPLING_STATE) begin
@@ -46,23 +56,35 @@ begin
 			when NORMAL_SAMPLING =>
 				CURRENTLY_WRITING <= '1';
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
-				internal_CONTINUE_WRITING <= '1';
+				internal_LATCH_LAST_WINDOW <= '0';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '1';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '0';
 			when POST_TRIGGER_SAMPLING =>
 				CURRENTLY_WRITING <= '1';
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
-				internal_CONTINUE_WRITING <= '1';
+				internal_LATCH_LAST_WINDOW <= '0';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '0';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '1';
+			when LATCH_LAST_WINDOW =>
+				CURRENTLY_WRITING <= '1';
+				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '1';
+				internal_LATCH_LAST_WINDOW <= '1';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '0';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '0';
 			when DONE =>
 				CURRENTLY_WRITING <= '0';
 				AsicIn_SAMPLING_TO_STORAGE_ADDRESS_ENABLE <= '0';
-				internal_CONTINUE_WRITING <= '0';
-		end case;
+				internal_LATCH_LAST_WINDOW <= '0';
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_RESET <= '0'; --LM added, otherwise never active
+				internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER_ENABLE <= '0'; --LM added, otherwise never active
+			end case;
 	end process;
 	--Next state logic
 	process(internal_SAMPLING_STATE, STOP_WRITING, RESUME_WRITING, internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER, WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER) begin
 		case internal_SAMPLING_STATE is
 			when NORMAL_SAMPLING =>
 				if (STOP_WRITING = '1') then
-					internal_NEXT_SAMPLING_STATE <= POST_TRIGGER_SAMPLING;				
+					internal_NEXT_SAMPLING_STATE <= POST_TRIGGER_SAMPLING;                          
 				else
 					internal_NEXT_SAMPLING_STATE <= NORMAL_SAMPLING;
 				end if;
@@ -70,8 +92,10 @@ begin
 				if (internal_WINDOW_PAIRS_SAMPLED_AFTER_TRIGGER < unsigned(WINDOW_PAIRS_TO_SAMPLE_AFTER_TRIGGER)) then
 					internal_NEXT_SAMPLING_STATE <= POST_TRIGGER_SAMPLING;
 				else
-					internal_NEXT_SAMPLING_STATE <= DONE;
+					internal_NEXT_SAMPLING_STATE <= LATCH_LAST_WINDOW;
 				end if;
+			when LATCH_LAST_WINDOW =>
+				internal_NEXT_SAMPLING_STATE <= DONE;
 			when DONE =>
 				if (RESUME_WRITING = '1') then
 					internal_NEXT_SAMPLING_STATE <= NORMAL_SAMPLING;
@@ -79,7 +103,7 @@ begin
 					internal_NEXT_SAMPLING_STATE <= DONE;
 				end if;
 		end case;
-	end process;	
+	end process;    
 	--Register the next state
 	process(CLOCK_SST) begin
 		if (falling_edge(CLOCK_SST)) then
@@ -90,13 +114,14 @@ begin
 	--Counter for incrementing the analog storage window 
 	process(CLOCK_SST) begin
 		if falling_edge(CLOCK_SST) then
-			if (internal_CONTINUE_WRITING = '1') then
+--       MODIFIED SO THAT WE ALWAYS CONTINUE INCREMENTING.  ACTUALLY WRITING IS CONTROLLED BY THE ENABLE.
+--			if (internal_CONTINUE_WRITING = '1') then
 				if (unsigned(internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS & '1') < unsigned(LAST_ADDRESS_ALLOWED)) then
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS + 1;
 				else
 					internal_AsicIn_SAMPLING_TO_STORAGE_ADDRESS <= unsigned(FIRST_ADDRESS_ALLOWED(FIRST_ADDRESS_ALLOWED'length-1 downto 1));
 				end if;
-			end if;
+--			end if;
 		end if;
 	end process;
 

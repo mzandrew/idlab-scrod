@@ -26,7 +26,7 @@ package asic_definitions_irs2_carrier_revA is
 	constant TOTAL_TRIGGER_BIT_WIDTH   : integer := 7;
 	--Memory space for the trigger bits
 	--Right now divided into half-windows, so one extra bit beyond the analog memory space
-	constant TRIGGER_MEMORY_ADDRESS_BITS : integer := ANALOG_MEMORY_ADDRESS_BITS+1;
+	constant TRIGGER_MEMORY_ADDRESS_BITS : integer := ANALOG_MEMORY_ADDRESS_BITS;
 	--Data types for trigger bits
 	subtype  TRIGGER_BITS is std_logic_vector(TRIGGER_CHANNELS_PER_ASIC-1 downto 0);
 	type ROW_TRIGGER_BITS is array(ROWS_PER_COL-1 downto 0) of TRIGGER_BITS;

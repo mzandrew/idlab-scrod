@@ -30,7 +30,7 @@ entity clock_generation is
 		CLOCK_50MHz_BUFG  : out STD_LOGIC;
 		CLOCK_4MHz_BUFG   : out STD_LOGIC;
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG  : out STD_LOGIC;
+		CLOCK_SSTx2_BUFG  : out STD_LOGIC;
 		CLOCK_SST_BUFG    : out STD_LOGIC;
 		--ASIC output clocks
 		ASIC_SST          : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
@@ -166,9 +166,9 @@ begin
 	--this takes in 21.2027 MHz in
 	--     generates 50 MHz clock for general use @ 0 degrees
 	--               4 MHz clock for general use @ 0 degrees
-	--               sspx4   @ 84.8108 MHz @ 90 degrees
-   --               ssp     @ 21.2027 MHz @ 315 degree
 	--               wr_strb @ 42.4054 MHz @ 90 degrees
+   --               ssp     @ 21.2027 MHz @ 90 degree
+
 	map_clockgen_ASIC : entity work.clockgen_asic_A
 	port map (
 		-- Clock in ports
@@ -176,15 +176,15 @@ begin
 		-- Clock out ports
 		CLK_50MHz_BUFG   => internal_CLOCK_50MHz_BUFG,
 		CLK_4MHz_BUFG    => internal_CLOCK_4MHz_BUFG,
-		CLK_SSTx4_BUFG   => CLOCK_SSTx4_BUFG,
-		CLK_SSP_BUFG     => internal_CLOCK_SSP_BUFG,
 		CLK_WR_STRB_BUFG => internal_CLOCK_WRITE_STROBE_BUFG,
+		CLK_SSP_BUFG     => internal_CLOCK_SSP_BUFG,
 		-- Status and control signals
 		LOCKED    => open
 	);
 	CLOCK_50MHz_BUFG <= internal_CLOCK_50MHz_BUFG;
 	CLOCK_4MHz_BUFG  <= internal_CLOCK_4MHz_BUFG;
    CLOCK_SST_BUFG   <= internal_CLOCK_SST;
+	CLOCK_SSTx2_BUFG <= internal_CLOCK_WRITE_STROBE_BUFG;
 	
 	------------------------------------------------------
 	--Logic to generate slow clock enable(e.g., for I2C)--

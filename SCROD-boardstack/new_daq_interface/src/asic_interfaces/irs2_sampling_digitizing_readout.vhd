@@ -10,7 +10,7 @@ entity irs2_sampling_digitizing_readout is
 	Port ( 
 		--SST clock for performing sampling address control
 		CLOCK_SAMPLING_HOLD_MODE              : in  STD_LOGIC;
-		--4xSST clock for trigger memory monitoring
+		--2xSST clock for trigger memory monitoring
 		CLOCK_TRIGGER_MEMORY                  : in  STD_LOGIC;
 		--General clock for ROI parsing, waveform builidng, event building
 		CLOCK                                 : in  STD_LOGIC;
@@ -196,7 +196,7 @@ begin
 	map_trigger_memory : entity work.trigger_memory
 	port map(
 		--Primary clock for this block
-		CLOCK_4xSST                              => CLOCK_TRIGGER_MEMORY,
+		CLOCK_2xSST                              => CLOCK_TRIGGER_MEMORY,
 		--ASIC trigger bits in
 		ASIC_TRIGGER_BITS                        => ASIC_TRIGGER_BITS,
 		--Sampling monitoring
