@@ -176,15 +176,15 @@ begin
 		xRCO_INT    <= RCO_INT;
 		xROVDD    	<= ROVDD;
 --------------------------------------------------------------------------------
--- original values were vdly0=4fe, vdly1=vdly0 - 4, vdly2=vdly1 - 0, vdly3=vdly1 - 0, vdly4=vdly1 - vdly5=vdly1 - 0, vdly6=vdly1 - 0, vdly7=vdly1 - 0
+-- mza - original values were vdly0=4fe, vdly1=vdly0 - 4, vdly2=vdly1 - 0, vdly3=vdly1 - 0, vdly4=vdly1 - vdly5=vdly1 - 0, vdly6=vdly1 - 0, vdly7=vdly1 - 0
 	VDLY0 <= x"4FE"; -- was "FFF" then "7FF" (7FF not really working)
-	VDLY1 <= VDLY0 - x"010";
-	VDLY2 <= VDLY1 - x"010";
-	VDLY3 <= VDLY2 - x"010";
-	VDLY4 <= VDLY3 - x"010";
-	VDLY5 <= VDLY4 - x"010";
-	VDLY6 <= VDLY5 - x"010";
-	VDLY7 <= VDLY6 - x"010";
+	VDLY1 <= VDLY0 - x"005";
+	VDLY2 <= VDLY1 - x"005";
+	VDLY3 <= VDLY2 - x"005";
+	VDLY4 <= VDLY3 - x"005";
+	VDLY5 <= VDLY4 - x"005";
+	VDLY6 <= VDLY5 - x"005";
+	VDLY7 <= VDLY6 - x"005";
 --------------------------------------------------------------------------------
 	DAC_A_0 <= x"3" & VDLY0;--VDLY0
 	DAC_B_0 <= x"7" & VDLY1;--VDLY1

@@ -30,9 +30,17 @@ entity USBread is
       xSLRD     		: out std_logic;
       xSYNC_USB 		: out std_logic;
       xSOFT_TRIG		: out std_logic;
+-- 2011-01 mza - to be implemented:
+--		xSOFTWARE_REQUESTS_THAT_WE__SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY				: out std_logic;
+--		xSOFTWARE_REQUESTS_THAT_WE__DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION	: out std_logic;
+--		xSOFTWARE_REQUESTS_THAT_WE__TRANSFER_DIGITIZED_DATA_TO_FPGA_RAM_BUFFER			: out std_logic;
+--		xSOFTWARE_REQUESTS_THAT_WE__TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB				: out std_logic;
 		xVCAL				: out std_logic;
 		xPED_SCAN		: out std_logic_vector (11 downto 0);
 		xPED_EN			: out std_logic;
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : out std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
+		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xDEBUG 		  	: out std_logic_vector (15 downto 0);
       xTOGGLE   		: out std_logic);
 end USBread;
@@ -51,7 +59,7 @@ architecture BEHAVIORAL of USBread is
 	signal Hicmd			: std_logic_vector (15 downto 0);
 	signal again			: std_logic_vector (1 downto 0);
 	signal TOGGLE			: std_logic;
-	signal SOFT_TRIG		: std_logic;
+	signal SOFT_TRIG		: std_logic; -- SOFT_TRIG = a request to set TRIG, below, which in turn drives xSOFT_TRIG
 	signal TRIG				: std_logic;
 	signal VCAL				: std_logic;
 	signal DEBUG	    	: std_logic_vector (15 downto 0);
@@ -63,6 +71,10 @@ architecture BEHAVIORAL of USBread is
 	signal RBUSY			: std_logic;
 	signal FIFOADR    	: std_logic_vector (1 downto 0);
 	signal TX_LENGTH     : std_logic_vector (13 downto 0);
+	signal SOFTWARE_TRIGGERS_ARE_ENABLED : std_logic;
+	signal EXTERNAL_TRIGGERS_ARE_ENABLED : std_logic;
+	signal REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : std_logic;
+	signal TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : std_logic;
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -139,6 +151,10 @@ begin
 		I => PED_EN,
 		O => xPED_EN);
 --------------------------------------------------------------------------------
+	xSOFTWARE_TRIGGERS_ARE_ENABLED <= SOFTWARE_TRIGGERS_ARE_ENABLED;
+	xEXTERNAL_TRIGGERS_ARE_ENABLED <= EXTERNAL_TRIGGERS_ARE_ENABLED;
+	xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB;
+--------------------------------------------------------------------------------
 	process(xIFCLK, xRESET)
 	variable delay : integer range 0 to 10;
 	begin
@@ -157,6 +173,8 @@ begin
 			RBUSY 		<= '1';
 			delay 		:= 0;	
 			state       <= st1_WAIT;
+			SOFTWARE_TRIGGERS_ARE_ENABLED <= '0';
+			EXTERNAL_TRIGGERS_ARE_ENABLED <= '1';
 		elsif rising_edge(xIFCLK) then
 			SLOE 			<= '1';
 			SLRD 			<= '1';			
@@ -259,13 +277,25 @@ begin
 							PED_SCAN <=  Hicmd(11 downto 0);	
 							state <= st1_WAIT;		--HICMD =>"XXX-DDDD-DDDD-DDDD"
 
-						when x"04" =>	--PED_ADDR
+						when x"04" =>  -- en_ped / ped_en
 							PED_EN <= Hicmd(0); 
 							state <= st1_WAIT;		--HICMD =>"DDDD-DDDD-DDDD-DDDD"
 							
 						when x"05" =>	--VCAL signal
 							VCAL <= Hicmd(0); 
 							state <= st1_WAIT;		--HICMD "XXXX-XXXX-XXXX-XXXD"
+
+						when x"06" =>	-- fetch data from fpga's buffer
+							REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '1';	 		
+							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
+
+						when x"07" =>	-- enableÅ@/ disable software triggers' ability to sample data, wilkinson it and transfer it to fpga ram
+							SOFTWARE_TRIGGERS_ARE_ENABLED <= Hicmd(0);
+							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
+
+						when x"08" =>	-- enableÅ@/ disable external triggers' ability to sample data, wilkinson it and transfer it to fpga ram
+							EXTERNAL_TRIGGERS_ARE_ENABLED <= Hicmd(0);
+							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
 							
 						when x"FF" =>	--W_STRB
 							DEBUG <= Hicmd(15 downto 0);
@@ -302,9 +332,13 @@ begin
 	begin
 		if xRESET = '0' or xDONE = '1' then
 			TRIG <= '0';
+			REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '0';
 		elsif falling_edge(xIFCLK) then
 			if SOFT_TRIG = '1' then
 				TRIG <= '1';
+			end if;
+			if REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB = '1' then
+				TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '1';
 			end if;
 		end if;
 	end process;

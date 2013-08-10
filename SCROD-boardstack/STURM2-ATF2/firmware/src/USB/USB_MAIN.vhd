@@ -62,6 +62,9 @@ entity USB_MAIN is
 		xSLWR      	: out std_logic; 
       xSOFT_TRIG  : out std_logic;
 		xVCAL			: out std_logic;
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : out std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
+		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xWAKEUP	 	: out std_logic;
 		xCLR_ALL   	: out std_logic);
 end USB_MAIN;
@@ -129,6 +132,9 @@ architecture BEHAVIORAL of USB_MAIN is
 		xVCAL				: out std_logic;
 		xPED_SCAN		: out std_logic_vector (11 downto 0);
 		xPED_EN			: out std_logic;
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : out std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
+		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xDEBUG 		  	: out std_logic_vector (15 downto 0);
       xTOGGLE   		: out std_logic);
    end component;
@@ -239,6 +245,9 @@ begin
       xSOFT_TRIG	=> xSOFT_TRIG,
 		xVCAL       => xVCAL,
 		xPED_EN   	=> xPED_EN,
+		xSOFTWARE_TRIGGERS_ARE_ENABLED => xSOFTWARE_TRIGGERS_ARE_ENABLED,
+		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
+		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB => xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB,
       xSYNC_USB	=> xSYNC_USB,
       xTOGGLE		=> xTOGGLE);
 --------------------------------------------------------------------------------
