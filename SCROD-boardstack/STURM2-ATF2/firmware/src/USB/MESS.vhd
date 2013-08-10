@@ -103,7 +103,8 @@ begin
 				when ADC =>	
 					FPGA_DATA <= x"0" & xADC;
 					RADDR <= RADDR + 1;
-					if RADDR = 287 then
+--					if RADDR = 287 then -- see state STORE_to_RAM in STURM2_RD.VHD - there are 8 other words transferred besides these 256
+					if RADDR = 256 then
 						RADDR <= (others=>'0');
 						STATE <= PRCO_INT;	
 					end if;

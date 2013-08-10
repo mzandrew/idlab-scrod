@@ -155,7 +155,8 @@ begin
 					end if;
 --------------------------------------------------------------------------------
 				when STATE3 =>									  	
-					if column > 298 then 
+					if column > 298 then
+--					if column > 256+8 then  -- see state STORE_to_RAM in STURM2_RD.VHD and state ADC in mess.vhd
 						column 	<= (others=>'0');
 						LRAD	 	<= (others=>'0');
 						DONE 		<= '1';

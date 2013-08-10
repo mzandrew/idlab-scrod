@@ -88,8 +88,7 @@ architecture Behavioral of TOP is
 	signal xREF_100Hz		: std_logic;
 	signal xREF_10Hz		: std_logic;
 	signal xREF_1Hz		: std_logic;
-	signal xSTART			: std_logic;
-	signal xNRUN			: std_logic;
+--	signal xNRUN			: std_logic;
 	signal xDONE			: std_logic;
 	signal xADC				: std_logic_vector(11 downto 0); 
 	signal xPROVDD			: std_logic_vector(11 downto 0); 
@@ -114,6 +113,10 @@ architecture Behavioral of TOP is
 	signal xTST_OUT 		: std_logic;
 	signal xMRCO 			: std_logic;
 	signal xPED_EN			: std_logic;
+	signal xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB			: std_logic;
+--	signal xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM					: std_logic; -- mza
+	signal xSOFTWARE_TRIGGERS_ARE_ENABLED : std_logic;
+	signal xEXTERNAL_TRIGGERS_ARE_ENABLED : std_logic;
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -184,7 +187,9 @@ architecture Behavioral of TOP is
 		xCLK_75MHz	 : in  std_logic;--75  MHz CLK
 		xEXT_TRIG	 : in  std_logic;
 		xSOFT_TRIG	 : in  std_logic;
-		xSTART 	 	 : out std_logic;
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : in std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : in std_logic;
+		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM : out std_logic; -- mza
 		xRAMP_DONE 	 : out std_logic;
 		xDAT		 	 : out std_logic_vector(11 downto 0);
 		xDONE		 	 : in  std_logic;
@@ -237,6 +242,9 @@ architecture Behavioral of TOP is
 		xSLWR      	: out std_logic; 
       xSOFT_TRIG  : out std_logic;
 		xVCAL			: out std_logic;
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : out std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
+		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xWAKEUP	 	: out std_logic;
 		xCLR_ALL   	: out std_logic);
     end component;
@@ -348,7 +356,10 @@ begin
 		xCLK_75MHz		=> xCLK_75MHz,
 		xSOFT_TRIG		=> xSOFT_TRIG,
 		xEXT_TRIG		=> xEXT_TRIG,
-		xSTART  			=> xSTART,
+		xSOFTWARE_TRIGGERS_ARE_ENABLED => xSOFTWARE_TRIGGERS_ARE_ENABLED,
+		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
+--		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM => xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB, -- mza
+		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM => open, -- mza
 		xRAMP_DONE		=> xRAMP_DONE,
 		xDAT				=> xDAT,
 		xDONE  			=> xDONE,
@@ -368,7 +379,7 @@ begin
 	port map (
 		I => xMON,
 		O => MON);
-	xMON(0)  <= xVCAL;--xVCAL
+	xMON(0)  <= xVCAL;--xVCAL - this is wired to the relay on the board
 	xMON(1)  <= xVCAL;--xVCAL
 	xMON(2)  <= xMON_HDR(2);--xMON_HDR(2)
 	xMON(3)  <= xMON_HDR(3);--xMON_HDR(3)
@@ -385,7 +396,7 @@ begin
 	xMON(14) <= xMON_HDR(14);
 	xMON(15) <= xMON_HDR(15);	
 --------------------------------------------------------------------------------	
-	xNRUN <= xSOFT_TRIG;
+--	xNRUN <= xSOFT_TRIG;
 --------------------------------------------------------------------------------	
 	xUSB_MAIN : USB_MAIN 
 	port map (
@@ -408,7 +419,7 @@ begin
 		RDY1  	=> RDY1,
 		WAKEUP  	=> WAKEUP,
 		-- USER I/O
-		xSTART  		=> xSTART,
+		xSTART  		=> xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB, -- mza
 		xDONE  		=> xDONE,
 		xIFCLK  		=> open,
 		xADC  		=> xADC,
@@ -423,6 +434,9 @@ begin
 		xSOFT_TRIG	=> xSOFT_TRIG,
 		xVCAL			=> xVCAL,
 		xPED_EN		=> xPED_EN,
+		xSOFTWARE_TRIGGERS_ARE_ENABLED => xSOFTWARE_TRIGGERS_ARE_ENABLED,
+		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
+		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB => xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB,
 		xWAKEUP  	=> xWAKEUP,
 		xCLR_ALL  	=> xCLR_ALL);		
 --------------------------------------------------------------------------------	

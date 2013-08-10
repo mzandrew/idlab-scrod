@@ -39,8 +39,8 @@ entity STURM2_RD is
 		xCLK_75MHz   : in  std_logic;--75  MHz CLK
 		xADC			 : out std_logic_vector(11 downto 0);
 		xSTATUS	    : out std_logic_vector(3 downto 0);
-		xINITIATE 	 : in  std_logic;
-		xSTART 	 	 : out std_logic;
+		xINITIATE_WILKINSON_AND_THEN_TRANSFER_TO_FPGA_RAM 	 : in  std_logic; -- mza
+		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM 	 					 : out std_logic; -- mza
 		xDONE		 	 : in  std_logic;
 		xRAMP_DONE 	 : out std_logic;
 		xW_EN			 : out std_logic;
@@ -65,7 +65,7 @@ architecture Behavioral of STURM2_RD is
 	signal TDC_START	 	: std_logic; 
 	signal TDC_STOP		: std_logic; 
 	signal TDC_CLR		 	: std_logic; 	
-	signal START		 	: std_logic; 
+	signal THERE_IS_NEW_DATA_IN_THE_FPGA_RAM		 	: std_logic; -- mza
 	signal ADC				: std_logic_vector(15 downto 0);
 	signal DATA				: std_logic_vector(15 downto 0);
 	signal RAMP_DONE	 	: std_logic; 
@@ -138,10 +138,11 @@ begin
 		I  => TDC_CLR,
 		O  => xTDC_CLR);	
 --------------------------------------------------------------------------------	
+	-- mza:
 	xBUF_START : BUF 
 	port map (
-		I  => START,
-		O  => xSTART);	
+		I  => THERE_IS_NEW_DATA_IN_THE_FPGA_RAM,
+		O  => xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM);	
 --------------------------------------------------------------------------------	
 	xBUF_RAMP_DONE : BUF 
 	port map (
@@ -176,7 +177,7 @@ begin
 			WADDR			<= (others=>'1');
 			RAMP 			<= '0';
 			RAMP_DONE	<= '0';
-			START 		<= '0';
+			THERE_IS_NEW_DATA_IN_THE_FPGA_RAM <= '0'; -- mza
 			TDC_START 	<= '0';
 			TDC_STOP 	<= '1';
 			TDC_CLR 		<= '1';
@@ -187,7 +188,7 @@ begin
 			case STATE is
 --------------------------------------------------------------------------------	
 				when IDLE =>			
-					if xINITIATE = '1' then
+					if xINITIATE_WILKINSON_AND_THEN_TRANSFER_TO_FPGA_RAM = '1' then -- mza
 						STATE 		<= CLR_TDC;
 					end if;
 --------------------------------------------------------------------------------	
@@ -221,7 +222,7 @@ begin
 					W_EN 	<= '0';
 --					WADDR <= WADDR + 1;
 -- was WADDR >= 287
-					if WADDR >= 256 then
+					if WADDR >= 256 then -- see STATE3 in usbwrite.vhd and state ADC in mess.vhd
 						STATE <= START_USB_READOUT;
 					else
 						STATE <= WAIT_FOR_BUS_SETTLING;
@@ -238,7 +239,7 @@ begin
 					end if;
 --------------------------------------------------------------------------------				
 				when START_USB_READOUT =>			
-					START <= '1';
+					THERE_IS_NEW_DATA_IN_THE_FPGA_RAM <= '1'; -- mza
 --------------------------------------------------------------------------------						
 				when others =>
 					state <= IDLE;

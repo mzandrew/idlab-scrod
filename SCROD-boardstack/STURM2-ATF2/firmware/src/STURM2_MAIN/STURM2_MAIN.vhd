@@ -48,7 +48,9 @@ entity STURM2_MAIN is
 		xCLK_75MHz	 : in std_logic;--75  MHz CLK
 		xEXT_TRIG	 : in  std_logic;
 		xSOFT_TRIG	 : in  std_logic;
-		xSTART 	 	 : out std_logic;
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : in std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : in std_logic;
+		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM : out std_logic; -- mza
 		xRAMP_DONE 	 : out std_logic;
 		xDAT		 	 : out std_logic_vector(11 downto 0);
 		xDONE		 	 : in  std_logic;
@@ -62,6 +64,8 @@ entity STURM2_MAIN is
 		xTST_OUT		 : out std_logic;
 		xMRCO		 	 : out std_logic;
 		xCLR_ALL 	 : in  std_logic);
+-- 2011-01 mza - to be implemented:
+--		xTRANSFER_DIGITIZED_DATA_TO_FPGA_RAM_BUFFER			: out std_logic; -- this gets done automatically right after the wilkonsoning
 end STURM2_MAIN;
 
 architecture Behavioral of STURM2_MAIN is
@@ -81,11 +85,13 @@ architecture Behavioral of STURM2_MAIN is
 	signal xTSA_IN	 	: std_logic_vector(3 downto 0);
 	signal xTSA_OUT 	: std_logic_vector(3 downto 0);
 	signal xCAL			: std_logic; 
-	signal xNRUN	: std_logic; 
+--	signal xNRUN	: std_logic; 
 	signal RAMP_DONE	 : std_logic;
 	signal xW_EN		 : std_logic;
-	signal START		 : std_logic;
 --	signal xEXT_TRIG	 : std_logic;
+	signal SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY				: std_logic; -- mza
+	signal DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION	: std_logic; -- mza
+	signal THERE_IS_NEW_DATA_IN_THE_FPGA_RAM						: std_logic; -- mza
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -131,12 +137,17 @@ architecture Behavioral of STURM2_MAIN is
 		xTSA_OUT		 : out std_logic_vector(3 downto 0);
 		xCAL		 	 : out std_logic;
 		-- User I/O
-		xNRUN		 	 : out std_logic;
+--		xNRUN		 	 : out std_logic;
 		xCLK			 : in std_logic;--150 MHz CLK
 		xCLK_75MHz	 : in std_logic;--75  MHz CLK
 		xPED_EN	 	 : in  std_logic;
 		xEXT_TRIG 	 : in  std_logic;
 		xSOFT_TRIG 	 : in  std_logic;
+		xSAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY : out std_logic; -- mza
+		xDIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION : out std_logic; -- mza
+		xSOFTWARE_TRIGGERS_ARE_ENABLED : in std_logic;
+		xEXTERNAL_TRIGGERS_ARE_ENABLED : in std_logic;
+		xTRIGGER : out std_logic;
 		xCLR_ALL 	 : in  std_logic);
    end component;
 --------------------------------------------------------------------------------	
@@ -155,8 +166,8 @@ architecture Behavioral of STURM2_MAIN is
 		xCLK_75MHz	 : in std_logic;--75  MHz CLK
 		xADC			 : out std_logic_vector(11 downto 0);
 		xSTATUS	    : out std_logic_vector(3 downto 0);
-		xINITIATE 	 : in  std_logic;
-		xSTART 	 	 : out std_logic;
+		xINITIATE_WILKINSON_AND_THEN_TRANSFER_TO_FPGA_RAM 	 : in  std_logic; -- mza
+		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM 	 					 : out std_logic; -- mza
 		xDONE		 	 : in  std_logic;
 		xRAMP_DONE 	 : out std_logic;
 		xW_EN			 : out std_logic;
@@ -187,8 +198,9 @@ architecture Behavioral of STURM2_MAIN is
 begin
 --------------------------------------------------------------------------------	
 	xMON_HDR <= xMON(15 downto 0);
-	xMON(0)  <= xCH_SEL(0);
-	xMON(1)  <= xCH_SEL(1);
+	-- xTDC_START xTDC_STOP xTDC_CLR RAMP_DONE xW_EN
+	xMON(0)  <= xCH_SEL(0); -- this is overridden by top.vhd
+	xMON(1)  <= xCH_SEL(1); -- this is overridden by top.vhd
 	xMON(2)  <= xCH_SEL(2);
 	xMON(3)  <= xCH_SEL(3);
 	xMON(4)  <= xSMPL_SEL(0);
@@ -196,14 +208,15 @@ begin
 	xMON(6)  <= xSMPL_SEL(2);
 	xMON(7)  <= xSMPL_SEL(3);
 	xMON(8)  <= xSMPL_SEL(4);
-	xMON(9)  <= xEXT_TRIG;
 --	xMON(9)  <= xCLK;
-	xMON(10) <= START;
-	xMON(11) <= xTDC_START;
-	xMON(12) <= xTDC_STOP;
-	xMON(13) <= xTDC_CLR;
-	xMON(14) <= RAMP_DONE;
-	xMON(15) <= xW_EN;
+	xMON(9)  <= xEXT_TRIG; -- mza
+--	xMON(10) <= '0'; -- trigger, set below
+	xMON(11) <= SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY; -- mza
+	xMON(12) <= xEXTERNAL_TRIGGERS_ARE_ENABLED;
+	xMON(13) <= DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION; -- mza
+	xMON(14) <= xSOFTWARE_TRIGGERS_ARE_ENABLED;
+	xMON(15) <= THERE_IS_NEW_DATA_IN_THE_FPGA_RAM; -- mza
+--------------------------------------------------------------------------------	
 	xMON(16) <= xCLK;
 	xMON(17) <= xCLR_ALL;
 	xMON(18) <= xDONE;
@@ -260,12 +273,17 @@ begin
 		xTSA_OUT			=> xTSA_OUT,
 		xCAL				=> xCAL,
 		-- User I/O
-		xNRUN				=> xNRUN,
+--		xNRUN				=> xNRUN,
 		xCLK				=> xCLK,
 		xCLK_75MHz		=> xCLK_75MHz,
 		xPED_EN			=> xPED_EN,
 		xEXT_TRIG		=> xEXT_TRIG,
 		xSOFT_TRIG		=> xSOFT_TRIG,
+		xSAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY => SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY, -- mza
+		xDIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION => DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION, -- mza
+		xSOFTWARE_TRIGGERS_ARE_ENABLED => xSOFTWARE_TRIGGERS_ARE_ENABLED,
+		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
+		xTRIGGER => xMON(10),
 		xCLR_ALL			=> xCLR_ALL);
 --------------------------------------------------------------------------------			
 	xSTURM2_RD : STURM2_RD
@@ -282,17 +300,21 @@ begin
 		xCLK_75MHz	=> xCLK_75MHz,
 		xADC			=> xADC,
 		xSTATUS 		=> xSTATUS,
-		xINITIATE	=> xNRUN,
-		xSTART		=> START,
+--		xINITIATE_WILKINSON_AND_THEN_TRANSFER_TO_FPGA_RAM	=> xSOFT_TRIG,
+		xINITIATE_WILKINSON_AND_THEN_TRANSFER_TO_FPGA_RAM	=> DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION, -- mza
+		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM		=> THERE_IS_NEW_DATA_IN_THE_FPGA_RAM, -- mza
+--		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM		=> open,
 		xRAMP_DONE	=> RAMP_DONE,
 		xW_EN 		=> xW_EN,
 		xDONE			=> xDONE,
 		xCLR_ALL		=> xCLR_ALL,
 		xRADDR		=> xRADDR);
 --------------------------------------------------------------------------------			
+--	SAMPLING_IS_COMPLETE <= not xEXT_TRIG;
+--------------------------------------------------------------------------------			
 	xRAMP <= RAMPING;
 	xDAT  <= DATA;
 	xRAMP_DONE <= RAMP_DONE;
-	xSTART <= START;
+	xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM <= THERE_IS_NEW_DATA_IN_THE_FPGA_RAM; -- mza
 --------------------------------------------------------------------------------
 end Behavioral;
