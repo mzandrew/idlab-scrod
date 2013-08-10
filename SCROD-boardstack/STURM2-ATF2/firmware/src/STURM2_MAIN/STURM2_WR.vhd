@@ -86,9 +86,12 @@ begin
 	xBUF_NRUN : BUF 
 	port map (
 		I  => xSOFT_TRIG,
+--		I  => xSOFT_TRIG or xEXT_TRIG,
 		O  => xNRUN);		
 --------------------------------------------------------------------------------
-	TSA_OUT <= xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG;
+--	TSA_OUT <= xSOFT_TRIG & '1' & '1' & '1';
+--		TSA_OUT <= xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG;  -- GSV
+		TSA_OUT <= xEXT_TRIG & xEXT_TRIG & xEXT_TRIG & xEXT_TRIG;  -- GSV
 --------------------------------------------------------------------------------	
 	xBUF_TSA_OUT : BUF_BUS
 	generic map(bus_width => 4)

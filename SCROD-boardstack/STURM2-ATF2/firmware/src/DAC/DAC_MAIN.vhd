@@ -165,6 +165,7 @@ begin
 		xPROVDD    	=> PROVDD,
 		xRCO_INT    => RCO_INT,
 		xROVDD    	=> open,--ROVDD
+--		xROVDD    	=> ROVDD,  Doesn't EXIST!!  GSV
 		xTST_START  => xTST_START,
 		xTST_CLR    => xTST_CLR,
 		xTST_OUT    => xTST_OUT,
@@ -175,14 +176,15 @@ begin
 		xRCO_INT    <= RCO_INT;
 		xROVDD    	<= ROVDD;
 --------------------------------------------------------------------------------
-	VDLY0 <= x"FFF";
-	VDLY1 <= VDLY0 - x"100";
-	VDLY2 <= VDLY1 - x"100";
-	VDLY3 <= VDLY2 - x"100";
-	VDLY4 <= VDLY3 - x"100";
-	VDLY5 <= VDLY4 - x"100";
-	VDLY6 <= VDLY5 - x"100";
-	VDLY7 <= VDLY6 - x"100";
+-- original values were vdly0=4fe, vdly1=vdly0 - 4, vdly2=vdly1 - 0, vdly3=vdly1 - 0, vdly4=vdly1 - vdly5=vdly1 - 0, vdly6=vdly1 - 0, vdly7=vdly1 - 0
+	VDLY0 <= x"4FE"; -- was "FFF" then "7FF" (7FF not really working)
+	VDLY1 <= VDLY0 - x"010";
+	VDLY2 <= VDLY1 - x"010";
+	VDLY3 <= VDLY2 - x"010";
+	VDLY4 <= VDLY3 - x"010";
+	VDLY5 <= VDLY4 - x"010";
+	VDLY6 <= VDLY5 - x"010";
+	VDLY7 <= VDLY6 - x"010";
 --------------------------------------------------------------------------------
 	DAC_A_0 <= x"3" & VDLY0;--VDLY0
 	DAC_B_0 <= x"7" & VDLY1;--VDLY1

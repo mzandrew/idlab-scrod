@@ -170,6 +170,7 @@ begin
 					elsif ROVDD_INT < COMPARE_INT and ROVDD > x"001" then
 						ROVDD <= ROVDD - 1;
 					end if;
+					ROVDD <= x"7FF";
 					STATE	<= IDLE;
 --------------------------------------------------------------------------------	
 				when others =>	STATE<=IDLE;																
@@ -177,7 +178,7 @@ begin
 		end if;
 	end process;	
 --------------------------------------------------------------------------------	
-	COMPARE_INT <= x"100";
+	COMPARE_INT <= x"285";  --185
 --------------------------------------------------------------------------------	
 	xBUF_ROVDD_INT : BUF_BUS
 	generic map(bus_width => 12)

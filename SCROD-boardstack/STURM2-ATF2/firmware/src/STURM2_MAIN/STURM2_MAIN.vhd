@@ -10,10 +10,11 @@
 --  						E-mail: idlab@phys.hawaii.edu									   --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------	
--- Design by: Larry L. Ruckman Jr.															--
+-- Design by: Larry L. Ruckman Jr. 															--
+-- Modified by:  GSV					 															--
 -- DATE : 03 Jan 2010																			--
--- Project name: Belle2 TOP firmware														--
---	Module name: CLK_MAIN.vhd		  															--
+-- Project name: STURM2 eval board firmware												--
+--	Module name: STURM2_MAIN.vhd		  															--
 --	Description : 																					--
 -- 	CLK distribution/generation block													--
 --		  											    												--
@@ -84,6 +85,7 @@ architecture Behavioral of STURM2_MAIN is
 	signal RAMP_DONE	 : std_logic;
 	signal xW_EN		 : std_logic;
 	signal START		 : std_logic;
+--	signal xEXT_TRIG	 : std_logic;
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -194,14 +196,15 @@ begin
 	xMON(6)  <= xSMPL_SEL(2);
 	xMON(7)  <= xSMPL_SEL(3);
 	xMON(8)  <= xSMPL_SEL(4);
-	xMON(9)  <= xNRUN;
+	xMON(9)  <= xEXT_TRIG;
+--	xMON(9)  <= xCLK;
 	xMON(10) <= START;
 	xMON(11) <= xTDC_START;
 	xMON(12) <= xTDC_STOP;
 	xMON(13) <= xTDC_CLR;
 	xMON(14) <= RAMP_DONE;
 	xMON(15) <= xW_EN;
-	xMON(16) <= '0';
+	xMON(16) <= xCLK;
 	xMON(17) <= xCLR_ALL;
 	xMON(18) <= xDONE;
 	xMON(19) <= RAMPING;
