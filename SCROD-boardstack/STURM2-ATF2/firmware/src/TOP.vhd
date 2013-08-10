@@ -294,7 +294,8 @@ begin
 		xREF_100Hz  => xREF_100Hz,
 		xREF_10Hz	=> xREF_10Hz,
 		xREF_1Hz		=> xREF_1Hz,
-		xEXT_TRIG	=> open,
+--		xEXT_TRIG	=> open,
+		xEXT_TRIG	=> xEXT_TRIG,
 		LED_GREEN	=> LED_GREEN,
 		LED_RED  	=> LED_RED);
 --------------------------------------------------------------------------------	

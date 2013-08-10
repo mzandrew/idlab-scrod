@@ -155,7 +155,7 @@ begin
 					end if;
 --------------------------------------------------------------------------------
 				when STATE3 =>									  	
-					if column = 299 then -- 299
+					if column > 298 then 
 						column 	<= (others=>'0');
 						LRAD	 	<= (others=>'0');
 						DONE 		<= '1';

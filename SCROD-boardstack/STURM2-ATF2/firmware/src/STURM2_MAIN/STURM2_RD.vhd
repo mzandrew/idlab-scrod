@@ -165,12 +165,12 @@ begin
 		I => DATA,		
 		O => xWRITE);
 --------------------------------------------------------------------------------	
-	DATA <= x"0" & xDAT;
-	--DATA <= x"0" & "00" & xWADDR;
+	DATA <= x"0" & xDAT;  -- GSV
+--	DATA <= x"0" & "00" & xWADDR;
 --------------------------------------------------------------------------------
 	process(xCLK,xCLR_ALL,xDONE)
 	begin
-		if xCLR_ALL = '1' or xDONE = '1' then
+		if xCLR_ALL = '1' or xDONE = '1' or PHASE_CNT > 6 then
 			STATE_CNT	<= (others=>'0');
 			PHASE_CNT	<= (others=>'0');
 			WADDR			<= (others=>'1');
@@ -192,30 +192,36 @@ begin
 					end if;
 --------------------------------------------------------------------------------	
 				when CLR_TDC =>			
-					TDC_CLR		<= '0';
+					TDC_CLR		<= '1';
 					TDC_STOP		<= '0';
+					PHASE_CNT	<= (others=>'0');  -- GSV modified	
 					STATE 		<= WAIT_FOR_CLR_TDC_SETTLING;
 --------------------------------------------------------------------------------	
 				when WAIT_FOR_CLR_TDC_SETTLING =>			
 					PHASE_CNT <= PHASE_CNT + 1;
-					if PHASE_CNT > 3 then
+					if PHASE_CNT >= 2 then
+						TDC_CLR     <= '0';
 						PHASE_CNT	<= (others=>'0');
+						STATE_CNT	<= (others=>'0');
 						STATE 		<= START_TDC;
-					end if;
+					end if; 
 --------------------------------------------------------------------------------	
 				when START_TDC =>
 					STATE_CNT <= STATE_CNT + 1;   
-					TDC_START 	<= '1'; --4.0 us long ramp
-					RAMP 			<= '1'; -- ISEL = 20 kohm & CEXT = 100 pF
-					if STATE_CNT = 6000 then
+--					TDC_START 	<= '1'; --4.0 us long ramp
+					TDC_START 	<= '1'; --1.1 us long ramp
+					RAMP 			<= '1'; -- ISEL = 68 kohm & CEXT = ~10 pF (cpad)
+					if STATE_CNT >= 8000 then
 						RAMP_DONE	 <= '1';
+						WADDR		 	 <= (others=>'0');
 						STATE 		 <= STORE_to_RAM;
 					end if;
 --------------------------------------------------------------------------------	
 				when STORE_to_RAM =>			
 					W_EN 	<= '0';
-					WADDR <= WADDR + 1;
-					if WADDR = 287 then
+--					WADDR <= WADDR + 1;
+-- was WADDR >= 287
+					if WADDR >= 256 then
 						STATE <= START_USB_READOUT;
 					else
 						STATE <= WAIT_FOR_BUS_SETTLING;
@@ -223,10 +229,12 @@ begin
 --------------------------------------------------------------------------------				
 				when WAIT_FOR_BUS_SETTLING =>			
 					PHASE_CNT <= PHASE_CNT + 1;
-					if PHASE_CNT > 2 then
-						W_EN 	<= '1';
+						W_EN 	<= '1';	
+					if PHASE_CNT >= 3 then
+						W_EN 	<= '0';
 						PHASE_CNT	<= (others=>'0');
 						STATE <= STORE_to_RAM; 
+						WADDR <= WADDR + 1;
 					end if;
 --------------------------------------------------------------------------------				
 				when START_USB_READOUT =>			

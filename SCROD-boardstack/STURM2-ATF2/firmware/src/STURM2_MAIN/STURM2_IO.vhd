@@ -13,9 +13,9 @@
 -- Design by: Larry L. Ruckman Jr.															--
 -- DATE : 03 Jan 2010																			--
 -- Project name: Belle2 TOP firmware														--
---	Module name: G_CNT				  															--
+--	Module name: STURM2_IO.vhd				  													--
 --	Description : 																					--
--- 	Global Counter Module																	--
+-- 	General STURM2 I/O   																	--
 --		  											    												--
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

@@ -12,7 +12,7 @@
 --------------------------------------------------------------------------------	
 -- Design by: Larry L. Ruckman Jr.															--
 -- DATE : 23 Jan 2010																			--
--- Project name: Belle2 TOP firmware														--
+-- Project name: STURM2 eval firmware														--
 --	Module name: CTRL_LOOP_PRCO.vhd  														--
 --	Description : 																					--
 -- 	throttles Wilk. CLK to 730 MHz: xTST_OUT = 178 kHz								--
@@ -132,7 +132,7 @@ begin
 	process(xCLK_10MHz,xCLR_ALL)
 	begin
 		if xCLR_ALL = '1' then
-			PROVDD <= x"5FF";
+			PROVDD <= x"AFF";
 			STATE <= IDLE;
 		elsif falling_edge(xCLK_10MHz) then
 --------------------------------------------------------------------------------			
@@ -168,14 +168,18 @@ begin
 					elsif PRCO_INT < COMPARE_INT and PROVDD > x"3FF" then--measured lower limit
 						PROVDD <= PROVDD - 1;
 					end if;
+--					PROVDD <= x"AFF";
 					STATE	<= IDLE;
 --------------------------------------------------------------------------------	
 				when others =>	STATE<=IDLE;																
 			end case;
 		end if;
 	end process;	
---------------------------------------------------------------------------------	
-	COMPARE_INT <= x"258";--x"258"
+---------------------
+
+
+-----------------------------------------------------------	
+	COMPARE_INT <= x"184";--x"184"  658 almost perfect current ramp
 --------------------------------------------------------------------------------	
 	xBUF_PRCO_INT : BUF_BUS
 	generic map(bus_width => 12)
