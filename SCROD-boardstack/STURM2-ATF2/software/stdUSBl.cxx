@@ -206,3 +206,4 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
       return FAILED;
     }
 }
+

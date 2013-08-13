@@ -42,3 +42,4 @@ protected:
     struct usb_dev_handle* stdHandle;
 };
 #endif //stdUSB_H
+

@@ -20,6 +20,7 @@ void STURM2Data::unpackData(int fReadoutBuffer[]){
   fDEBUG     = fReadoutBuffer[NUM_CHANNELS*NUM_SMPL+6];
 ///////////////////////////////////////////////////////// 
   int ptr;
+
   for(int i=0;i<NUM_CHANNELS;i++){
     for(int j=0;j<NUM_SMPL;j++){
       ptr = fRaw[i][j];
@@ -29,10 +30,12 @@ void STURM2Data::unpackData(int fReadoutBuffer[]){
 	  if(i==0 && j<8) cout << "using ped value = " << fPED[i][j] << " for sample " << j << " and raw sample = " << 1.0*fRaw[i][j] << endl;  
 	  fRaw[i][j]-=fPED[i][j];  
 	}
-        fWaveform[i][j] = fRaw[i][j];
+      fWaveform[i][j] = fRaw[i][j];
+      
+      
       //              fWaveform[i][j] = fRaw[i][j] - fPED[i][j];
       //fWaveform[i][j] = fVLUT[i][j][ptr] - fPED[i][j];
-       //     if(i==0 && j<8)   cout << "channel = " << i << " sample = " << j << " value = " << fRaw[i][j] << " and ped = " << fPED[i][j] << endl;
+      //     if(i==0 && j<8)   cout << "channel = " << i << " sample = " << j << " value = " << fRaw[i][j] << " and ped = " << fPED[i][j] << endl;
       // fWaveform[i][j] = fVLUT[i][j][ptr];
     }
   }
