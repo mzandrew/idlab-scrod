@@ -243,7 +243,7 @@ void MainFrame::Oscope_Draw() {
   if(Something_Drawn){
     //   cout << "Something_Drawn" << endl;
     mg->Draw("A");
-    mg->GetYaxis()->SetRangeUser(-1500,1500);
+    mg->GetYaxis()->SetRangeUser(-500,500);
     //    mg->GetXaxis()->SetTitle("time (ns)"); --GSV
     mg->GetXaxis()->SetTitle("Sample number (4x TSA, 8 samples each)");
     mg->GetXaxis()->CenterTitle();

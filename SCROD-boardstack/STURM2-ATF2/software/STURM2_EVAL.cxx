@@ -110,6 +110,7 @@ void STURM2_EVAL::LOG_DATA(){
     cout << "Called: STURM2_EVAL::LOG_DATA()" << endl;
   }
   if(!fOffLineMode){
+    //FILE *dfile = fopen("fWaveform.dat","w");
     TString xSTRING("LOG_DATA");
     Start_TFile(xSTRING);
     for(int event=0;event<1000;event++){
@@ -118,6 +119,7 @@ void STURM2_EVAL::LOG_DATA(){
       fStatusBar->Draw();
       cout << xSTRING.Data() << endl;
       SendSoftTrig();
+      //fprintf(dfile, "%d\t%d\t%g\n", i, j, fWaveform[i][j]);
       usleep(100);
       int return_value=ReadUSB(false,false);
       if(return_value<0) continue;
@@ -125,6 +127,7 @@ void STURM2_EVAL::LOG_DATA(){
       tree->Fill();  
     }
     End_TFile();
+    //fclose(dfile);
   }
 }
 //////////////////////////////////////
