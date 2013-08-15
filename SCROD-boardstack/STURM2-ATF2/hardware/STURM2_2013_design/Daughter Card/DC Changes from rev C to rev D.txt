@@ -1,0 +1,10 @@
+
+STURM2 DC board major changes from REV C to REV D
+
+
+- Cal+ and Cal- changed to differential pair, Schematic updated
+- Regulator V4 ( unnecessary VPED regulator ) removed along with is other components ( R11,R12,C3,C4)
+- All DAC output capacitors removed
+- Added testpoint for VPED, TSA0 and GND
+- Changed DAC (AD3524) another input capacitor from 0.1uf to 10uf as shown on the component datasheet. 
+- Added buffer amplifier (LMV321WG-7) to DAC 3 PED_SCAN output

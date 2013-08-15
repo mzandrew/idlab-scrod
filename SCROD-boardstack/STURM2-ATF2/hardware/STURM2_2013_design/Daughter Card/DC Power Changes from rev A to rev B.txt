@@ -1,0 +1,9 @@
+
+STURM2 DC Power board major changes from REV A to REV B
+
+- Changed 1.2 Volt regulator to AP1122EG-13
+- Fixed power issue with SCROD J4 connector
+- CAl+ and CAL- traces changed to differential pair for all DC board connectors
+- Testpoints added for GND, 1.2V, 2.5V, 3.3V, 5V 
+- New routing with less vias
+
