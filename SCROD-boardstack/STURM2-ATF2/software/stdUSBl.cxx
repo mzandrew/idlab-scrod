@@ -46,6 +46,17 @@ bool stdUSB::createHandles(void) {
         goto fail;
     }
 
+    /*This part is funky. If you run the software and usb_set_configuration returns error value -16: Device or resource busy, then uncomment this section, recompile, and run the program again; it should run fine.  However; if you run the software yet another time and usb_set_configuration returns error value -61: No data available, then comment out this section, recompile, and run the program again.  You shouldn't experience these errors again until the computer is restarted.*/
+/* wierd section begin */
+/*
+    retval = usb_detach_kernel_driver_np(stdHandle, USBFX2_INTFNO);
+    if (retval != 0) {
+      printf("usb_set_configuration -- fail %d %s\n",retval,strerror(-1*retval));
+      goto fail;
+    }
+*/
+/* wierd section end */
+
     retval = usb_set_configuration(stdHandle, USBFX2_CNFNO);
     if (retval != 0) {
       printf("usb_set_configuration -- fail %d %s\n",retval,strerror(-1*retval));
@@ -54,11 +65,11 @@ bool stdUSB::createHandles(void) {
 
     retval = usb_claim_interface(stdHandle, USBFX2_INTFNO);
     if (retval != 0) {
-      printf("usb_set_configuration -- fail %d %s\n",retval,strerror(-1*retval));
+      printf("usb_claim_interface -- fail %d %s\n",retval,strerror(-1*retval));
         goto fail;
     }
 
-    retval = usb_set_altinterface(stdHandle, USBFX2_INTFNO);
+    retval = usb_set_altinterface(stdHandle, USBFX2_ALTSETNO);
     if (retval != 0) {
       printf("usb_set_altinterface -- fail %d %s\n",retval,strerror(-1*retval));
       goto fail;
@@ -74,7 +85,7 @@ ok:
     /* on failure*/
 fail:
     printf("createhandles: FAILED\n");
-    return FAILED; // Unable to open usb device. No handle.}
+    return FAILED; // Unable to open usb device. No handle.
 }
 
 /**
@@ -180,9 +191,10 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
     buff => bytes to read (has to be <64 bytes)
     USB_TOUT_MS => timeout in ms
     */
+printf("debug 1\n");
     int retval = usb_bulk_read(stdHandle, USBFX2_EP_READ, (char*)pData, buff_sz, USB_TOUT_MS);
 
-//    printf("readData: read %d bytes\n", retval);
+//  printf("readData: read %d bytes\n", retval);
 
     if (retval > 0) {
         //*lread = retval/buff_sz;
@@ -193,17 +205,18 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
       if(retval==-110) { 
 	//Think this is a timeout
 	usleep(1000);
+printf("debug 2\n");
 	retval = usb_bulk_read(stdHandle, USBFX2_EP_READ, (char*)pData, buff_sz, USB_TOUT_MS);
 	if(retval>0) {
+printf("debug 2.5\n");
 	  *lread = (int)(retval / (unsigned long)sizeof(unsigned short));
 	  return SUCCEED;
 	}
-      }
-      else {           
-	printf("error code: %d %s\n", retval,strerror(-1 * retval));	  
+      } else {           
+printf("debug 3\n");
+	printf("usb_bulk_read -- fail %d %s\n", retval,strerror(-1 * retval));	  
 	*lread = retval;
       }
       return FAILED;
     }
 }
-
