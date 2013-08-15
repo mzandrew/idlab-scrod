@@ -42,9 +42,10 @@ entity STURM2_MAIN is
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
 		CAL_P			 : out std_logic; 
-		CAL_N			 : out std_logic; 
+		CAL_N			 : in std_logic;	--MCF; used to be out.  trying out CAL_P <= CAL_N in STURM2_IO instead
 		-- User I/O
 		xCLK			 : in std_logic;--150 MHz CLK
+		xCLK_INV		 : in std_logic;--MCF
 		xCLK_75MHz	 : in std_logic;--75  MHz CLK
 		xEXT_TRIG	 : in  std_logic;
 		xSOFT_TRIG	 : in  std_logic;
@@ -55,7 +56,7 @@ entity STURM2_MAIN is
 		xDAT		 	 : out std_logic_vector(11 downto 0);
 		xDONE		 	 : in  std_logic;
 		xPED_EN	 	 : in  std_logic;
-		xRAMP	 		 : out std_logic; 
+		xRAMP	 		 : out std_logic;	--MCF; not buffered. for debugging
 		xADC			 : out std_logic_vector(11 downto 0);
 		xRADDR    	 : in  std_logic_vector(9 downto 0);		
 		xMON_HDR	 	 : out std_logic_vector(15 downto 0);
@@ -63,7 +64,11 @@ entity STURM2_MAIN is
 		xTST_CLR	 	 : in  std_logic; 
 		xTST_OUT		 : out std_logic;
 		xMRCO		 	 : out std_logic;
-		xCLR_ALL 	 : in  std_logic);
+		xCLR_ALL 	 : in  std_logic;
+		TDC_START_NOT_BUFFERED	: out std_logic;	--MCF; for debugging
+		TDC_STOP_NOT_BUFFERED	: out std_logic;	--MCF; for debugging
+		TDC_CLR_NOT_BUFFERED	: out std_logic;	--MCF; for debugging
+		TSA_OUT_NOT_BUFFERED : out std_logic);	--MCF; for debugging
 -- 2011-01 mza - to be implemented:
 --		xTRANSFER_DIGITIZED_DATA_TO_FPGA_RAM_BUFFER			: out std_logic; -- this gets done automatically right after the wilkonsoning
 end STURM2_MAIN;
@@ -84,7 +89,7 @@ architecture Behavioral of STURM2_MAIN is
 	signal xTDC_CLR	: std_logic; 
 	signal xTSA_IN	 	: std_logic_vector(3 downto 0);
 	signal xTSA_OUT 	: std_logic_vector(3 downto 0);
-	signal xCAL			: std_logic; 
+--	signal xCAL			: std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
 --	signal xNRUN	: std_logic; 
 	signal RAMP_DONE	 : std_logic;
 	signal xW_EN		 : std_logic;
@@ -112,7 +117,7 @@ architecture Behavioral of STURM2_MAIN is
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
 		CAL_P			 : out std_logic; 
-		CAL_N			 : out std_logic; 
+		CAL_N			 : in std_logic;	--MCF; used to be out.  trying out CAL_P <= CAL_N instead
 		-- User I/O
 		xRAMP	 		 : in  std_logic; 
 		xTST_START 	 : in  std_logic; 
@@ -126,8 +131,8 @@ architecture Behavioral of STURM2_MAIN is
 		xTDC_CLR		 : in  std_logic; 
 		xMRCO		 	 : out std_logic;
 		xTSA_IN		 : out std_logic_vector(3 downto 0);
-		xTSA_OUT		 : in  std_logic_vector(3 downto 0);
-		xCAL			 : in  std_logic);
+		xTSA_OUT		 : in  std_logic_vector(3 downto 0));
+--		xCAL			 : in  std_logic);	--MCF; trying out CAL_P <= CAL_N instead
    end component;
 --------------------------------------------------------------------------------	
    component STURM2_WR
@@ -135,7 +140,7 @@ architecture Behavioral of STURM2_MAIN is
 		-- STURM2 ASIC I/Os
 		xTSA_IN		 : in  std_logic_vector(3 downto 0);
 		xTSA_OUT		 : out std_logic_vector(3 downto 0);
-		xCAL		 	 : out std_logic;
+--		xCAL		 	 : out std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
 		-- User I/O
 --		xNRUN		 	 : out std_logic;
 		xCLK			 : in std_logic;--150 MHz CLK
@@ -163,6 +168,7 @@ architecture Behavioral of STURM2_MAIN is
 		xTDC_CLR		 	: out std_logic; 
 		-- User I/O
 		xCLK			 : in std_logic;--150 MHz CLK
+		xCLK_INV		 : in std_logic;--MCF
 		xCLK_75MHz	 : in std_logic;--75  MHz CLK
 		xADC			 : out std_logic_vector(11 downto 0);
 		xSTATUS	    : out std_logic_vector(3 downto 0);
@@ -210,14 +216,14 @@ begin
 	xMON(8)  <= xSMPL_SEL(4);
 --	xMON(9)  <= xCLK;
 	xMON(9)  <= xEXT_TRIG; -- mza
---	xMON(10) <= '0'; -- trigger, set below
+--	xMON(10) <= '0';
 	xMON(11) <= SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY; -- mza
 	xMON(12) <= xEXTERNAL_TRIGGERS_ARE_ENABLED;
 	xMON(13) <= DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION; -- mza
 	xMON(14) <= xSOFTWARE_TRIGGERS_ARE_ENABLED;
 	xMON(15) <= THERE_IS_NEW_DATA_IN_THE_FPGA_RAM; -- mza
 --------------------------------------------------------------------------------	
-	xMON(16) <= xCLK;
+--	xMON(16) <= xCLK;	MCF; caused gated clock errors
 	xMON(17) <= xCLR_ALL;
 	xMON(18) <= xDONE;
 	xMON(19) <= RAMPING;
@@ -227,7 +233,7 @@ begin
 --------------------------------------------------------------------------------	
 	xCHIPSCOPE_MON : CHIPSCOPE_MON
 	generic map(
-		xUSE_CHIPSCOPE => 1)
+		xUSE_CHIPSCOPE => 0)	--set to 1 to use the ILA
 	port map (
 		xCLK => xCLK,
 		xMON => xMON);
@@ -263,15 +269,15 @@ begin
 		xTDC_CLR  	=> xTDC_CLR,
 		xMRCO  		=> xMRCO,
 		xTSA_IN  	=> xTSA_IN,
-		xTSA_OUT  	=> xTSA_OUT,
-		xCAL  		=> xCAL);
+		xTSA_OUT  	=> xTSA_OUT);
+--		xCAL  		=> xCAL);	--MCF; trying out CAL_P <= CAL_N instead
 --------------------------------------------------------------------------------
 	xSTURM2_WR : STURM2_WR
 	port map (
 		-- STURM2 ASIC I/Os
 		xTSA_IN			=> xTSA_IN,
 		xTSA_OUT			=> xTSA_OUT,
-		xCAL				=> xCAL,
+--		xCAL				=> xCAL,	--MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
 		-- User I/O
 --		xNRUN				=> xNRUN,
 		xCLK				=> xCLK,
@@ -297,6 +303,7 @@ begin
 		xTDC_CLR  	=> xTDC_CLR,
 		-- User I/O
 		xCLK			=> xCLK,
+		xCLK_INV		=> xCLK_INV,	--MCF
 		xCLK_75MHz	=> xCLK_75MHz,
 		xADC			=> xADC,
 		xSTATUS 		=> xSTATUS,
@@ -311,10 +318,15 @@ begin
 		xRADDR		=> xRADDR);
 --------------------------------------------------------------------------------			
 --	SAMPLING_IS_COMPLETE <= not xEXT_TRIG;
---------------------------------------------------------------------------------			
+--------------------------------------------------------------------------------	
+-- this is section is to assign output ports that weren't already assigned by the instances		
 	xRAMP <= RAMPING;
 	xDAT  <= DATA;
 	xRAMP_DONE <= RAMP_DONE;
 	xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM <= THERE_IS_NEW_DATA_IN_THE_FPGA_RAM; -- mza
+	TDC_START_NOT_BUFFERED <= xTDC_START;	--MCF; for debugging
+	TDC_STOP_NOT_BUFFERED <= xTDC_STOP;	--MCF; for debugging
+	TDC_CLR_NOT_BUFFERED <= xTDC_CLR;	--MCF; for debugging
+	TSA_OUT_NOT_BUFFERED <= xTSA_OUT(0);	--MCF; for debugging
 --------------------------------------------------------------------------------
 end Behavioral;

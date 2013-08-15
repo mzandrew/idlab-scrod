@@ -22,7 +22,7 @@ entity USBread is
       xDONE    		: in  std_logic;
       xUSB_DATA  		: in  std_logic_vector (15 downto 0);
       xFLAGA    		: in  std_logic;
-		xRESET    		: in  std_logic;
+		xRESET    		: in  std_logic;	--MCF; active low
       xWBUSY    		: in  std_logic;
       xFIFOADR  		: out std_logic_vector (1 downto 0);
       xRBUSY    		: out std_logic;
@@ -42,7 +42,9 @@ entity USBread is
 		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
 		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xDEBUG 		  	: out std_logic_vector (15 downto 0);
-      xTOGGLE   		: out std_logic);
+      xTOGGLE   		: out std_logic;
+		Locmd_DEBUG		: out std_logic_vector(3 downto 0);	--MCF; for debugging
+		Hicmd_DEBUG		: out std_logic);	--MCF; for debugging
 end USBread;
 
 architecture BEHAVIORAL of USBread is
@@ -151,11 +153,14 @@ begin
 		I => PED_EN,
 		O => xPED_EN);
 --------------------------------------------------------------------------------
+Locmd_DEBUG <=	Locmd(3 downto 0);
+Hicmd_DEBUG <= Hicmd(0);
+--------------------------------------------------------------------------------
 	xSOFTWARE_TRIGGERS_ARE_ENABLED <= SOFTWARE_TRIGGERS_ARE_ENABLED;
 	xEXTERNAL_TRIGGERS_ARE_ENABLED <= EXTERNAL_TRIGGERS_ARE_ENABLED;
 	xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB;
 --------------------------------------------------------------------------------
-	process(xIFCLK, xRESET)
+	software_state_machine : process(xIFCLK, xRESET, xDONE)
 	variable delay : integer range 0 to 10;
 	begin
 		if xRESET = '0' then
@@ -175,6 +180,7 @@ begin
 			state       <= st1_WAIT;
 			SOFTWARE_TRIGGERS_ARE_ENABLED <= '0';
 			EXTERNAL_TRIGGERS_ARE_ENABLED <= '1';
+			REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '0';	--MCF; moved from trigger_control process
 		elsif rising_edge(xIFCLK) then
 			SLOE 			<= '1';
 			SLRD 			<= '1';			
@@ -182,13 +188,14 @@ begin
 			TOGGLE 		<= '0';
 			SOFT_TRIG	<= '0';
 			RBUSY 		<= '1';
+			SOFTWARE_TRIGGERS_ARE_ENABLED <= '1';	--MCF; forcing this to be 1 unless RESET is active
 --------------------------------------------------------------------------------				
 			case	state is	
 --------------------------------------------------------------------------------
 				when st1_WAIT =>
 					RBUSY <= '0';						 
 					if xFLAGA = '1' then	
-						RBUSY <= '1';
+--						RBUSY <= '1';	--MCF; redundant line?
 						if xWBUSY = '0' then		
 							RBUSY <= '1';
 							state <= st1_READ;
@@ -271,11 +278,11 @@ begin
 							
 						when x"02" =>	--SOFT_TRIG
 							SOFT_TRIG <= '1';	 		
-							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
+							state <= st1_WAIT;		--HICMD =>"XXXX-XXXX-XXXX-XXXX"
 						
 						when x"03" =>	--PED_SCAN, A.K.A "linearity via DAC SCAN"
 							PED_SCAN <=  Hicmd(11 downto 0);	
-							state <= st1_WAIT;		--HICMD =>"XXX-DDDD-DDDD-DDDD"
+							state <= st1_WAIT;		--HICMD =>"XXXX-DDDD-DDDD-DDDD"
 
 						when x"04" =>  -- en_ped / ped_en
 							PED_EN <= Hicmd(0); 
@@ -286,16 +293,18 @@ begin
 							state <= st1_WAIT;		--HICMD "XXXX-XXXX-XXXX-XXXD"
 
 						when x"06" =>	-- fetch data from fpga's buffer
-							REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '1';	 		
-							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
+							if xDONE <= '0' then	--MCF; added to gain the functionality of trigger_control
+								REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '1';	 		
+							end if;
+							state <= st1_WAIT;		--HICMD =>"XXXX-XXXX-XXXX-XXXX"
 
 						when x"07" =>	-- enableÅ@/ disable software triggers' ability to sample data, wilkinson it and transfer it to fpga ram
-							SOFTWARE_TRIGGERS_ARE_ENABLED <= Hicmd(0);
-							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
+							--SOFTWARE_TRIGGERS_ARE_ENABLED <= Hicmd(0);	--MCF; temporary change to make software work
+							state <= st1_WAIT;		--HICMD =>"XXXX-XXXX-XXXX-XXXX"
 
 						when x"08" =>	-- enableÅ@/ disable external triggers' ability to sample data, wilkinson it and transfer it to fpga ram
 							EXTERNAL_TRIGGERS_ARE_ENABLED <= Hicmd(0);
-							state <= st1_WAIT;		--HICMD =>"XXX-XXXX-XXXX-XXXX"
+							state <= st1_WAIT;		--HICMD =>"XXXX-XXXX-XXXX-XXXX"
 							
 						when x"FF" =>	--W_STRB
 							DEBUG <= Hicmd(15 downto 0);
@@ -324,23 +333,23 @@ begin
 --------------------------------------------------------------------------------						
 				when others =>
 					state <= st1_WAIT;
-			end case;	  
+			end case;
 		end if;
-	end process;
+	end process software_state_machine;
 --------------------------------------------------------------------------------	
-	process(xIFCLK,xRESET,xDONE) 
+	trigger_control : process(xIFCLK,xRESET,xDONE) 
 	begin
 		if xRESET = '0' or xDONE = '1' then
 			TRIG <= '0';
-			REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '0';
+			--REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '0';	--MCF; moved to software_state_machine process
 		elsif falling_edge(xIFCLK) then
 			if SOFT_TRIG = '1' then
 				TRIG <= '1';
 			end if;
 			if REQUEST_TO_TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB = '1' then
-				TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '1';
+				TRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB <= '1';	--MCF; noticed that this never becomes 0 ever again
 			end if;
 		end if;
-	end process;
+	end process trigger_control;
 --------------------------------------------------------------------------------	
 end Behavioral;

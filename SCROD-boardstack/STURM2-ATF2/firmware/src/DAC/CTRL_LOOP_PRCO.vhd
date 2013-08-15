@@ -28,6 +28,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity CTRL_LOOP_PRCO is
    port ( 
 		xCLK				: in  std_logic;--150 MHz CLK
+		xCLK_INV			: in  std_logic;--MCF
 		xCLK_10MHz		: in  std_logic;--10  MHz CLK
 		xCLR_ALL			: in  std_logic;
 		xREFRESH_CLK	: in  std_logic;
@@ -85,11 +86,11 @@ architecture Behavioral of CTRL_LOOP_PRCO is
 --------------------------------------------------------------------------------
 begin
 --------------------------------------------------------------------------------
-	process(xCLK,xCLR_ALL)
+	process(xCLK_INV,xCLR_ALL)
 	begin
 		if xCLR_ALL = '1' then
 			CNT_STATE <= IDLE;
-		elsif falling_edge(xCLK) then
+		elsif rising_edge(xCLK_INV) then	--MCF; used to be falling_edge(xCLK) which would cause gated clock errors
 --------------------------------------------------------------------------------			
 			case CNT_STATE is
 --------------------------------------------------------------------------------	

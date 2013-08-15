@@ -28,8 +28,10 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity DAC_MAIN is
     port (
 		xCLK			: in  std_logic;--150 MHz CLK
+		xCLK_INV		: in  std_logic;--MCF
 		xCLK_75MHz	: in  std_logic;--75  MHz CLK
-		xCLK_10MHz 	: in  std_logic;--10  MHz CLK	
+		xCLK_10MHz 	: in  std_logic;--10  MHz CLK
+		xCLK_10MHz_INV: in std_logic;--MCF
 		xREF_1kHz	: in  std_logic;
 		xREF_100Hz	: in  std_logic;
 		xREF_10Hz	: in  std_logic;
@@ -109,6 +111,24 @@ architecture Behavioral of DAC_MAIN is
    end component;
    attribute BOX_TYPE of OBUF : component is "BLACK_BOX";
 --------------------------------------------------------------------------------
+Component ODDR2
+	generic (
+	  DDR_ALIGNMENT : string     := "NONE";	-- Sets output alignment to "NONE", "C0", "C1"
+	  INIT          : integer    := 0;   		-- Sets initial state of the Q output to '0' or '1'
+	  SRTYPE        : string     := "SYNC"		-- Specifies "SYNC" or "ASYNC" set/reset
+				);
+	port (
+	  Q  	: out std_logic;
+	  C0	: in std_logic;
+	  C1 	: in std_logic;
+	  CE 	: in std_logic;
+	  D0 	: in std_logic;
+	  D1 	: in std_logic;
+	  R 	: in std_logic;
+	  S 	: in std_logic
+			);	
+end component;
+--------------------------------------------------------------------------------
    component DAC_SERIALIZER
    port ( 
 		xCLK_10MHz	: in  std_logic;
@@ -125,6 +145,7 @@ architecture Behavioral of DAC_MAIN is
    port ( 
 		xREFRESH_CLK : in  std_logic;
 		xCLK			: in  std_logic;--150 MHz CLK
+		xCLK_INV		: in  std_logic;--MCF
 		xCLK_75MHz	: in  std_logic;--75  MHz CLK
 		xCLK_10MHz 	: in  std_logic;--10  MHz CLK	
 		xREF_1kHz	: in  std_logic;
@@ -146,14 +167,15 @@ architecture Behavioral of DAC_MAIN is
 begin
 --------------------------------------------------------------------------------
 	--UPDATE <= xREF_1Hz;
-	--UPDATE <= xREF_10Hz;
-	UPDATE <= xREF_100Hz;
+	UPDATE <= xREF_10Hz;
+	--UPDATE <= xREF_100Hz;
 --------------------------------------------------------------------------------
 	xRCO_MAIN : RCO_MAIN 
 	port map (
 		xREFRESH_CLK => UPDATE,
 		xCLR_ALL    => xCLR_ALL,
 		xCLK 		 	=> xCLK,
+		xCLK_INV		=> xCLK_INV,	--MCF
 		xCLK_75MHz 	=> xCLK_75MHz,
 		xCLK_10MHz  => xCLK_10MHz,
 		xREF_1kHz  	=> xREF_1kHz,
@@ -177,15 +199,34 @@ begin
 		xROVDD    	<= ROVDD;
 --------------------------------------------------------------------------------
 -- mza - original values were vdly0=4fe, vdly1=vdly0 - 4, vdly2=vdly1 - 0, vdly3=vdly1 - 0, vdly4=vdly1 - vdly5=vdly1 - 0, vdly6=vdly1 - 0, vdly7=vdly1 - 0
-	VDLY0 <= x"4FE"; -- was "FFF" then "7FF" (7FF not really working)
-	VDLY1 <= VDLY0 - x"005";
-	VDLY2 <= VDLY1 - x"005";
-	VDLY3 <= VDLY2 - x"005";
-	VDLY4 <= VDLY3 - x"005";
-	VDLY5 <= VDLY4 - x"005";
-	VDLY6 <= VDLY5 - x"005";
-	VDLY7 <= VDLY6 - x"005";
+--	VDLY0 <= x"4FE"; -- was "FFF" then "7FF" (7FF not really working)
+--	VDLY1 <= VDLY0 - x"005";
+--	VDLY2 <= VDLY1 - x"005";
+--	VDLY3 <= VDLY2 - x"005";
+--	VDLY4 <= VDLY3 - x"005";
+--	VDLY5 <= VDLY4 - x"005";
+--	VDLY6 <= VDLY5 - x"005";
+--	VDLY7 <= VDLY6 - x"005";
 --------------------------------------------------------------------------------
+	VDLY0 <= x"BAB";	--1.800V
+	VDLY1 <= x"B9E";	--1.775V
+	VDLY2 <= x"B58";	--1.750V
+	VDLY3 <= x"B27";	--1.725V
+	VDLY4 <= x"AFB";	--1.700V
+	VDLY5 <= x"ADF";	--1.675V
+	VDLY6 <= x"AC4";	--1.650V
+	VDLY7 <= x"A64";	--1.625V
+--------------------------------------------------------------------------------
+--	VDLY0 <= x"898";	--1.36V
+--	VDLY1 <= x"898";	--1.36V
+--	VDLY2 <= x"898";	--1.36V
+--	VDLY3 <= x"898";	--1.36V
+--	VDLY4 <= x"898";	--1.36V
+--	VDLY5 <= x"898";	--1.36V
+--	VDLY6 <= x"898";	--1.36V
+--	VDLY7 <= x"898";	--1.36V
+--------------------------------------------------------------------------------
+
 	DAC_A_0 <= x"3" & VDLY0;--VDLY0
 	DAC_B_0 <= x"7" & VDLY1;--VDLY1
 	DAC_C_0 <= x"B" & VDLY2;--VDLY2
@@ -196,10 +237,10 @@ begin
 	DAC_C_1 <= x"B" & VDLY6;--VDLY6
 	DAC_D_1 <= x"E" & VDLY7;--VDLY7
 --------------------------------------------------------------------------------	
-	DAC_A_2 <= x"3" & PROVDD;--PROVDD
+	DAC_A_2 <= x"3" & x"D60";--MCF; used to be PROVDD; D60
 	DAC_B_2 <= x"7" & x"000";--x"000"
 	DAC_C_2 <= x"B" & x"000";--x"000"
-	DAC_D_2 <= x"E" & xPED_SCAN;--xPED_SCAN
+	DAC_D_2 <= x"E" & xPED_SCAN;--xPED_SCAN, ADJUSTABLE VPED VOLTAGE 6FF = 1.16 Volts. maxes at 1.68 volts instead of 2.5
 --------------------------------------------------------------------------------	
 	xDAC_SERIALIZER_0 : DAC_SERIALIZER 
 	port map (
@@ -234,10 +275,22 @@ begin
 		xNSYNC 	=> open,
 		xD_OUT 	=> D_IN_2);
 --------------------------------------------------------------------------------	
-	xOBUF_SCLK : OBUF 
-	port map (
-		I  => xCLK_10MHz,
-		O  => SCLK);	
+xODDR2_SCLK : ODDR2 --MCF; clock forwarding technique which allows CLK_10MHz to be outputted as SCLK
+generic map (
+	  DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+	  INIT          => 0,    -- Sets initial state of the Q output to '0' or '1'
+	  SRTYPE        => "SYNC"  -- Specifies "SYNC" or "ASYNC" set/reset
+				)
+port map (
+	  Q  => SCLK,        -- 1-bit output data
+	  C0 => xCLK_10MHz, -- 1-bit clock input
+	  C1 => xCLK_10MHz_INV,   -- 1-bit clock input
+	  CE => '1',          -- 1-bit clock enable input
+	  D0 => '1',          -- 1-bit data input (associated with C0)
+	  D1 => '0',          -- 1-bit data input (associated with C1)
+	  R  => '0',          -- 1-bit reset input
+	  S  => '0'           -- 1-bit set input
+			);
 --------------------------------------------------------------------------------
 	xOBUF_SYNC : OBUF 
 	port map (

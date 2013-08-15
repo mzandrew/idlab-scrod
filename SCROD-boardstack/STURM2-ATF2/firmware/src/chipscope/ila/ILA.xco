@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 11.4
-# Date: Sun Apr 04 02:56:55 2010
+# Xilinx Core Generator version 13.3
+# Date: Mon Jul 08 19:36:42 2013
 #
 ##############################################################
 #
@@ -12,24 +12,28 @@
 #
 ##############################################################
 #
+#  Generated from component: xilinx.com:ip:chipscope_ila:1.03.a
+#
+##############################################################
+#
 # BEGIN Project Options
-SET addpads = False
-SET asysymbol = True
+SET addpads = false
+SET asysymbol = true
 SET busformat = BusFormatAngleBracketNotRipped
-SET createndf = False
+SET createndf = false
 SET designentry = VHDL
-SET device = xc3s400
-SET devicefamily = spartan3
+SET device = xc6slx150t
+SET devicefamily = spartan6
 SET flowvendor = Foundation_ISE
-SET formalverification = False
-SET foundationsym = False
+SET formalverification = false
+SET foundationsym = false
 SET implementationfiletype = Ngc
-SET package = pq208
-SET removerpms = False
+SET package = fgg676
+SET removerpms = false
 SET simulationfiles = Structural
-SET speedgrade = -4
-SET verilogsim = True
-SET vhdlsim = True
+SET speedgrade = -3
+SET verilogsim = false
+SET vhdlsim = true
 # END Project Options
 # BEGIN Select
 SELECT ILA_(ChipScope_Pro_-_Integrated_Logic_Analyzer) family Xilinx,_Inc. 1.03.a
@@ -127,4 +131,4 @@ CSET trigger_port_width_9=8
 CSET use_rpms=true
 # END Parameters
 GENERATE
-# CRC: b7581c2f
+# CRC: 50d55bd8

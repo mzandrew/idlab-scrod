@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 11.4
-# Date: Wed Mar 31 20:38:55 2010
+# Xilinx Core Generator version 13.3
+# Date: Mon Jul 08 19:34:49 2013
 #
 ##############################################################
 #
@@ -12,24 +12,28 @@
 #
 ##############################################################
 #
+#  Generated from component: xilinx.com:ip:chipscope_icon:1.04.a
+#
+##############################################################
+#
 # BEGIN Project Options
-SET addpads = False
-SET asysymbol = True
+SET addpads = false
+SET asysymbol = true
 SET busformat = BusFormatAngleBracketNotRipped
-SET createndf = False
+SET createndf = false
 SET designentry = VHDL
-SET device = xc3s400
-SET devicefamily = spartan3
+SET device = xc6slx150t
+SET devicefamily = spartan6
 SET flowvendor = Foundation_ISE
-SET formalverification = False
-SET foundationsym = False
+SET formalverification = false
+SET foundationsym = false
 SET implementationfiletype = Ngc
-SET package = pq208
-SET removerpms = False
+SET package = fgg676
+SET removerpms = false
 SET simulationfiles = Structural
-SET speedgrade = -4
-SET verilogsim = True
-SET vhdlsim = True
+SET speedgrade = -3
+SET verilogsim = false
+SET vhdlsim = true
 # END Project Options
 # BEGIN Select
 SELECT ICON_(ChipScope_Pro_-_Integrated_Controller) family Xilinx,_Inc. 1.04.a
@@ -44,4 +48,4 @@ CSET use_unused_bscan=false
 CSET user_scan_chain=USER1
 # END Parameters
 GENERATE
-# CRC: 99245437
+# CRC: 5b4d797c

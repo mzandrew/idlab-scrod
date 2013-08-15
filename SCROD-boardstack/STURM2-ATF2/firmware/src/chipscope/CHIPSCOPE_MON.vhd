@@ -48,12 +48,13 @@ architecture Behavioral of CHIPSCOPE_MON is
    end component;
    attribute BOX_TYPE of ICON : component is "BLACK_BOX";
 --------------------------------------------------------------------------------	
-   component ILA
-      port ( 
-		   CLK 		: in STD_LOGIC := 'X'; 
-			CONTROL 	: inout STD_LOGIC_VECTOR (35 downto 0); 
-			TRIG0 	: in STD_LOGIC_VECTOR (31 downto 0));
-   end component;
+component ILA
+  PORT (
+    CONTROL : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+    CLK : IN STD_LOGIC;	--MCF; used to have := 'X'
+    TRIG0 : IN STD_LOGIC_VECTOR(31 DOWNTO 0));
+
+end component;
    attribute BOX_TYPE of ILA : component is "BLACK_BOX";
 --------------------------------------------------------------------------------	
 begin
@@ -66,9 +67,9 @@ begin
 --------------------------------------------------------------------------------	
 		xILA : ILA
 		port map (
-			CLK  	=> xCLK,
-			TRIG0  	=> xMON,
-			CONTROL  => CONTROL);
+			CONTROL => CONTROL,
+			CLK => xCLK,
+			TRIG0 => xMON);
 --------------------------------------------------------------------------------	
 	end generate chipscope;
 --------------------------------------------------------------------------------	

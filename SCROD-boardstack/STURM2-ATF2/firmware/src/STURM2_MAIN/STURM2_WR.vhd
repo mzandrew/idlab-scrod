@@ -29,7 +29,7 @@ entity STURM2_WR is
 		-- STURM2 ASIC I/Os
 		xTSA_IN		 : in  std_logic_vector(3 downto 0);
 		xTSA_OUT		 : out std_logic_vector(3 downto 0);
-		xCAL		 	 : out std_logic;
+--		xCAL		 	 : out std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO
 		-- User I/O
 --		xNRUN		 	 : out std_logic; -- mza - this did nothing
 		xCLK			 : in  std_logic;--150 MHz CLK
@@ -51,7 +51,7 @@ architecture Behavioral of STURM2_WR is
 --   								signals		     		   						         --
 --------------------------------------------------------------------------------
 	signal xBLOCK 		: std_logic;
-	signal CAL			: std_logic;
+--	signal CAL			: std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO
 	signal TSA_OUT	: std_logic_vector(3 downto 0);
 	signal SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY				: std_logic; -- mza
 	signal DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION	: std_logic; -- mza
@@ -95,12 +95,17 @@ begin
 		end if;
 	end process;
 --------------------------------------------------------------------------------			
-	xBUF_CAL : BUF 
-	port map (
-		I  => CAL,
-		O  => xCAL);		
+--	xBUF_CAL : BUF --MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
+--	port map (
+--		I  => CAL,
+--		O  => xCAL);
 --------------------------------------------------------------------------------
-	CAL <= xCLK and not(xBLOCK);
+--	CAL <= xCLK and not(xBLOCK);
+--generate_short_cal_pulse : pulse_to_short_pulse	--MCF; Gary recommended this as an alternative to the previous line
+--port map (
+--	i => not(xBLOCK),
+--	clock => xCLK,
+--	o => CAL);
 --------------------------------------------------------------------------------			
 -- mza note:  got rid of this; it's not connected to anything
 --	xBUF_NRUN : BUF 
@@ -135,11 +140,12 @@ begin
 	xDIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION <= DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION;
 --------------------------------------------------------------------------------
 --		TSA_OUT <= xSOFT_TRIG & '1' & '1' & '1';
---		TSA_OUT <= xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG;  -- GSV
+		TSA_OUT <= xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG & xSOFT_TRIG;  -- GSV
 --		TSA_OUT <= xEXT_TRIG & xEXT_TRIG & xEXT_TRIG & xEXT_TRIG;  -- GSV
 --		TSA_OUT <= '0' & '0' & xEXT_TRIG & '0';
 	-- TSA_OUT modified by mza to go back to the original behavior of only sampling a single batch of 8 samples:
-	TSA_OUT <= '0' & '0' & SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY & '0'; -- mza
+--		TSA_OUT <= '0' & '0' & SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY & '0'; -- mza
+--		TSA_OUT <= (0 => TRIGGER, others => '0');	--MCF
 --------------------------------------------------------------------------------	
 	-- mza's note to self:  a TSA delay scheme inside the FPGA will never work at 150MHz unless the sampling rate is ~1GHz
 --------------------------------------------------------------------------------	

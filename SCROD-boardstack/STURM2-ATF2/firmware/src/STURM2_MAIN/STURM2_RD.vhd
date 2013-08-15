@@ -36,6 +36,7 @@ entity STURM2_RD is
 		xTDC_CLR		 	: out std_logic; 
 		-- User I/O
 		xCLK			 : in  std_logic;--150 MHz CLK
+		xCLK_INV		 : in  std_logic;--MCF
 		xCLK_75MHz   : in  std_logic;--75  MHz CLK
 		xADC			 : out std_logic_vector(11 downto 0);
 		xSTATUS	    : out std_logic_vector(3 downto 0);
@@ -55,7 +56,8 @@ architecture Behavioral of STURM2_RD is
 --------------------------------------------------------------------------------
 	type STATE_TYPE is ( IDLE,CLR_TDC,START_TDC,STORE_to_RAM,
 								START_USB_READOUT,
-								WAIT_FOR_BUS_SETTLING,WAIT_FOR_CLR_TDC_SETTLING);
+								WAIT_FOR_BUS_SETTLING,WAIT_FOR_CLR_TDC_SETTLING,
+								SPACE_BETWEEN_TDC_CLR_AND_TDC_START);
 	signal STATE 		   : STATE_TYPE := IDLE;
 	signal W_EN				: std_logic;
 	signal xWRITE			: std_logic_vector(15 downto 0);
@@ -169,21 +171,21 @@ begin
 	DATA <= x"0" & xDAT;  -- GSV
 --	DATA <= x"0" & "00" & xWADDR;
 --------------------------------------------------------------------------------
-	process(xCLK,xCLR_ALL,xDONE)
+	process(xCLK_INV,xCLR_ALL,xDONE)
 	begin
 		if xCLR_ALL = '1' or xDONE = '1' or PHASE_CNT > 6 then
-			STATE_CNT	<= (others=>'0');
-			PHASE_CNT	<= (others=>'0');
-			WADDR			<= (others=>'1');
+			STATE_CNT	<= x"0000";
+			PHASE_CNT	<= "000";
+			WADDR			<= "1111111111";
 			RAMP 			<= '0';
 			RAMP_DONE	<= '0';
 			THERE_IS_NEW_DATA_IN_THE_FPGA_RAM <= '0'; -- mza
 			TDC_START 	<= '0';
-			TDC_STOP 	<= '1';
+			TDC_STOP 	<= '0';	--MCF; used to be '1'.  setting to '0' so we don't get any funny business
 			TDC_CLR 		<= '1';
 			W_EN 			<= '0';
 			STATE 		<= IDLE;
-		elsif falling_edge(xCLK) then
+		elsif rising_edge(xCLK_INV) then	--MCF; used to be falling_edge(xCLK) which resulted in gated clock errors
 --------------------------------------------------------------------------------			
 			case STATE is
 --------------------------------------------------------------------------------	
@@ -195,26 +197,34 @@ begin
 				when CLR_TDC =>			
 					TDC_CLR		<= '1';
 					TDC_STOP		<= '0';
-					PHASE_CNT	<= (others=>'0');  -- GSV modified	
+					PHASE_CNT	<= "000";  -- GSV modified	
 					STATE 		<= WAIT_FOR_CLR_TDC_SETTLING;
 --------------------------------------------------------------------------------	
 				when WAIT_FOR_CLR_TDC_SETTLING =>			
 					PHASE_CNT <= PHASE_CNT + 1;
 					if PHASE_CNT >= 2 then
 						TDC_CLR     <= '0';
-						PHASE_CNT	<= (others=>'0');
-						STATE_CNT	<= (others=>'0');
+						PHASE_CNT	<= "000";
+						STATE_CNT	<= x"0000";
+						STATE 		<= SPACE_BETWEEN_TDC_CLR_AND_TDC_START;
+					end if;
+--------------------------------------------------------------------------------
+				when SPACE_BETWEEN_TDC_CLR_AND_TDC_START =>	--MCF; added this state	
+					STATE_CNT <= STATE_CNT + 1;
+					if STATE_CNT >= 100 then
+						PHASE_CNT	<= "000";
+						STATE_CNT	<= x"0000";
 						STATE 		<= START_TDC;
 					end if; 
 --------------------------------------------------------------------------------	
 				when START_TDC =>
 					STATE_CNT <= STATE_CNT + 1;   
 --					TDC_START 	<= '1'; --4.0 us long ramp
-					TDC_START 	<= '1'; --1.1 us long ramp
-					RAMP 			<= '1'; -- ISEL = 68 kohm & CEXT = ~10 pF (cpad)
-					if STATE_CNT >= 8000 then
+					TDC_START 	<= '1'; --~3.9 us long ramp
+					RAMP 			<= '1'; -- ISEL = 20 kohm & CEXT = 150 pF (cpad)
+					if STATE_CNT >= 600 then	--MCF; used to be 8000. (3.9 us + 0.1 us) * 150MHz = 600 oscillations
 						RAMP_DONE	 <= '1';
-						WADDR		 	 <= (others=>'0');
+						WADDR		 	 <= "0000000000";
 						STATE 		 <= STORE_to_RAM;
 					end if;
 --------------------------------------------------------------------------------	
@@ -233,7 +243,7 @@ begin
 						W_EN 	<= '1';	
 					if PHASE_CNT >= 3 then
 						W_EN 	<= '0';
-						PHASE_CNT	<= (others=>'0');
+						PHASE_CNT	<= "000";
 						STATE <= STORE_to_RAM; 
 						WADDR <= WADDR + 1;
 					end if;
@@ -258,7 +268,7 @@ begin
 		xWCLK  	=> xCLK,
 		xW_EN  	=> W_EN);		
 --------------------------------------------------------------------------------	
-	process(STATE)
+	process(STATE)	--encodes the states and outputs them
 	begin
 		if STATE = IDLE then
 			xSTATUS <= x"0";

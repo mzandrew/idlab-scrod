@@ -29,20 +29,21 @@ entity TOP is
 	port( 
 		-- STURM2 ASIC I/Os
 		RAMP	 		 : out std_logic; 
-		TST_START 	 : out std_logic; 
-		TST_CLR	 	 : out std_logic; 
-		TST_OUT		 : in  std_logic;
+		TST_START 	 : out std_logic; --MON_START
+		TST_CLR	 	 : out std_logic; --MON_CLR
+		TST_OUT		 : in  std_logic;	--MON_OUT
 		SMPL_SEL		 : out std_logic_vector(4 downto 0);
 		DAT			 : in  std_logic_vector(11 downto 0);
 		CH_SEL		 : out std_logic_vector(3 downto 0);
-		TDC_START	 : out std_logic; 
-		TDC_STOP		 : out std_logic; 
-		TDC_CLR		 : out std_logic; 
+		TDC_START	 : out std_logic;	--WILK_START
+		TDC_STOP		 : out std_logic; --WILK_STOP
+		TDC_CLR		 : out std_logic; --WILK_CLR
 		MRCO		 	 : in  std_logic;
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
 		CAL_P			 : out std_logic; 
-		CAL_N			 : out std_logic; 
+		CAL_N			 : in  std_logic;	--MCF; used to be out.  trying CAL_P <= CAL_N in STURM2_IO instead
+		VCAL			 : out std_logic;	--MCF; needs to connect to the daughtercard
 		-- USB I/O
       IFCLK      	: in    std_logic;--50 MHz CLK
 		CLKOUT     	: in    std_logic; 
@@ -68,11 +69,13 @@ entity TOP is
       DIN1    	   : out std_logic;
       DIN2    	   : out std_logic;
 		-- User I/O
-      BCLK		 	: in  std_logic;--150 MHz CLK
+      BCLK		 	: in  std_logic;--250 MHz CLK
+		BCLK_INV		: in  std_logic;--MCF
       EXT_TRIG 	: in  std_logic;
 		MON			: out std_logic_vector(15 downto 0);
-      LED_GREEN   : out std_logic;
-		LED_RED		: out std_logic);
+      LED_GREEN   : out std_logic;	--connected to LOCKED output from xCLK_MAIN/CLOCK_GEN_instance
+		LED_RED		: out std_logic;	--connected to CLR_ALL from xUSB_MAIN/xPROGRESET
+		LED_9			: out std_logic);	--connected to RESET from xUSB_MAIN/xPROGRESET
 end TOP; 
 
 architecture Behavioral of TOP is
@@ -82,8 +85,10 @@ architecture Behavioral of TOP is
 --------------------------------------------------------------------------------
 	signal xCLR_ALL		: std_logic;
 	signal xCLK				: std_logic;
+	signal xCLK_INV		: std_logic;	--MCF
 	signal xCLK_75MHz		: std_logic;
 	signal xCLK_10MHz		: std_logic;
+	signal xCLK_10MHz_INV		: std_logic;	--MCF
 	signal xREF_1kHz		: std_logic;
 	signal xREF_100Hz		: std_logic;
 	signal xREF_10Hz		: std_logic;
@@ -122,12 +127,15 @@ architecture Behavioral of TOP is
 --------------------------------------------------------------------------------
    component CLK_MAIN
    port ( 
-      BCLK		 	: in  std_logic;--150 MHz CLK
+      BCLK		 	: in  std_logic;--250 MHz CLK
+		BCLK_INV	 	: in  std_logic;--MCF
       EXT_TRIG 	: in  std_logic;
 		xCLR_ALL		: in std_logic;
 		xCLK			: out std_logic;--150 MHz CLK
+		xCLK_INV		: out std_logic;--MCF
 		xCLK_75MHz	: out std_logic;--75  MHz CLK
-		xCLK_10MHz 	: out std_logic;--10  MHz CLK	
+		xCLK_10MHz 	: out std_logic;--10  MHz CLK
+		xCLK_10MHz_INV : out std_logic;--MCF
 		xREF_1kHz 	: out std_logic;	
 		xREF_100Hz 	: out std_logic;	
 		xREF_10Hz 	: out std_logic;					
@@ -140,8 +148,10 @@ architecture Behavioral of TOP is
     component DAC_MAIN
     port (
 		xCLK			: in  std_logic;--150 MHz CLK
+		xCLK_INV		: in  std_logic;--MCF
 		xCLK_75MHz	: in  std_logic;--75  MHz CLK
-		xCLK_10MHz 	: in  std_logic;--10  MHz CLK	
+		xCLK_10MHz 	: in  std_logic;--10  MHz CLK
+		xCLK_10MHz_INV : in  std_logic;--MCF
 		xREF_1kHz	: in  std_logic;
 		xREF_100Hz	: in  std_logic;
 		xREF_10Hz	: in  std_logic;
@@ -167,7 +177,7 @@ architecture Behavioral of TOP is
     component STURM2_MAIN
     port (
 		-- STURM2 ASIC I/Os
-		RAMP	 		 : out std_logic; 
+		RAMP	 		 : out std_logic;	--buffered
 		TST_START 	 : out std_logic; 
 		TST_CLR	 	 : out std_logic; 
 		TST_OUT		 : in  std_logic;
@@ -181,9 +191,10 @@ architecture Behavioral of TOP is
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
 		CAL_P			 : out std_logic; 
-		CAL_N			 : out std_logic; 
+		CAL_N			 : in  std_logic;	--MCF; used to be out.  trying CAL_P <= CAL_N instead
 		-- User I/O
 		xCLK			 : in  std_logic;--150 MHz CLK
+		xCLK_INV		 : in  std_logic;--MCF
 		xCLK_75MHz	 : in  std_logic;--75  MHz CLK
 		xEXT_TRIG	 : in  std_logic;
 		xSOFT_TRIG	 : in  std_logic;
@@ -194,7 +205,7 @@ architecture Behavioral of TOP is
 		xDAT		 	 : out std_logic_vector(11 downto 0);
 		xDONE		 	 : in  std_logic;
 		xPED_EN	 	 : in  std_logic;
-		xRAMP	 		 : out std_logic; 
+		xRAMP	 		 : out std_logic;	--not buffered
 		xADC			 : out std_logic_vector(11 downto 0);
 		xRADDR    	 : in  std_logic_vector(9 downto 0);		
 		xMON_HDR	 	 : out std_logic_vector(15 downto 0);
@@ -202,7 +213,11 @@ architecture Behavioral of TOP is
 		xTST_CLR	 	 : in  std_logic; 
 		xTST_OUT		 : out std_logic;
 		xMRCO		 	 : out std_logic;
-		xCLR_ALL 	 : in  std_logic);
+		xCLR_ALL 	 : in  std_logic;
+		TDC_START_NOT_BUFFERED	: out std_logic;	--MCF; for debugging
+		TDC_STOP_NOT_BUFFERED	: out std_logic;	--MCF; for debugging
+		TDC_CLR_NOT_BUFFERED	: out std_logic;	--MCF; for debugging
+		TSA_OUT_NOT_BUFFERED : out std_logic);	--MCF; for debugging
 	end component;
 --------------------------------------------------------------------------------
 	component USB_MAIN
@@ -246,7 +261,10 @@ architecture Behavioral of TOP is
 		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
 		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xWAKEUP	 	: out std_logic;
-		xCLR_ALL   	: out std_logic);
+		xCLR_ALL   	: out std_logic;
+		xRESET		: out std_logic;
+		Locmd_DEBUG	: out std_logic_vector(3 downto 0);	--MCF; for debugging
+		Hicmd_DEBUG : out std_logic);	--MCF; for debugging
     end component;
 --------------------------------------------------------------------------------
    component IBUF
@@ -293,11 +311,14 @@ begin
 	xCLK_MAIN : CLK_MAIN 
 	port map (
 		BCLK  		=> BCLK,
+		BCLK_INV		=> BCLK_INV,	--MCF
 		EXT_TRIG 	=> EXT_TRIG,
 		xCLR_ALL  	=> xCLR_ALL,
 		xCLK			=> xCLK,
+		xCLK_INV		=> xCLK_INV,	--MCF
 		xCLK_75MHz	=> xCLK_75MHz,
 		xCLK_10MHz 	=> xCLK_10MHz,
+		xCLK_10MHz_INV => xCLK_10MHz_INV,	--MCF
 		xREF_1kHz  	=> xREF_1kHz,
 		xREF_100Hz  => xREF_100Hz,
 		xREF_10Hz	=> xREF_10Hz,
@@ -310,8 +331,10 @@ begin
 	xDAC_MAIN : DAC_MAIN 
 	port map (
 		xCLK			=> xCLK,
+		xCLK_INV		=> xCLK_INV,
 		xCLK_75MHz	=> xCLK_75MHz,
 		xCLK_10MHz  => xCLK_10MHz,
+		xCLK_10MHz_INV => xCLK_10MHz_INV,
 		xREF_1kHz  	=> xREF_1kHz,
       xREF_100Hz	=> xREF_100Hz,
 		xREF_10Hz	=> xREF_10Hz,
@@ -353,6 +376,7 @@ begin
 		CAL_N  			=> CAL_N,
 		-- User I/O
 		xCLK				=> xCLK,
+		xCLK_INV			=> xCLK_INV,
 		xCLK_75MHz		=> xCLK_75MHz,
 		xSOFT_TRIG		=> xSOFT_TRIG,
 		xEXT_TRIG		=> xEXT_TRIG,
@@ -364,7 +388,7 @@ begin
 		xDAT				=> xDAT,
 		xDONE  			=> xDONE,
 		xPED_EN			=> xPED_EN,
-		xRAMP  			=> xRAMP,
+		xRAMP  			=> xRAMP,	--MCF; used to be connected to xRAMP (which didn't do anything)
 		xADC  			=> xADC,
 		xRADDR  			=> xRADDR,
 		xMON_HDR			=> xMON_HDR,
@@ -372,19 +396,23 @@ begin
 		xTST_CLR			=> xTST_CLR,
 		xTST_OUT			=> xTST_OUT,
 		xMRCO				=> xMRCO,
-		xCLR_ALL  		=> xCLR_ALL);
+		xCLR_ALL  		=> xCLR_ALL,
+		TDC_START_NOT_BUFFERED => xMON(1),	--MCF; for debugging
+		TDC_STOP_NOT_BUFFERED => xMON(4),	--MCF; for debugging
+		TDC_CLR_NOT_BUFFERED => xMON(2),	--MCF; for debugging
+		TSA_OUT_NOT_BUFFERED => xMON(0));	--MCF; for debugging
 --------------------------------------------------------------------------------	
 	xOBUF_MON : OBUF_BUS
 	generic map(bus_width => 16)
 	port map (
 		I => xMON,
 		O => MON);
-	xMON(0)  <= xVCAL;--xVCAL - this is wired to the relay on the board
-	xMON(1)  <= xVCAL;--xVCAL
-	xMON(2)  <= xMON_HDR(2);--xMON_HDR(2)
-	xMON(3)  <= xMON_HDR(3);--xMON_HDR(3)
-	xMON(4)  <= xMON_HDR(4);--xMON_HDR(4)
-	xMON(5)  <= xMON_HDR(5);--xMON_HDR(5)
+--	xMON(0)  <=	xCLR_ALL;	--MCF; used to be assigned to xVCAL
+--	xMON(1)  <= xTDC_START;	--MCF; used to be assigned to xVCAL
+--	xMON(2)  <= xTDC_CLR;	--MCF; used to be assigned to xMON_HDR(2)
+--	xMON(3)  <= xDONE;	--xMON_HDR(3)
+--	xMON(4)  <= ;--xMON_HDR(4)
+--	xMON(5)  <= xMON_HDR(5);--xMON_HDR(5)
 	xMON(6)  <= xMON_HDR(6);--xMON_HDR(6)
 	xMON(7)  <= xMON_HDR(7);--xMON_HDR(7)
 	xMON(8)  <= xMON_HDR(8);
@@ -395,7 +423,8 @@ begin
 	xMON(13) <= xMON_HDR(13);
 	xMON(14) <= xMON_HDR(14);
 	xMON(15) <= xMON_HDR(15);	
---------------------------------------------------------------------------------	
+--------------------------------------------------------------------------------
+-- this section is to assign all of the output ports that weren't already assigned by the instantiations
 --	xNRUN <= xSOFT_TRIG;
 --------------------------------------------------------------------------------	
 	xUSB_MAIN : USB_MAIN 
@@ -432,12 +461,15 @@ begin
 		xRADDR  		=> xRADDR,
 		xSLWR  		=> xSLWR,
 		xSOFT_TRIG	=> xSOFT_TRIG,
-		xVCAL			=> xVCAL,
+		xVCAL			=> VCAL,	--MCF; connected this to the VCAL output port that I added
 		xPED_EN		=> xPED_EN,
 		xSOFTWARE_TRIGGERS_ARE_ENABLED => xSOFTWARE_TRIGGERS_ARE_ENABLED,
 		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
 		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB => xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB,
 		xWAKEUP  	=> xWAKEUP,
-		xCLR_ALL  	=> xCLR_ALL);		
---------------------------------------------------------------------------------	
+		xCLR_ALL  	=> xCLR_ALL,
+		xRESET		=> LED_9,
+		Locmd_DEBUG	=> open,
+		Hicmd_DEBUG	=> open);
+--------------------------------------------------------------------------------
 end Behavioral;

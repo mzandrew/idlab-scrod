@@ -1,116 +1,272 @@
+# Pin mappings are for the SCROD RevA2, STURM2_DC revC, and MB_STURM_Daughter_Card_Power_RevA
 #############################################################################
-## IRS ASIC I/Os
+## IRS ASIC I/Os (Connector 1)
 #############################################################################
-	NET RAMP				LOC = "p2"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TST_START		LOC = "p3"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TST_CLR			LOC = "p4"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TST_OUT			LOC = "p5"   | IOSTANDARD = LVCMOS25;
-	NET SMPL_SEL<0>	LOC = "p7"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET SMPL_SEL<1>	LOC = "p10"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET SMPL_SEL<2>	LOC = "p11"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET SMPL_SEL<3>	LOC = "p12"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET SMPL_SEL<4>	LOC = "p13"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET DAT<0>			LOC = "p15"  | IOSTANDARD = LVCMOS25;
-	NET DAT<1>			LOC = "p16"  | IOSTANDARD = LVCMOS25;
-	NET DAT<2>			LOC = "p18"  | IOSTANDARD = LVCMOS25;
-	NET DAT<3>			LOC = "p19"  | IOSTANDARD = LVCMOS25;
-	NET DAT<4>			LOC = "p20"  | IOSTANDARD = LVCMOS25;
-	NET DAT<5>			LOC = "p21"  | IOSTANDARD = LVCMOS25;
-	NET DAT<6>			LOC = "p22"  | IOSTANDARD = LVCMOS25;
-	NET DAT<7>			LOC = "p24"  | IOSTANDARD = LVCMOS25;
-	NET DAT<8>			LOC = "p26"  | IOSTANDARD = LVCMOS25;
-	NET DAT<9>			LOC = "p27"  | IOSTANDARD = LVCMOS25;
-	NET DAT<10>			LOC = "p28"  | IOSTANDARD = LVCMOS25;
-	NET DAT<11>			LOC = "p29"  | IOSTANDARD = LVCMOS25;
-	NET CH_SEL<0>		LOC = "p31"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET CH_SEL<1>		LOC = "p33"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET CH_SEL<2>		LOC = "p34"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET CH_SEL<3>		LOC = "p35"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TDC_STOP		LOC = "p36"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TDC_START		LOC = "p37"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TDC_CLR			LOC = "p39"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET MRCO				LOC = "p40"  | IOSTANDARD = LVCMOS25;
-	NET TSA_OUT<0>		LOC = "p45"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TSA_OUT<1>		LOC = "p44"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TSA_OUT<2>		LOC = "p43"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET TSA_OUT<3>		LOC = "p42"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-#	NET CAL_P			LOC = "p46"  | IOSTANDARD = LVDS_25  | DRIVE = 12 | SLEW = FAST ;
-#	NET CAL_N			LOC = "p48"  | IOSTANDARD = LVDS_25  | DRIVE = 12 | SLEW = FAST ;
-	NET TSA_IN<0>		LOC = "p64"  | IOSTANDARD = LVCMOS25;
-	NET TSA_IN<1>		LOC = "p65"  | IOSTANDARD = LVCMOS25;
-	NET TSA_IN<2>		LOC = "p67"  | IOSTANDARD = LVCMOS25;
-	NET TSA_IN<3>		LOC = "p68"  | IOSTANDARD = LVCMOS25;
+	NET RAMP				LOC = "g25"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET TST_START		LOC = "h26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_START port of STURM2
+	NET TST_CLR			LOC = "j26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_CLK port of STURM2
+	NET TST_OUT			LOC = "j25"   | IOSTANDARD = LVCMOS25;	#connected to EWILKMON_OUT port of STURM2
+	NET SMPL_SEL<0>	LOC = "k26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET SMPL_SEL<1>	LOC = "l26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET SMPL_SEL<2>	LOC = "l25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET SMPL_SEL<3>	LOC = "m26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET SMPL_SEL<4>	LOC = "n26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET DAT<0>			LOC = "n25"  | IOSTANDARD = LVCMOS25;
+	NET DAT<1>			LOC = "d23"  | IOSTANDARD = LVCMOS25;
+	NET DAT<2>			LOC = "e23"  | IOSTANDARD = LVCMOS25;
+	NET DAT<3>			LOC = "f23"  | IOSTANDARD = LVCMOS25;
+	NET DAT<4>			LOC = "g24"  | IOSTANDARD = LVCMOS25;
+	NET DAT<5>			LOC = "h24"  | IOSTANDARD = LVCMOS25;
+	NET DAT<6>			LOC = "j24"  | IOSTANDARD = LVCMOS25;
+	NET DAT<7>			LOC = "j22"  | IOSTANDARD = LVCMOS25;
+	NET DAT<8>			LOC = "k22"  | IOSTANDARD = LVCMOS25;
+	NET DAT<9>			LOC = "m24"  | IOSTANDARD = LVCMOS25;
+	NET DAT<10>			LOC = "n24"  | IOSTANDARD = LVCMOS25;
+	NET DAT<11>			LOC = "n22"  | IOSTANDARD = LVCMOS25;
+	NET CH_SEL<0>		LOC = "p22"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET CH_SEL<1>		LOC = "r23"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET CH_SEL<2>		LOC = "t23"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET CH_SEL<3>		LOC = "n17"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET TDC_STOP		LOC = "c26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_STOP port of STURM2
+	NET TDC_START		LOC = "b25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_START port of STURM2
+	NET TDC_CLR			LOC = "b26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_CLR port of STURM2
+	NET MRCO				LOC = "a25"  | IOSTANDARD = LVCMOS25;
+	NET TSA_OUT<0>		LOC = "ad24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET TSA_OUT<1>		LOC = "ac24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET TSA_OUT<2>		LOC = "aa23"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET TSA_OUT<3>		LOC = "y24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET CAL_P			LOC = "v23"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+	NET CAL_N			LOC = "u22"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+	NET VCAL				LOC = "c25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;		#MCF; didn't used to be connected but needs to be
+#	NET TSA_IN<0>		LOC = "y3"  | IOSTANDARD = LVCMOS25;	#connected to COMMON_CLOCK SMA of Power Board.  Do not have this and EXT_TRIG on at the same time.
+	NET TSA_IN<1>		LOC = "aa3"  | IOSTANDARD = LVCMOS25;	#connected to SMA1 SMA of Power Board
+	NET TSA_IN<2>		LOC = "ab3"  | IOSTANDARD = LVCMOS25;	#connected to SMA2 SMA of Power Board
+	NET TSA_IN<3>		LOC = "ab5"  | IOSTANDARD = LVCMOS25;	#connected to SMA3 SMA of Power Board
 #############################################################################
+## DAC I/O (Connector 1)
+#############################################################################
+	NET SCLK    	 	LOC = "d26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET SYNC    	  	LOC = "e26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET DIN0    	   LOC = "e25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET DIN1    	   LOC = "f26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET DIN2    	   LOC = "g26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+##############################################################################
+### IRS ASIC I/Os (Connector 2)
+##############################################################################
+#	NET RAMP				LOC = "aa25"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TST_START		LOC = "aa26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_START port of STURM2
+#	NET TST_CLR			LOC = "ab26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_CLK port of STURM2
+#	NET TST_OUT			LOC = "ac25"   | IOSTANDARD = LVCMOS25;	#connected to EWILKMON_OUT port of STURM2
+#	NET SMPL_SEL<0>	LOC = "k26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<1>	LOC = "l26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<2>	LOC = "l25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<3>	LOC = "m26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<4>	LOC = "n26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DAT<0>			LOC = "c24"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<1>			LOC = "d24"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<2>			LOC = "e24"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<3>			LOC = "f24"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<4>			LOC = "f22"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<5>			LOC = "g23"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<6>			LOC = "h22"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<7>			LOC = "j23"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<8>			LOC = "k24"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<9>			LOC = "l24"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<10>			LOC = "l23"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<11>			LOC = "m23"  | IOSTANDARD = LVCMOS25;
+#	NET CH_SEL<0>		LOC = "n23"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<1>		LOC = "p24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<2>		LOC = "r24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<3>		LOC = "t24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TDC_STOP		LOC = "t26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_STOP port of STURM2
+#	NET TDC_START		LOC = "r25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_START port of STURM2
+#	NET TDC_CLR			LOC = "r26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_CLR port of STURM2
+#	NET MRCO				LOC = "p26"  | IOSTANDARD = LVCMOS25;
+#	NET TSA_OUT<0>		LOC = "ac23"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<1>		LOC = "ab24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<2>		LOC = "aa24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<3>		LOC = "w24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CAL_P			LOC = "t22"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+#	NET CAL_N			LOC = "v24"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+#	NET VCAL				LOC = "u23"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;		#MCF; didn't used to be connected but needs to be
+##	NET TSA_IN<0>		LOC = "y3"  | IOSTANDARD = LVCMOS25;	#connected to COMMON_CLOCK SMA of Power Board.  Do not have this and EXT_TRIG on at the same time.
+#	NET TSA_IN<1>		LOC = "aa3"  | IOSTANDARD = LVCMOS25;	#connected to SMA1 SMA of Power Board
+#	NET TSA_IN<2>		LOC = "ab3"  | IOSTANDARD = LVCMOS25;	#connected to SMA2 SMA of Power Board
+#	NET TSA_IN<3>		LOC = "ab5"  | IOSTANDARD = LVCMOS25;	#connected to SMA3 SMA of Power Board
+##############################################################################
+### DAC I/O (Connector 2)
+##############################################################################
+#	NET SCLK    	 	LOC = "u24"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SYNC    	  	LOC = "v26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN0    	   LOC = "w26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN1    	   LOC = "w25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN2    	   LOC = "y26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+##############################################################################
+### IRS ASIC I/Os (Connector 3)
+##############################################################################
+#	NET RAMP				LOC = "u7"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TST_START		LOC = "v6"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_START port of STURM2
+#	NET TST_CLR			LOC = "y6"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_CLK port of STURM2
+#	NET TST_OUT			LOC = "k9"   | IOSTANDARD = LVCMOS25;	#connected to EWILKMON_OUT port of STURM2
+#	NET SMPL_SEL<0>	LOC = "k26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<1>	LOC = "l26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<2>	LOC = "l25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<3>	LOC = "m26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<4>	LOC = "n26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DAT<0>			LOC = "h13"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<1>			LOC = "f14"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<2>			LOC = "e14"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<3>			LOC = "k14"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<4>			LOC = "h14"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<5>			LOC = "j15"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<6>			LOC = "h15"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<7>			LOC = "j16"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<8>			LOC = "v20"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<9>			LOC = "u19"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<10>			LOC = "u21"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<11>			LOC = "t20"  | IOSTANDARD = LVCMOS25;
+#	NET CH_SEL<0>		LOC = "r20"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<1>		LOC = "p19"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<2>		LOC = "n19"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<3>		LOC = "n21"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TDC_STOP		LOC = "l7"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_STOP port of STURM2
+#	NET TDC_START		LOC = "k8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_START port of STURM2
+#	NET TDC_CLR			LOC = "k6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_CLR port of STURM2
+#	NET MRCO				LOC = "h6"  | IOSTANDARD = LVCMOS25;
+#	NET TSA_OUT<0>		LOC = "g20"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<1>		LOC = "h20"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<2>		LOC = "k21"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<3>		LOC = "k19"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CAL_P			LOC = "l20"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+#	NET CAL_N			LOC = "m21"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+#	NET VCAL				LOC = "m6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;		#MCF; didn't used to be connected but needs to be
+##	NET TSA_IN<0>		LOC = "y3"  | IOSTANDARD = LVCMOS25;	#connected to COMMON_CLOCK SMA of Power Board.  Do not have this and EXT_TRIG on at the same time.
+#	NET TSA_IN<1>		LOC = "aa3"  | IOSTANDARD = LVCMOS25;	#connected to SMA1 SMA of Power Board
+#	NET TSA_IN<2>		LOC = "ab3"  | IOSTANDARD = LVCMOS25;	#connected to SMA2 SMA of Power Board
+#	NET TSA_IN<3>		LOC = "ab5"  | IOSTANDARD = LVCMOS25;	#connected to SMA3 SMA of Power Board
+##############################################################################
+### DAC I/O (Connector 3)
+##############################################################################
+#	NET SCLK    	 	LOC = "n6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SYNC    	  	LOC = "n8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN0    	   LOC = "p8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN1    	   LOC = "r7"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN2    	   LOC = "t6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+##############################################################################
+### IRS ASIC I/Os (Connector 4)
+##############################################################################
+#	NET RAMP				LOC = "u8"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TST_START		LOC = "v7"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_START port of STURM2
+#	NET TST_CLR			LOC = "j9"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILKMON_CLK port of STURM2
+#	NET TST_OUT			LOC = "l9"   | IOSTANDARD = LVCMOS25;	#connected to EWILKMON_OUT port of STURM2
+#	NET SMPL_SEL<0>	LOC = "k26"   | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<1>	LOC = "l26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<2>	LOC = "l25"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<3>	LOC = "m26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SMPL_SEL<4>	LOC = "n26"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DAT<0>			LOC = "m9"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<1>			LOC = "n9"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<2>			LOC = "r9"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<3>			LOC = "t9"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<4>			LOC = "u9"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<5>			LOC = "r18"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<6>			LOC = "n18"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<7>			LOC = "m18"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<8>			LOC = "k18"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<9>			LOC = "v21"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<10>			LOC = "u20"  | IOSTANDARD = LVCMOS25;
+#	NET DAT<11>			LOC = "t19"  | IOSTANDARD = LVCMOS25;
+#	NET CH_SEL<0>		LOC = "r19"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<1>		LOC = "r21"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<2>		LOC = "p21"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CH_SEL<3>		LOC = "n20"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TDC_STOP		LOC = "l8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_STOP port of STURM2
+#	NET TDC_START		LOC = "l6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_START port of STURM2
+#	NET TDC_CLR			LOC = "k7"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to EWILK_CLR port of STURM2
+#	NET MRCO				LOC = "j7"  | IOSTANDARD = LVCMOS25;
+#	NET TSA_OUT<0>		LOC = "h21"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<1>		LOC = "j20"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<2>		LOC = "k20"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET TSA_OUT<3>		LOC = "l21"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET CAL_P			LOC = "l19"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+#	NET CAL_N			LOC = "m19"  | IOSTANDARD = LVCMOS25  | DRIVE = 12 | SLEW = FAST ;	#change IOSTANDARD back to LVDS_25 when hardware is updated
+#	NET VCAL				LOC = "m8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;		#MCF; didn't used to be connected but needs to be
+##	NET TSA_IN<0>		LOC = "y3"  | IOSTANDARD = LVCMOS25;	#connected to COMMON_CLOCK SMA of Power Board.  Do not have this and EXT_TRIG on at the same time.
+#	NET TSA_IN<1>		LOC = "aa3"  | IOSTANDARD = LVCMOS25;	#connected to SMA1 SMA of Power Board
+#	NET TSA_IN<2>		LOC = "ab3"  | IOSTANDARD = LVCMOS25;	#connected to SMA2 SMA of Power Board
+#	NET TSA_IN<3>		LOC = "ab5"  | IOSTANDARD = LVCMOS25;	#connected to SMA3 SMA of Power Board
+##############################################################################
+### DAC I/O (Connector 4)
+##############################################################################
+#	NET SCLK    	 	LOC = "n7"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET SYNC    	  	LOC = "p6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN0    	   LOC = "r6"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN1    	   LOC = "r8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+#	NET DIN2    	   LOC = "t8"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+###########################################################################
 ## USB I/O
 #############################################################################
-	NET IFCLK      	LOC = "p181" | IOSTANDARD = LVCMOS33;
-	NET CLKOUT     	LOC = "p109" | IOSTANDARD = LVCMOS33;
-	NET FD<0>			LOC = "p147" | IOSTANDARD = LVCMOS33;
-	NET FD<1>			LOC = "p146" | IOSTANDARD = LVCMOS33;
-	NET FD<2>			LOC = "p144" | IOSTANDARD = LVCMOS33;
-	NET FD<3>			LOC = "p143" | IOSTANDARD = LVCMOS33;
-	NET FD<4>			LOC = "p141" | IOSTANDARD = LVCMOS33;
-	NET FD<5>			LOC = "p140" | IOSTANDARD = LVCMOS33;
-	NET FD<6>			LOC = "p139" | IOSTANDARD = LVCMOS33;
-	NET FD<7>			LOC = "p138" | IOSTANDARD = LVCMOS33;
-	NET FD<8>			LOC = "p120" | IOSTANDARD = LVCMOS33;
-	NET FD<9>			LOC = "p119" | IOSTANDARD = LVCMOS33;
-	NET FD<10>			LOC = "p117" | IOSTANDARD = LVCMOS33;
-	NET FD<11>			LOC = "p116" | IOSTANDARD = LVCMOS33;
-	NET FD<12>			LOC = "p115" | IOSTANDARD = LVCMOS33;
-	NET FD<13>			LOC = "p114" | IOSTANDARD = LVCMOS33;
-	NET FD<14>			LOC = "p113" | IOSTANDARD = LVCMOS33;
-	NET FD<15>			LOC = "p111" | IOSTANDARD = LVCMOS33;
-	NET PA0        	LOC = "p132" | IOSTANDARD = LVCMOS33;
-	NET PA1        	LOC = "p131" | IOSTANDARD = LVCMOS33;
-	NET PA2        	LOC = "p130" | IOSTANDARD = LVCMOS33;
-	NET PA3        	LOC = "p128" | IOSTANDARD = LVCMOS33;
-	NET PA4        	LOC = "p126" | IOSTANDARD = LVCMOS33;
-	NET PA5        	LOC = "p125" | IOSTANDARD = LVCMOS33;
-	NET PA6        	LOC = "p124" | IOSTANDARD = LVCMOS33;
-	NET PA7        	LOC = "p123" | IOSTANDARD = LVCMOS33;
-	NET CTL0       	LOC = "p137" | IOSTANDARD = LVCMOS33;
-	NET CTL1       	LOC = "p135" | IOSTANDARD = LVCMOS33;
-	NET CTL2       	LOC = "p133" | IOSTANDARD = LVCMOS33;
-	NET RDY0       	LOC = "p108" | IOSTANDARD = LVCMOS33;
-	NET RDY1       	LOC = "p107" | IOSTANDARD = LVCMOS33;
-	NET WAKEUP     	LOC = "p122" | IOSTANDARD = LVCMOS33;
-#############################################################################
-## DAC I/O
-#############################################################################
-	NET SCLK    	 	LOC = "p51"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET SYNC    	  	LOC = "p50"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET DIN0    	   LOC = "p52"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET DIN1    	   LOC = "p57"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
-	NET DIN2    	   LOC = "p58"  | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;
+	NET IFCLK      	LOC = "b14" | IOSTANDARD = LVCMOS33;
+	NET CLKOUT     	LOC = "e13" | IOSTANDARD = LVCMOS33;
+	NET FD<0>			LOC = "f5" | IOSTANDARD = LVCMOS33;
+	NET FD<1>			LOC = "e6" | IOSTANDARD = LVCMOS33;
+	NET FD<2>			LOC = "e5" | IOSTANDARD = LVCMOS33;
+	NET FD<3>			LOC = "h9" | IOSTANDARD = LVCMOS33;
+	NET FD<4>			LOC = "g9" | IOSTANDARD = LVCMOS33;
+	NET FD<5>			LOC = "a3" | IOSTANDARD = LVCMOS33;
+	NET FD<6>			LOC = "a2" | IOSTANDARD = LVCMOS33;
+	NET FD<7>			LOC = "f9" | IOSTANDARD = LVCMOS33;
+	NET FD<8>			LOC = "e8" | IOSTANDARD = LVCMOS33;
+	NET FD<9>			LOC = "d5" | IOSTANDARD = LVCMOS33;
+	NET FD<10>			LOC = "c5" | IOSTANDARD = LVCMOS33;
+	NET FD<11>			LOC = "h10" | IOSTANDARD = LVCMOS33;
+	NET FD<12>			LOC = "g10" | IOSTANDARD = LVCMOS33;
+	NET FD<13>			LOC = "b4" | IOSTANDARD = LVCMOS33;
+	NET FD<14>			LOC = "a4" | IOSTANDARD = LVCMOS33;
+	NET FD<15>			LOC = "f10" | IOSTANDARD = LVCMOS33;
+	NET PA0        	LOC = "g7" | IOSTANDARD = LVCMOS33;
+	NET PA1        	LOC = "h8" | IOSTANDARD = LVCMOS33;
+	NET PA2        	LOC = "g8" | IOSTANDARD = LVCMOS33;
+	NET PA3        	LOC = "f7" | IOSTANDARD = LVCMOS33;
+	NET PA4        	LOC = "f6" | IOSTANDARD = LVCMOS33;
+	NET PA5        	LOC = "c3" | IOSTANDARD = LVCMOS33;
+	NET PA6        	LOC = "b3" | IOSTANDARD = LVCMOS33;
+	NET PA7        	LOC = "g6" | IOSTANDARD = LVCMOS33;
+	NET CTL0       	LOC = "f12" | IOSTANDARD = LVCMOS33;
+	NET CTL1       	LOC = "e12" | IOSTANDARD = LVCMOS33;
+	NET CTL2       	LOC = "j11" | IOSTANDARD = LVCMOS33;
+	NET RDY0       	LOC = "g11" | IOSTANDARD = LVCMOS33;
+	NET RDY1       	LOC = "h12" | IOSTANDARD = LVCMOS33;
+	NET WAKEUP     	LOC = "f11" | IOSTANDARD = LVCMOS33;
 #############################################################################
 ## User I/O
 #############################################################################
-	NET BCLK		 		LOC = "p184" | IOSTANDARD = LVCMOS33;
-	NET EXT_TRIG 		LOC = "p106" | IOSTANDARD = LVCMOS33;
-	NET MON<0>			LOC = "p191" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<1>			LOC = "p190" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<2>			LOC = "p189" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<3>			LOC = "p187" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<4>			LOC = "p178" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<5>			LOC = "p176" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<6>			LOC = "p175" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<7>			LOC = "p172" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<8>			LOC = "p171" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<9>			LOC = "p169" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<10>			LOC = "p168" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<11>			LOC = "p167" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<12>			LOC = "p166" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<13>			LOC = "p165" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<14>			LOC = "p162" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET MON<15>			LOC = "p161" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
-	NET LED_GREEN  	LOC = "p156" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = SLOW ;
-	NET LED_RED			LOC = "p155" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = SLOW ;
+	NET BCLK		 		LOC = "u25" | IOSTANDARD = LVDS_25;	#250MHz
+	NET BCLK_INV 		LOC = "u26" | IOSTANDARD = LVDS_25;	#MCF
+	NET EXT_TRIG 		LOC = "y3" | IOSTANDARD = LVCMOS33;	#connected to COMMON_CLOCK SMA of Power Board.  Do not have this and TSA_IN on at the same time.
+	NET MON<0>			LOC = "y5" | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to SCROD_PROBE1 of Power Board
+	NET MON<1>			LOC = "aa4" | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to SCROD_PROBE2 of Power Board
+	NET MON<2>			LOC = "ab4" | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to SCROD_PROBE3 of Power Board
+	NET MON<3>			LOC = "ac3" | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to SCROD_PROBE4 of Power Board
+	NET MON<4>			LOC = "ad3" | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to SCROD_PROBE5 of Power Board
+	NET MON<5>			LOC = "ac4" | IOSTANDARD = LVCMOS25 | DRIVE = 12 | SLEW = FAST ;	#connected to SCROD_PROBE6 of Power Board
+#	NET MON<6>			LOC = "p175" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<7>			LOC = "p172" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<8>			LOC = "p171" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<9>			LOC = "p169" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<10>			LOC = "p168" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<11>			LOC = "p167" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<12>			LOC = "p166" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<13>			LOC = "p165" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<14>			LOC = "p162" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+#	NET MON<15>			LOC = "p161" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = FAST ;
+	NET LED_GREEN  	LOC = "f18" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = SLOW ;	#LED0; connected to LOCKED
+	NET LED_RED			LOC = "c21" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = SLOW ;	#LED8; connected to CLR_ALL
+	NET LED_9			LOC = "B21" | IOSTANDARD = LVCMOS33 | DRIVE = 12 | SLEW = SLOW ;	#connected to RESET
 #############################################################################
-NET "xCLK" TNM_NET = TxCLK;
-TIMESPEC TSxCLK = PERIOD "TxCLK" 8 ns HIGH 50% PRIORITY 1;
+NET "BCLK" TNM_NET = BCLK;
+TIMESPEC "TSBCLK" = PERIOD "BCLK" 4 ns HIGH 50% PRIORITY 1;
 
-NET "xUSB_MAIN/USB_CLK" TNM_NET = TxIFCLK;
+#NET "xUSB_MAIN/USB_CLK" TNM_NET = TxIFCLK;
 #NET "xIFCLK" TNM_NET = TxIFCLK;
-TIMESPEC TSxIFCLK = PERIOD "TxIFCLK" 20 ns HIGH 50% PRIORITY 5;
-
+#TIMESPEC TSxIFCLK = PERIOD "TxIFCLK" 20 ns HIGH 50% PRIORITY 5;
