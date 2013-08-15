@@ -41,8 +41,8 @@ entity TOP is
 		MRCO		 	 : in  std_logic;
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
-		CAL_P			 : out std_logic; 
-		CAL_N			 : in  std_logic;	--MCF; used to be out.  trying CAL_P <= CAL_N in STURM2_IO instead
+--		CAL_P			 : out std_logic;	--MCF; put back in after hardware is updated
+--		CAL_N			 : out  std_logic;	--MCF; put back in after hardware is updated
 		VCAL			 : out std_logic;	--MCF; needs to connect to the daughtercard
 		-- USB I/O
       IFCLK      	: in    std_logic;--50 MHz CLK
@@ -190,8 +190,8 @@ architecture Behavioral of TOP is
 		MRCO		 	 : in  std_logic;
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
-		CAL_P			 : out std_logic; 
-		CAL_N			 : in  std_logic;	--MCF; used to be out.  trying CAL_P <= CAL_N instead
+--		CAL_P			 : out std_logic;	--MCF; put back in after hardware is updated
+--		CAL_N			 : out  std_logic;	--MCF; put back in after hardware is updated
 		-- User I/O
 		xCLK			 : in  std_logic;--150 MHz CLK
 		xCLK_INV		 : in  std_logic;--MCF
@@ -372,8 +372,8 @@ begin
 		MRCO  			=> MRCO,
 		TSA_IN  			=> TSA_IN,
 		TSA_OUT  		=> TSA_OUT,
-		CAL_P  			=> CAL_P,
-		CAL_N  			=> CAL_N,
+--		CAL_P  			=> CAL_P,	--MCF; put back in after hardware is updated
+--		CAL_N  			=> CAL_N,	--MCF; put back in after hardware is updated
 		-- User I/O
 		xCLK				=> xCLK,
 		xCLK_INV			=> xCLK_INV,
@@ -384,11 +384,11 @@ begin
 		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
 --		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM => xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB, -- mza
 		xTHERE_IS_NEW_DATA_IN_THE_FPGA_RAM => open, -- mza
-		xRAMP_DONE		=> xRAMP_DONE,
+		xRAMP_DONE		=> xRAMP_DONE,	--MCF; used to be connected to xRAMP_DONE
 		xDAT				=> xDAT,
 		xDONE  			=> xDONE,
 		xPED_EN			=> xPED_EN,
-		xRAMP  			=> xRAMP,	--MCF; used to be connected to xRAMP (which didn't do anything)
+		xRAMP  			=> xMON(3),	--MCF; used to be connected to xRAMP (which didn't do anything)
 		xADC  			=> xADC,
 		xRADDR  			=> xRADDR,
 		xMON_HDR			=> xMON_HDR,

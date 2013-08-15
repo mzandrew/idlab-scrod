@@ -41,8 +41,8 @@ entity STURM2_MAIN is
 		MRCO		 	 : in  std_logic;
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
-		CAL_P			 : out std_logic; 
-		CAL_N			 : in std_logic;	--MCF; used to be out.  trying out CAL_P <= CAL_N in STURM2_IO instead
+--		CAL_P			 : out std_logic;	--MCF; put back in after hardware is updated
+--		CAL_N			 : in std_logic;	--MCF; put back in after hardware is updated
 		-- User I/O
 		xCLK			 : in std_logic;--150 MHz CLK
 		xCLK_INV		 : in std_logic;--MCF
@@ -89,7 +89,7 @@ architecture Behavioral of STURM2_MAIN is
 	signal xTDC_CLR	: std_logic; 
 	signal xTSA_IN	 	: std_logic_vector(3 downto 0);
 	signal xTSA_OUT 	: std_logic_vector(3 downto 0);
---	signal xCAL			: std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
+--	signal xCAL			: std_logic;	--MCF; put back in after hardware is updated
 --	signal xNRUN	: std_logic; 
 	signal RAMP_DONE	 : std_logic;
 	signal xW_EN		 : std_logic;
@@ -116,8 +116,8 @@ architecture Behavioral of STURM2_MAIN is
 		MRCO		 	 : in  std_logic;
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
-		CAL_P			 : out std_logic; 
-		CAL_N			 : in std_logic;	--MCF; used to be out.  trying out CAL_P <= CAL_N instead
+--		CAL_P			 : out std_logic;	--MCF; put back in after hardware is updated
+--		CAL_N			 : out std_logic;	--MCF; put back in after hardware is updated
 		-- User I/O
 		xRAMP	 		 : in  std_logic; 
 		xTST_START 	 : in  std_logic; 
@@ -132,7 +132,7 @@ architecture Behavioral of STURM2_MAIN is
 		xMRCO		 	 : out std_logic;
 		xTSA_IN		 : out std_logic_vector(3 downto 0);
 		xTSA_OUT		 : in  std_logic_vector(3 downto 0));
---		xCAL			 : in  std_logic);	--MCF; trying out CAL_P <= CAL_N instead
+--		xCAL			 : in  std_logic);	--MCF; put back in after hardware is updated
    end component;
 --------------------------------------------------------------------------------	
    component STURM2_WR
@@ -140,7 +140,7 @@ architecture Behavioral of STURM2_MAIN is
 		-- STURM2 ASIC I/Os
 		xTSA_IN		 : in  std_logic_vector(3 downto 0);
 		xTSA_OUT		 : out std_logic_vector(3 downto 0);
---		xCAL		 	 : out std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
+--		xCAL		 	 : out std_logic;	--MCF; put back in after hardware is updated
 		-- User I/O
 --		xNRUN		 	 : out std_logic;
 		xCLK			 : in std_logic;--150 MHz CLK
@@ -254,8 +254,8 @@ begin
 		MRCO  		=> MRCO,
 		TSA_IN  		=> TSA_IN,
 		TSA_OUT  	=> TSA_OUT,
-		CAL_P  		=> CAL_P,
-		CAL_N  		=> CAL_N,
+--		CAL_P  		=> CAL_P,	--MCF; put back in after hardware is updated
+--		CAL_N  		=> CAL_N,	--MCF; put back in after hardware is updated
 		-- User I/O
 		xRAMP  		=> RAMPING,
 		xTST_START  => xTST_START,
@@ -270,14 +270,14 @@ begin
 		xMRCO  		=> xMRCO,
 		xTSA_IN  	=> xTSA_IN,
 		xTSA_OUT  	=> xTSA_OUT);
---		xCAL  		=> xCAL);	--MCF; trying out CAL_P <= CAL_N instead
+--		xCAL  		=> xCAL);	--MCF; put back in after hardware is updated
 --------------------------------------------------------------------------------
 	xSTURM2_WR : STURM2_WR
 	port map (
 		-- STURM2 ASIC I/Os
 		xTSA_IN			=> xTSA_IN,
 		xTSA_OUT			=> xTSA_OUT,
---		xCAL				=> xCAL,	--MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
+--		xCAL				=> xCAL,	--MCF; put back in after hardware is updated
 		-- User I/O
 --		xNRUN				=> xNRUN,
 		xCLK				=> xCLK,
