@@ -182,7 +182,7 @@ begin
 			THERE_IS_NEW_DATA_IN_THE_FPGA_RAM <= '0'; -- mza
 			TDC_START 	<= '0';
 			TDC_STOP 	<= '0';	--MCF; used to be '1'.  setting to '0' so we don't get any funny business
-			TDC_CLR 		<= '1';
+			TDC_CLR 		<= '0';	--MCF; used to be '1'.  trying out '0' in case '1' clears the data too fast (before it is transferred)
 			W_EN 			<= '0';
 			STATE 		<= IDLE;
 		elsif rising_edge(xCLK_INV) then	--MCF; used to be falling_edge(xCLK) which resulted in gated clock errors
@@ -197,8 +197,14 @@ begin
 				when CLR_TDC =>			
 					TDC_CLR		<= '1';
 					TDC_STOP		<= '0';
-					PHASE_CNT	<= "000";  -- GSV modified	
-					STATE 		<= WAIT_FOR_CLR_TDC_SETTLING;
+					STATE_CNT <= STATE_CNT + 1;
+					if STATE_CNT >= 100 then
+						PHASE_CNT	<= "000";
+						STATE_CNT	<= x"0000";
+						STATE 		<= WAIT_FOR_CLR_TDC_SETTLING;
+					end if;
+--					PHASE_CNT	<= "000";  -- GSV modified	
+--					STATE 		<= WAIT_FOR_CLR_TDC_SETTLING;
 --------------------------------------------------------------------------------	
 				when WAIT_FOR_CLR_TDC_SETTLING =>			
 					PHASE_CNT <= PHASE_CNT + 1;
@@ -217,11 +223,11 @@ begin
 						STATE 		<= START_TDC;
 					end if; 
 --------------------------------------------------------------------------------	
-				when START_TDC =>
-					STATE_CNT <= STATE_CNT + 1;   
+				when START_TDC =>	--MCF; fix this state.  it is immediately proceeding to the next state
 --					TDC_START 	<= '1'; --4.0 us long ramp
 					TDC_START 	<= '1'; --~3.9 us long ramp
 					RAMP 			<= '1'; -- ISEL = 20 kohm & CEXT = 150 pF (cpad)
+					STATE_CNT <= STATE_CNT + 1;   
 					if STATE_CNT >= 600 then	--MCF; used to be 8000. (3.9 us + 0.1 us) * 150MHz = 600 oscillations
 						RAMP_DONE	 <= '1';
 						WADDR		 	 <= "0000000000";

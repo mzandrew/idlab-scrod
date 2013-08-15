@@ -51,7 +51,7 @@ architecture Behavioral of STURM2_WR is
 --   								signals		     		   						         --
 --------------------------------------------------------------------------------
 	signal xBLOCK 		: std_logic;
---	signal CAL			: std_logic;	--MCF; trying out CAL_P <= CAL_N in STURM2_IO
+--	signal CAL			: std_logic;	--MCF; put back in after hardware is updated
 	signal TSA_OUT	: std_logic_vector(3 downto 0);
 	signal SAMPLE_ANALOG_SIGNAL_TO_CAPACITOR_ARRAY				: std_logic; -- mza
 	signal DIGITIZE_SAMPLED_SIGNAL_VIA_WILKINSON_CONVERSION	: std_logic; -- mza
@@ -95,7 +95,7 @@ begin
 		end if;
 	end process;
 --------------------------------------------------------------------------------			
---	xBUF_CAL : BUF --MCF; trying out CAL_P <= CAL_N in STURM2_IO instead
+--	xBUF_CAL : BUF	--MCF; put back in after hardware is updated
 --	port map (
 --		I  => CAL,
 --		O  => xCAL);
