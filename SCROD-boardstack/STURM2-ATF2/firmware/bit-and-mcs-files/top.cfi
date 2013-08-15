@@ -1,0 +1,11 @@
+# PROMGEN: Xilinx Prom Generator O.76xd
+# Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+
+SOFTWARE_VERSION O.76xd
+DATE            08/15/2013 - 10:32
+SOURCE          C:\Users\Matt_Fall\STURM2\top.mcs
+DEVICE          8192K
+DATA_WIDTH      1
+FILL_DATA       0xFF
+SIGNATURE       0x3F76AA2A
+START_ADDRESS   0x00000000 END_ADDRESS 0x00406533 DIRECTION_UP   "C:/cygwin/home/Matt_Fall/build/STURM2-ATF2/firmware/test/ise-project/top.bit" 6slx150tfgg676

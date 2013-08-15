@@ -42,7 +42,7 @@ entity STURM2_IO is
 		TSA_IN		 : in  std_logic_vector(3 downto 0);
 		TSA_OUT		 : out std_logic_vector(3 downto 0);
 		CAL_P			 : out std_logic; 
-		CAL_N			 : out std_logic; 
+		CAL_N			 : in std_logic;	--MCF; used to be out but it was messing with CAL_PED on the daughtercard
 		-- User I/O
 		xRAMP	 		 : in  std_logic; 
 		xTST_START 	 : in  std_logic; 
@@ -56,8 +56,8 @@ entity STURM2_IO is
 		xTDC_CLR		 : in  std_logic; 
 		xMRCO		 	 : out std_logic;
 		xTSA_IN		 : out std_logic_vector(3 downto 0);
-		xTSA_OUT		 : in  std_logic_vector(3 downto 0);
-		xCAL			 : in  std_logic);
+		xTSA_OUT		 : in  std_logic_vector(3 downto 0));
+--		xCAL			 : in  std_logic);	--MCF; trying out CAL_P <= CAL_N instead
 end STURM2_IO;
 
 architecture Behavioral of STURM2_IO is
@@ -67,6 +67,7 @@ architecture Behavioral of STURM2_IO is
 --------------------------------------------------------------------------------
 	signal preTST_OUT : std_logic;
 	signal preMRCO : std_logic;
+	signal preCAL : std_logic;	--MCF; remove after hardware is updated
 --------------------------------------------------------------------------------
 --   								components     		   						         --
 --------------------------------------------------------------------------------
@@ -198,10 +199,15 @@ begin
 		I => xTSA_OUT,
 		O => TSA_OUT);
 --------------------------------------------------------------------------------	
-	xOBUFDS_CAL : OBUFDS 
+--	xOBUFDS_CAL : OBUFDS
+--	port map (
+--		I  => xCAL,
+--		O  => CAL_P,
+--		OB => CAL_N);
+
+	xOBUF_CAL : OBUF	--MCF; temporarily replacing OBUFDS with these until we can get the new hardware. I'm trying out CAL_P <= CAL_N instead
 	port map (
-		I  => xCAL,
-		O  => CAL_P,
-		OB => CAL_N);		
---------------------------------------------------------------------------------		
+		I => CAL_N,
+		O => CAL_P);
+------------------------------------------------------------------------------		
 end Behavioral;

@@ -66,7 +66,10 @@ entity USB_MAIN is
 		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
 		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xWAKEUP	 	: out std_logic;
-		xCLR_ALL   	: out std_logic);
+		xCLR_ALL   	: out std_logic;
+		xRESET		: out std_logic;
+		Locmd_DEBUG	: out std_logic_vector(3 downto 0);	--MCF; for debugging
+		Hicmd_DEBUG	: out std_logic);	--MCF; for debugging
 end USB_MAIN;
 
 architecture BEHAVIORAL of USB_MAIN is
@@ -136,7 +139,9 @@ architecture BEHAVIORAL of USB_MAIN is
 		xEXTERNAL_TRIGGERS_ARE_ENABLED : out std_logic;
 		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB : out std_logic;
 		xDEBUG 		  	: out std_logic_vector (15 downto 0);
-      xTOGGLE   		: out std_logic);
+      xTOGGLE   		: out std_logic;
+		Locmd_DEBUG		: out std_logic_vector(3 downto 0);	--MCF; for debugging
+		Hicmd_DEBUG		: out std_logic);	--MCF; for debugging
    end component;
 --------------------------------------------------------------------------------
 	component USBwrite
@@ -209,7 +214,7 @@ begin
    xCLR_ALL 	<= CLR_ALL;
    xPED_SCAN	<= PED_SCAN;
    xDEBUG		<= DEBUG;
-	xIFCLK 		<= USB_CLK;
+	xIFCLK 		<= USB_CLK;	--MCF; doing this using the ODDR2
 	xWAKEUP     <= WAKE_UP;
 --------------------------------------------------------------------------------
    xMESS : MESS
@@ -249,7 +254,9 @@ begin
 		xEXTERNAL_TRIGGERS_ARE_ENABLED => xEXTERNAL_TRIGGERS_ARE_ENABLED,
 		xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB => xTRANSFER_FPGA_RAM_BUFFER_TO_PC_VIA_USB,
       xSYNC_USB	=> xSYNC_USB,
-      xTOGGLE		=> xTOGGLE);
+      xTOGGLE		=> xTOGGLE,
+		Locmd_DEBUG	=> Locmd_DEBUG,	--MCF; for debugging
+		Hicmd_DEBUG	=> Hicmd_DEBUG);	--MCF; for debugging
 --------------------------------------------------------------------------------
 	xUSBwrite : USBwrite
    port map(
@@ -305,5 +312,7 @@ begin
 		xWAKEUP 	=> WAKE_UP,
 		xCLR_ALL	=> CLR_ALL,
 		xRESET	=> RESET);		
---------------------------------------------------------------------------------	
+--------------------------------------------------------------------------------
+xRESET <= RESET;
+--------------------------------------------------------------------------------
 end BEHAVIORAL;

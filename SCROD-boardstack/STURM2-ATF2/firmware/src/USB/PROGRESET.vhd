@@ -41,7 +41,7 @@ architecture Behavioral of PROGRESET is
 --------------------------------------------------------------------------------
 	type STATE_TYPE is(RESETD, NORMAL);
 	signal STATE	: STATE_TYPE := RESETD;	
-	signal RESET 	: std_logic := '0';
+	signal RESET 	: std_logic := '0';	--active low
 	signal CLR_ALL : std_logic := '1';
 --------------------------------------------------------------------------------
 --   								components     		   						         --
