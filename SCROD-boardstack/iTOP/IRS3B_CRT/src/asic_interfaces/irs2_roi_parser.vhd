@@ -45,6 +45,7 @@ entity irs2_roi_parser is
 		--Outputs that will be needed for building the response
 		NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT : out STD_LOGIC_VECTOR(SEGMENT_COUNTER_BITS-1 downto 0);
 		EVENT_WAS_TRUNCATED                  : out STD_LOGIC;
+		TRIGGER_ACCUMULATION                 : out STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);--Bostjan Macek: ADD
 		--Inputs to facilitate flow control
 		MAKE_READY_FOR_NEXT_EVENT            : in  STD_LOGIC;
 		--Outputs to facilitate flow control
@@ -58,7 +59,7 @@ end irs2_roi_parser;
 
 architecture Behavioral of irs2_roi_parser is
 	constant constant_NWINDOWS_PER_TRIGGER             : integer := 4;
-	constant constant_TRIGGER_BIT_SETTLING_TIME        : integer := 2;
+	constant constant_TRIGGER_BIT_SETTLING_TIME        : integer := 4;
 	signal internal_DONE_BUILDING_WINDOW_LIST          : std_logic;
 	signal internal_READY_FOR_TRIGGER                  : std_logic;
 	type roi_parser_state is (IDLE, CALCULATE_FIRST_WINDOW, INITIALIZE_CURRENT_WINDOW, READ_NEXT_TRIGGER_WORD, LATCH_NEXT_TRIGGER_BIT, CHECK_EACH_CHANNEL, WRITE_WINDOWS, INCREMENT_CHANNEL, INCREMENT_WINDOW, LATCH_NEXT_PEDESTAL_BIT, GENERATE_PEDESTALS, DONE);
@@ -85,11 +86,15 @@ architecture Behavioral of irs2_roi_parser is
 	signal internal_GENERIC_COUNTER                    : unsigned(4 downto 0);
 	signal internal_GENERIC_COUNTER_RESET              : std_logic := '1';
 	signal internal_GENERIC_COUNTER_ENABLE             : std_logic := '0';
+	signal internal_TRIGGER_ACCUMULATION_RESET         : std_logic := '0'; --Bostjan Macek: ADD
+	signal internal_TRIGGER_ACCUMULATION_ENABLE        : std_logic := '0'; --Bostjan Macek: ADD
 	--Read trigger memory blockram interface
 	signal internal_TRIGGER_MEMORY_READ_ADDRESS_RAW : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0) := (others => '0');
 	signal internal_TRIGGER_MEMORY_READ_ADDRESS_ADJ : std_logic_vector(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0) := (others => '0');
 	signal internal_TRIGGER_MEMORY_WORD           : std_logic_vector(TOTAL_TRIGGER_BITS-1 downto 0);
+	signal internal_TRIGGER_MEMORY_WORD_MASKED_UNREG     : std_logic_vector(TOTAL_TRIGGER_BITS-1 downto 0);
 	signal internal_TRIGGER_MEMORY_WORD_MASKED    : std_logic_vector(TOTAL_TRIGGER_BITS-1 downto 0);
+	signal internal_TRIGGER_MEMORY_WORD_ACCUMULATION : std_logic_vector(TOTAL_TRIGGER_BITS-1 downto 0); --Bostjan Macek: ADD
 	signal internal_TRIGGER_MEMORY_READ_ENABLE    : std_logic := '0';
 	signal internal_THIS_TRIGGER_BIT              : std_logic := '0';
 	signal internal_THIS_TRIGGER_BIT_REG          : std_logic := '0';
@@ -133,10 +138,17 @@ begin
 	DONE_BUILDING_WINDOW_LIST    <= internal_DONE_BUILDING_WINDOW_LIST;
 	READY_FOR_TRIGGER            <= internal_READY_FOR_TRIGGER;
 	--Mask in or out the bits we want for the trigger memory word
+
 	gen_trigger_memory_mask : for i in 0 to TOTAL_TRIGGER_BITS-1 generate
-		internal_TRIGGER_MEMORY_WORD_MASKED(i) <= (internal_TRIGGER_MEMORY_WORD(i) and not(IGNORE_CHANNEL_MASK(i)));
+		internal_TRIGGER_MEMORY_WORD_MASKED_UNREG(i) <= (internal_TRIGGER_MEMORY_WORD(i) and not(IGNORE_CHANNEL_MASK(i)));
 	end generate;
 
+	process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+			internal_TRIGGER_MEMORY_WORD_MASKED <= internal_TRIGGER_MEMORY_WORD_MASKED_UNREG;
+		end if;
+	end process;
+	
 	--State outputs
 	process(internal_ROI_STATE, internal_THIS_TRIGGER_BIT_REG, internal_THIS_TRIGGER_BIT_FORCED_REG, internal_THIS_PEDESTAL_BIT_REG, internal_SEGMENTS_THIS_EVENT_COUNTER) begin
 		--Default levels for various components of the logic
@@ -157,6 +169,8 @@ begin
 		internal_SEGMENT_COUNTER_RESET              <= '0';
 		internal_GENERIC_COUNTER_RESET              <= '0';
 		internal_GENERIC_COUNTER_ENABLE             <= '0';
+		internal_TRIGGER_ACCUMULATION_RESET         <= '0'; --Bostjan Macek: ADD
+		internal_TRIGGER_ACCUMULATION_ENABLE        <= '0'; --Bostjan Macek: ADD
 		--
 		case(internal_ROI_STATE) is
 			when IDLE =>
@@ -170,6 +184,7 @@ begin
 				internal_GENERIC_COUNTER_RESET             <= '1';
 				internal_STARTING_WINDOW_READ_ENABLE       <= '1';
 				internal_ENDING_WINDOW_READ_ENABLE         <= '1';
+				internal_TRIGGER_ACCUMULATION_RESET        <= '1'; --Bostjan Macek: ADD
 				--Reset the FIFO here just in case we have junk left over from previous events. Should never happen, but might as well be safe.
 				internal_NEXT_WINDOW_FIFO_RESET            <= '1';  
 			when INITIALIZE_CURRENT_WINDOW =>
@@ -184,6 +199,7 @@ begin
 			when CHECK_EACH_CHANNEL =>
 				state_debug <= "0110";
 				internal_SEGMENT_COUNTER_RESET  <= '1';
+				internal_TRIGGER_ACCUMULATION_ENABLE <= '1'; --Bostjan Macek: ADD
 			when WRITE_WINDOWS      =>
 				state_debug <= "0111";
 				if (internal_THIS_TRIGGER_BIT_FORCED_REG = '1') then
@@ -372,6 +388,19 @@ begin
 			internal_THIS_TRIGGER_BIT_FORCED_REG <= internal_THIS_TRIGGER_BIT_FORCED;
 		end if;
 	end process;
+	
+	--Accumulate the trigger bits --Bostjan Macek: ADD
+	process(CLOCK) begin --Bostjan Macek: ADD
+		if (rising_edge(CLOCK)) then --Bostjan Macek: ADD
+			if (internal_TRIGGER_ACCUMULATION_RESET = '1') then --Bostjan Macek: ADD
+				internal_TRIGGER_MEMORY_WORD_ACCUMULATION <= (others => '0'); --Bostjan Macek: ADD
+			elsif (internal_TRIGGER_ACCUMULATION_ENABLE = '1') then --Bostjan Macek: ADD
+				internal_TRIGGER_MEMORY_WORD_ACCUMULATION <= internal_TRIGGER_MEMORY_WORD_ACCUMULATION or internal_TRIGGER_MEMORY_WORD_MASKED; --Bostjan Macek: ADD
+			end if; --Bostjan Macek: ADD
+		end if; --Bostjan Macek: ADD
+	end process; --Bostjan Macek: ADD
+	
+	TRIGGER_ACCUMULATION <= internal_TRIGGER_MEMORY_WORD_ACCUMULATION; --Bostjan Macek: ADD
 
 	--The word that will be written to the FIFO if we see something
 	process(internal_CHANNEL_COUNTER, internal_CURRENT_WINDOW, internal_SEGMENT_COUNTER, LAST_ALLOWED_WINDOW) 

@@ -43,9 +43,9 @@ entity feedback_and_monitoring is
 				FEEDBACK_SAMPLING_RATE_ENABLE             : in  Column_Row_Enables;
 				FEEDBACK_SAMPLING_RATE_GOALS_C_R          : in  Column_Row_Counters;
 				FEEDBACK_SAMPLING_RATE_COUNTER_C_R        : out Column_Row_Counters;
-				FEEDBACK_SAMPLING_RATE_VADJP_C_R          : out DAC_Setting_C_R;
-				FEEDBACK_SAMPLING_RATE_VADJN_C_R          : out DAC_Setting_C_R;
-				STARTING_SAMPLING_RATE_VADJN_C_R          : in  DAC_Setting_C_R;				
+				FEEDBACK_SAMPLING_RATE_VADJP_C_R          : out DAC_Setting16_C_R;
+				FEEDBACK_SAMPLING_RATE_VADJN_C_R          : out DAC_Setting16_C_R;
+				STARTING_SAMPLING_RATE_VADJN_C_R          : in  DAC_Setting16_C_R;				
 
 				AsicOut_MONITOR_WILK_COUNTERS_C0_R        : in std_logic_vector(3 downto 0);
 				AsicOut_MONITOR_WILK_COUNTERS_C1_R        : in std_logic_vector(3 downto 0);
@@ -64,11 +64,17 @@ end feedback_and_monitoring;
 
 architecture Behavioral of feedback_and_monitoring is 
 
+	signal internal_FEEDBACK_WILKINSON_DAC_VALUES_C_R          : DAC_Setting16_C_R;
+	signal internal_STARTING_WILKINSON_DAC_VALUES_C_R          : DAC_Setting16_C_R;
 begin
 	--Unused for now... wiring to zero to avoid warnings
 	gen_vadjp_dummy_col : for col in 0 to 3 generate
 		gen_vadjp_dummy_row : for row in 0 to 3 generate
 			FEEDBACK_SAMPLING_RATE_VADJP_C_R(col)(row) <= (others => '0');
+			
+			FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row) <= internal_FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row)(11 downto 0);
+			internal_STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)(11 downto  0) <= STARTING_WILKINSON_DAC_VALUES_C_R(col)(row);
+			internal_STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)(15 downto 12) <= x"0"; 
 		end generate;
 	end generate;
 	--
@@ -88,8 +94,8 @@ begin
 		FEEDBACK_WILKINSON_ENABLES_C_R     => FEEDBACK_WILKINSON_ENABLES_C_R,
 		FEEDBACK_WILKINSON_GOALS_C_R       => FEEDBACK_WILKINSON_GOALS_C_R,
 		FEEDBACK_WILKINSON_COUNTERS_C_R    => FEEDBACK_WILKINSON_COUNTERS_C_R,
-		FEEDBACK_WILKINSON_DAC_VALUES_C_R  => FEEDBACK_WILKINSON_DAC_VALUES_C_R,
-		STARTING_WILKINSON_DAC_VALUES_C_R  => STARTING_WILKINSON_DAC_VALUES_C_R,
+		FEEDBACK_WILKINSON_DAC_VALUES_C_R  => internal_FEEDBACK_WILKINSON_DAC_VALUES_C_R,
+		STARTING_WILKINSON_DAC_VALUES_C_R  => internal_STARTING_WILKINSON_DAC_VALUES_C_R,
 		CLOCK                              => CLOCK
 	);
 	

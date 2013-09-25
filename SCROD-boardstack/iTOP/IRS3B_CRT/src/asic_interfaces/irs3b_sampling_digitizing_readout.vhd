@@ -20,6 +20,7 @@ entity irs3b_sampling_digitizing_readout is
 		--Trigger related registers 
 		SOFTWARE_TRIGGER_VETO                 : in  STD_LOGIC;
 		HARDWARE_TRIGGER_VETO                 : in  STD_LOGIC;
+		TRIGGER_ACCUMULATION                  : out STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);--Bostjan Macek: ADD
 		--User registers
 		FIRST_ALLOWED_WINDOW                  : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
 		LAST_ALLOWED_WINDOW                   : in  STD_LOGIC_VECTOR(ANALOG_MEMORY_ADDRESS_BITS-1 downto 0);
@@ -297,6 +298,7 @@ begin
 		--Outputs that will be needed for building the response
 		NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT => internal_NUMBER_OF_WAVEFORMS_FOUND_THIS_EVENT,
 		EVENT_WAS_TRUNCATED                  => internal_ROI_TRUNCATED_FLAG,
+		TRIGGER_ACCUMULATION                 => TRIGGER_ACCUMULATION,
 		--Inputs to facilitate flow control
 		MAKE_READY_FOR_NEXT_EVENT            => internal_ROI_PARSER_MAKE_READY,
 		--Outputs to facilitate flow control

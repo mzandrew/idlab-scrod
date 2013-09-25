@@ -40,8 +40,8 @@ entity irs3b_program_dacs_parallel is
 		ASIC_VBIAS2                  : in DAC_setting_C_R;
 		ASIC_REG_TRG                 : in Timing_setting; --Not a DAC but set with the DACs.  Global for all ASICs.
 		ASIC_WBIAS                   : in DAC_setting_C_R;
-		ASIC_VADJP                   : in DAC_setting_C_R;
-		ASIC_VADJN                   : in DAC_setting_C_R;
+		ASIC_VADJP                   : in DAC_setting16_C_R;
+		ASIC_VADJN                   : in DAC_setting16_C_R;
 		ASIC_VDLY                    : in DAC_setting_C_R;
 		ASIC_TRG_BIAS                : in DAC_setting;
 		ASIC_TRG_BIAS2               : in DAC_setting;
@@ -492,9 +492,9 @@ begin
 			when 40 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIASES;                             --41: VDDbias
 			when 41 => internal_REG_VALUE_TO_LOAD <= ASIC_VDLY(internal_COL)(internal_ROW);           --42: Vdly
 			when 42 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJP;                         --43: VAPDbias
-			when 43 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJP(internal_COL)(internal_ROW);          --44: VadjP
+			when 43 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJP(internal_COL)(internal_ROW)(11 downto 0);      --44: VadjP
 			when 44 => internal_REG_VALUE_TO_LOAD <= ASIC_DAC_BUF_BIAS_VADJN;                         --45: VANDbias
-			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN(internal_COL)(internal_ROW);          --46: VadjN
+			when 45 => internal_REG_VALUE_TO_LOAD <= ASIC_VADJN(internal_COL)(internal_ROW)(11 downto 0);          --46: VadjN
 			when 61 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --62: Start_WilkMon
 			when 63 => internal_REG_VALUE_TO_LOAD <= (others => '1');                                 --64: Pulse test trigger
 			when others => internal_REG_VALUE_TO_LOAD <= (others => '0');

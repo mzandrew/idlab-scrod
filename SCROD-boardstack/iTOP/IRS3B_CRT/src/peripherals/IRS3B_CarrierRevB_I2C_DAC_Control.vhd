@@ -32,7 +32,7 @@ architecture Behavioral of Board_Stack_Bus_DAC_Control is
 	signal internal_ADDRESS		       	: std_logic_vector(6 downto 0);
 	signal internal_COMMAND             : std_logic_vector(3 downto 0);
 	signal internal_CHANNEL             : std_logic_vector(3 downto 0);
-	signal internal_DAC_VALUE           : DAC_setting;
+	signal internal_DAC_VALUE           : DAC_setting16;
 	signal internal_UPDATE              : std_logic;
 	signal internal_UPDATING 				: std_logic;
 	signal internal_UPDATE_SUCCEEDED    : std_logic;
@@ -47,7 +47,7 @@ architecture Behavioral of Board_Stack_Bus_DAC_Control is
 --------------------------------------------------------------	
 begin
    ----------------------------------------------------------
-	COL_LTC2637 : entity work.LTC2637_I2C_Interface
+	COL_LTC2657 : entity work.LTC2657_I2C_Interface
 	port map (
 		SCL              => internal_SCL,
 		SDA              => internal_SDA,
@@ -134,8 +134,8 @@ use work.IRS3B_CarrierRevB_DAC_definitions.ALL;
 
 entity IRS3B_CarrierRevB_External_I2C_DAC_Control is
 	Port ( 
-		VADJP_VALUES          : in    DAC_setting_C_R;
-		VADJN_VALUES          : in    DAC_setting_C_R;
+		VADJP_VALUES          : in    DAC_setting16_C_R;
+		VADJN_VALUES          : in    DAC_setting16_C_R;
 		USE_EXTERNAL_DACS     : in    std_logic;
 		CLK                   : in    std_logic;
 		CLK_ENABLE            : in    std_logic;
