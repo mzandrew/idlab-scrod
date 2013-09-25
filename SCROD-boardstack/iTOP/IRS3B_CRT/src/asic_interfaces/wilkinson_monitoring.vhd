@@ -141,8 +141,8 @@ entity wilkinson_monitoring is
 		FEEDBACK_WILKINSON_ENABLES_C_R     : in  Column_Row_Enables;
 		FEEDBACK_WILKINSON_GOALS_C_R       : in  Column_Row_Counters;
 		FEEDBACK_WILKINSON_COUNTERS_C_R    : out Column_Row_Counters;
-		FEEDBACK_WILKINSON_DAC_VALUES_C_R  : out DAC_setting_C_R;
-		STARTING_WILKINSON_DAC_VALUES_C_R  : in  DAC_setting_C_R;
+		FEEDBACK_WILKINSON_DAC_VALUES_C_R  : out DAC_setting16_C_R;
+		STARTING_WILKINSON_DAC_VALUES_C_R  : in  DAC_setting16_C_R;
 
 		CLOCK                              : in std_logic
 	);
@@ -212,7 +212,8 @@ begin
 	--Another version of counters using the RCO-style counter
 	gen_rco_counters : if (USE_RCO_COUNTER = 1) generate
 		gen_rco_counter_row : for row in 0 to 3 generate
-			map_rco_counter_c0 : entity work.RCO_measure
+--			map_rco_counter_c0 : entity work.RCO_measure
+			map_rco_counter_c0 : entity work.RCO_measure_simple
 				port map( 
 					clk       => CLOCK,
 					RCO_in    => AsicOut_MONITOR_WILK_COUNTERS_C0_R(row),
@@ -220,7 +221,8 @@ begin
 					num_T     => internal_RAW_WILKINSON_COUNTERS_C_R(0)(row),
 					TC_debug  => open
 				);
-			map_rco_counter_c1 : entity work.RCO_measure
+--			map_rco_counter_c1 : entity work.RCO_measure
+			map_rco_counter_c1 : entity work.RCO_measure_simple
 				port map( 
 					clk       => CLOCK,
 					RCO_in    => AsicOut_MONITOR_WILK_COUNTERS_C1_R(row),
@@ -228,7 +230,8 @@ begin
 					num_T     => internal_RAW_WILKINSON_COUNTERS_C_R(1)(row),
 					TC_debug  => open
 				);
-			map_rco_counter_c2 : entity work.RCO_measure
+--			map_rco_counter_c2 : entity work.RCO_measure
+			map_rco_counter_c2 : entity work.RCO_measure_simple
 				port map( 
 					clk       => CLOCK,
 					RCO_in    => AsicOut_MONITOR_WILK_COUNTERS_C2_R(row),
@@ -236,7 +239,8 @@ begin
 					num_T     => internal_RAW_WILKINSON_COUNTERS_C_R(2)(row),
 					TC_debug  => open
 				);
-			map_rco_counter_c3 : entity work.RCO_measure
+--			map_rco_counter_c3 : entity work.RCO_measure
+			map_rco_counter_c3 : entity work.RCO_measure_simple
 				port map( 
 					clk       => CLOCK,
 					RCO_in    => AsicOut_MONITOR_WILK_COUNTERS_C3_R(row),
@@ -270,9 +274,11 @@ begin
 						FEEDBACK_ENABLE => FEEDBACK_WILKINSON_ENABLES_C_R(col)(row),
 						CURRENT_VALUE   => internal_WILKINSON_COUNTERS_C_R(col)(row),
 						TARGET_VALUE    => FEEDBACK_WILKINSON_GOALS_C_R(col)(row),
-						DAC_VALUE       => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row),
-						STARTING_VALUE  => STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)
+						DAC_VALUE       => FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row)(11 downto 0),
+						STARTING_VALUE  => STARTING_WILKINSON_DAC_VALUES_C_R(col)(row)(11 downto 0)
 					);
+				
+				FEEDBACK_WILKINSON_DAC_VALUES_C_R(col)(row)(15 downto 12) <= x"0";
 			end generate;
 		end generate;
 	end generate;

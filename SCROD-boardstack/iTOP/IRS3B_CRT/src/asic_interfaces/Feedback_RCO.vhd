@@ -39,13 +39,13 @@ desirednumT : in std_logic_vector(15 downto 0);
 newnumT : in std_logic;
 update : out std_logic;
 enable_feedback : in std_logic;
-startingVadjN : in std_logic_vector(11 downto 0);
-forcedVadjN: out  std_logic_vector(11 downto 0));
+startingVadjN : in std_logic_vector(15 downto 0);
+forcedVadjN: out  std_logic_vector(15 downto 0));
 end Feedback_RCO;
 
 architecture Behavioral of Feedback_RCO is
 
-signal int_VadjN : std_logic_vector(11 downto 0) := "010111000000";
+signal int_VadjN : std_logic_vector(15 downto 0) := "0101110000000000";
 signal cnt_update : std_logic_vector(9 downto 0) := "0000000000";
 
 
@@ -64,8 +64,10 @@ if(rising_edge(clk)) then
 			else
 				cnt_update <= (others => '0');
 				update <='1';
-				if num_T + 10 < desirednumT  then int_VadjN <= int_VadjN - 1;
-				elsif (num_T > desirednumT + 10) then int_VadjN <= int_VadjN + 1;
+--				if num_T + 10 < desirednumT  then int_VadjN <= int_VadjN - 1;
+--				elsif (num_T > desirednumT + 10) then int_VadjN <= int_VadjN + 1;
+				if num_T + 10 < desirednumT  then int_VadjN <= int_VadjN + 1;
+				elsif (num_T > desirednumT + 10) then int_VadjN <= int_VadjN - 1;
 				end if;
 			end if;
 		end if;
