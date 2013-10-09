@@ -205,8 +205,8 @@ architecture Behavioral of scrod_top is
 	signal internal_ASIC_VBIAS2              : DAC_setting_C_R;
 	signal internal_ASIC_REG_TRG             : Timing_setting; --Not a DAC but set with the DACs.  Global for all ASICs.
 	signal internal_ASIC_WBIAS               : DAC_setting_C_R;
-	signal internal_ASIC_VADJP               : DAC_setting_C_R;
-	signal internal_ASIC_VADJN               : DAC_setting_C_R;
+	signal internal_ASIC_VADJP               : DAC_setting16_C_R;
+	signal internal_ASIC_VADJN               : DAC_setting16_C_R;
 	signal internal_ASIC_VDLY                : DAC_setting_C_R;
 	signal internal_ASIC_TRG_BIAS            : DAC_setting;
 	signal internal_ASIC_TRG_BIAS2           : DAC_setting;
@@ -230,8 +230,8 @@ architecture Behavioral of scrod_top is
 	--DAC signals that come from the feedback sources
 	signal internal_WBIAS_FB              : DAC_setting_C_R;
 	signal internal_VDLY_FB               : DAC_setting_C_R;
-	signal internal_VADJP_FB              : DAC_setting_C_R;
-	signal internal_VADJN_FB              : DAC_setting_C_R;
+	signal internal_VADJP_FB              : DAC_setting16_C_R;
+	signal internal_VADJN_FB              : DAC_setting16_C_R;
 	--Enables to switch between the feedback version and non-feedback versions
    signal internal_VDLY_FEEDBACK_ENABLES  : Column_Row_Enables;
 	signal internal_VADJ_FEEDBACK_ENABLES  : Column_Row_Enables;
@@ -259,7 +259,7 @@ architecture Behavioral of scrod_top is
 	signal internal_MON_HEADER_RCOSSX               : std_logic;
 	signal internal_MON_HEADER_MONTIMING_RCO_SEL    : std_logic;
 	signal internal_MON_HEADER_MONTIMING_RCO        : std_logic;
-	signal internal_MON_HEADER_MONTIMING_SEL        : std_logic;
+	signal internal_MON_HEADER_MONTIMING_SEL        : std_logic_vector(1 downto 0);
 	signal internal_MON_HEADER2_MONTIMING_ROW_SELECT : std_logic_vector(1 downto 0);
 	signal internal_MON_HEADER2_MONTIMING_COL_SELECT : std_logic_vector(1 downto 0);
 	signal internal_MON_HEADER2_MONTIMING_R          : std_logic_vector(3 downto 0);
@@ -298,6 +298,10 @@ architecture Behavioral of scrod_top is
 	signal internal_EVENT_NUMBER                 : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 	signal internal_FORCE_CHANNEL_MASK           : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);
 	signal internal_IGNORE_CHANNEL_MASK          : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);	
+	signal internal_TRIGGER_ACCUMULATION         : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);	 --Bostjan Macek: ADD
+	signal internal_TRIGGER_ACCUMULATION_MASK    : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0) := (others => '0');	 --Bostjan Macek: ADD
+	signal internal_TRIGGER_ACCUMULATION_MASKED  : STD_LOGIC_VECTOR(TOTAL_TRIGGER_BITS-1 downto 0);	 --Bostjan Macek: ADD
+	signal internal_TRIGGER_ACCUMULATION_MONITOR : STD_LOGIC;	 --Bostjan Macek: ADD
 	--ASIC readout signals
 	signal internal_ASIC_READOUT_DATA             : ASIC_DATA_C;
 	signal internal_ASIC_DATA_OUTPUT_DISABLE_R    : Row_Enables;
@@ -323,13 +327,16 @@ begin
 	MON(0) <= internal_MON_HEADER_MONTIMING_RCO when internal_MON0_ENABLE = '1' else
 					'0' when internal_MON0_ENABLE = '0' else
 					'X';
-	SPARE <= internal_MON2_OR_CAL_SIGNAL;
+	--SPARE <= internal_MON2_OR_CAL_SIGNAL;
+	SPARE <= not internal_USE_EXTERNAL_VADJ_DACS;
 	--The second two form an LVDS pair that goes to CAL_EDGE_P/N
 	map_cal_mon_pair : OBUFDS port map(I => internal_MON2_OR_CAL_SIGNAL, O => MON(1), OB => MON(2));
 --	MON(2) <= internal_SST_MON;  --Unfortunately this can't be mapped out easily anymore since it's from a clock buffer and can't be muxed with others signals.
 	--MUX between MONTIMING and RCO on monitor header pin 0
-	internal_MON_HEADER_MONTIMING_RCO <= internal_MON_HEADER_MONTIMING when internal_MON_HEADER_MONTIMING_SEL = '0' else
-	                                     internal_MON_HEADER_RCOSSX    when internal_MON_HEADER_MONTIMING_SEL = '1' else
+	internal_MON_HEADER_MONTIMING_RCO <= internal_MON_HEADER_MONTIMING            when internal_MON_HEADER_MONTIMING_SEL = "00" else
+	                                     internal_MON_HEADER_RCOSSX               when internal_MON_HEADER_MONTIMING_SEL = "01" else												 
+	                                     internal_TRIGGER_ACCUMULATION_MONITOR    when internal_MON_HEADER_MONTIMING_SEL = "10" else
+                                        internal_TRIGGER_ACCUMULATION_MONITOR    when internal_MON_HEADER_MONTIMING_SEL = "11" else
 	                                     'X';
 	--MUX for MONTIMING signals
 	internal_MON_HEADER_MONTIMING_R <= AsicOut_SAMPLING_TIMING_MONITOR_C0_R when internal_MON_HEADER_MONTIMING_COL_SELECT = "00" else 
@@ -379,8 +386,7 @@ begin
 	                                internal_MON_HEADER_RCOSSX_R(1) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "01" else 
 	                                internal_MON_HEADER_RCOSSX_R(2) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "10" else 
 	                                internal_MON_HEADER_RCOSSX_R(3) when internal_MON_HEADER_MONTIMING_ROW_SELECT = "11" else 
-	                                'X';	
-
+	                                'X';
 
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
@@ -544,9 +550,9 @@ begin
 		FEEDBACK_SAMPLING_RATE_ENABLE              => internal_VADJ_FEEDBACK_ENABLES,
 		FEEDBACK_SAMPLING_RATE_GOALS_C_R           => internal_SAMPLING_RATE_TARGETS,
 		FEEDBACK_SAMPLING_RATE_COUNTER_C_R         => internal_SAMPLING_RATE_COUNTERS,
-		FEEDBACK_SAMPLING_RATE_VADJP_C_R           => internal_VADJP_FB,
-		FEEDBACK_SAMPLING_RATE_VADJN_C_R           => internal_VADJN_FB,
-		STARTING_SAMPLING_RATE_VADJN_C_R           => internal_ASIC_VADJN,
+		FEEDBACK_SAMPLING_RATE_VADJP_C_R           => internal_VADJP_FB,--TA
+		FEEDBACK_SAMPLING_RATE_VADJN_C_R           => internal_VADJN_FB,--TA
+		STARTING_SAMPLING_RATE_VADJN_C_R           => internal_ASIC_VADJN,--TA
 		AsicOut_MONITOR_WILK_COUNTERS_C0_R         => AsicOut_MONITOR_WILK_COUNTER_C0_R,
 		AsicOut_MONITOR_WILK_COUNTERS_C1_R         => AsicOut_MONITOR_WILK_COUNTER_C1_R,
 		AsicOut_MONITOR_WILK_COUNTERS_C2_R         => AsicOut_MONITOR_WILK_COUNTER_C2_R,
@@ -583,6 +589,7 @@ begin
 		HARDWARE_TRIGGER_IN                                => internal_HARDWARE_TRIGGER,
 		SOFTWARE_TRIGGER_VETO                              => internal_SOFTWARE_TRIGGER_VETO,
 		HARDWARE_TRIGGER_VETO                              => internal_HARDWARE_TRIGGER_VETO,
+		TRIGGER_ACCUMULATION                               => internal_TRIGGER_ACCUMULATION,
 		FIRST_ALLOWED_WINDOW                               => internal_FIRST_ALLOWED_WINDOW,
 		LAST_ALLOWED_WINDOW                                => internal_LAST_ALLOWED_WINDOW,
 		ROI_ADDRESS_ADJUST                                 => internal_ROI_ADDRESS_ADJUST,
@@ -724,6 +731,16 @@ begin
 			internal_WBIAS_FEEDBACK_ENABLES(col)(row) <= internal_OUTPUT_REGISTERS(143)(col*4+row); --Registers 143: Trigger width  feedback enable bits, increasing by row, then col
 		end generate;
 	end generate;
+	
+	-- TRIGGER accumulations
+	internal_TRIGGER_ACCUMULATION_MASK( 15 downto   0) <= internal_OUTPUT_REGISTERS(144);
+	internal_TRIGGER_ACCUMULATION_MASK( 31 downto  16) <= internal_OUTPUT_REGISTERS(145);
+	internal_TRIGGER_ACCUMULATION_MASK( 47 downto  32) <= internal_OUTPUT_REGISTERS(146);
+	internal_TRIGGER_ACCUMULATION_MASK( 63 downto  48) <= internal_OUTPUT_REGISTERS(147);
+	internal_TRIGGER_ACCUMULATION_MASK( 79 downto  64) <= internal_OUTPUT_REGISTERS(148);
+	internal_TRIGGER_ACCUMULATION_MASK( 95 downto  80) <= internal_OUTPUT_REGISTERS(149);
+	internal_TRIGGER_ACCUMULATION_MASK(111 downto  96) <= internal_OUTPUT_REGISTERS(150);
+	internal_TRIGGER_ACCUMULATION_MASK(127 downto 112) <= internal_OUTPUT_REGISTERS(151);
 
 	internal_FIRST_ALLOWED_WINDOW     <= internal_OUTPUT_REGISTERS(161)(internal_FIRST_ALLOWED_WINDOW'length-1 downto 0);     --Register 161: Bits 8-0: First allowed analog storage window
 	internal_LAST_ALLOWED_WINDOW      <= internal_OUTPUT_REGISTERS(162)(internal_LAST_ALLOWED_WINDOW'length-1 downto 0);      --         162: Bits 8-0: Last allowed analog storage window
@@ -788,13 +805,13 @@ begin
 	                                                                                 --Registers 251-266: Internal ASIC VADJP - PMOS bias for sampling rate - unique by ASIC
 	VADJP_REGISTERS_COL : for col in 0 to 3 generate
 		VADJP_REGISTERS_ROW : for row in 0 to 3 generate
-			internal_ASIC_VADJP(col)(row) <= internal_OUTPUT_REGISTERS(251+row+ROWS_PER_COL*col)(11 downto 0);
+			internal_ASIC_VADJP(col)(row) <= internal_OUTPUT_REGISTERS(251+row+ROWS_PER_COL*col)(15 downto 0);
 		end generate;
 	end generate;
 	                                                                                 --Registers 267-282: Internal ASIC VAJDN - NMOS bias for sampling rate - unique by ASIC
 	VADJN_REGISTERS_COL : for col in 0 to 3 generate
 		VADJN_REGISTERS_ROW : for row in 0 to 3 generate
-			internal_ASIC_VADJN(col)(row) <= internal_OUTPUT_REGISTERS(267+row+ROWS_PER_COL*col)(11 downto 0);
+			internal_ASIC_VADJN(col)(row) <= internal_OUTPUT_REGISTERS(267+row+ROWS_PER_COL*col)(15 downto 0);
 		end generate;
 	end generate;
 	                                                                                 --Registers 283-298: Internal ASIC VDLY - Wilkinson counter rate bias - unique by ASIC
@@ -848,7 +865,8 @@ begin
 	                                                                                  --Register 380:
 	internal_MON_HEADER_MONTIMING_ROW_SELECT  <= internal_OUTPUT_REGISTERS(380)(1 downto 0);   -- bits  1: 0 choose row for MONTIMING signal appearing on mon header
 	internal_MON_HEADER_MONTIMING_COL_SELECT  <= internal_OUTPUT_REGISTERS(380)(3 downto 2);   -- bits  3: 2 choose col for MONTIMING  ""
-	internal_MON_HEADER_MONTIMING_SEL         <= internal_OUTPUT_REGISTERS(380)(4);            -- bit      4 choose between RCO_SSX or MONTIMING for monitor header
+	internal_MON_HEADER_MONTIMING_SEL         <= internal_OUTPUT_REGISTERS(380)(5 downto 4);            -- bit      4 choose between RCO_SSX or MONTIMING for monitor header
+	--!!! MODIFIED
 	internal_MON0_ENABLE                      <= internal_OUTPUT_REGISTERS(380)(6);            -- bit      6 '0' to turn off MON0 output (lowers EMI)
 	internal_MON2_OR_CAL_SELECT               <= internal_OUTPUT_REGISTERS(380)(7);            -- bit      7 choose between MON_HEADER2 signal ('0') or CAL_PULSE ('1')
 	internal_MON_HEADER2_MONTIMING_ROW_SELECT <= internal_OUTPUT_REGISTERS(380)( 9  downto 8); -- bits  9: 8 choose row for MONTIMING signal appearing on mon header
@@ -930,13 +948,13 @@ begin
 	                                                                         --Registers 576-591: VADJN feedback values
 	gen_VADJN_FB_COL : for col in 0 to 3 generate
 		gen_VADJN_FB_ROW : for row in 0 to 3 generate
-			internal_INPUT_REGISTERS(N_GPR + 64 + row + ROWS_PER_COL * col) <= x"0" & internal_VADJN_FB(col)(row);
+			internal_INPUT_REGISTERS(N_GPR + 64 + row + ROWS_PER_COL * col) <= internal_VADJN_FB(col)(row);
 		end generate;
 	end generate;																									
 	                                                                         --Registers 592-607: VADJP feedback values
 	gen_VADJP_FB_COL : for col in 0 to 3 generate
 		gen_VADJP_FB_ROW : for row in 0 to 3 generate
-			internal_INPUT_REGISTERS(N_GPR + 80 + row + ROWS_PER_COL * col) <= x"0" & internal_VADJP_FB(col)(row);
+			internal_INPUT_REGISTERS(N_GPR + 80 + row + ROWS_PER_COL * col) <= internal_VADJP_FB(col)(row);
 		end generate;
 	end generate;																									
 
@@ -960,4 +978,33 @@ begin
 
 	internal_INPUT_REGISTERS(N_GPR + 132) <= internal_SECONDS_FTSW_LOCKED;     --Register 644: Number of seconds that FTSW_STABLE has been high.
 
+	-- TRIGGER accumulations
+	internal_INPUT_REGISTERS(N_GPR + 133) <= internal_TRIGGER_ACCUMULATION( 15 downto   0);
+	internal_INPUT_REGISTERS(N_GPR + 134) <= internal_TRIGGER_ACCUMULATION( 31 downto  16);
+	internal_INPUT_REGISTERS(N_GPR + 135) <= internal_TRIGGER_ACCUMULATION( 47 downto  32);
+	internal_INPUT_REGISTERS(N_GPR + 136) <= internal_TRIGGER_ACCUMULATION( 63 downto  48);
+	internal_INPUT_REGISTERS(N_GPR + 137) <= internal_TRIGGER_ACCUMULATION( 79 downto  64);
+	internal_INPUT_REGISTERS(N_GPR + 138) <= internal_TRIGGER_ACCUMULATION( 95 downto  80);
+	internal_INPUT_REGISTERS(N_GPR + 139) <= internal_TRIGGER_ACCUMULATION(111 downto  96);
+	internal_INPUT_REGISTERS(N_GPR + 140) <= internal_TRIGGER_ACCUMULATION(127 downto 112);
+
+	-- TESTING register
+	internal_INPUT_REGISTERS(N_GPR + 141) <= x"b0b0";
+
+
+	-- Trigger accumulation mapping
+	internal_TRIGGER_ACCUMULATION_MASKED <= internal_TRIGGER_ACCUMULATION_MASK and internal_TRIGGER_ACCUMULATION;
+
+
+	--internal_TRIGGER_ACCUMULATION_MONITOR <= '0' when (internal_TRIGGER_ACCUMULATION_MASKED = x"00000000000000000000000000000000") else '1';
+	process(internal_CLOCK_50MHz_BUFG) begin --Bostjan Macek: ADD
+		if (rising_edge(internal_CLOCK_50MHz_BUFG)) then --Bostjan Macek: ADD
+			if (internal_TRIGGER_ACCUMULATION_MASKED = x"00000000000000000000000000000000") then --Bostjan Macek: ADD
+				internal_TRIGGER_ACCUMULATION_MONITOR <= '0'; --Bostjan Macek: ADD
+			else --Bostjan Macek: ADD
+				internal_TRIGGER_ACCUMULATION_MONITOR <= '1'; --Bostjan Macek: ADD
+			end if; --Bostjan Macek: ADD
+		end if; --Bostjan Macek: ADD
+	end process; --Bostjan Macek: ADD
+	
 end Behavioral;
