@@ -80,6 +80,13 @@ logdir
 " .
 }}}
 
+===copying files===
+To resurrect a "dead" file from an earlier version of the repository, do the following:
+{{{
+svn copy -r 344 boardstack-v2-with-SCROD-revA2.ucf .
+}}}
+It can also be from a different location in the current revision of the repo.
+
 ===changing permissions===
 To remove the executable permission from a file in the repository, do this:
 {{{
