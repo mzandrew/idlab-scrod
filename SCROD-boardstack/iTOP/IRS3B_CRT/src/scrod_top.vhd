@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 package revision is
-	constant constant_FIRMWARE_REVISION : integer := 374;
+	constant constant_FIRMWARE_REVISION : integer := 376;
 	constant     word_FIRMWARE_REVISION : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(constant_FIRMWARE_REVISION,16));
 end revision;
 ----------------------------------------------------------------------------------
