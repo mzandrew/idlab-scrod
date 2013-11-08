@@ -1,3 +1,6 @@
+# 2013-11-08 revised for SCROD revA3
+# changed remote clock selection IO from J16 to D22 to correspond to DIP switch on new SCROD
+
 # 2012-06-05 revised for SCROD revA2
 # new things for SCROD revA2:
 #NET DO_NOT_USE_ME LOC = AF3; # on SCROD revA2, CSO_B (pin AF3) should not be driven low during normal running!
@@ -392,7 +395,8 @@ NET AsicIn_STORAGE_TO_WILK_ENABLE LOC = AB21;
 
 # MON (test/debugging inputs/outputs)
 # !!!!!CHANGE THESE FOR Interconnect Rev C!!!!!
-NET USE_LOCAL_CLOCK_JUMPER LOC = J16 | IOSTANDARD = LVCMOS33 | PULLUP; # remote clock enable # pulled up on interconnect revB with 2.2k
+#NET USE_LOCAL_CLOCK_JUMPER LOC = J16 | IOSTANDARD = LVCMOS33 | PULLUP; # remote clock enable # pulled up on interconnect revB with 2.2k
+NET USE_LOCAL_CLOCK_JUMPER LOC = D22 | IOSTANDARD = LVCMOS33; # remote clock enable
 NET MON<0> LOC = H14 | IOSTANDARD = LVCMOS33;
 NET MON<1> LOC = J15 | IOSTANDARD = LVDS_33;  #+ input to CAL EDGE
 NET MON<2> LOC = H15 | IOSTANDARD = LVDS_33;  #- input to CAL EDGE
