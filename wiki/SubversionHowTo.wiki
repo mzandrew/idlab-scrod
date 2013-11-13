@@ -1,4 +1,5 @@
 #summary A short how-to for svn access from the command-line
+#labels Featured
 
 =basic usage=
 
@@ -86,6 +87,16 @@ To resurrect a "dead" file from an earlier version of the repository, do the fol
 svn copy -r 344 boardstack-v2-with-SCROD-revA2.ucf .
 }}}
 It can also be from a different location in the current revision of the repo.
+
+===making a tag===
+To make a reference to a useful previous state of the repository (called a "tag"), use the svn copy function:
+{{{
+svn mkdir tags
+cd tags
+svn mkdir r282.iTOP-module-used-at-LEPS-SPRING8/
+cd r282.iTOP-module-used-at-LEPS-SPRING8/
+svn copy -r 282 ../../board-stack/ ../../common-components/ .
+}}}
 
 ===changing permissions===
 To remove the executable permission from a file in the repository, do this:
