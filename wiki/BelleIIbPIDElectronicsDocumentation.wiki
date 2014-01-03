@@ -1,4 +1,5 @@
 #summary Documentation for (cosmic / beam test version as well as final version) of Belle II bPID Electronics
+#labels Deprecated
 
 =introduction=
 
