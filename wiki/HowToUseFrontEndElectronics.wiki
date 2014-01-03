@@ -1,5 +1,4 @@
 #summary How to use the 2011 cosmic / beam test bPID/iTOP electronics
-#labels Deprecated
 
 =Introduction=
 
