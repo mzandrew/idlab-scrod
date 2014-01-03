@@ -1,5 +1,5 @@
 #summary schematics for front-end board stacks, including SCROD
-#labels Featured
+#labels Deprecated
 
 = Introduction =
 
