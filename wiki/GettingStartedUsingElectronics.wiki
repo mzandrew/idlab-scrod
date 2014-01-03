@@ -1,0 +1,48 @@
+#summary A quick how-to for getting started running the electronics
+#labels Featured
+
+<wiki:toc max_depth="2" />
+
+=prerequisites=
+
+==a boardstack==
+A "front-end" module.
+
+==a power supply==
+You need to provide DC3V, DC4V and DC5V to the boardstack.
+
+==a computer==
+Either with USB or fiber optics (SFP).
+
+==an JTAG programmer==
+Both the xilinx "platform cable usb II" and the digilent "HS1" have been used successfully.
+
+==an FTSW==
+This clock/trigger distribution module is optional.  Local clocking and software triggers can be used instead.
+
+==a COPPER crate and COPPER board with processor board==
+These are optional.  USB can be used instead of this.
+
+=get and compile the code=
+{{{
+svn checkout http://idlab-scrod.googlecode.com/svn/SCROD-boardstack/iTOP
+}}}
+
+==firmware==
+The firmware is located in the "IRS3B_CRT" subdirectory of the above repository.  Xilinx ISE 13.2 has been used to successfully compile the firmware.  You will have to "regenerate cores" for each of the xco files in the ip_cores directory.  Alternately, there is a bitfile in the "usbInterfaces" subfolder along with the readout software.
+
+==software==
+The usb software is located in the "usbInterface" subdirectory of the above repository.  The fiber optic readout software is on the UH belleII repository (username required).  Both can compile and run under linux.  There is a README file in the root of the software repository to help you set up your build environment and compile the software.
+
+=testing=
+There are many things to test.  This section will be updated with more details and a pointer to some preliminary code.
+
+=more details=
+  * [http://www.phys.hawaii.edu/~kurtisn/doku.php?id=itop:documentation:data_format details on data packet format from front-end to back-end (for DAQwriters)]
+  * [http://www.phys.hawaii.edu/~mza/PCB/index.html schematics, layouts and gerber files for all PCBs]
+
+=previous versions of documentation=
+Only a subset of this is still relevant:
+  * [HowToUseFrontEndElectronics Fermilab-era version of this documentation that corresponds to the 2011 boardstack]
+  * [http://idlab-scrod.googlecode.com/files/2011-10-16.BelleII-bPID.electronics-documentation.pdf pdf with more detail on the Fermilab-era boardstack]
+  * [http://code.google.com/p/idlab-daq/wiki/HowToUseDAQSystem instructions on using the data acquisition system from 2011]
