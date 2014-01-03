@@ -17,10 +17,10 @@ Either with USB or fiber optics (SFP).
 ==an JTAG programmer==
 Both the xilinx "platform cable usb II" and the digilent "HS1" have been used successfully.
 
-==an FTSW==
+==an FTSW (optional)==
 This clock/trigger distribution module is optional.  Local clocking and software triggers can be used instead.
 
-==a COPPER crate and COPPER board with processor board==
+==a COPPER crate and COPPER board with processor board (optional)==
 These are optional.  USB can be used instead of this.
 
 =get and compile the code=
