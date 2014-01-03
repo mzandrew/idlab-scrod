@@ -1,4 +1,5 @@
 #summary Items to bring to various integration tests
+#labels Deprecated
 
 The following are a list of items to bring for the following tests:
 
