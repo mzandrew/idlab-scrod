@@ -12,7 +12,7 @@ A "front-end" module.
 You need to provide DC3V, DC4V and DC5V to the boardstack.
 
 For the carrier02 revC version of the boardstack, the current requirements are as follows:
-  * 3V@7.0A (~2A for a single ASIC, peak @ power-up)
+  * 3V@7.0A (~2A for a boardstack with a single ASIC, peak @ power-up)
   * 4V@0.2A (with 1 fiber transceiver installed)
   * 5V@2.6A (0.158A for a single ASIC)
 Note:  the next version of the boardstack (the "intermediate" one) will require 3V, 4V and 6V and the peak current on the 3V line will be less.
