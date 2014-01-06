@@ -1,0 +1,24 @@
+Installing USB interface (Linux only)
+
+1) Install libusb:
+Ubuntu: sudo apt-get install libusb-1.0-0-dev
+Alternatively: 
+-download stable version of libusb-1.0.x from http://www.libusb.org/ (currently libusb-1.0.9)
+-follow installation instructions
+
+2) Install ROOT:
+-see http://root.cern.ch/ (tested with 5.34/03)
+
+3) Compile code:
+-go to usbInterface directory: cd usbInterface/
+-compile: make
+
+Using USB interface
+
+1) Attach USB cable before powering on frontend boards
+-USB interface only tested with local clock, distributed FTSW clock should work but not tested
+2) Program FPGA (tested with bit file scrod_top_10_09_2013.bit included in directory)
+3) Initialize frontend + ASICs: ./bin/irs3BControl_initialize
+4) Try taking data: ./bin/irs3BControl_takeData
+-hardcode to route calibration input to ASIC row 0 col 2 ch 2, does software triggered forced readouts on this channel
+-this should display sampled waveforms one at a time
