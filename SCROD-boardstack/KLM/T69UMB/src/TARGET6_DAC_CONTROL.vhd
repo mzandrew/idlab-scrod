@@ -34,6 +34,8 @@ entity TARGET6_DAC_CONTROL is
 		constant REGISTER_WIDTH : integer := 18
 	 );
     Port ( CLK : in  STD_LOGIC;
+			  LOAD_PERIOD : in  STD_LOGIC_VECTOR(15 downto 0);
+			  LATCH_PERIOD : in  STD_LOGIC_VECTOR(15 downto 0);
 			  UPDATE : in  STD_LOGIC;
 			  REG_DATA : in  STD_LOGIC_VECTOR(17 downto 0);
            SIN : out  STD_LOGIC;
@@ -86,8 +88,8 @@ architecture Behavioral of TARGET6_DAC_CONTROL is
 	signal UPDATE_START : std_logic := '1';
 	
 	--constants
-	signal DAC_LOADING_PERIOD  	: UNSIGNED(15 downto 0) := x"0040";
-	signal LATCH_LOADING_PERIOD  	: UNSIGNED(15 downto 0) := x"0040";
+	--signal LOAD_PERIOD  	: UNSIGNED(15 downto 0) := x"0080";
+	--signal LATCH_PERIOD  	: UNSIGNED(15 downto 0) := x"0140";
 
 begin
 
@@ -102,7 +104,7 @@ begin
 		end if;
 	end process;
  
-	--OVERALL STATE MACHINE
+	--LATCH OUTGOING SIGNALS
    SYNC_PROC: process (CLK)
    begin
       if (CLK'event and CLK = '1') then
@@ -151,7 +153,7 @@ begin
 					SCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LOAD_DAC_LOW_WAIT0;
-					if INTERNAL_COUNTER > UNSIGNED(DAC_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LOAD_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						state <= LOAD_DAC_LOW_MID;
 					end if;
@@ -161,7 +163,7 @@ begin
 					ENABLE_COUNTER <= '0';
 					if cnt < REGISTER_WIDTH then
 						STATE <= LOAD_DAC_LOW_SET1;
-						SIN_i <= REG_DATA(cnt);	--SLB is sent first as "cnt" increasing.
+						SIN_i <= REG_DATA(17 - cnt);	--SLB is sent first as "cnt" increasing.
 					else
 						STATE <= LATCH_SET0; --DONE LOADING REGISTER
 						cnt <= 0;
@@ -176,7 +178,7 @@ begin
 					SCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LOAD_DAC_LOW_WAIT1;
-					if INTERNAL_COUNTER > UNSIGNED(DAC_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LOAD_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LOAD_DAC_HIGH_SET0;
 					end if;
@@ -190,7 +192,7 @@ begin
 					SCLK_i <= '1';
 					ENABLE_COUNTER <= '1';
 					STATE <= LOAD_DAC_HIGH_WAIT0;
-					if INTERNAL_COUNTER > UNSIGNED(DAC_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LOAD_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						state <= LOAD_DAC_HIGH_MID;
 					end if;	
@@ -210,7 +212,7 @@ begin
 					SCLK_i <= '1';
 					ENABLE_COUNTER <= '1';
 					STATE <= LOAD_DAC_HIGH_WAIT1;
-					if INTERNAL_COUNTER > UNSIGNED(DAC_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LOAD_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LOAD_DAC_LOW_SET0;
 					end if;	
@@ -228,7 +230,7 @@ begin
 					PCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT0;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LATCH_SET1;
 					end if;
@@ -246,7 +248,7 @@ begin
 					PCLK_i <= '1';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT1;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LATCH_SET2;
 					end if;
@@ -264,7 +266,7 @@ begin
 					PCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT2;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LATCH_SET3;
 					end if;
@@ -282,7 +284,7 @@ begin
 					PCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT3;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LATCH_SET4;
 					end if;
@@ -300,7 +302,7 @@ begin
 					PCLK_i <= '1';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT4;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LATCH_SET5;
 					end if;
@@ -318,7 +320,7 @@ begin
 					PCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT5;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= LATCH_SET6;
 					end if;
@@ -336,7 +338,7 @@ begin
 					PCLK_i <= '0';
 					ENABLE_COUNTER <= '1';
 					STATE <= LATCH_WAIT6;
-					if INTERNAL_COUNTER > UNSIGNED(LATCH_LOADING_PERIOD) then
+					if INTERNAL_COUNTER > UNSIGNED(LATCH_PERIOD) then
 						ENABLE_COUNTER <= '0';
 						STATE <= IDLE;
 					end if;

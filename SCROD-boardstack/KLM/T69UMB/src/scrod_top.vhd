@@ -30,7 +30,7 @@ entity scrod_top is
 	Port(
 		BOARD_CLOCKP                : in  STD_LOGIC;
 		BOARD_CLOCKN                : in  STD_LOGIC;
-		--LEDS                        : out STD_LOGIC_VECTOR(15 downto 0);
+		LEDS                        : out STD_LOGIC_VECTOR(15 downto 0);
 		------------------FTSW pins------------------
 		RJ45_ACK_P                  : out std_logic;
 		RJ45_ACK_N                  : out std_logic;			  
@@ -87,13 +87,53 @@ entity scrod_top is
 		
 		--ASIC related
 		
-		SIN								 : out STD_LOGIC_VECTOR(9 downto 0);
-		SCLK								 : out STD_LOGIC_VECTOR(9 downto 0);
-		PCLK								 : out STD_LOGIC_VECTOR(9 downto 0);
+		--BUS A Specific Signals
 		BUSA_REGCLR						 : out STD_LOGIC;
-		BUSB_REGCLR						 : out STD_LOGIC;
-		SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0)
+		BUSA_SCLK						 : out STD_LOGIC;
+		BUSA_WR_ADDRCLR				 : out STD_LOGIC;
+		BUSA_RD_ENA						 : out STD_LOGIC;
+		BUSA_RD_ROWSEL_S				 : out STD_LOGIC_VECTOR(2 downto 0);
+		BUSA_RD_COLSEL_S				 : out STD_LOGIC_VECTOR(5 downto 0);
+		BUSA_CLR							 : out STD_LOGIC;
+		BUSA_START						 : out STD_LOGIC;
+		BUSA_RAMP						 : out STD_LOGIC;
+		BUSA_SAMPLESEL_S				 : out STD_LOGIC_VECTOR(4 downto 0);
+		BUSA_SR_CLEAR					 : out STD_LOGIC;
+		BUSA_SR_SEL						 : out STD_LOGIC;
+		BUSA_DO							 : in STD_LOGIC_VECTOR(15 downto 0);
 		
+		--Bus B Specific Signals
+		BUSB_REGCLR						 : out STD_LOGIC;
+		BUSB_SCLK						 : out STD_LOGIC;
+		BUSB_WR_ADDRCLR				 : out STD_LOGIC;
+		BUSB_RD_ENA						 : out STD_LOGIC;
+		BUSB_RD_ROWSEL_S				 : out STD_LOGIC_VECTOR(2 downto 0);
+		BUSB_RD_COLSEL_S				 : out STD_LOGIC_VECTOR(5 downto 0);
+		BUSB_CLR							 : out STD_LOGIC;
+		BUSB_START						 : out STD_LOGIC;
+		BUSB_RAMP						 : out STD_LOGIC;
+		BUSB_SAMPLESEL_S				 : out STD_LOGIC_VECTOR(4 downto 0);
+		BUSB_SR_CLEAR					 : out STD_LOGIC;
+		BUSB_SR_SEL						 : out STD_LOGIC;
+		BUSB_DO							 : in STD_LOGIC_VECTOR(15 downto 0);
+		
+		--ASIC DAC Update Signals
+		SIN								 : out STD_LOGIC_VECTOR(9 downto 0);
+		PCLK								 : out STD_LOGIC_VECTOR(9 downto 0);
+		--SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0)
+		
+		--Sampling Signals
+		SSTIN								 : out STD_LOGIC;
+		SSPIN								 : out STD_LOGIC;
+		WR_STRB 							 : out STD_LOGIC;
+		WR_ADVCLK 						 : out STD_LOGIC;
+		WR_ENA 						 	 : out STD_LOGIC;
+		
+		--Digitization Signals
+		
+		--Serial Readout Signals
+		SR_CLOCK							 : out STD_LOGIC;
+		SAMPLESEL_ANY 					 : out STD_LOGIC
 		--TRG_16							 : in STD_LOGIC;
 		--TRG								 : in STD_LOGIC_VECTOR(3 downto 0)
 	);
@@ -124,7 +164,7 @@ architecture Behavioral of scrod_top is
    signal internal_SET_EVENT_NUMBER             : STD_LOGIC;
    signal internal_EVENT_NUMBER                 : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-	--SciFi- event builder related
+	--Event builder related
 	signal internal_WAVEFORM_FIFO_DATA_OUT       : std_logic_vector(31 downto 0);
 	signal internal_WAVEFORM_FIFO_EMPTY          : std_logic;
 	signal internal_WAVEFORM_FIFO_DATA_VALID     : std_logic;
@@ -133,23 +173,53 @@ architecture Behavioral of scrod_top is
 	signal internal_WAVEFORM_PACKET_BUILDER_BUSY	: std_logic := '0';
 	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
 	
+	--ASIC TRIGGER CONTROL
 	signal internal_TRIGGER_ALL : std_logic := '0';
 	signal INTERNAL_COUNTER : UNSIGNED(27 downto 0) :=  x"0000000";
 	signal internal_triggerCounter : UNSIGNED(15 downto 0) :=  x"0000";
 	signal internal_numTriggers : UNSIGNED(15 downto 0) :=  x"0000";
 	
-	signal internal_SMP_STOP : std_logic := '0';
-	signal internal_START_DIG : std_logic := '0';
-	signal internal_STARTRAMP_out : std_logic := '0';
-	signal internal_TARGET6_DAC_CONTROL_UPDATE : std_logic := '0';
-	signal internal_TARGET6_DAC_CONTROL_REG_DATA : std_logic_vector(17 downto 0) :=  "00" & x"0000" ;
+	--ASIC DAC CONTROL
+	signal internal_DAC_CONTROL_UPDATE : std_logic := '0';
+	signal internal_DAC_CONTROL_REG_DATA : std_logic_vector(17 downto 0) := (others => '0');
+	signal internal_DAC_CONTROL_TDCNUM : std_logic_vector(9 downto 0) := (others => '0');
+	signal internal_DAC_CONTROL_SIN : std_logic := '0';
+	signal internal_DAC_CONTROL_SCLK : std_logic := '0';
+	signal internal_DAC_CONTROL_PCLK : std_logic := '0';
+	signal internal_DAC_CONTROL_LOAD_PERIOD : std_logic_vector(15 downto 0)  := (others => '0');
+	signal internal_DAC_CONTROL_LATCH_PERIOD : std_logic_vector(15 downto 0)  := (others => '0');
 	
-	signal internal_DAC_CONTROL_UPDATE : std_logic_vector(9 downto 0) := "0000000000";
-	type array_KLMTDCS is array (0 to 9) of std_logic_vector(17 downto 0); 
-   signal internal_KLMTDCS_DAC_CONTROL_REG_DATA : array_KLMTDCS;
+	--ASIC SAMPLING CONTROL
+	signal internal_SMP_STOP : std_logic := '0';
+	signal internal_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_SSTIN : std_logic := '0';
+	signal internal_SSPIN : std_logic := '0';
+	signal internal_WR_STRB : std_logic := '0';
+	signal internal_WR_ADVCLK : std_logic := '0';
+	signal internal_WR_ENA : std_logic := '0';
+	signal internal_WR_ADDRCLR : std_logic := '0';
+	
+	--ASIC DIGITIZATION CONTROL
+	signal internal_DIG_STARTDIG : std_logic := '0';
+	signal internal_DIG_RD_ENA : std_logic := '0';
+	signal internal_DIG_CLR : std_logic := '0';
+	signal internal_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+	signal internal_DIG_RD_COLSEL_S : STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
+	signal internal_DIG_START : STD_LOGIC := '0';
+	signal internal_DIG_RAMP : STD_LOGIC := '0';
+	
+	--ASIC SERIAL READOUT
+	signal internal_SROUT_START : std_logic := '0';
+	signal internal_SROUT_SAMP_DONE : std_logic := '0';
+	signal internal_SROUT_SR_CLR : std_logic := '0';
+	signal internal_SROUT_SR_CLK : std_logic := '0';
+	signal internal_SROUT_SR_SEL : std_logic := '0';
+	signal internal_SROUT_SAMPLESEL : std_logic_vector(4 downto 0) := (others => '0');
+	signal internal_SROUT_SAMPLESEL_ANY : std_logic := '0';
 	
 begin
 
+	--Overall Signal Routing
    --internal_TRIGGER_ALL <= TRG_16 OR TRG(0) OR TRG(1) OR TRG(2) OR TRG(3);
 	
 	--Clock generation
@@ -252,29 +322,29 @@ begin
 	--------------------------------------------------
 	-------General registers interfaced to DAQ -------
 	--------------------------------------------------
+
+	--LEDS
+	--LEDS <= internal_OUTPUT_REGISTERS(0);
+	LEDS <= "0000000" & internal_SMP_MAIN_CNT;
 	
 	--DAC CONTROL SIGNALS
-	internal_DAC_CONTROL_UPDATE(9 downto 0) <= internal_OUTPUT_REGISTERS(1)(9 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(0) <= internal_OUTPUT_REGISTERS(2)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(3)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(1) <= internal_OUTPUT_REGISTERS(4)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(5)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(2) <= internal_OUTPUT_REGISTERS(6)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(7)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(3) <= internal_OUTPUT_REGISTERS(8)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(9)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(4) <= internal_OUTPUT_REGISTERS(10)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(11)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(5) <= internal_OUTPUT_REGISTERS(12)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(13)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(6) <= internal_OUTPUT_REGISTERS(14)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(15)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(7) <= internal_OUTPUT_REGISTERS(16)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(17)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(8) <= internal_OUTPUT_REGISTERS(18)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(19)(11 downto 0);
-	internal_KLMTDCS_DAC_CONTROL_REG_DATA(9) <= internal_OUTPUT_REGISTERS(20)(5 downto 0) 
-															& internal_OUTPUT_REGISTERS(21)(11 downto 0);															
+	internal_DAC_CONTROL_UPDATE <= internal_OUTPUT_REGISTERS(1)(0);
+	internal_DAC_CONTROL_REG_DATA <= internal_OUTPUT_REGISTERS(2)(5 downto 0) 
+												& internal_OUTPUT_REGISTERS(3)(11 downto 0);
+   internal_DAC_CONTROL_TDCNUM <= internal_OUTPUT_REGISTERS(4)(9 downto 0);
+	internal_DAC_CONTROL_LOAD_PERIOD <= internal_OUTPUT_REGISTERS(5)(15 downto 0);
+	internal_DAC_CONTROL_LATCH_PERIOD <= internal_OUTPUT_REGISTERS(6)(15 downto 0);
+	
+	--Sampling Signals
+	internal_SMP_STOP <= internal_OUTPUT_REGISTERS(10)(0);
+
+	--Digitization Signals
+   internal_DIG_STARTDIG <= internal_OUTPUT_REGISTERS(20)(0);
+   internal_DIG_RD_ROWSEL_S <= internal_OUTPUT_REGISTERS(21)(8 downto 6);
+	internal_DIG_RD_COLSEL_S <= internal_OUTPUT_REGISTERS(21)(5 downto 0);
+	
+	--Serial Readout Signals
+	internal_SROUT_START <= internal_OUTPUT_REGISTERS(30)(0);
 
 	--------Input register mapping--------------------
 	--Map the first N_GPR output registers to the first set of read registers
@@ -288,76 +358,107 @@ begin
 		end generate;
 	end generate;
 	--- The register numbers must be updated for the following if N_GPR is changed.
+	internal_INPUT_REGISTERS(N_GPR + 0 ) <= "0000000" & internal_SMP_MAIN_CNT(8 downto 0 );
 	--internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
 	--internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
 
    --ASIC control processes
 	
-	--Disable TARGET6 DAC Control
-	--SIN <= (others => '0');
-	--SCLK <= (others => '0');
-	--PCLK <= (others => '0');
-	--BUSA_REGCLR <= '0';
-	--BUSB_REGCLR <= '0';
-	
-	--TARGET6 DAC Control (10 ASICs)
-	gen_DAC_CONTROL: for i in 0 to 9 generate
-		u_TARGET6_DAC_CONTROL: entity work.TARGET6_DAC_CONTROL PORT MAP(
+	--TARGET6 DAC Control
+	u_TARGET6_DAC_CONTROL: entity work.TARGET6_DAC_CONTROL PORT MAP(
 			CLK => internal_CLOCK_50MHz_BUFG,
-			UPDATE => internal_DAC_CONTROL_UPDATE(i),
-			REG_DATA => internal_KLMTDCS_DAC_CONTROL_REG_DATA(i),
-			SIN => SIN(i),
-			SCLK => SCLK(i),
-			PCLK => PCLK(i)
-		);
-	end generate;
+			LOAD_PERIOD => internal_DAC_CONTROL_LOAD_PERIOD,
+			LATCH_PERIOD => internal_DAC_CONTROL_LATCH_PERIOD,
+			UPDATE => internal_DAC_CONTROL_UPDATE,
+			REG_DATA => internal_DAC_CONTROL_REG_DATA,
+			SIN => internal_DAC_CONTROL_SIN,
+			SCLK => internal_DAC_CONTROL_SCLK,
+			PCLK => internal_DAC_CONTROL_PCLK
+   );
+	--end generate;
 	BUSA_REGCLR <= '0';
 	BUSB_REGCLR <= '0';
+	BUSA_SCLK <= internal_DAC_CONTROL_SCLK;
+	BUSB_SCLK <= internal_DAC_CONTROL_SCLK;
+	--Only specified DC gets serial data signals, uses bit mask
+	gen_DAC_CONTROL: for i in 0 to 9 generate
+		SIN(i) <= internal_DAC_CONTROL_SIN and internal_DAC_CONTROL_TDCNUM(i);
+		PCLK(i) <= internal_DAC_CONTROL_PCLK and internal_DAC_CONTROL_TDCNUM(i);
+	end generate;
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
-		clk => internal_CLOCK_150MHz_BUFG,
+		--clk => internal_CLOCK_150MHz_BUFG,
+		clk => internal_CLOCK_50MHz_BUFG,
 		stop => internal_SMP_STOP,
-		MAIN_CNT_out => open,
-		sspin_out => SSPIN,
-		sstin_out => SSTIN,
-		wr_advclk_out => WR_ADVCLK,
-		wr_addrclr_out => WR_ADDRCLR,
-		wr_strb_out => WR_STRB,
-		wr_ena_out => WR_ENA,
-		samp_delay => x"000"
+		MAIN_CNT_out => internal_SMP_MAIN_CNT,
+		sspin_out => internal_SSPIN,
+		sstin_out => internal_SSTIN,
+		wr_advclk_out => internal_WR_ADVCLK,
+		wr_addrclr_out => internal_WR_ADDRCLR,
+		wr_strb_out => internal_WR_STRB,
+		wr_ena_out => internal_WR_ENA
 	);
+	SSPIN <= internal_SSPIN;
+	SSTIN <= internal_SSTIN;
+	WR_ADVCLK <= internal_WR_ADVCLK;
+	BUSA_WR_ADDRCLR <= internal_WR_ADDRCLR;
+	BUSB_WR_ADDRCLR <= internal_WR_ADDRCLR;
+	WR_STRB <= internal_WR_STRB;
+	WR_ENA <= internal_WR_ENA;
 	
 	--digitizing logic
 	u_DigitizingLgc: entity work.DigitizingLgc PORT MAP(
 		clk => internal_CLOCK_50MHz_BUFG,
-		StartDig => internal_DIG_START,
+		StartDig => internal_DIG_STARTDIG,
 		ramp_length => X"400",
-		rd_ena => RD_ENA,
-		clr => CLR,
-		startramp => internal_DIG_STARTRAMP_OUT
+		rd_ena => internal_DIG_RD_ENA,
+		clr => internal_DIG_CLR,
+		startramp => internal_DIG_RAMP
 	);
+	BUSA_RD_ENA	<= internal_DIG_RD_ENA;
+	BUSA_RD_ROWSEL_S <= internal_DIG_RD_ROWSEL_S;
+	BUSA_RD_COLSEL_S <= internal_DIG_RD_COLSEL_S;
+	BUSA_CLR <= internal_DIG_CLR;
+	BUSA_START <= internal_DIG_RAMP;
+	BUSA_RAMP <= internal_DIG_RAMP;
+	BUSB_RD_ENA	<= internal_DIG_RD_ENA;
+	BUSB_RD_ROWSEL_S <= internal_DIG_RD_ROWSEL_S;
+	BUSB_RD_COLSEL_S <= internal_DIG_RD_COLSEL_S;
+	BUSB_CLR <= internal_DIG_CLR;
+	BUSB_START <= internal_DIG_RAMP;
+	BUSB_RAMP <= internal_DIG_RAMP;
 	
-	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
-		clk => internal_CLOCK_50MHz_BUFG,
-		start_srout => internal_SROUT_START,
-		samp_done => internal_SROUT_SAMP_DONE,
-		dout => DOUT,
-		sr_clr => SR_CLR,
-		sr_clk => SR_CLK,
-		sr_sel => SR_SEL,
-		samplesel => internal_SROUT_SAMPLESEL,
-		smplsi_any => internal_SROUT_SAMPLESEL_ANY,
-		fifo_wr_en => internal_FIFO_WR_EN,
-		fifo_wr_clk => internal_FIFO_WR_CLK,
-		fifo_wr_din => internal_FIFO_WR_DIN
-	);
+	--u_SerialDataRout: entity work.SerialDataRout PORT MAP(
+	--	clk => internal_CLOCK_50MHz_BUFG,
+	--	start_srout => internal_SROUT_START,
+	--	samp_done => open,
+	--	dout => BUSA_DO, --NEED to ACCOMODATE BOTH BUSSES
+	--	sr_clr => internal_SROUT_SR_CLR,
+	--	sr_clk => internal_SROUT_SR_CLK,
+	--	sr_sel => internal_SROUT_SR_SEL,
+	--	samplesel => internal_SROUT_SAMPLESEL,
+	--	smplsi_any => internal_SROUT_SAMPLESEL_ANY,
+	--	fifo_wr_en => open,
+	--	fifo_wr_clk => open,
+	--	fifo_wr_din => open
+	--);
+	--BUSB_SAMPLESEL_S <= internal_SROUT_SAMPLESEL;
+	--BUSB_SR_CLEAR <= internal_SROUT_SR_CLR;
+	--BUSB_SR_SEL	<= internal_SROUT_SR_SEL;
+	--SR_CLOCK	<= internal_SROUT_SR_CLK;
+	--SAMPLESEL_ANY <= internal_SROUT_SAMPLESEL_ANY;
 	
-	--RAMP <= internal_STARTRAMP_out;
-	--START <= internal_STARTRAMP_out;
-	--RD_RS_S <= "000";
-	--RD_CS_S <= "000000";
+	--Temp disable serial readout
+	BUSA_SAMPLESEL_S <= (others=>'0');
+	BUSA_SR_CLEAR <=  '0';
+	BUSA_SR_SEL	<= '0';
+	BUSB_SAMPLESEL_S <= (others=>'0');
+	BUSB_SR_CLEAR <=  '0';
+	BUSB_SR_SEL	<= '0';
+	SR_CLOCK	<= '0';
+	SAMPLESEL_ANY <=  '0';
 	
    --counter process
    --process (internal_CLOCK_50MHz_BUFG) begin

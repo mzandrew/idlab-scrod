@@ -15,8 +15,6 @@ entity SerialDataRout is
    port (
         clk		 			 : in   std_logic;
         start_srout	    : in   std_logic;  -- start serial readout
-		  
-		  CHAN_DATA : in   std_logic_vector(3 downto 0);
 
         samp_done	       : out  std_logic;  -- indicate that all sampled processed
 
@@ -81,6 +79,8 @@ architecture Behavioral of SerialDataRout is
 	signal   rd_rs_s     : STD_LOGIC_VECTOR(2 downto 0) := (others=>'0');
 	
 	signal   internal_samplesel : std_logic_vector(5 downto 0) := (others=>'0');
+	
+	signal chan_data : STD_LOGIC_VECTOR(3 downto 0) := (others=>'0');
 	
 --------------------------------------------------------------------------------
 
