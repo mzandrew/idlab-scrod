@@ -5,23 +5,22 @@ use work.all;
 
 Library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
+use IEEE.NUMERIC_STD.ALL;
 --Library synplify;
 --use synplify.attributes.all;
 
 entity SamplingLgc is
    port (
-			clk		 			    : in   std_logic;
-			stop	 			      : in   std_logic;  -- hold operation
-			IDLE_status				: out 	std_logic := '1';
-			MAIN_CNT_out			: out 	std_logic_vector(10 downto 0);
+			clk		 			   : in    std_logic;
+			stop	 			      : in    std_logic;  -- hold operation
+			IDLE_status				: out   std_logic := '1';
+			MAIN_CNT_out			: out   std_logic_vector(8 downto 0);
 			sspin_out            : out   std_logic; --SCA control signals
 			sstin_out            : out   std_logic; --SCA control signals
 			wr_advclk_out        : out   std_logic; --Write Address Increment Clock 
 			wr_addrclr_out       : out   std_logic; --Clear Write Address Counter
 			wr_strb_out          : out   std_logic; --Pulse to transfer samples to store
-			wr_ena_out           : out   std_logic; --Enable Write procedure
-			samp_delay				: in  STD_LOGIC_VECTOR (11 downto 0)
+			wr_ena_out           : out   std_logic --Enable Write procedure
 	);
 end SamplingLgc;
 
@@ -29,8 +28,8 @@ architecture Behavioral of SamplingLgc is
 
 type state_type is
 	(
-	Idle,				  -- Idling until command start bit
-	SampleDelay,
+	Start,		   -- Initial state
+	Idle,				  -- Idling until command stop deasserted
    Sampling0,		-- state 0 of init high processing
 	Sampling0a,		-- state 0 of init high processing
    Sampling1,		-- state 1 of init high processing
@@ -70,8 +69,8 @@ type state_type is
 	Sampling18
 	);
 
-	signal next_state		: state_type := Idle;
-	signal MAIN_CNT		: std_logic_vector(10 downto 0) := "00000000000";
+	signal next_state		: state_type := Start;
+	signal MAIN_CNT		: UNSIGNED(8 downto 0) := "000000000";
 	
 	--output connecting signals
 	signal sspin     : std_logic := '0'; --SCA control signals
@@ -88,7 +87,7 @@ begin
 
 --usual sampling signals
 --MAIN_CNT_out <= MAIN_CNT; --output full counter
-MAIN_CNT_out <= "00" & MAIN_CNT(10 downto 2); --output only row + colum sections
+MAIN_CNT_out <= std_logic_vector(MAIN_CNT(8 downto 0)); --output only row + colum sections
 sspin_out <= sspin;
 sstin_out <= sstin;
 wr_advclk_out <= wr_advclk;
@@ -107,36 +106,41 @@ end process;
 --process(Clk,rst)
 process(Clk)
 begin
---if (rst = '1') then
--- IDLE_status <= '1';
---  TestTrig <= '0';
---  MAIN_CNT <= (Others => '0');
---  sspin             <= '0';
---  sstin             <= '0';
---  wr_advclk         <= '0';
---  wr_addrclr        <= '1';
---  wr_strb           <= '0';
---  wr_ena            <= '0';
---  count <= (Others => '0');
- -- next_state <= Idle;
 if (Clk'event and Clk = '1') then
   Case next_state is
   
+  When Start =>
+    sspin          <= '0';
+    sstin          <= '0';
+    wr_advclk      <= '0';    
+    wr_strb        <= '1';
+	 count <= (Others => '0');
+	 MAIN_CNT <= MAIN_CNT;
+    if ( stop_in = '0') then  --normal sampling
+	   IDLE_status <= '0';
+		wr_addrclr        <= '0';
+		wr_ena            <= '1';
+		next_state 	<= Sampling0;
+    else								--stop sampling and go to Idle state
+	   IDLE_status <= '1';
+		wr_addrclr        <= '1';
+		wr_ena            <= '0';
+      next_state 	<= Idle;
+    end if;
+	 
   When Idle =>
     sspin          <= '0';
     sstin          <= '0';
     wr_advclk      <= '0';    
     wr_strb        <= '1';
 	 count <= (Others => '0');
-    if ( stop_in = '0') then   --begin single shot readout
-	 --if ( stop_in = '1' OR stop_in = '0') then   --begin single shot readout
+    if ( stop_in = '0') then   --resume normal sampling
 	   IDLE_status <= '0';
 		MAIN_CNT <= (Others => '0');
 		wr_addrclr        <= '0';
 		wr_ena            <= '1';
-      --next_state 	<= SampleDelay;
 		next_state 	<= Sampling0;
-    else
+    else								 --stay Idle until STOP goes low
 	   IDLE_status <= '1';
 		MAIN_CNT <= MAIN_CNT;
 		wr_addrclr        <= '1';
@@ -144,17 +148,9 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Idle;
     end if;
 	 
-  When SampleDelay =>
-   if( count(11 downto 0) < samp_delay(11 downto 0) ) then 
-		count <= count + 1;
-		next_state <= SampleDelay;
-	else
-		next_state <= Sampling0;
-	end if;
-	 
   When Sampling0 =>
 	 IDLE_status <= '0';
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '1';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -237,7 +233,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling4;		
 
   When Sampling4 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '1';
     wr_advclk         <= '1';
@@ -290,7 +286,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling8;
 		
   When Sampling6a => 
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -308,10 +304,10 @@ if (Clk'event and Clk = '1') then
     wr_strb           <= '1';
     wr_ena            <= '1';
       --next_state 	<= Sampling7a;
-		next_state 	<= Idle;
+		next_state 	<= Start;
 		
   When Sampling7a =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -322,7 +318,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Idle;
 
   When Sampling8 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -333,7 +329,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling10;
 		
   When Sampling8a =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -343,7 +339,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling9;
 
   When Sampling9 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -353,7 +349,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling9a;
 
   When Sampling9a =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -363,7 +359,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling10;
 
   When Sampling10 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -374,7 +370,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling12;
 		
   When Sampling10a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -384,7 +380,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling11;
 		
   When Sampling11 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -394,7 +390,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling11a;
 		
   When Sampling11a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -404,7 +400,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling12;
 
   When Sampling12 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -415,7 +411,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling14;
 		
   When Sampling12a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -425,7 +421,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling13;
 
   When Sampling13 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -435,7 +431,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling13a;
 		
   When Sampling13a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '1';
@@ -445,7 +441,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling14;		
 		
   When Sampling14 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -456,7 +452,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling16;
 		
   When Sampling14a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -466,7 +462,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling15;
 
   When Sampling15 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -476,7 +472,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling15a;
 		
   When Sampling15a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -486,7 +482,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling16;
 
   When Sampling16 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -497,7 +493,7 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling18;
 		
   When Sampling16a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -507,7 +503,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling17;
 
   When Sampling17 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -517,7 +513,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling17a;
 		
   When Sampling17a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
@@ -527,7 +523,7 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling18;
 
   When Sampling18 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT <= MAIN_CNT + 1;
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';

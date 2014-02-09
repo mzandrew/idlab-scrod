@@ -46,12 +46,19 @@ int main(int argc, char* argv[]){
 	//clear update i/o register (register #0)
 	control->registerWriteReadback(board_id, 1, 0, regValReadback);
 
+	//set the correct bit in the DAC loading DC# mask
+	control->registerWriteReadback(board_id, 4, (1 << dcNum) , regValReadback);
+
+	//initialize the DAC loading and latch period registers to something reasonable
+	control->registerWriteReadback(board_id, 5, 128 , regValReadback);
+	control->registerWriteReadback(board_id, 6, 320 , regValReadback);
+
 	//write desired ASIC register # and DAC to corresponding firmware i/o registers
-	control->registerWriteReadback(board_id, 2+2*dcNum, regNum, regValReadback);
-	control->registerWriteReadback(board_id, 3+2*dcNum, regVal, regValReadback);
+	control->registerWriteReadback(board_id, 2, regNum, regValReadback);
+	control->registerWriteReadback(board_id, 3, regVal, regValReadback);
 
 	//set bit of update i/o register (register #0)
-	control->registerWriteReadback(board_id, 1, (1 << dcNum), regValReadback);
+	control->registerWriteReadback(board_id, 1, 1, regValReadback);
 
 	//wait some time
 	usleep(50);
