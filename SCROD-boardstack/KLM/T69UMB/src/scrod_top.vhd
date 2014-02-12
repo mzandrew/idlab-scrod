@@ -164,7 +164,7 @@ architecture Behavioral of scrod_top is
    signal internal_SET_EVENT_NUMBER             : STD_LOGIC;
    signal internal_EVENT_NUMBER                 : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-	--Event builder related
+	--Event builder + readout interface waveform data flow related
 	signal internal_WAVEFORM_FIFO_DATA_OUT       : std_logic_vector(31 downto 0);
 	signal internal_WAVEFORM_FIFO_EMPTY          : std_logic;
 	signal internal_WAVEFORM_FIFO_DATA_VALID     : std_logic;
@@ -172,6 +172,16 @@ architecture Behavioral of scrod_top is
 	signal internal_WAVEFORM_FIFO_READ_ENABLE    : std_logic;
 	signal internal_WAVEFORM_PACKET_BUILDER_BUSY	: std_logic := '0';
 	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
+	
+	signal internal_EVTBUILD_DATA_OUT       : std_logic_vector(31 downto 0);
+	signal internal_EVTBUILD_EMPTY          : std_logic;
+	signal internal_EVTBUILD_DATA_VALID     : std_logic;
+	signal internal_EVTBUILD_READ_CLOCK     : std_logic;
+	signal internal_EVTBUILD_READ_ENABLE    : std_logic;
+	signal internal_EVTBUILD_PACKET_BUILDER_BUSY	: std_logic := '0';
+	signal internal_EVTBUILD_PACKET_BUILDER_VETO : std_logic := '0';
+	signal internal_EVTBUILD_START_BUILDING_EVENT : std_logic := '0';
+	signal internal_EVTBUILD_DONE_SENDING_EVENT : std_logic := '0';
 	
 	--ASIC TRIGGER CONTROL
 	signal internal_TRIGGER_ALL : std_logic := '0';
@@ -216,6 +226,30 @@ architecture Behavioral of scrod_top is
 	signal internal_SROUT_SR_SEL : std_logic := '0';
 	signal internal_SROUT_SAMPLESEL : std_logic_vector(4 downto 0) := (others => '0');
 	signal internal_SROUT_SAMPLESEL_ANY : std_logic := '0';
+	signal internal_SROUT_FIFO_WR_CLK       : std_logic;
+	signal internal_SROUT_FIFO_WR_EN       : std_logic;
+	signal internal_SROUT_FIFO_DATA_OUT       : std_logic_vector(31 downto 0);
+	
+	--WAVEFORM DATA FIFO
+	signal internal_WAVEFORM_FIFO_RST : std_logic := '0';
+	signal internal_EVTBUILD_MAKE_READY : std_logic := '0';
+	
+	--Waveform FIFO component
+	COMPONENT waveform_fifo_wr32_rd32
+	PORT (
+		rst : IN STD_LOGIC;
+		wr_clk : IN STD_LOGIC;
+		rd_clk : IN STD_LOGIC;
+		din : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		wr_en : IN STD_LOGIC;
+		rd_en : IN STD_LOGIC;
+		dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		full : OUT STD_LOGIC;
+		empty : OUT STD_LOGIC;
+		valid : OUT STD_LOGIC
+	);
+	
+END COMPONENT;
 	
 begin
 
@@ -255,7 +289,7 @@ begin
 		ASIC_WR_ADDR_LSB_RAW => open,
 		--Output clock enable for I2C things
 		I2C_CLOCK_ENABLE  => internal_CLOCK_ENABLE_I2C
-	);	
+	);  
 
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
@@ -266,22 +300,22 @@ begin
 		INPUT_REGISTERS              => internal_INPUT_REGISTERS,
 	
 		--NOT original implementation - SciFi specific
-		--WAVEFORM_FIFO_DATA_IN        => internal_WAVEFORM_FIFO_DATA_OUT,
-		--WAVEFORM_FIFO_EMPTY          => internal_WAVEFORM_FIFO_EMPTY,
-		--WAVEFORM_FIFO_DATA_VALID     => internal_WAVEFORM_FIFO_DATA_VALID,
-		--WAVEFORM_FIFO_READ_CLOCK     => internal_WAVEFORM_FIFO_READ_CLOCK,
-		--WAVEFORM_FIFO_READ_ENABLE    => internal_WAVEFORM_FIFO_READ_ENABLE,
-		--WAVEFORM_PACKET_BUILDER_BUSY => internal_WAVEFORM_PACKET_BUILDER_BUSY,
-		--WAVEFORM_PACKET_BUILDER_VETO => internal_WAVEFORM_PACKET_BUILDER_VETO,
+		WAVEFORM_FIFO_DATA_IN        => internal_EVTBUILD_DATA_OUT,
+		WAVEFORM_FIFO_EMPTY          => internal_EVTBUILD_EMPTY,
+		WAVEFORM_FIFO_DATA_VALID     => internal_EVTBUILD_DATA_VALID,
+		WAVEFORM_FIFO_READ_CLOCK     => internal_EVTBUILD_READ_CLOCK,
+		WAVEFORM_FIFO_READ_ENABLE    => internal_EVTBUILD_READ_ENABLE,
+		WAVEFORM_PACKET_BUILDER_BUSY => internal_EVTBUILD_PACKET_BUILDER_BUSY,
+		WAVEFORM_PACKET_BUILDER_VETO => internal_EVTBUILD_PACKET_BUILDER_VETO,
 		
 		--WAVEFORM ROI readout disable for now (SciFi implementation)
-		WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
-		WAVEFORM_FIFO_EMPTY          => '1',
-		WAVEFORM_FIFO_DATA_VALID     => '0',
-		WAVEFORM_FIFO_READ_CLOCK     => open,
-		WAVEFORM_FIFO_READ_ENABLE    => open,
-		WAVEFORM_PACKET_BUILDER_BUSY => '0',
-		WAVEFORM_PACKET_BUILDER_VETO => open,
+		--WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
+		--WAVEFORM_FIFO_EMPTY          => '1',
+		--WAVEFORM_FIFO_DATA_VALID     => '0',
+		--WAVEFORM_FIFO_READ_CLOCK     => open,
+		--WAVEFORM_FIFO_READ_ENABLE    => open,
+		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
+		--WAVEFORM_PACKET_BUILDER_VETO => open,
 
 		FIBER_0_RXP                  => FIBER_0_RXP,
 		FIBER_0_RXN                  => FIBER_0_RXN,
@@ -344,8 +378,14 @@ begin
 	internal_DIG_RD_COLSEL_S <= internal_OUTPUT_REGISTERS(21)(5 downto 0);
 	
 	--Serial Readout Signals
-	internal_SROUT_START <= internal_OUTPUT_REGISTERS(30)(0);
-
+	internal_SROUT_START <=  internal_OUTPUT_REGISTERS(30)(0);
+	
+	--TEMP READOUT FLOW TEST
+	internal_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
+	internal_EVTBUILD_START_BUILDING_EVENT <= internal_OUTPUT_REGISTERS(44)(0);
+	internal_EVTBUILD_MAKE_READY <= internal_OUTPUT_REGISTERS(45)(0);
+	internal_EVTBUILD_PACKET_BUILDER_BUSY <= internal_OUTPUT_REGISTERS(46)(0);
+	
 	--------Input register mapping--------------------
 	--Map the first N_GPR output registers to the first set of read registers
 	gen_OUTREG_to_INREG: for i in 0 to N_GPR-1 generate
@@ -359,6 +399,9 @@ begin
 	end generate;
 	--- The register numbers must be updated for the following if N_GPR is changed.
 	internal_INPUT_REGISTERS(N_GPR + 0 ) <= "0000000" & internal_SMP_MAIN_CNT(8 downto 0 );
+	internal_INPUT_REGISTERS(N_GPR + 1 ) <= internal_WAVEFORM_FIFO_DATA_OUT(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 2 ) <= "000000000000000" & internal_WAVEFORM_FIFO_EMPTY;
+	internal_INPUT_REGISTERS(N_GPR + 3 ) <= "000000000000000" & internal_WAVEFORM_FIFO_DATA_VALID;
 	--internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
 	--internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
 
@@ -430,35 +473,67 @@ begin
 	BUSB_START <= internal_DIG_RAMP;
 	BUSB_RAMP <= internal_DIG_RAMP;
 	
-	--u_SerialDataRout: entity work.SerialDataRout PORT MAP(
-	--	clk => internal_CLOCK_50MHz_BUFG,
-	--	start_srout => internal_SROUT_START,
-	--	samp_done => open,
-	--	dout => BUSA_DO, --NEED to ACCOMODATE BOTH BUSSES
-	--	sr_clr => internal_SROUT_SR_CLR,
-	--	sr_clk => internal_SROUT_SR_CLK,
-	--	sr_sel => internal_SROUT_SR_SEL,
-	--	samplesel => internal_SROUT_SAMPLESEL,
-	--	smplsi_any => internal_SROUT_SAMPLESEL_ANY,
-	--	fifo_wr_en => open,
-	--	fifo_wr_clk => open,
-	--	fifo_wr_din => open
-	--);
-	--BUSB_SAMPLESEL_S <= internal_SROUT_SAMPLESEL;
-	--BUSB_SR_CLEAR <= internal_SROUT_SR_CLR;
-	--BUSB_SR_SEL	<= internal_SROUT_SR_SEL;
-	--SR_CLOCK	<= internal_SROUT_SR_CLK;
-	--SAMPLESEL_ANY <= internal_SROUT_SAMPLESEL_ANY;
-	
-	--Temp disable serial readout
-	BUSA_SAMPLESEL_S <= (others=>'0');
-	BUSA_SR_CLEAR <=  '0';
-	BUSA_SR_SEL	<= '0';
+	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
+		clk => internal_CLOCK_50MHz_BUFG,
+		start => internal_SROUT_START,
+		busy => open,
+		samp_done => open,
+		dout => BUSA_DO, --NEED to ACCOMODATE BOTH BUSSES
+		--dout => x"ABCD", --NEED to ACCOMODATE BOTH BUSSES
+		sr_clr => internal_SROUT_SR_CLR,
+		sr_clk => internal_SROUT_SR_CLK,
+		sr_sel => internal_SROUT_SR_SEL,
+		samplesel => internal_SROUT_SAMPLESEL,
+		smplsi_any => internal_SROUT_SAMPLESEL_ANY,
+		fifo_wr_en => internal_SROUT_FIFO_WR_EN,
+		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
+		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
+	);
+	BUSA_SAMPLESEL_S <= internal_SROUT_SAMPLESEL;
+	BUSA_SR_CLEAR <= internal_SROUT_SR_CLR;
+	BUSA_SR_SEL	<= internal_SROUT_SR_SEL;
+	SR_CLOCK	<= internal_SROUT_SR_CLK;
+	SAMPLESEL_ANY <= internal_SROUT_SAMPLESEL_ANY;
 	BUSB_SAMPLESEL_S <= (others=>'0');
 	BUSB_SR_CLEAR <=  '0';
 	BUSB_SR_SEL	<= '0';
-	SR_CLOCK	<= '0';
-	SAMPLESEL_ANY <=  '0';
+	
+   u_waveform_fifo_wr32_rd32 : waveform_fifo_wr32_rd32
+   PORT MAP (
+		rst => internal_WAVEFORM_FIFO_RST,
+		wr_clk => internal_SROUT_FIFO_WR_CLK,
+		--wr_clk => internal_CLOCK_50MHz_BUFG,
+		rd_clk => internal_WAVEFORM_FIFO_READ_CLOCK,
+		din => internal_SROUT_FIFO_DATA_OUT,
+		wr_en => internal_SROUT_FIFO_WR_EN,
+		rd_en => internal_WAVEFORM_FIFO_READ_ENABLE,
+		dout => internal_WAVEFORM_FIFO_DATA_OUT,
+		full => open,
+		empty => internal_WAVEFORM_FIFO_EMPTY,
+		valid => internal_WAVEFORM_FIFO_DATA_VALID
+   );
+	
+	--Event builder provides ordered waveform data to readout_interfaces module
+	map_event_builder: entity work.event_builder PORT MAP(
+		READ_CLOCK => internal_EVTBUILD_READ_CLOCK,
+		SCROD_REV_AND_ID_WORD => x"00000000",
+		EVENT_NUMBER_WORD => x"00000001",
+		EVENT_TYPE_WORD => x"00000001",
+		EVENT_FLAG_WORD => x"00000000",
+		NUMBER_OF_WAVEFORM_PACKETS_WORD => x"00000001",
+		START_BUILDING_EVENT => internal_EVTBUILD_START_BUILDING_EVENT,
+		DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
+		MAKE_READY => internal_EVTBUILD_MAKE_READY,
+		WAVEFORM_FIFO_DATA => internal_WAVEFORM_FIFO_DATA_OUT,
+		WAVEFORM_FIFO_DATA_VALID => internal_WAVEFORM_FIFO_DATA_VALID,
+		WAVEFORM_FIFO_EMPTY => internal_WAVEFORM_FIFO_EMPTY,
+		WAVEFORM_FIFO_READ_ENABLE => internal_WAVEFORM_FIFO_READ_ENABLE,
+		WAVEFORM_FIFO_READ_CLOCK => internal_WAVEFORM_FIFO_READ_CLOCK,
+		FIFO_DATA_OUT => internal_EVTBUILD_DATA_OUT,
+		FIFO_DATA_VALID => internal_EVTBUILD_DATA_VALID,
+		FIFO_EMPTY => internal_EVTBUILD_EMPTY,
+		FIFO_READ_ENABLE => internal_EVTBUILD_READ_ENABLE
+	);
 	
    --counter process
    --process (internal_CLOCK_50MHz_BUFG) begin
@@ -481,5 +556,8 @@ begin
 	--		end if;
    --   end if;
    --end process;
+	
+	--Event builder
+	
 
 end Behavioral;

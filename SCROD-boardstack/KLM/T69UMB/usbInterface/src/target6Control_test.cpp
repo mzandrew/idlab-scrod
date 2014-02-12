@@ -5,6 +5,8 @@
 #include <stdlib.h> 
 #include "target6ControlClass.h"
 
+#include <fstream>
+
 #include <TGraph.h>
 #include <TH1.h>
 #include "TApplication.h"
@@ -42,16 +44,11 @@ int main(int argc, char* argv[]){
 	//Initialize
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //Start sampling
 	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
+	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
 	// //SAMPLESEL_ANY OFF
 
-	usleep(50);
-
-	//Stop Sampling
-	control->registerWriteReadback(board_id, 10, 1, regValReadback);
-
-	//Read MAIN_CNT
-	control->registerRead(board_id, 256, regValReadback);
-	std::cout << "MAIN_CNT " << regValReadback << std::endl;
+	//STOP SAMPLING
+	control->registerWriteReadback(board_id, 10, 1, regValReadback); //Stop sampling
 
 	//Set RD ROWSEL and COLSEL based on current value of MAIN_CNT
 	int mainCnt = regValReadback;
@@ -63,6 +60,42 @@ int main(int argc, char* argv[]){
 	//Start Digitization
 	control->registerWriteReadback(board_id, 20, 1, regValReadback);
 
+	//start serial readout
+	control->registerWriteReadback(board_id, 30, 1, regValReadback); //serial readout ON
+	control->registerWriteReadback(board_id, 30, 0, regValReadback); //serial readout OFF
+
+	//start event builder
+	control->registerWrite(board_id, 44, 1, regValReadback); //Start event builder
+	
+	//parse the data packet, look for event packets
+	unsigned int eventdatabuf[65536];
+	int eventdataSize = 0;
+	control->getEventData(eventdatabuf, eventdataSize);
+
+	//print data buffer
+	std::cout << "RESPONSE PACKET " << std::endl;
+	for(int j=0;j<eventdataSize; j++)
+		std::cout << "\t" << std::hex << eventdatabuf[j] << std::endl;
+	std::cout << "END RESPONSE PACKET " << std::endl;
+	std::cout << std::endl;
+
+	//save data to file
+	ofstream myfile;
+  	myfile.open ("output_target6Control_test.dat", ios::out | ios::binary );
+	myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
+  	myfile.close();
+
+	//control->printPacketFromUSBFifo();//optionally just print the data packet
+
+	//stop and reset event builder
+	control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
+	control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
+	control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
+
+	//RESET
+	control->registerWriteReadback(board_id, 10, 0, regValReadback); //Start sampling
+	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
+	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
 
 	//close USB interface
         control->closeUSBInterface();
