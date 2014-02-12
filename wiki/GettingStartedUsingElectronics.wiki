@@ -11,11 +11,18 @@ A "front-end" module.
 ==a power supply==
 You need to provide DC3V, DC4V and DC5V to the boardstack.
 
-For the carrier02 revC version of the boardstack, the current requirements are as follows:
-  * 3V@7.0A (~2A for a boardstack with a single ASIC, peak @ power-up)
-  * 4V@0.2A (with 1 fiber transceiver installed)
-  * 5V@2.6A (0.158A for a single ASIC)
-Note:  the next version of the boardstack (the "intermediate" one) will require 3V, 4V and 6V and the peak current on the 3V line will be less.
+For the carrier02 revD version of the boardstack (one SCROD, one interconnect, one carrier02), the power-on current requirements are as follows:
+  * 2.90V@0.241A
+  * 3.85V@0.029A (with 0 fiber transceivers installed)
+  * 5.60V@0.616A
+After FPGA configuration, the current draw should become:
+  * 2.90V@0.836A
+  * 3.85V@0.059A (with 0 fiber transceivers installed)
+  * 5.60V@0.006A
+After running the initialization scripts, the current draw should change to (preliminary!):
+  * 2.90V@1.250A
+  * 3.85V@0.216A (with 1 fiber transceiver installed)
+  * 5.60V@0.616A
 
 ==a computer==
 Either with USB or fiber optics (SFP).
