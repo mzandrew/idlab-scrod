@@ -4,7 +4,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use work.readout_definitions.all;
-use work.asic_definitions_irs2_carrier_revA.all;
+--use work.asic_definitions_irs3b_carrier_revB.all;
 
 entity event_builder is
 	Port ( 
@@ -29,18 +29,7 @@ entity event_builder is
 		FIFO_DATA_OUT                   : out STD_LOGIC_VECTOR(31 downto 0);
 		FIFO_DATA_VALID                 : out STD_LOGIC;
 		FIFO_EMPTY                      : out STD_LOGIC;
-		FIFO_READ_ENABLE                : in  STD_LOGIC;
-		--trigger bits
-		TDC_TRG_16_0							: in std_logic_vector(9 downto 0);
-		TDC_TRG_4_0							: in std_logic_vector(9 downto 0);
-		TDC_TRG_3_0							: in std_logic_vector(9 downto 0);
-		TDC_TRG_2_0							: in std_logic_vector(9 downto 0);
-		TDC_TRG_1_0							: in std_logic_vector(9 downto 0);
-		TDC_TRG_16_1							: in std_logic_vector(9 downto 0);
-		TDC_TRG_4_1							: in std_logic_vector(9 downto 0);
-		TDC_TRG_3_1							: in std_logic_vector(9 downto 0);
-		TDC_TRG_2_1							: in std_logic_vector(9 downto 0);
-		TDC_TRG_1_1							: in std_logic_vector(9 downto 0)
+		FIFO_READ_ENABLE                : in  STD_LOGIC		
 	);
 end event_builder;
 
@@ -65,17 +54,6 @@ architecture Behavioral of event_builder is
 	--Signals for dealing with the checksum
 	signal internal_CHECKSUM                 : unsigned(31 downto 0);
 	signal internal_CHECKSUM_RESET           : std_logic := '0';
-	--SciFi related
-	signal TRIGGER_BIT_WORD_0						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_1						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_2						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_3						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_4						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_5						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_6						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_7						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_8						: std_logic_vector(31 downto 0);
-	signal TRIGGER_BIT_WORD_9						: std_logic_vector(31 downto 0);
 begin
 	--Connect to top level output ports
 	WAVEFORM_FIFO_READ_CLOCK <= READ_CLOCK;
@@ -106,7 +84,7 @@ begin
 		end case;
 	end process;
 	--Next state logic
-	process(internal_EVENT_BUILDER_STATE, internal_START, FIFO_READ_ENABLE, internal_PACKET_COUNTER, WAVEFORM_FIFO_EMPTY, internal_EVENT_HEADER_DATA_VALID) begin
+	process(internal_EVENT_BUILDER_STATE, internal_START, FIFO_READ_ENABLE, internal_PACKET_COUNTER, WAVEFORM_FIFO_EMPTY, internal_EVENT_HEADER_DATA_VALID, MAKE_READY) begin
 		case internal_EVENT_BUILDER_STATE is
 			when IDLE =>
 				if (internal_START = '1') then
@@ -123,8 +101,7 @@ begin
 			when SEND_HEADER_PACKET =>
 				if (internal_EVENT_HEADER_DATA_VALID = '0') then
 --				if (internal_PACKET_COUNTER = unsigned(word_NUMBER_WORDS_IN_EVENT_HEADER(internal_PACKET_COUNTER'length-1 downto 0)) + 1) then
-					--internal_EVENT_BUILDER_NEXT_STATE <= SEND_WAVEFORM_PACKETS;
-					internal_EVENT_BUILDER_NEXT_STATE <= DONE;
+					internal_EVENT_BUILDER_NEXT_STATE <= SEND_WAVEFORM_PACKETS;
 				else
 					internal_EVENT_BUILDER_NEXT_STATE <= SEND_HEADER_PACKET;
 				end if;
@@ -176,7 +153,6 @@ begin
 	end process;
 	--Data is valid from the packet header if the word is in a valid range
 	process(internal_PACKET_COUNTER) begin
-		--if (internal_PACKET_COUNTER < unsigned(word_NUMBER_WORDS_IN_EVENT_HEADER(internal_PACKET_COUNTER'length-1 downto 0))+2) then
 		if (internal_PACKET_COUNTER < unsigned(word_NUMBER_WORDS_IN_EVENT_HEADER(internal_PACKET_COUNTER'length-1 downto 0))+2) then
 			internal_EVENT_HEADER_DATA_VALID <= '1';
 		else
@@ -195,17 +171,7 @@ begin
 	                              EVENT_TYPE_WORD                     when (to_integer(internal_PACKET_COUNTER) = 7) else
 											NUMBER_OF_WAVEFORM_PACKETS_WORD     when (to_integer(internal_PACKET_COUNTER) = 8) else
 	                              word_NUMBER_AUX_PACKETS             when (to_integer(internal_PACKET_COUNTER) = 9) else
-											TRIGGER_BIT_WORD_0 						when (to_integer(internal_PACKET_COUNTER) = 10) else
-											TRIGGER_BIT_WORD_1 						when (to_integer(internal_PACKET_COUNTER) = 11) else
-											TRIGGER_BIT_WORD_2 						when (to_integer(internal_PACKET_COUNTER) = 12) else
-											TRIGGER_BIT_WORD_3 						when (to_integer(internal_PACKET_COUNTER) = 13) else
-											TRIGGER_BIT_WORD_4 						when (to_integer(internal_PACKET_COUNTER) = 14) else
-											TRIGGER_BIT_WORD_5 						when (to_integer(internal_PACKET_COUNTER) = 15) else
-											TRIGGER_BIT_WORD_6 						when (to_integer(internal_PACKET_COUNTER) = 16) else
-											TRIGGER_BIT_WORD_7 						when (to_integer(internal_PACKET_COUNTER) = 17) else
-											TRIGGER_BIT_WORD_8 						when (to_integer(internal_PACKET_COUNTER) = 18) else
-											TRIGGER_BIT_WORD_9 						when (to_integer(internal_PACKET_COUNTER) = 19) else
-											std_logic_vector(internal_CHECKSUM) when (to_integer(internal_PACKET_COUNTER) = 20) else
+	                              std_logic_vector(internal_CHECKSUM) when (to_integer(internal_PACKET_COUNTER) = 10) else
 											(others => 'X');
 
 	--Process to handle incrementing the checksum
@@ -218,6 +184,7 @@ begin
 			end if;
 		end if;
 	end process;
+
 
 	--Synchronous edge-to-pulse for the event builder
 	process(READ_CLOCK) begin
@@ -233,37 +200,5 @@ begin
 			internal_START <= '0';
 		end if;
 	end process;
-	
-	--generate trigger bit words
-	TRIGGER_BIT_WORD_0 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(0) & TDC_TRG_4_1(0) & TDC_TRG_3_1(0) & TDC_TRG_2_1(0) & TDC_TRG_1_1(0)
-		& "000" & TDC_TRG_16_0(0) & TDC_TRG_4_0(0) & TDC_TRG_3_0(0) & TDC_TRG_2_0(0) & TDC_TRG_1_0(0);
-	TRIGGER_BIT_WORD_1 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(1) & TDC_TRG_4_1(1) & TDC_TRG_3_1(1) & TDC_TRG_2_1(1) & TDC_TRG_1_1(1)
-		& "000" & TDC_TRG_16_0(1) & TDC_TRG_4_0(1) & TDC_TRG_3_0(1) & TDC_TRG_2_0(1) & TDC_TRG_1_0(1);
-	TRIGGER_BIT_WORD_2 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(2) & TDC_TRG_4_1(2) & TDC_TRG_3_1(2) & TDC_TRG_2_1(2) & TDC_TRG_1_1(2)
-		& "000" & TDC_TRG_16_0(2) & TDC_TRG_4_0(2) & TDC_TRG_3_0(2) & TDC_TRG_2_0(2) & TDC_TRG_1_0(2);
-	TRIGGER_BIT_WORD_3 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(3) & TDC_TRG_4_1(3) & TDC_TRG_3_1(3) & TDC_TRG_2_1(3) & TDC_TRG_1_1(3)
-		& "000" & TDC_TRG_16_0(3) & TDC_TRG_4_0(3) & TDC_TRG_3_0(3) & TDC_TRG_2_0(3) & TDC_TRG_1_0(3);
-	TRIGGER_BIT_WORD_4 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(4) & TDC_TRG_4_1(4) & TDC_TRG_3_1(4) & TDC_TRG_2_1(4) & TDC_TRG_1_1(4)
-		& "000" & TDC_TRG_16_0(4) & TDC_TRG_4_0(4) & TDC_TRG_3_0(4) & TDC_TRG_2_0(4) & TDC_TRG_1_0(4);
-	TRIGGER_BIT_WORD_5 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(5) & TDC_TRG_4_1(5) & TDC_TRG_3_1(5) & TDC_TRG_2_1(5) & TDC_TRG_1_1(5)
-		& "000" & TDC_TRG_16_0(5) & TDC_TRG_4_0(5) & TDC_TRG_3_0(5) & TDC_TRG_2_0(5) & TDC_TRG_1_0(5);	
-	TRIGGER_BIT_WORD_6 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(6) & TDC_TRG_4_1(6) & TDC_TRG_3_1(6) & TDC_TRG_2_1(6) & TDC_TRG_1_1(6)
-		& "000" & TDC_TRG_16_0(6) & TDC_TRG_4_0(6) & TDC_TRG_3_0(6) & TDC_TRG_2_0(6) & TDC_TRG_1_0(6);
-	TRIGGER_BIT_WORD_7 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(7) & TDC_TRG_4_1(7) & TDC_TRG_3_1(7) & TDC_TRG_2_1(7) & TDC_TRG_1_1(7)
-		& "000" & TDC_TRG_16_0(7) & TDC_TRG_4_0(7) & TDC_TRG_3_0(7) & TDC_TRG_2_0(7) & TDC_TRG_1_0(7);	
-	TRIGGER_BIT_WORD_8 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(8) & TDC_TRG_4_1(8) & TDC_TRG_3_1(8) & TDC_TRG_2_1(8) & TDC_TRG_1_1(8)
-		& "000" & TDC_TRG_16_0(8) & TDC_TRG_4_0(8) & TDC_TRG_3_0(8) & TDC_TRG_2_0(8) & TDC_TRG_1_0(8);
-	TRIGGER_BIT_WORD_9 <=  
-		x"ABCD" & "000" & TDC_TRG_16_1(9) & TDC_TRG_4_1(9) & TDC_TRG_3_1(9) & TDC_TRG_2_1(9) & TDC_TRG_1_1(9)
-		& "000" & TDC_TRG_16_0(9) & TDC_TRG_4_0(9) & TDC_TRG_3_0(9) & TDC_TRG_2_0(9) & TDC_TRG_1_0(9);
 end Behavioral;
 

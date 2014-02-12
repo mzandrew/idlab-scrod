@@ -185,6 +185,52 @@ int target6ControlClass::readPacketFromUSBFifo( unsigned int databuf[], int bufS
 	return 1;
 }
 
+//read out SCROD response packet from USB FIFO
+int target6ControlClass::printPacketFromUSBFifo(){
+	int bufSize = usbbuf_size;
+	unsigned int databuf[usbbuf_size];
+	int dataSize = 0;
+	int size = 0;
+	unsigned int inbuf[usbbuf_size];
+	unsigned char *p_inbuf = (unsigned char*) &inbuf[0];
+	int count = 0;	
+
+	//continually read out USB FIFO and copy into data buffer
+	int retval = usb_XferData((IN_ADDR | LIBUSB_ENDPOINT_IN), p_inbuf, usbbuf_size*sizeof(unsigned int), TM_OUT);
+	while (retval > 0 && count < 10000){ //count based time out condition
+		for(int j=0;j<retval/4+4;j++){
+			if( count < bufSize )
+				databuf[count] = inbuf[j];
+			count++;
+		}
+   		retval = usb_XferData((IN_ADDR | LIBUSB_ENDPOINT_IN), p_inbuf, usbbuf_size*sizeof(unsigned int), TM_OUT);
+	}
+	if( count >= bufSize ){
+		std::cout << "USB packet read larger than data buffer, data is missing " << std::endl;
+
+		std::cout << "RESPONSE PACKET " << std::endl;
+		for(int j=0;j<bufSize; j++)
+			std::cout << "\t" << std::hex << databuf[j] << std::endl;
+		std::cout << "END RESPONSE PACKET " << std::endl;
+		std::cout << std::endl;
+
+		std::cout << "USB packet read larger than data buffer, data is missing " << std::endl;
+		return 0;
+	}
+	dataSize = count;
+
+	//Debugging - print out each response packet in it's entirety
+	if(1){
+		std::cout << "RESPONSE PACKET " << std::endl;
+		for(int j=0;j<dataSize; j++)
+			std::cout << "\t" << std::hex << databuf[j] << std::endl;
+		std::cout << "END RESPONSE PACKET " << std::endl;
+		std::cout << std::endl;
+	}
+
+	return 1;
+}
+
 //parse the SCROD read/write register command response packet
 int target6ControlClass::parseResponsePacketFromUSBforReadWrite( int reg, int command_id, unsigned int databuf[], int dataSize, int &regVal ){
 	//initialize return register value to obviously wrong state
@@ -246,6 +292,53 @@ int target6ControlClass::parseResponsePacketFromUSBforReadWrite( int reg, int co
 	
 	//assign register value in response packet to return value
 	regVal = regValResponse;
+
+	return 1;
+}
+
+//parse the SCROD event packet
+int target6ControlClass::parseResponsePacketForEvents(unsigned int databuf[], int dataSize, unsigned int wavedatabuf[], int &wavedataSize){
+	wavedataSize = 0;
+	for(int j=0;j<dataSize; j++){
+		//detect packet header word
+		if( databuf[j] != 0x00BE11E2 )
+			continue;
+		//check that there are at least 2 more lines in buffer
+		if( j >= dataSize - 2 )
+			continue;
+		int packetStartPos = j;
+		unsigned int packetSize = databuf[packetStartPos+1]+2;
+		//check that the packet is entirely contained within buffer
+		//if( j > dataSize - packetSize ) //currently diable
+		//	continue;
+		//check that packet is event type
+		unsigned int packetType = databuf[packetStartPos+2];
+		if( packetType != 0x65766e74 )
+			continue;
+		//HACK - just check if temp sample data words are there
+		unsigned int firstSample = databuf[packetStartPos+5];
+		if( (firstSample & 0xFF000000 ) != 0xBA000000 )
+			continue;
+		//add waveform data packet to the data packet buffer
+		//for now just assume entire remaining buffer is data, bad assumptionm
+		for(int pos = packetStartPos; pos < dataSize ; pos++){
+			wavedatabuf[wavedataSize] = databuf[pos];
+			wavedataSize++;
+		}
+		//increment buffer position past waveform packet
+		//j = j + wavedataSize-4;
+	}
+	return 1;
+}
+
+int target6ControlClass::getEventData(unsigned int eventdatabuf[], int &eventdataSize){
+	//read back the data packet
+	unsigned int databuf[65536];
+	int dataSize = 0;
+	readPacketFromUSBFifo( databuf, 65536, dataSize );
+
+	//parse the data packet and extract waveform packets only
+	parseResponsePacketForEvents(databuf,dataSize,eventdatabuf,eventdataSize);
 
 	return 1;
 }
