@@ -404,6 +404,7 @@ begin
 	internal_INPUT_REGISTERS(N_GPR + 3 ) <= "000000000000000" & internal_WAVEFORM_FIFO_DATA_VALID;
 	--internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
 	--internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
+	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
 
    --ASIC control processes
 	

@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<KLM usb='yes'>
+	<module id='44'>
+		<registers>
+			<register address='5' value='128' />
+			<register address='6' value='320' />
+		</registers>
+		<asics>
+			<asic slot='0'>
+				<register address='1' value='100' />
+			</asic>
+		</asics>
+	</module>
+</KLM>
