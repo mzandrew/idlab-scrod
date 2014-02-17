@@ -12,7 +12,7 @@
     <!-- Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved. -->
   </header>
 
-  <version xil_pn:ise_version="13.2" xil_pn:schema_version="2"/>
+  <version xil_pn:ise_version="13.3" xil_pn:schema_version="2"/>
 
   <files>
     <file xil_pn:name="../src/aurora_interfaces/aurora_interface_0.vhd" xil_pn:type="FILE_VHDL">
@@ -327,6 +327,7 @@
     <property xil_pn:name="Encrypt Key Select spartan6" xil_pn:value="BBRAM" xil_pn:valueState="default"/>
     <property xil_pn:name="Equivalent Register Removal Map" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Equivalent Register Removal XST" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Essential Bits" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Evaluation Development Board" xil_pn:value="" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Exclude Compilation of Deprecated EDK Cores" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Exclude Compilation of EDK Sub-Libraries" xil_pn:value="false" xil_pn:valueState="default"/>
