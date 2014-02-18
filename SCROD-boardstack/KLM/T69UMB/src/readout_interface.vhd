@@ -19,6 +19,8 @@ entity readout_interface is
 	
 		OUTPUT_REGISTERS            : out GPR;
 		INPUT_REGISTERS             : in  RR;
+		------------------WRITE TRIGGERS-------------
+		REGISTER_UPDATED            : out RWT;
 
 		--These connections allow another interface to connect to the
 		--same FIFO as the command interpreter.
@@ -122,6 +124,10 @@ architecture Behavioral of readout_interface is
 	signal internal_SELECT_WAVEFORM_DATA       : std_logic;
 	signal internal_WAVEFORM_FIFO_WRITE_ENABLE : std_logic;
 	signal internal_WAVEFORM_FIFO_DATA_IN      : std_logic_vector(31 downto 0);
+
+	signal i_register_updated : RWT;
+	
+	signal i_wr_en       : std_logic;
 	
 --	--Chipscope debugging crap
 --	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
@@ -324,6 +330,19 @@ begin
 		end loop;
 	end process;
 
+	-- generate write trigger
+	inst_write_edge : entity work.edge_detect
+	Port map(
+		CLOCK        => internal_PB_CLOCK,
+		INPUT_SIGNAL => internal_GPR_WRITE_STROBE,
+		OUT_RISING   => i_wr_en,
+		OUT_FALLING  => open
+	);
+	gen_strobe : for i in 0 to N_GPR-1 generate
+		i_register_updated(i) <= i_wr_en when (i = to_integer(unsigned(internal_GPR_ADDRESS))) else '0';
+	end generate;
+	REGISTER_UPDATED <= i_register_updated when rising_edge(internal_PB_CLOCK);
+	
 	------FIFO layer that connects to USB and/or Aurora------
 	map_daq_fifo_layer : entity work.daq_fifo_layer
 	generic map(

@@ -2,8 +2,8 @@
 <KLM usb='yes'>
 	<module id='44'>
 		<registers>
-			<register address='5' value='128' />
-			<register address='6' value='320' />
+			<register stage='pre' address='5' value='128' />
+			<register stage='pre' address='6' value='320' />
 		</registers>
 		<asics>
 			<asic slot='0'>

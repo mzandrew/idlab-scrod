@@ -24,6 +24,7 @@ package readout_definitions is
 	--Widths of both of these types of registers are set to 16 bits.
 	type GPR is array(N_GPR-1 downto 0) of std_logic_vector(15 downto 0);
 	type RR is array(N_RR-1 downto 0) of std_logic_vector(15 downto 0);
+	type RWT is array (N_GPR-1 downto 0) of std_logic;
 
 	--Constants for packet types and such
 	constant word_PACKET_HEADER        : std_logic_vector(31 downto 0) := x"00BE11E2";
