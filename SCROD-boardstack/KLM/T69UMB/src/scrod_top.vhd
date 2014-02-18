@@ -133,6 +133,17 @@ entity scrod_top is
 		WR_ENA 						 	 : out STD_LOGIC;
 		
 		--Digitization Signals
+
+		-- HV DAC
+		BUSA_SCK_DAC		          : out STD_LOGIC;
+		BUSA_DIN_DAC		          : out STD_LOGIC;
+
+		BUSB_SCK_DAC		          : out STD_LOGIC;
+		BUSB_DIN_DAC		          : out STD_LOGIC;
+		TDC_CS_DAC                  : out STD_LOGIC_VECTOR(9 downto 0);
+		HV_DISABLE                  : out STD_LOGIC;
+		TDC_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
+		TOP_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
 		
 		--Serial Readout Signals
 		SR_CLOCK							 : out STD_LOGIC;
@@ -152,6 +163,7 @@ architecture Behavioral of scrod_top is
 	
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
+	signal i_register_update         : RWT;
 	
 	--Trigger readout
 	signal internal_SOFTWARE_TRIGGER : std_logic;
@@ -268,6 +280,17 @@ architecture Behavioral of scrod_top is
 	signal internal_WAVEFORM_FIFO_RST : std_logic := '0';
 	signal internal_EVTBUILD_MAKE_READY : std_logic := '0';
 	
+	-- MPPC DAC
+	signal i_dac_number : std_logic_vector(3 downto 0);
+	signal i_dac_addr   : std_logic_vector(3 downto 0);
+	signal i_dac_value  : std_logic_vector(7 downto 0);
+	signal i_dac_update : std_logic;
+	signal i_dac_update_extended : std_logic;
+
+	signal i_hv_sck_dac : std_logic;
+	signal i_hv_din_dac : std_logic;
+
+	
 	--Waveform FIFO component
 	COMPONENT waveform_fifo_wr32_rd32
 	PORT (
@@ -282,6 +305,8 @@ architecture Behavioral of scrod_top is
 		empty : OUT STD_LOGIC;
 		valid : OUT STD_LOGIC
 	);
+
+	
 	
 END COMPONENT;
 	
@@ -334,6 +359,7 @@ begin
 
 		OUTPUT_REGISTERS             => internal_OUTPUT_REGISTERS,
 		INPUT_REGISTERS              => internal_INPUT_REGISTERS,
+		REGISTER_UPDATED             => i_register_update,
 	
 		--NOT original implementation - SciFi specific
 		WAVEFORM_FIFO_DATA_IN        => internal_EVTBUILD_DATA_OUT,
@@ -429,6 +455,15 @@ begin
 	internal_CMDREG_READCTRL_trig_delay <= internal_OUTPUT_REGISTERS(53)(11 downto 0);
 	internal_CMDREG_READCTRL_readout_reset <= internal_OUTPUT_REGISTERS(54)(0);
 	
+	-- HV dac signals
+	i_dac_number <= internal_OUTPUT_REGISTERS(60)(15 downto 12);
+	i_dac_addr   <= internal_OUTPUT_REGISTERS(60)(11 downto 8);
+	i_dac_value  <= internal_OUTPUT_REGISTERS(60)(7 downto 0);
+	i_dac_update <= i_register_update(60);
+	HV_DISABLE   <= not internal_OUTPUT_REGISTERS(61)(0);
+	TDC_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(3 downto 0);
+	TOP_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(7 downto 4);
+
 	--------Input register mapping--------------------
 	--Map the first N_GPR output registers to the first set of read registers
 	gen_OUTREG_to_INREG: for i in 0 to N_GPR-1 generate
@@ -639,4 +674,38 @@ begin
 	
 	--Event builder
 	
+	--------------
+	-- MPPC DACs
+	--------------
+	inst_mpps_dacs : entity work.mppc_dacs
+	Port map(
+		------------CLOCK-----------------
+		CLOCK			 => internal_CLOCK_4MHz_BUFG,
+		------------DAC PARAMETERS--------
+		DAC_NUMBER   => i_dac_number,
+		DAC_ADDR     => i_dac_addr,
+		DAC_VALUE    => i_dac_value,
+		WRITE_STROBE => i_dac_update_extended,
+		------------HW INTERFACE----------
+		SCK_DAC		 => i_hv_sck_dac,
+		DIN_DAC		 => i_hv_din_dac,
+		CS_DAC       => TDC_CS_DAC
+	);
+
+	BUSA_SCK_DAC <= i_hv_sck_dac;
+	BUSB_SCK_DAC <= i_hv_sck_dac;
+	BUSA_DIN_DAC <= i_hv_din_dac;
+	BUSB_DIN_DAC <= i_hv_din_dac;
+
+	inst_pulse_extent : entity work.pulse_transition
+	Generic map(
+		CLOCK_RATIO  => 20
+	)
+	Port map(
+		CLOCK_IN     => internal_CLOCK_50MHz_BUFG,
+		D_IN         => i_dac_update,
+		CLOCK_OUT    => internal_CLOCK_4MHz_BUFG,
+		D_OUT        => i_dac_update_extended
+	);
+
 end Behavioral;

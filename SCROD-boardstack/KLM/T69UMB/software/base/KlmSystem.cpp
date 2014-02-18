@@ -153,8 +153,8 @@ void KlmSystem::initialize(std::ostream& output, char* configuration)
 				
 				// get the module with this id
 				
-				// do all the registers
-				output << "\t\tSetting SCROD registers..." << endl;
+				// do all the registers --> pre-asic 
+				output << "\t\tSetting SCROD registers (pre-ASIC stage)..." << endl;
 				tmpNode = kModule->FirstChildElement("registers");
 				if(tmpNode)
 				{
@@ -163,6 +163,15 @@ void KlmSystem::initialize(std::ostream& output, char* configuration)
 					const XMLElement* kRegister = tmpNode->FirstChildElement("register");
 					while(kRegister)
 					{
+						// is it pre-ASIC register
+						tmp = kRegister->Attribute("stage");
+						if(string(tmp) != "pre")
+						{
+							// next register
+							kRegister = kRegister->NextSiblingElement("register");
+							continue;
+						}
+						
 						// get address and value					
 						if(kRegister->QueryUnsignedAttribute ("address", &reg_addr) == XML_NO_ERROR && kRegister->QueryUnsignedAttribute ("value", &reg_value) == XML_NO_ERROR)
 						{
@@ -222,6 +231,42 @@ void KlmSystem::initialize(std::ostream& output, char* configuration)
 
 						// next register
 						kAsic = kAsic->NextSiblingElement("asic");
+					}
+				}
+
+				// do all the registers --> post-asic 
+				output << "\t\tSetting SCROD registers (post-ASIC stage)..." << endl;
+				tmpNode = kModule->FirstChildElement("registers");
+				if(tmpNode)
+				{
+					unsigned int reg_addr, reg_value;
+					//
+					const XMLElement* kRegister = tmpNode->FirstChildElement("register");
+					while(kRegister)
+					{
+						// is it pre-ASIC register
+						tmp = kRegister->Attribute("stage");
+						if(string(tmp) != "post")
+						{
+							// next register
+							kRegister = kRegister->NextSiblingElement("register");
+							continue;
+						}
+						
+						// get address and value					
+						if(kRegister->QueryUnsignedAttribute ("address", &reg_addr) == XML_NO_ERROR && kRegister->QueryUnsignedAttribute ("value", &reg_value) == XML_NO_ERROR)
+						{
+							// set the register
+							output << "\t\t\tSetting register " << reg_addr << " with value " << reg_value << "..." << endl;
+							conf_module->write_register(reg_addr, reg_value, true);
+						}
+						else
+						{
+							output << "\t\t ERROR: Register setting malformatted." << endl;
+						}
+
+						// next register
+						kRegister = kRegister->NextSiblingElement("register");
 					}
 				}
 			}

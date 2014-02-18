@@ -133,26 +133,26 @@ INST map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_la
 #TARGET6 9U Motherboard			DEC-11-2013
 
 ##########################################################################
-#NET "BUSA_SCK_DAC"			LOC= "P1";
-#NET "BUSA_DIN_DAC"			LOC= "R1";
-#NET "BUSB_SCK_DAC"			LOC= "A25";
-#NET "BUSB_DIN_DAC"			LOC= "B26";
+NET "BUSA_SCK_DAC"			LOC= "P1";
+NET "BUSA_DIN_DAC"			LOC= "R1";
+NET "BUSB_SCK_DAC"			LOC= "A25";
+NET "BUSB_DIN_DAC"			LOC= "B26";
 
-#NET "TOP_AMUX_S0"			LOC= "B25";
-#NET "TOP_AMUX_S1"			LOC= "C26";
-#NET "TOP_AMUX_S2"			LOC= "C25";
-#NET "TOP_AMUX_S3"			LOC= "D26";
+NET "TOP_AMUX_S<0>"			LOC= "B25";
+NET "TOP_AMUX_S<1>"			LOC= "C26";
+NET "TOP_AMUX_S<2>"			LOC= "C25";
+NET "TOP_AMUX_S<3>"			LOC= "D26";
 
 #NET "SCL_MON"			LOC= "J15";
 #NET "SDA_MON"			LOC= "H15";
 
 NET "EX_TRIGGER"			LOC= "V20";
-#NET "HV_DISABLE"			LOC= "U19";
+NET "HV_DISABLE"			LOC= "U19";
 
-#NET "TDC_AMUX_S0"			LOC= "R2";
-#NET "TDC_AMUX_S1"			LOC= "T1";
-#NET "TDC_AMUX_S2"			LOC= "U1";
-#NET "TDC_AMUX_S3"			LOC= "U2";
+NET "TDC_AMUX_S<0>"			LOC= "R2";
+NET "TDC_AMUX_S<1>"			LOC= "T1";
+NET "TDC_AMUX_S<2>"			LOC= "U1";
+NET "TDC_AMUX_S<3>"			LOC= "U2";
 
 ########################################################
 
@@ -278,7 +278,7 @@ NET PCLK<0>			LOC= "T3";
 NET SIN<0>			LOC= "U3";
 
 NET "SAMPLESEL_ANY"			LOC= "U5";
-#NET "TDC1_CS_DAC"			LOC= "V4";
+NET "TDC_CS_DAC<0>"			LOC= "V4";
 
 ########################################################
 
@@ -300,7 +300,7 @@ NET PCLK<1>			LOC= "J2";
 NET SIN<1>			LOC= "K1";
 #NET "TDC2_SAMPLESEL_ANY"			LOC= "L1";
 
-#NET "TDC2_CS_DAC"			LOC= "L2";
+NET "TDC_CS_DAC<1>"			LOC= "L2";
 
 #NET "TDC2_TRG_16"			LOC= "AD4";
 #NET "TDC2_TRG_MON"			LOC= "W8";
@@ -308,7 +308,7 @@ NET SIN<1>			LOC= "K1";
 
 ########################################################
 
-#NET "TDC3_CS_DAC"			LOC= "R10";
+NET "TDC_CS_DAC<2>"			LOC= "R10";
 #NET "TDC3_SAMPLESEL_ANY"			LOC= "AF4";
 NET SIN<2>			LOC= "AF5";
 
@@ -354,7 +354,7 @@ NET PCLK<3>			LOC= "AB9";
 NET SIN<3>			LOC= "V10";
 
 #NET "TDC4_SAMPLESEL_ANY"			LOC= "AA11";
-#NET "TDC4_CS_DAC"			LOC= "AA13";
+NET "TDC_CS_DAC<3>"			LOC= "AA13";
 
 #NET "TDC4_TRG_3"			LOC= "H6";
 #NET "TDC4_TRG_4"			LOC= "K6";
@@ -364,7 +364,7 @@ NET SIN<3>			LOC= "V10";
 #NET "TDC4_SR_CLOCK"			LOC= "M6";
 
 ########################################################
-#NET "TDC5_CS_DAC"			LOC= "N6";
+NET "TDC_CS_DAC<4>"			LOC= "N6";
 
 #NET "TDC5_SAMPLESEL_ANY"			LOC= "N8";
 NET SIN<4>			LOC= "P8";
@@ -416,7 +416,7 @@ NET PCLK<5>			LOC= "L23";
 
 NET SIN<5>			LOC= "M23";
 #NET "TDC6_SAMPLESEL_ANY"			LOC= "N23";
-#NET "TDC6_CS_DAC"			LOC= "P24";
+NET "TDC_CS_DAC<5>"			LOC= "P24";
 
 ########################################################
 
@@ -444,11 +444,11 @@ NET PCLK<6>			LOC= "Y26";
 NET SIN<6>			LOC= "AA25";
 #NET "TDC7_SAMPLESEL_ANY"			LOC= "AA26";
 
-#NET "TDC7_CS_DAC"			LOC= "AB26";
+NET "TDC_CS_DAC<6>"			LOC= "AB26";
 
 ########################################################
 
-#NET "TDC8_CS_DAC"			LOC= "AA18";
+NET "TDC_CS_DAC<7>"			LOC= "AA18";
 #NET "TDC8_SAMPLESEL_ANY"			LOC= "W16";
 NET SIN<7>			LOC= "AA19";
 
@@ -488,7 +488,7 @@ NET PCLK<8>			LOC= "AA16";
 
 NET SIN<8>			LOC= "AB17";
 #NET "TDC9_SAMPLESEL_ANY"			LOC= "Y16";
-#NET "TDC9_CS_DAC"			LOC= "AB19";
+NET "TDC_CS_DAC<8>"			LOC= "AB19";
 
 #NET "TDC9_TRG_1"			LOC= "U21";
 #NET "TDC9_TRG_2"			LOC= "T20";
@@ -508,7 +508,7 @@ NET SIN<8>			LOC= "AB17";
 
 ########################################################
 
-#NET "TDC10_CS_DAC"			LOC= "L20";
+NET "TDC_CS_DAC<9>"			LOC= "L20";
 #NET "TDC10_SAMPLESEL_ANY"			LOC= "K19";
 
 NET SIN<9>			LOC= "K21";
