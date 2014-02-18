@@ -317,7 +317,7 @@ int target6ControlClass::parseResponsePacketForEvents(unsigned int databuf[], in
 			continue;
 		//HACK - just check if temp sample data words are there
 		unsigned int firstSample = databuf[packetStartPos+5];
-		if( (firstSample & 0xFF000000 ) != 0xBA000000 )
+		if( (firstSample & 0xF0000000 ) != 0xD0000000 )
 			continue;
 		//add waveform data packet to the data packet buffer
 		//for now just assume entire remaining buffer is data, bad assumptionm

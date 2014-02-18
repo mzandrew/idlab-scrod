@@ -44,6 +44,7 @@ use ieee.std_logic_unsigned.all;
 entity DigitizingLgc is
    port (
         clk		 			     	: in   std_logic;
+		  IDLE_status				: out  std_logic;
         StartDig	 		   	: in   std_logic;  -- capture trigger data
 		  ramp_length		 		: in std_logic_vector (11 downto 0);
         rd_ena           		: out   std_logic; --enable read out??
@@ -69,6 +70,7 @@ signal next_state		: state_type := Idle;
 signal rd_ena_out    : std_logic := '0';
 signal clr_out 		: std_logic := '0';
 signal startramp_out : std_logic := '0';
+signal internal_IDLE_status : std_logic := '0';
 
 signal ramp_start : std_logic_vector (11 downto 0);
 signal RDEN_LENGTH : std_logic_vector(11 downto 0);
@@ -81,6 +83,7 @@ begin
 rd_ena <= rd_ena_out;
 clr <= clr_out;
 startramp <= startramp_out;
+IDLE_status <= internal_IDLE_status;
 
 --hardcoded versions of constants
 --time delay between receipt of "Start" and setting rd_en high
@@ -106,6 +109,7 @@ if (Clk'event and Clk = '1') then
 	 rd_ena_out         <= '0';
 	 startramp_out            	<= '0';
     RAMP_CNT         <= (others=>'0');
+	 internal_IDLE_status <= '1';
     if (StartDig_in = '1') then   -- start (trigger was detected)
       next_state 	<= WaitAddress;
     else
@@ -116,6 +120,7 @@ if (Clk'event and Clk = '1') then
     clr_out              <= '0';
 	 rd_ena_out         <= '0';  -- making guess on how transfer initiated
 	 startramp_out        <= '0';
+	 internal_IDLE_status <= '0';
     if (RAMP_CNT(9 downto 0) < ramp_start) then  -- to delay ramp
       RAMP_CNT <= RAMP_CNT + '1';
       next_state 	<= WaitAddress;
@@ -148,11 +153,12 @@ if (Clk'event and Clk = '1') then
       next_state 	<= CheckDone;
     end if;
 
-  When CheckDone =>  --wait for 32 sample readout to finish
+  When CheckDone => 
 	 clr_out              <= '0';
     rd_ena_out         <= '1';
 	 startramp_out        <= '1';
     RAMP_CNT         <= (others=>'0');
+	 internal_IDLE_status <= '1';
     if(StartDig_in = '0') then  -- done
       next_state 	<= Idle	;
     else

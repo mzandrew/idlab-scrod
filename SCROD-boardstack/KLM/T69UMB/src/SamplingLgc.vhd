@@ -45,32 +45,12 @@ type state_type is
 	Sampling6,	  -- state 0 of normal low processing
 	Sampling6a,	  -- state 0 of normal low processing
 	Sampling7,	  -- state 1 of normal low processing
-	Sampling7a,	  -- state 1 of normal low processing
-	Sampling8,	  -- state 2 of normal low processing
-	Sampling8a,	  -- state 2 of normal low processing
-	Sampling9,	  -- state 3 of normal low processing
-	Sampling9a,	  -- state 3 of normal low processing
-	Sampling10,	  -- state 0 of normal high processing
-	Sampling10a,	  -- state 0 of normal high processing
-	Sampling11,	  -- state 1 of normal high processing
-	Sampling11a,	  -- state 1 of normal high processing
-	Sampling12,	  -- state 2 of normal high processing
-	Sampling12a,	  -- state 2 of normal high processing
-	Sampling13,	  -- state 3 of normal high processing
-	Sampling13a,	  -- state 3 of normal high processing
-	Sampling14,	  -- state 3 of normal high processing
-	Sampling14a,	  -- state 3 of normal high processing
-	Sampling15,	  -- state 3 of normal high processing
-	Sampling15a,	  -- state 3 of normal high processing
-	Sampling16,	  -- state 3 of normal high processing
-	Sampling16a,	  -- state 3 of normal high processing
-	Sampling17,	  -- state 3 of normal high processing
-	Sampling17a,	  -- state 3 of normal high processing
-	Sampling18
+	Sampling7a
 	);
 
 	signal next_state		: state_type := Start;
 	signal MAIN_CNT		: UNSIGNED(8 downto 0) := "000000000";
+	signal internal_MAX_MAIN_CNT : UNSIGNED(8 downto 0) := "000010000";
 	
 	--output connecting signals
 	signal sspin     : std_logic := '0'; --SCA control signals
@@ -244,11 +224,11 @@ if (Clk'event and Clk = '1') then
 		--next_state 	<= Sampling6;
 	
   When Sampling4a =>
-    MAIN_CNT <= MAIN_CNT ;
+	 MAIN_CNT <= MAIN_CNT ;
     sspin             <= '0';
     sstin             <= '1';
     wr_advclk         <= '1';
-    wr_addrclr        <= '0';
+	 wr_addrclr        <= '0';
     wr_strb           <= '1';
     wr_ena            <= '1';
       next_state 	<= Sampling5;	
@@ -274,7 +254,14 @@ if (Clk'event and Clk = '1') then
       next_state 	<= Sampling6;		
   
   --start of regular sampling sequence	
-  When Sampling6 => 
+  When Sampling6 =>
+    --if( MAIN_CNT > internal_MAX_MAIN_CNT ) then
+	 --	MAIN_CNT <= (others=>'0');
+	 --	wr_addrclr        <= '1';
+	 --else
+	 --	MAIN_CNT <= MAIN_CNT ;
+	 --  wr_addrclr        <= '0';
+	 --end if;  
     MAIN_CNT <= MAIN_CNT;
     sspin             <= '0';
     sstin             <= '0';
@@ -290,7 +277,7 @@ if (Clk'event and Clk = '1') then
     sspin             <= '0';
     sstin             <= '0';
     wr_advclk         <= '0';
-    wr_addrclr        <= '0';
+    wr_addrclr        <= wr_addrclr;
     wr_strb           <= '0';
     wr_ena            <= '1';
       next_state 	<= Sampling7;
@@ -305,236 +292,6 @@ if (Clk'event and Clk = '1') then
     wr_ena            <= '1';
       --next_state 	<= Sampling7a;
 		next_state 	<= Start;
-		
-  When Sampling7a =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-      next_state 	<= Sampling8;
-		--next_state 	<= Idle;
-
-  When Sampling8 =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling8a;
-		--next_state 	<= Sampling10;
-		
-  When Sampling8a =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling9;
-
-  When Sampling9 =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling9a;
-
-  When Sampling9a =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling10;
-
-  When Sampling10 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-      next_state 	<= Sampling10a;
-		--next_state 	<= Sampling12;
-		
-  When Sampling10a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-      next_state 	<= Sampling11;
-		
-  When Sampling11 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-      next_state 	<= Sampling11a;
-		
-  When Sampling11a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-      next_state 	<= Sampling12;
-
-  When Sampling12 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling12a;
-		--next_state 	<= Sampling14;
-		
-  When Sampling12a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling13;
-
-  When Sampling13 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling13a;
-		
-  When Sampling13a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling14;		
-		
-  When Sampling14 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling14a;
-		--next_state 	<= Sampling16;
-		
-  When Sampling14a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling15;
-
-  When Sampling15 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling15a;
-		
-  When Sampling15a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling16;
-
-  When Sampling16 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling16a;
-		--next_state 	<= Sampling18;
-		
-  When Sampling16a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling17;
-
-  When Sampling17 =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling17a;
-		
-  When Sampling17a =>   -- sstin high for 32 ns,sspin_i0 stay for 32ns high
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-      next_state 	<= Sampling18;
-
-  When Sampling18 =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '1';
-	 wr_strb           <= '0';
-    wr_ena            <= '0';
-    if (stop_in = '0') then   --singleshot mode - go back to IDLE after readout done
-      next_state 	<= Idle;
-    else
-      next_state 	<= Sampling18;
-    end if;
 		 
   When Others =>
   MAIN_CNT <= (Others => '0');
