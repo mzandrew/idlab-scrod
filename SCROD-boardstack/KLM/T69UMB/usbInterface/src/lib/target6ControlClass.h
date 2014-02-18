@@ -19,7 +19,10 @@ public:
   int registerWrite(unsigned int board_id, unsigned int reg, unsigned int regVal, int &regValReadback);
   int registerWriteReadback(unsigned int board_id, unsigned int reg, unsigned int regVal, int &regValReadback);
   int readPacketFromUSBFifo( unsigned int databuf[], int bufSize, int &dataSize );
+  int printPacketFromUSBFifo();
   int parseResponsePacketFromUSBforReadWrite( int reg, int command_id, unsigned int databuf[], int dataSize, int &regVal );
+  int parseResponsePacketForEvents(unsigned int databuf[], int dataSize, unsigned int wavedatabuf[], int &wavedataSize);
+  int getEventData(unsigned int eventdatabuf[], int &eventdataSize);
 };
 
 #endif
