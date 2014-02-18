@@ -41,6 +41,7 @@ entity ReadoutControl is
     Port ( clk : in  STD_LOGIC;
            trigger : in  STD_LOGIC;
 			  trig_delay : in  STD_LOGIC_VECTOR(11 downto 0);
+			  dig_offset : in  STD_LOGIC_VECTOR(8 downto 0);
 			  SMP_MAIN_CNT : in STD_LOGIC_VECTOR(8 downto 0);
 			  SMP_IDLE_status : in  STD_LOGIC;
 			  DIG_IDLE_status : in  STD_LOGIC;
@@ -51,6 +52,8 @@ entity ReadoutControl is
 			  busy_status : out STD_LOGIC;
            smp_stop : out  STD_LOGIC;
            dig_start : out  STD_LOGIC;
+			  DIG_RD_ROWSEL_S : out STD_LOGIC_VECTOR(2 downto 0);
+			  DIG_RD_COLSEL_S : out STD_LOGIC_VECTOR(5 downto 0);
            srout_start : out  STD_LOGIC;
 			  EVTBUILD_start : out  STD_LOGIC;
 			  EVTBUILD_MAKE_READY : out  STD_LOGIC
@@ -84,7 +87,7 @@ signal interal_start_readout : std_logic := '0';
 
 signal INTERNAL_COUNTER : UNSIGNED(15 downto 0) :=  x"0000";
 
-signal internal_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := '0' & x"00";
+signal internal_SMP_MAIN_CNT : UNSIGNED(8 downto 0) := '0' & x"00";
 signal internal_SMP_IDLE_status : std_logic := '0';
 signal internal_DIG_IDLE_status : std_logic := '0';
 signal internal_SROUT_IDLE_status : std_logic := '0';
@@ -107,6 +110,8 @@ dig_start <= internal_dig_start;
 srout_start <= internal_srout_start;
 EVTBUILD_start <= internal_EVTBUILD_start;
 EVTBUILD_MAKE_READY <= internal_EVTBUILD_MAKE_READY;
+DIG_RD_ROWSEL_S(2 downto 0) <= std_logic_vector(internal_SMP_MAIN_CNT(8 downto 6));
+DIG_RD_COLSEL_S(5 downto 0) <= std_logic_vector(internal_SMP_MAIN_CNT(5 downto 0));
 
 --latch trigger to local clock domain
 process(clk)
@@ -149,8 +154,9 @@ if (clk'event and clk = '1') then
 	if( internal_trigger_reg = "01" AND internal_SMP_IDLE_status = '0' AND internal_DIG_IDLE_status = '1' 
 		AND internal_SROUT_IDLE_status = '1' AND internal_fifo_empty = '1' AND internal_EVTBUILD_DONE_SENDING_EVENT = '0' ) then 
 		next_trig_state <= WAIT_TRIG_DELAY;
-		--latch the SMP_MAIN_CNT at time of trigger
-		internal_SMP_MAIN_CNT <= SMP_MAIN_CNT;
+		--latch the SMP_MAIN_CNT at time of trigger, include a configurable digitzation window offset
+		internal_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT) + 10 - UNSIGNED(dig_offset);
+		--internal_SMP_MAIN_CNT <= SMP_MAIN_CNT;
 	else
 		next_trig_state <= Idle;
 	end if;
@@ -205,17 +211,8 @@ if (clk'event and clk = '1') then
 	if( internal_DIG_IDLE_status = '0' ) then 
 		next_trig_state <= WAIT_DIGITIZATION_IDLE_HIGH;
 	else
-		--next_trig_state <= START_SROUT;
-		next_trig_state <= WAIT_READOUT_RESET;
-	end if;
-	
-	--TEMPORARY: wait here while software manages serial readout, then resets 
-	When WAIT_READOUT_RESET =>
-	if( internal_READOUT_RESET = '0' ) then 
-		next_trig_state <= WAIT_READOUT_RESET;
-	else
-		--next_trig_state <= START_SROUT;
-		next_trig_state <= Idle;
+		next_trig_state <= START_SROUT;
+		--next_trig_state <= WAIT_READOUT_RESET;
 	end if;
 	
 	--LOOP OVER ASIC SERIAL READOUT GOES HERE
@@ -250,7 +247,7 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '1';
 		internal_EVTBUILD_start <= '1';
 		internal_EVTBUILD_MAKE_READY <= '0';
-			next_trig_state <= START_SROUT;
+			next_trig_state <= WAIT_EVTBUILD_DONE;
 			
 	--wait for event builder to finish
 	When WAIT_EVTBUILD_DONE =>
@@ -267,7 +264,20 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '1';
 		internal_EVTBUILD_start <= '1';
 		internal_EVTBUILD_MAKE_READY <= '1';
-			next_trig_state <= Idle;
+			next_trig_state <= WAIT_READOUT_RESET;
+			
+	--wait for readout to be reset via command interpreter (prevents triggers while USB read out)
+	When WAIT_READOUT_RESET =>
+		internal_smp_stop <= '1'; --hold sampling, in principle allow testing different write addresses
+		internal_dig_start <= '0';
+		internal_srout_start <= '0';
+		internal_EVTBUILD_start <= '0';
+		internal_EVTBUILD_MAKE_READY <= '0';
+	if( internal_READOUT_RESET = '0' ) then 
+		next_trig_state <= WAIT_READOUT_RESET;
+	else
+		next_trig_state <= Idle;
+	end if;
 	
 	When Others =>
 		INTERNAL_COUNTER <= (Others => '0');

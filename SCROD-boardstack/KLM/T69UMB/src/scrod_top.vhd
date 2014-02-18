@@ -219,9 +219,12 @@ architecture Behavioral of scrod_top is
 	--READOUT CONTROL
 	signal internal_READCTRL_trigger : std_logic := '0';
 	signal internal_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
+	signal internal_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_READCTRL_readout_reset : std_logic := '0';
 	signal internal_READCTRL_smp_stop : std_logic := '0';
 	signal internal_READCTRL_dig_start  : std_logic := '0';
+	signal internal_READCTRL_DIG_RD_ROWSEL : std_logic_vector(2 downto 0) := (others => '0');
+	signal internal_READCTRL_DIG_RD_COLSEL : std_logic_vector(5 downto 0) := (others => '0');
 	signal internal_READCTRL_srout_start  : std_logic := '0';
 	signal internal_READCTRL_evtbuild_start  : std_logic := '0';
 	signal internal_READCTRL_evtbuild_make_ready  : std_logic := '0';
@@ -231,6 +234,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_HARDWARE_TRIGGER_VETO : std_logic := '0';
 	signal internal_CMDREG_SMP_STOP : std_logic := '0';
 	signal internal_CMDREG_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
+	signal internal_CMDREG_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_readout_reset : std_logic := '0';
 	signal internal_CMDREG_DIG_STARTDIG : std_logic := '0';
 	signal internal_CMDREG_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
@@ -420,8 +424,8 @@ begin
 	--------------------------------------------------
 
 	--LEDS
-	LEDS <= internal_OUTPUT_REGISTERS(0);
-	--LEDS <= "0000000" & internal_SMP_MAIN_CNT;
+	--LEDS <= internal_OUTPUT_REGISTERS(0);
+	LEDS <= internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status & internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS & "000" & internal_SMP_MAIN_CNT;
 	
 	--DAC CONTROL SIGNALS
 	internal_DAC_CONTROL_UPDATE <= internal_OUTPUT_REGISTERS(1)(0);
@@ -453,7 +457,8 @@ begin
 	internal_CMDREG_SOFTWARE_TRIGGER_VETO <= internal_OUTPUT_REGISTERS(51)(0);
 	internal_CMDREG_HARDWARE_TRIGGER_VETO <= internal_OUTPUT_REGISTERS(52)(0);
 	internal_CMDREG_READCTRL_trig_delay <= internal_OUTPUT_REGISTERS(53)(11 downto 0);
-	internal_CMDREG_READCTRL_readout_reset <= internal_OUTPUT_REGISTERS(54)(0);
+	internal_CMDREG_READCTRL_dig_offset <= internal_OUTPUT_REGISTERS(54)(8 downto 0);
+	internal_CMDREG_READCTRL_readout_reset <= internal_OUTPUT_REGISTERS(55)(0);
 	
 	-- HV dac signals
 	i_dac_number <= internal_OUTPUT_REGISTERS(60)(15 downto 12);
@@ -480,6 +485,7 @@ begin
 	internal_INPUT_REGISTERS(N_GPR + 1 ) <= internal_WAVEFORM_FIFO_DATA_OUT(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 2 ) <= "000000000000000" & internal_WAVEFORM_FIFO_EMPTY;
 	internal_INPUT_REGISTERS(N_GPR + 3 ) <= "000000000000000" & internal_WAVEFORM_FIFO_DATA_VALID;
+	internal_INPUT_REGISTERS(N_GPR + 4 ) <= "0000000" &internal_READCTRL_DIG_RD_ROWSEL & internal_READCTRL_DIG_RD_COLSEL;
 	internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
 	internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
@@ -513,6 +519,7 @@ begin
 		clk => internal_CLOCK_50MHz_BUFG,
 		trigger => internal_READCTRL_trigger,
 		trig_delay => internal_READCTRL_trig_delay,
+		dig_offset => internal_READCTRL_dig_offset,
 		SMP_MAIN_CNT => internal_SMP_MAIN_CNT,
 		SMP_IDLE_status => internal_SMP_IDLE_STATUS,
 		DIG_IDLE_status => internal_DIG_IDLE_status,
@@ -522,6 +529,8 @@ begin
 		READOUT_RESET => internal_READCTRL_readout_reset,
 		smp_stop => internal_READCTRL_smp_stop,
 		dig_start => internal_READCTRL_dig_start,
+		DIG_RD_ROWSEL_S => internal_READCTRL_DIG_RD_ROWSEL,
+		DIG_RD_COLSEL_S => internal_READCTRL_DIG_RD_COLSEL,
 		srout_start => internal_READCTRL_srout_start,
 		EVTBUILD_start => internal_READCTRL_evtbuild_start,
 		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready
@@ -531,7 +540,9 @@ begin
 	internal_SOFTWARE_TRIGGER <= internal_CMDREG_SOFTWARE_trigger AND NOT internal_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER <= internal_TRIGGER_ALL AND NOT internal_HARDWARE_TRIGGER_VETO;
 	internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER;
+	--internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER;
 	internal_READCTRL_trig_delay <= internal_CMDREG_READCTRL_trig_delay;
+	internal_READCTRL_dig_offset <= internal_CMDREG_READCTRL_dig_offset;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
@@ -549,8 +560,8 @@ begin
 		wr_strb_out => internal_WR_STRB,
 		wr_ena_out => internal_WR_ENA
 	);
-	--internal_SMP_STOP <= internal_READCTRL_smp_stop OR internal_CMDREG_SMP_STOP;
-	internal_SMP_STOP <= internal_CMDREG_SMP_STOP;
+	internal_SMP_STOP <= internal_READCTRL_smp_stop OR internal_CMDREG_SMP_STOP;
+	--internal_SMP_STOP <= internal_CMDREG_SMP_STOP;
 	SSPIN <= internal_SSPIN;
 	SSTIN <= internal_SSTIN;
 	WR_ADVCLK <= internal_WR_ADVCLK;
@@ -569,17 +580,21 @@ begin
 		clr => internal_DIG_CLR,
 		startramp => internal_DIG_RAMP
 	);
-	--internal_DIG_STARTDIG <= internal_READCTRL_dig_start OR internal_CMDREG_DIG_STARTDIG;
-	internal_DIG_STARTDIG <= internal_CMDREG_DIG_STARTDIG;
+	internal_DIG_STARTDIG <= internal_READCTRL_dig_start OR internal_CMDREG_DIG_STARTDIG;
+	--internal_DIG_STARTDIG <= internal_CMDREG_DIG_STARTDIG;
 	BUSA_RD_ENA	<= internal_DIG_RD_ENA;
-	BUSA_RD_ROWSEL_S <= internal_DIG_RD_ROWSEL_S;
-	BUSA_RD_COLSEL_S <= internal_DIG_RD_COLSEL_S;
+	--BUSA_RD_ROWSEL_S <= internal_DIG_RD_ROWSEL_S;
+	--BUSA_RD_COLSEL_S <= internal_DIG_RD_COLSEL_S;
+	BUSA_RD_ROWSEL_S <=internal_READCTRL_DIG_RD_ROWSEL;
+	BUSA_RD_COLSEL_S <=internal_READCTRL_DIG_RD_COLSEL;
 	BUSA_CLR <= internal_DIG_CLR;
 	BUSA_START <= internal_DIG_RAMP;
 	BUSA_RAMP <= internal_DIG_RAMP;
 	BUSB_RD_ENA	<= internal_DIG_RD_ENA;
-	BUSB_RD_ROWSEL_S <= internal_CMDREG_DIG_RD_ROWSEL_S;
-	BUSB_RD_COLSEL_S <= internal_CMDREG_DIG_RD_COLSEL_S;
+	--BUSB_RD_ROWSEL_S <= internal_CMDREG_DIG_RD_ROWSEL_S;
+	--BUSB_RD_COLSEL_S <= internal_CMDREG_DIG_RD_COLSEL_S;
+	BUSB_RD_ROWSEL_S <=internal_READCTRL_DIG_RD_ROWSEL;
+	BUSB_RD_COLSEL_S <=internal_READCTRL_DIG_RD_COLSEL;
 	BUSB_CLR <= internal_DIG_CLR;
 	BUSB_START <= internal_DIG_RAMP;
 	BUSB_RAMP <= internal_DIG_RAMP;
@@ -601,8 +616,8 @@ begin
 		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
 		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
 	);
-	--internal_SROUT_START <= internal_READCTRL_srout_start OR internal_CMDREG_SROUT_START;
-	internal_SROUT_START <= internal_CMDREG_SROUT_START;
+	internal_SROUT_START <= internal_READCTRL_srout_start OR internal_CMDREG_SROUT_START;
+	--internal_SROUT_START <= internal_CMDREG_SROUT_START;
 	BUSA_SAMPLESEL_S <= internal_SROUT_SAMPLESEL;
 	BUSA_SR_CLEAR <= internal_SROUT_SR_CLR;
 	BUSA_SR_SEL	<= internal_SROUT_SR_SEL;
@@ -630,10 +645,10 @@ begin
 	--Event builder provides ordered waveform data to readout_interfaces module
 	map_event_builder: entity work.event_builder PORT MAP(
 		READ_CLOCK => internal_EVTBUILD_READ_CLOCK,
-		SCROD_REV_AND_ID_WORD => x"00000000",
+		SCROD_REV_AND_ID_WORD => x"00000" & "000" &internal_READCTRL_DIG_RD_ROWSEL & internal_READCTRL_DIG_RD_COLSEL,
 		EVENT_NUMBER_WORD => x"00000001",
 		EVENT_TYPE_WORD => x"00000001",
-		EVENT_FLAG_WORD => x"00000000",
+		EVENT_FLAG_WORD => x"00000001",
 		NUMBER_OF_WAVEFORM_PACKETS_WORD => x"00000001",
 		START_BUILDING_EVENT => internal_EVTBUILD_START_BUILDING_EVENT,
 		DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
@@ -648,10 +663,10 @@ begin
 		FIFO_EMPTY => internal_EVTBUILD_EMPTY,
 		FIFO_READ_ENABLE => internal_EVTBUILD_READ_ENABLE
 	);
-	--internal_EVTBUILD_START_BUILDING_EVENT <= internal_READCTRL_evtbuild_start OR internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
-	--internal_EVTBUILD_MAKE_READY <= internal_READCTRL_evtbuild_make_ready OR internal_CMDREG_EVTBUILD_MAKE_READY;
-	internal_EVTBUILD_START_BUILDING_EVENT <= internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
-	internal_EVTBUILD_MAKE_READY <= internal_CMDREG_EVTBUILD_MAKE_READY;
+	internal_EVTBUILD_START_BUILDING_EVENT <= internal_READCTRL_evtbuild_start OR internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
+	internal_EVTBUILD_MAKE_READY <= internal_READCTRL_evtbuild_make_ready OR internal_CMDREG_EVTBUILD_MAKE_READY;
+	--internal_EVTBUILD_START_BUILDING_EVENT <= internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
+	--internal_EVTBUILD_MAKE_READY <= internal_CMDREG_EVTBUILD_MAKE_READY;
 	
    --counter process
    process (internal_CLOCK_50MHz_BUFG) begin
