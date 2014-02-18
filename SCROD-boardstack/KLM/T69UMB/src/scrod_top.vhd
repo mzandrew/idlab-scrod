@@ -83,6 +83,9 @@ entity scrod_top is
 		USB_WAKEUP                  : in  STD_LOGIC;
 		USB_CLKOUT		             : in  STD_LOGIC;
 		
+		--MB Specific Signals
+		EX_TRIGGER						 : out STD_LOGIC;
+		
 		--Global Bus Signals
 		
 		--ASIC related
@@ -133,9 +136,9 @@ entity scrod_top is
 		
 		--Serial Readout Signals
 		SR_CLOCK							 : out STD_LOGIC;
-		SAMPLESEL_ANY 					 : out STD_LOGIC
-		--TRG_16							 : in STD_LOGIC;
-		--TRG								 : in STD_LOGIC_VECTOR(3 downto 0)
+		SAMPLESEL_ANY 					 : out STD_LOGIC;
+		TDC1_TRG_16						 : in STD_LOGIC;
+		TDC1_TRG							 : in STD_LOGIC_VECTOR(3 downto 0)
 	);
 end scrod_top;
 
@@ -155,9 +158,11 @@ architecture Behavioral of scrod_top is
 	signal internal_HARDWARE_TRIGGER : std_logic;
 	signal internal_TRIGGER : std_logic;
 	signal internal_TRIGGER_OUT : std_logic;
+	
 	--Vetoes for the triggers
 	signal internal_SOFTWARE_TRIGGER_VETO : std_logic;
 	signal internal_HARDWARE_TRIGGER_VETO : std_logic;
+	
 	--SCROD ID and REVISION Number
 	signal internal_SCROD_REV_AND_ID_WORD        : STD_LOGIC_VECTOR(31 downto 0);
    signal internal_EVENT_NUMBER_TO_SET          : STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); --This is what event number will be set to when set event number is enabled
@@ -199,8 +204,35 @@ architecture Behavioral of scrod_top is
 	signal internal_DAC_CONTROL_LOAD_PERIOD : std_logic_vector(15 downto 0)  := (others => '0');
 	signal internal_DAC_CONTROL_LATCH_PERIOD : std_logic_vector(15 downto 0)  := (others => '0');
 	
+	--READOUT CONTROL
+	signal internal_READCTRL_trigger : std_logic := '0';
+	signal internal_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
+	signal internal_READCTRL_readout_reset : std_logic := '0';
+	signal internal_READCTRL_smp_stop : std_logic := '0';
+	signal internal_READCTRL_dig_start  : std_logic := '0';
+	signal internal_READCTRL_srout_start  : std_logic := '0';
+	signal internal_READCTRL_evtbuild_start  : std_logic := '0';
+	signal internal_READCTRL_evtbuild_make_ready  : std_logic := '0';
+	
+	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
+	signal internal_CMDREG_SOFTWARE_TRIGGER_VETO : std_logic := '0';
+	signal internal_CMDREG_HARDWARE_TRIGGER_VETO : std_logic := '0';
+	signal internal_CMDREG_SMP_STOP : std_logic := '0';
+	signal internal_CMDREG_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
+	signal internal_CMDREG_READCTRL_readout_reset : std_logic := '0';
+	signal internal_CMDREG_DIG_STARTDIG : std_logic := '0';
+	signal internal_CMDREG_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+	signal internal_CMDREG_DIG_RD_COLSEL_S : STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
+	signal internal_CMDREG_SROUT_START : std_logic := '0';
+	signal internal_CMDREG_WAVEFORM_FIFO_RST : std_logic := '0';
+	signal internal_CMDREG_EVTBUILD_START_BUILDING_EVENT : std_logic := '0';
+	signal internal_CMDREG_EVTBUILD_MAKE_READY : std_logic := '0';
+	signal internal_CMDREG_EVTBUILD_DONE_SENDING_EVENT : std_logic := '0';
+	signal internal_CMDREG_EVTBUILD_PACKET_BUILDER_BUSY : std_logic := '0';
+
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_STOP : std_logic := '0';
+	signal internal_SMP_IDLE_status : std_logic := '0';
 	signal internal_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_SSTIN : std_logic := '0';
 	signal internal_SSPIN : std_logic := '0';
@@ -211,6 +243,7 @@ architecture Behavioral of scrod_top is
 	
 	--ASIC DIGITIZATION CONTROL
 	signal internal_DIG_STARTDIG : std_logic := '0';
+	signal internal_DIG_IDLE_status : std_logic := '0';
 	signal internal_DIG_RD_ENA : std_logic := '0';
 	signal internal_DIG_CLR : std_logic := '0';
 	signal internal_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
@@ -220,6 +253,7 @@ architecture Behavioral of scrod_top is
 	
 	--ASIC SERIAL READOUT
 	signal internal_SROUT_START : std_logic := '0';
+	signal internal_SROUT_IDLE_status : std_logic := '0';
 	signal internal_SROUT_SAMP_DONE : std_logic := '0';
 	signal internal_SROUT_SR_CLR : std_logic := '0';
 	signal internal_SROUT_SR_CLK : std_logic := '0';
@@ -254,7 +288,9 @@ END COMPONENT;
 begin
 
 	--Overall Signal Routing
-   --internal_TRIGGER_ALL <= TRG_16 OR TRG(0) OR TRG(1) OR TRG(2) OR TRG(3);
+   EX_TRIGGER <= internal_TRIGGER_ALL;
+
+   internal_TRIGGER_ALL <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
 	
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
@@ -358,8 +394,8 @@ begin
 	--------------------------------------------------
 
 	--LEDS
-	--LEDS <= internal_OUTPUT_REGISTERS(0);
-	LEDS <= "0000000" & internal_SMP_MAIN_CNT;
+	LEDS <= internal_OUTPUT_REGISTERS(0);
+	--LEDS <= "0000000" & internal_SMP_MAIN_CNT;
 	
 	--DAC CONTROL SIGNALS
 	internal_DAC_CONTROL_UPDATE <= internal_OUTPUT_REGISTERS(1)(0);
@@ -370,21 +406,28 @@ begin
 	internal_DAC_CONTROL_LATCH_PERIOD <= internal_OUTPUT_REGISTERS(6)(15 downto 0);
 	
 	--Sampling Signals
-	internal_SMP_STOP <= internal_OUTPUT_REGISTERS(10)(0);
+	internal_CMDREG_SMP_STOP <= internal_OUTPUT_REGISTERS(10)(0);
 
 	--Digitization Signals
-   internal_DIG_STARTDIG <= internal_OUTPUT_REGISTERS(20)(0);
-   internal_DIG_RD_ROWSEL_S <= internal_OUTPUT_REGISTERS(21)(8 downto 6);
-	internal_DIG_RD_COLSEL_S <= internal_OUTPUT_REGISTERS(21)(5 downto 0);
+   internal_CMDREG_DIG_STARTDIG <= internal_OUTPUT_REGISTERS(20)(0);
+   internal_CMDREG_DIG_RD_ROWSEL_S <= internal_OUTPUT_REGISTERS(21)(8 downto 6);
+	internal_CMDREG_DIG_RD_COLSEL_S <= internal_OUTPUT_REGISTERS(21)(5 downto 0);
 	
 	--Serial Readout Signals
-	internal_SROUT_START <=  internal_OUTPUT_REGISTERS(30)(0);
+	internal_CMDREG_SROUT_START <=  internal_OUTPUT_REGISTERS(30)(0);
 	
-	--TEMP READOUT FLOW TEST
-	internal_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
-	internal_EVTBUILD_START_BUILDING_EVENT <= internal_OUTPUT_REGISTERS(44)(0);
-	internal_EVTBUILD_MAKE_READY <= internal_OUTPUT_REGISTERS(45)(0);
-	internal_EVTBUILD_PACKET_BUILDER_BUSY <= internal_OUTPUT_REGISTERS(46)(0);
+	--Event builder signals
+	internal_CMDREG_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
+	internal_CMDREG_EVTBUILD_START_BUILDING_EVENT <= internal_OUTPUT_REGISTERS(44)(0);
+	internal_CMDREG_EVTBUILD_MAKE_READY <= internal_OUTPUT_REGISTERS(45)(0);
+	internal_CMDREG_EVTBUILD_PACKET_BUILDER_BUSY <= internal_OUTPUT_REGISTERS(46)(0);
+	
+	--Readout control signals
+	internal_CMDREG_SOFTWARE_trigger <= internal_OUTPUT_REGISTERS(50)(0);
+	internal_CMDREG_SOFTWARE_TRIGGER_VETO <= internal_OUTPUT_REGISTERS(51)(0);
+	internal_CMDREG_HARDWARE_TRIGGER_VETO <= internal_OUTPUT_REGISTERS(52)(0);
+	internal_CMDREG_READCTRL_trig_delay <= internal_OUTPUT_REGISTERS(53)(11 downto 0);
+	internal_CMDREG_READCTRL_readout_reset <= internal_OUTPUT_REGISTERS(54)(0);
 	
 	--------Input register mapping--------------------
 	--Map the first N_GPR output registers to the first set of read registers
@@ -402,8 +445,8 @@ begin
 	internal_INPUT_REGISTERS(N_GPR + 1 ) <= internal_WAVEFORM_FIFO_DATA_OUT(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 2 ) <= "000000000000000" & internal_WAVEFORM_FIFO_EMPTY;
 	internal_INPUT_REGISTERS(N_GPR + 3 ) <= "000000000000000" & internal_WAVEFORM_FIFO_DATA_VALID;
-	--internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
-	--internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
+	internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
+	internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
 
    --ASIC control processes
@@ -430,12 +473,39 @@ begin
 		PCLK(i) <= internal_DAC_CONTROL_PCLK and internal_DAC_CONTROL_TDCNUM(i);
 	end generate;
 	
+	--Control the sampling, digitization and serial resout processes following trigger
+	u_ReadoutControl: entity work.ReadoutControl PORT MAP(
+		clk => internal_CLOCK_50MHz_BUFG,
+		trigger => internal_READCTRL_trigger,
+		trig_delay => internal_READCTRL_trig_delay,
+		SMP_MAIN_CNT => internal_SMP_MAIN_CNT,
+		SMP_IDLE_status => internal_SMP_IDLE_STATUS,
+		DIG_IDLE_status => internal_DIG_IDLE_status,
+		SROUT_IDLE_status => internal_SROUT_IDLE_status,
+		fifo_empty => internal_WAVEFORM_FIFO_EMPTY,
+		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
+		READOUT_RESET => internal_READCTRL_readout_reset,
+		smp_stop => internal_READCTRL_smp_stop,
+		dig_start => internal_READCTRL_dig_start,
+		srout_start => internal_READCTRL_srout_start,
+		EVTBUILD_start => internal_READCTRL_evtbuild_start,
+		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready
+	);
+	internal_SOFTWARE_TRIGGER_VETO <= internal_CMDREG_SOFTWARE_TRIGGER_VETO;
+	internal_HARDWARE_TRIGGER_VETO <= internal_CMDREG_HARDWARE_TRIGGER_VETO;
+	internal_SOFTWARE_TRIGGER <= internal_CMDREG_SOFTWARE_trigger AND NOT internal_SOFTWARE_TRIGGER_VETO;
+	internal_HARDWARE_TRIGGER <= internal_TRIGGER_ALL AND NOT internal_HARDWARE_TRIGGER_VETO;
+	internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER;
+	internal_READCTRL_trig_delay <= internal_CMDREG_READCTRL_trig_delay;
+	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
+	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
 		--clk => internal_CLOCK_150MHz_BUFG,
 		clk => internal_CLOCK_50MHz_BUFG,
 		stop => internal_SMP_STOP,
+		IDLE_status => internal_SMP_IDLE_STATUS,
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
 		sspin_out => internal_SSPIN,
 		sstin_out => internal_SSTIN,
@@ -444,6 +514,8 @@ begin
 		wr_strb_out => internal_WR_STRB,
 		wr_ena_out => internal_WR_ENA
 	);
+	--internal_SMP_STOP <= internal_READCTRL_smp_stop OR internal_CMDREG_SMP_STOP;
+	internal_SMP_STOP <= internal_CMDREG_SMP_STOP;
 	SSPIN <= internal_SSPIN;
 	SSTIN <= internal_SSTIN;
 	WR_ADVCLK <= internal_WR_ADVCLK;
@@ -455,12 +527,15 @@ begin
 	--digitizing logic
 	u_DigitizingLgc: entity work.DigitizingLgc PORT MAP(
 		clk => internal_CLOCK_50MHz_BUFG,
+		IDLE_status => internal_DIG_IDLE_status,
 		StartDig => internal_DIG_STARTDIG,
 		ramp_length => X"400",
 		rd_ena => internal_DIG_RD_ENA,
 		clr => internal_DIG_CLR,
 		startramp => internal_DIG_RAMP
 	);
+	--internal_DIG_STARTDIG <= internal_READCTRL_dig_start OR internal_CMDREG_DIG_STARTDIG;
+	internal_DIG_STARTDIG <= internal_CMDREG_DIG_STARTDIG;
 	BUSA_RD_ENA	<= internal_DIG_RD_ENA;
 	BUSA_RD_ROWSEL_S <= internal_DIG_RD_ROWSEL_S;
 	BUSA_RD_COLSEL_S <= internal_DIG_RD_COLSEL_S;
@@ -468,8 +543,8 @@ begin
 	BUSA_START <= internal_DIG_RAMP;
 	BUSA_RAMP <= internal_DIG_RAMP;
 	BUSB_RD_ENA	<= internal_DIG_RD_ENA;
-	BUSB_RD_ROWSEL_S <= internal_DIG_RD_ROWSEL_S;
-	BUSB_RD_COLSEL_S <= internal_DIG_RD_COLSEL_S;
+	BUSB_RD_ROWSEL_S <= internal_CMDREG_DIG_RD_ROWSEL_S;
+	BUSB_RD_COLSEL_S <= internal_CMDREG_DIG_RD_COLSEL_S;
 	BUSB_CLR <= internal_DIG_CLR;
 	BUSB_START <= internal_DIG_RAMP;
 	BUSB_RAMP <= internal_DIG_RAMP;
@@ -477,6 +552,7 @@ begin
 	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
 		clk => internal_CLOCK_50MHz_BUFG,
 		start => internal_SROUT_START,
+		IDLE_status => internal_SROUT_IDLE_status,
 		busy => open,
 		samp_done => open,
 		dout => BUSA_DO, --NEED to ACCOMODATE BOTH BUSSES
@@ -490,6 +566,8 @@ begin
 		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
 		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
 	);
+	--internal_SROUT_START <= internal_READCTRL_srout_start OR internal_CMDREG_SROUT_START;
+	internal_SROUT_START <= internal_CMDREG_SROUT_START;
 	BUSA_SAMPLESEL_S <= internal_SROUT_SAMPLESEL;
 	BUSA_SR_CLEAR <= internal_SROUT_SR_CLR;
 	BUSA_SR_SEL	<= internal_SROUT_SR_SEL;
@@ -535,30 +613,30 @@ begin
 		FIFO_EMPTY => internal_EVTBUILD_EMPTY,
 		FIFO_READ_ENABLE => internal_EVTBUILD_READ_ENABLE
 	);
+	--internal_EVTBUILD_START_BUILDING_EVENT <= internal_READCTRL_evtbuild_start OR internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
+	--internal_EVTBUILD_MAKE_READY <= internal_READCTRL_evtbuild_make_ready OR internal_CMDREG_EVTBUILD_MAKE_READY;
+	internal_EVTBUILD_START_BUILDING_EVENT <= internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
+	internal_EVTBUILD_MAKE_READY <= internal_CMDREG_EVTBUILD_MAKE_READY;
 	
    --counter process
-   --process (internal_CLOCK_50MHz_BUFG) begin
-	--	if (rising_edge(internal_CLOCK_50MHz_BUFG)) then
-	--		INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
-   --   end if;
-   --end process;
+   process (internal_CLOCK_50MHz_BUFG) begin
+		if (rising_edge(internal_CLOCK_50MHz_BUFG)) then
+			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
+      end if;
+   end process;
 	
 	--trigger counter
-	--process (INTERNAL_COUNTER, internal_TRIGGER_ALL) begin
-	--	if (INTERNAL_COUNTER = 0) then
-	--		--if (INTERNAL_COUNTER = x"0000000") then
-	--		--	internal_numTriggers = internal_triggerCounter;
-	--		--end if;
-	--		internal_numTriggers <= internal_triggerCounter;
-	--		internal_triggerCounter <= x"0000";
-	--	else
-	--		if( rising_edge(internal_TRIGGER_ALL) ) then
-	--			internal_triggerCounter <= internal_triggerCounter  + 1;
-	--		end if;
-   --   end if;
-   --end process;
+	process (INTERNAL_COUNTER, internal_TRIGGER_ALL) begin
+		if (INTERNAL_COUNTER = x"0000000") then
+			internal_numTriggers <= internal_triggerCounter;
+			internal_triggerCounter <= x"0000";
+		else
+			if( rising_edge(internal_TRIGGER_ALL) ) then
+				internal_triggerCounter <= internal_triggerCounter  + 1;
+			end if;
+      end if;
+   end process;
 	
 	--Event builder
 	
-
 end Behavioral;

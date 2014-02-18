@@ -16,6 +16,7 @@ entity SerialDataRout is
         clk		 			 : in   std_logic;
         start	    		 : in   std_logic;  -- start serial readout
 
+		  IDLE_status				 : out  std_logic;
 		  busy				 : out  std_logic;
         samp_done	       : out  std_logic;  -- indicate that all sampled processed
 
@@ -86,6 +87,7 @@ architecture Behavioral of SerialDataRout is
 	signal   rd_rs_s     : STD_LOGIC_VECTOR(2 downto 0) := (others=>'0');
 	
 	signal   internal_samplesel : std_logic_vector(5 downto 0) := (others=>'0');
+	signal   internal_idle : STD_LOGIC := '0';
 	
 	signal chan_data : STD_LOGIC_VECTOR(3 downto 0) := (others=>'0');
 	
@@ -97,8 +99,9 @@ sr_clk <= sr_clk_i;
 SAMP_DONE <= SAMP_DONE_out;
 samplesel <= internal_samplesel(4 downto 0);
 fifo_wr_clk <= clk;
-fifo_wr_din <= x"BA" & internal_samplesel(4 downto 0) & "000" & dout;
+fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & "000" & internal_samplesel(4 downto 0) & dout;
 busy <= internal_busy;
+IDLE_status <= internal_idle;
 
 --delay by one clock for proper latch
 process (clk) is
@@ -128,6 +131,7 @@ if (Clk'event and Clk = '1') then
 	 internal_busy <= '0';
     internal_samplesel <= (others=>'0');
 	 internal_start_srout <= '0';
+	 internal_idle <= '1';
     if( internal_start_reg(1 downto 0) = "01" ) then   -- start (readout initiated)
       next_overall 		  <= CheckBusy;
     else
@@ -137,6 +141,7 @@ if (Clk'event and Clk = '1') then
 	--wait here in case SRout process still active, shouldn't happen ever
    When CheckBusy =>
 	internal_busy <= '1';
+	internal_idle <= '0';
 	if( internal_srout_busy = '1' ) then
 		next_overall 		  <= CheckBusy;
 	else
@@ -145,7 +150,7 @@ if (Clk'event and Clk = '1') then
 	
 	--check to see if all 32 samles read out
 	When CheckSampleSel =>
-    if( internal_samplesel >= "10000" ) then
+    if( internal_samplesel >= "100000" ) then
 		next_overall 		  <= Idle;
 	 else
 		next_overall	  <= StartSROutProcess;
@@ -275,14 +280,14 @@ if (Clk'event and Clk = '1') then
       next_state 	<= WaitLoad2;
     else
       Ev_CNT           <= (others=>'0');
-      next_state 	<= ClkHigh;
+      --next_state 	<= ClkHigh;
+		next_state 	<= StoreDataSt;
     end if; 
 	
 	--hold sr_clk_i high
    When ClkHigh =>
     sr_sel  	       <= '0';
     smplsi_any       <= '1';
-    BIT_CNT <= BIT_CNT + '1';
     SAMP_DONE_out        <= '0';
 	 Ev_CNT           <= (others=>'0');
     if (BIT_CNT < CLK_CNT_MAX) then
@@ -345,6 +350,7 @@ if (Clk'event and Clk = '1') then
     sr_sel  	       <= '0';
     smplsi_any       <= '1';
     SAMP_DONE_out        <= '0';
+	 BIT_CNT <= BIT_CNT + '1';
 	 start_fifo 	<= '0';
 	 next_state 	<= ClkHigh;
 

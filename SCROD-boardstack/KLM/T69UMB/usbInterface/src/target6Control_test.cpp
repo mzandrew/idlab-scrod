@@ -17,6 +17,8 @@
 #include "TFile.h"
 #include "TGraphErrors.h"
 
+//global TApplication object declared here for simplicity
+TApplication *theApp;
 
 using namespace std;
 
@@ -25,6 +27,9 @@ int main(int argc, char* argv[]){
     		std::cout << "wrong number of arguments: usage ./target6Control_test" << std::endl;
     		return 0;
   	}
+
+	//define application object
+	theApp = new TApplication("App", &argc, argv);
 
 	int regValReadback;
 
@@ -41,10 +46,14 @@ int main(int argc, char* argv[]){
 	TCanvas *c0 = new TCanvas("c0","c0",1300,800);
 	TH1F *hSampDist = new TH1F("hSampDist","",110,3000,4100);
 
+	char ct = 0;
+	while(ct != 'Q'){
+
 	//Initialize
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //Start sampling
 	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
 	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
+	control->registerWriteReadback(board_id, 52, 1, regValReadback); //veto hardware triggers
 	// //SAMPLESEL_ANY OFF
 
 	//STOP SAMPLING
@@ -67,6 +76,8 @@ int main(int argc, char* argv[]){
 	//start event builder
 	control->registerWrite(board_id, 44, 1, regValReadback); //Start event builder
 	
+	//control->printPacketFromUSBFifo();//optionally just print the data packet
+	
 	//parse the data packet, look for event packets
 	unsigned int eventdatabuf[65536];
 	int eventdataSize = 0;
@@ -79,13 +90,48 @@ int main(int argc, char* argv[]){
 	std::cout << "END RESPONSE PACKET " << std::endl;
 	std::cout << std::endl;
 
-	//save data to file
-	ofstream myfile;
-  	myfile.open ("output_target6Control_test.dat", ios::out | ios::binary );
-	myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
-  	myfile.close();
+	//Get samples from data packet
+	unsigned int samples[32];
+  	for(int i = 0 ; i < 32 ; i++)
+		samples[i] = 0;
+	for(int j=0;j<eventdataSize; j++){
+		if( (0xF0000000 & eventdatabuf[j]) != 0xD0000000 )
+			continue;
+		unsigned int bitNum = ((0x0F000000 & eventdatabuf[j]) >> 24 );
+		unsigned int sampNum = ((0x003F0000 & eventdatabuf[j]) >> 16 );
+		std::cout << "\t" << std::hex << eventdatabuf[j] << std::dec;
+		std::cout << "\t" << bitNum;
+		std::cout << "\t" << sampNum;
+		std::cout << std::endl;
+		if( bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 )
+			continue;
+		//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
+		samples[sampNum] = (samples[sampNum] << 1) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+	}
 
-	//control->printPacketFromUSBFifo();//optionally just print the data packet
+  	TGraph *gPlot = new TGraph();
+  	gPlot->SetMarkerColor(2);
+  	gPlot->SetMarkerStyle(21);
+  	gPlot->SetMarkerSize(1.5);
+	for(int i = 0 ; i < 32 ; i++){
+		std::cout << samples[i] << std::endl;
+		gPlot->SetPoint(i,i,samples[i]);
+  	}
+ 	std::cout << "HERE" << std::endl;
+
+	c0->Clear();
+	gPlot->GetYaxis()->SetRangeUser(0,4100);
+  	gPlot->Draw("AP");
+  	c0->Update();
+
+	std::cout << "Please enter character, Q to quit" << std::endl;
+	std::cin >> ct;
+
+	//save data to file
+	//ofstream myfile;
+  	//myfile.open ("output_target6Control_test.dat", ios::out | ios::binary );
+	//myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
+  	///myfile.close();
 
 	//stop and reset event builder
 	control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
@@ -96,6 +142,8 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //Start sampling
 	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
 	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
+
+	}
 
 	//close USB interface
         control->closeUSBInterface();

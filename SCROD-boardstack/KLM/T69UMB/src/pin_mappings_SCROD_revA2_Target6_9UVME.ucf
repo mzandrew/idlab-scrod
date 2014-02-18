@@ -146,7 +146,7 @@ INST map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_la
 #NET "SCL_MON"			LOC= "J15";
 #NET "SDA_MON"			LOC= "H15";
 
-#NET "EX_TRIGGER"			LOC= "V20";
+NET "EX_TRIGGER"			LOC= "V20";
 #NET "HV_DISABLE"			LOC= "U19";
 
 #NET "TDC_AMUX_S0"			LOC= "R2";
@@ -257,12 +257,12 @@ NET BUSB_DO<15>			LOC= "R24";
 NET "SR_CLOCK"			LOC= "M1";
 #NET "TDC1_TRG_MON"			LOC= "N1";
 
-#NET "TDC1_TRG_16"			LOC= "N2";
-#NET "TDC1_TRG_4"			LOC= "E3";
-#NET "TDC1_TRG_3"			LOC= "F3";
+NET TDC1_TRG_16			LOC= "N2";
+NET TDC1_TRG<3>			LOC= "E3";
+NET TDC1_TRG<2>			LOC= "F3";
 
-#NET "TDC1_TRG_2"			LOC= "G4";
-#NET "TDC1_TRG_1"			LOC= "H5";
+NET TDC1_TRG<1>			LOC= "G4";
+NET TDC1_TRG<0>			LOC= "H5";
 NET "WR_STRB"			LOC= "J4";
 
 NET "WR_ADVCLK"			LOC= "K3";
