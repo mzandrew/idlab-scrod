@@ -42,6 +42,7 @@ entity ReadoutControl is
            trigger : in  STD_LOGIC;
 			  trig_delay : in  STD_LOGIC_VECTOR(11 downto 0);
 			  dig_offset : in  STD_LOGIC_VECTOR(8 downto 0);
+			  win_num_to_read : in  STD_LOGIC_VECTOR(8 downto 0);
 			  SMP_MAIN_CNT : in STD_LOGIC_VECTOR(8 downto 0);
 			  SMP_IDLE_status : in  STD_LOGIC;
 			  DIG_IDLE_status : in  STD_LOGIC;
@@ -49,6 +50,8 @@ entity ReadoutControl is
 			  fifo_empty : in  STD_LOGIC;
 			  EVTBUILD_DONE_SENDING_EVENT : in  STD_LOGIC;
 			  READOUT_RESET  : in  STD_LOGIC;
+			  LATCH_SMP_MAIN_CNT : out STD_LOGIC_VECTOR(8 downto 0);
+			  LATCH_DONE : out STD_LOGIC;
 			  busy_status : out STD_LOGIC;
            smp_stop : out  STD_LOGIC;
            dig_start : out  STD_LOGIC;
@@ -68,6 +71,8 @@ type trig_state_type is
 	WAIT_TRIG_DELAY,
 	STOP_SAMPLING,
 	WAIT_SAMPLING_IDLE,
+	DIG_WINDOW_LOOP,
+	WAIT_DIG_ADDR,
 	START_DIG,
 	WAIT_DIGITIZATION_IDLE_LOW,
 	WAIT_DIGITIZATION_IDLE_HIGH,
@@ -94,6 +99,9 @@ signal internal_SROUT_IDLE_status : std_logic := '0';
 signal internal_fifo_empty : std_logic := '0';
 signal internal_EVTBUILD_DONE_SENDING_EVENT : std_logic := '0';
 signal internal_READOUT_RESET : std_logic := '0';
+signal internal_LATCH_SMP_MAIN_CNT : UNSIGNED(8 downto 0) := '0' & x"00";
+signal internal_win_cnt : UNSIGNED(8 downto 0) := (others=>'0');
+signal internal_win_num_to_read : UNSIGNED(8 downto 0) := "000000001";
 
 signal internal_busy_status : std_logic := '0';
 signal internal_smp_stop : std_logic := '0';
@@ -112,6 +120,7 @@ EVTBUILD_start <= internal_EVTBUILD_start;
 EVTBUILD_MAKE_READY <= internal_EVTBUILD_MAKE_READY;
 DIG_RD_ROWSEL_S(2 downto 0) <= std_logic_vector(internal_SMP_MAIN_CNT(8 downto 6));
 DIG_RD_COLSEL_S(5 downto 0) <= std_logic_vector(internal_SMP_MAIN_CNT(5 downto 0));
+LATCH_SMP_MAIN_CNT <= std_logic_vector(internal_LATCH_SMP_MAIN_CNT);
 
 --latch trigger to local clock domain
 process(clk)
@@ -124,6 +133,7 @@ if (clk'event and clk = '1') then
 	internal_fifo_empty <= fifo_empty;
 	internal_EVTBUILD_DONE_SENDING_EVENT <= EVTBUILD_DONE_SENDING_EVENT;
 	internal_READOUT_RESET <= READOUT_RESET;
+	internal_win_num_to_read <= UNSIGNED(win_num_to_read);
 end if;
 end process;
 
@@ -150,20 +160,21 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
+		LATCH_DONE <= '0';
+		internal_win_cnt <= (others=>'0');
 	--make sure readout isn't active when accepting a new trigger
 	if( internal_trigger_reg = "01" AND internal_SMP_IDLE_status = '0' AND internal_DIG_IDLE_status = '1' 
 		AND internal_SROUT_IDLE_status = '1' AND internal_fifo_empty = '1' AND internal_EVTBUILD_DONE_SENDING_EVENT = '0' ) then 
 		next_trig_state <= WAIT_TRIG_DELAY;
 		--latch the SMP_MAIN_CNT at time of trigger, include a configurable digitzation window offset
-		internal_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT) + 10 - UNSIGNED(dig_offset);
-		--internal_SMP_MAIN_CNT <= SMP_MAIN_CNT;
+		internal_LATCH_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT);
+		LATCH_DONE <= '1';
 	else
 		next_trig_state <= Idle;
 	end if;
 	
 	--optionally delay sampling stop
 	When WAIT_TRIG_DELAY =>
-		internal_busy_status <= '1';
 		if( UNSIGNED(trig_delay) > INTERNAL_COUNTER ) then 
 			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
 			next_trig_state <= WAIT_TRIG_DELAY;
@@ -186,16 +197,43 @@ if (clk'event and clk = '1') then
 	if( internal_SMP_IDLE_status = '0' ) then 
 		next_trig_state <= WAIT_SAMPLING_IDLE;
 	else
-		next_trig_state <= START_DIG;
-	end if;	
+		next_trig_state <= DIG_WINDOW_LOOP;
+	end if;
 	
-	--wait until sampling unsuspended
+	--multi-window readout loop here, decide to digitize window or end readout
+	When DIG_WINDOW_LOOP =>
+		internal_smp_stop <= '1';
+		internal_dig_start <= '0';
+		internal_srout_start <= '0';
+		internal_EVTBUILD_start <= '0';
+		internal_EVTBUILD_MAKE_READY <= '0';
+		internal_SMP_MAIN_CNT <= internal_LATCH_SMP_MAIN_CNT + internal_win_cnt - UNSIGNED(dig_offset);
+		if(  internal_win_cnt < internal_win_num_to_read ) then
+			next_trig_state <= WAIT_DIG_ADDR; --read out window specified by internal_SMP_MAIN_CNT
+		else
+			--next_trig_state <= WAIT_READOUT_RESET; -- done readout, go to wait for reset state
+			next_trig_state <= START_EVTBUILD; -- done readout, start data packet creation
+		end if;
+	
+	--provide some time for new read address to settle
+	When WAIT_DIG_ADDR =>
+		if( x"0004" > INTERNAL_COUNTER ) then 
+			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
+			next_trig_state <= WAIT_DIG_ADDR;
+		else
+			INTERNAL_COUNTER <= (Others => '0');
+			next_trig_state <=START_DIG;
+		end if;
+		
+	--start digitization, update # windows counter, keep sampling suspednded
 	When START_DIG =>
 		internal_smp_stop <= '1';
 		internal_dig_start <= '1';
 		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
+		internal_win_cnt <= internal_win_cnt + 1; --update # of windows digitized counter
+		internal_busy_status <= '1';
 			next_trig_state <= WAIT_DIGITIZATION_IDLE_LOW;	
 	
 	--wait for digitization IDLE_status to go low, ie. digitization starts
@@ -208,14 +246,13 @@ if (clk'event and clk = '1') then
 	
 	--wait for digitization IDLE_status to go high, ie. digitization ends
 	When WAIT_DIGITIZATION_IDLE_HIGH =>
-	if( internal_DIG_IDLE_status = '0' ) then 
+	if( internal_DIG_IDLE_status = '0' ) then
 		next_trig_state <= WAIT_DIGITIZATION_IDLE_HIGH;
 	else
 		next_trig_state <= START_SROUT;
-		--next_trig_state <= WAIT_READOUT_RESET;
 	end if;
 	
-	--LOOP OVER ASIC SERIAL READOUT GOES HERE
+	--LOOP OVER ASICs SERIAL READOUT GOES HERE
 	
 	When START_SROUT =>
 		internal_smp_stop <= '1';
@@ -238,15 +275,18 @@ if (clk'event and clk = '1') then
 	if( internal_SROUT_IDLE_status = '0' ) then 
 		next_trig_state <= WAIT_SROUT_IDLE_HIGH;
 	else
-		next_trig_state <= START_EVTBUILD;
+		--next_trig_state <= START_EVTBUILD;
+		next_trig_state <= DIG_WINDOW_LOOP; --go back to check if any more windows need digitizing
 	end if;
 	
+	--start event builder
 	When START_EVTBUILD =>
 		internal_smp_stop <= '1';
-		internal_dig_start <= '1';
-		internal_srout_start <= '1';
+		internal_dig_start <= '0';
+		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '1';
 		internal_EVTBUILD_MAKE_READY <= '0';
+		internal_busy_status <= '0';
 			next_trig_state <= WAIT_EVTBUILD_DONE;
 			
 	--wait for event builder to finish
@@ -260,10 +300,11 @@ if (clk'event and clk = '1') then
 	--send MAKE_READY signal, hand shake for event builder finishing
 	When SET_EVTBUILD_MAKE_READY =>
 		internal_smp_stop <= '1';
-		internal_dig_start <= '1';
-		internal_srout_start <= '1';
-		internal_EVTBUILD_start <= '1';
-		internal_EVTBUILD_MAKE_READY <= '1';
+		internal_dig_start <= '0';
+		internal_srout_start <= '0';
+		internal_EVTBUILD_start <= '0';
+		internal_EVTBUILD_MAKE_READY <= '1'; --leave this high, gets cleared in START_DIG or READOUT_RESET
+			--next_trig_state <= DIG_WINDOW_LOOP; --go back to check if any more windows need digitizing
 			next_trig_state <= WAIT_READOUT_RESET;
 			
 	--wait for readout to be reset via command interpreter (prevents triggers while USB read out)
@@ -273,6 +314,7 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
+		internal_busy_status <= '0';
 	if( internal_READOUT_RESET = '0' ) then 
 		next_trig_state <= WAIT_READOUT_RESET;
 	else
@@ -286,6 +328,7 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
+		internal_busy_status <= '0';
 		next_trig_state <= Idle;
 	end Case;
 	

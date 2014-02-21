@@ -57,7 +57,7 @@ type state_type is
 	signal sstin     : std_logic := '0'; --SCA control signals
 	signal wr_advclk : std_logic := '0'; --Write Address Increment Clock 
 	signal wr_addrclr : std_logic := '1'; --Clear Write Address Counter
-	signal wr_strb   : std_logic := '1'; --Pulse to transfer samples to store
+	signal wr_strb   : std_logic := '0'; --Pulse to transfer samples to store
 	signal wr_ena    : std_logic := '0'; --Enable Write procedure
 
 	signal stop_in : std_logic := '0';
@@ -93,7 +93,8 @@ if (Clk'event and Clk = '1') then
     sspin          <= '0';
     sstin          <= '0';
     wr_advclk      <= '0';    
-    wr_strb        <= '1';
+    --wr_strb        <= '1';
+	 wr_strb        <= wr_strb;
 	 count <= (Others => '0');
 	 MAIN_CNT <= MAIN_CNT;
     if ( stop_in = '0') then  --normal sampling
@@ -137,8 +138,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb           <= '1';
     wr_ena            <= '1';
-      next_state 	<= Sampling0a;
-		--next_state 	<= Sampling2;
+      --next_state 	<= Sampling0a;
+		next_state 	<= Sampling1;
 
   When Sampling0a =>
 	 IDLE_status <= '0';
@@ -159,7 +160,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb        <= '0';
     wr_ena            <= '1';
-      next_state 	<= Sampling1a;
+      --next_state 	<= Sampling1a;
+		next_state 	<= Sampling2;
 
   When Sampling1a =>
     MAIN_CNT <= MAIN_CNT;
@@ -179,8 +181,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb           <= '0';
     wr_ena            <= '1';
-      next_state 	<= Sampling2a;
-		--next_state 	<= Sampling4;
+      --next_state 	<= Sampling2a;
+		next_state 	<= Sampling3;
 
   When Sampling2a =>   
     MAIN_CNT <= MAIN_CNT ;
@@ -200,7 +202,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb           <= '1';
     wr_ena            <= '1';
-      next_state 	<= Sampling3a;
+      --next_state 	<= Sampling3a;
+		next_state 	<= Sampling4;
 		
   When Sampling3a =>
     MAIN_CNT <= MAIN_CNT;
@@ -220,8 +223,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb           <= '1';
     wr_ena            <= '1';
-      next_state 	<= Sampling4a;
-		--next_state 	<= Sampling6;
+      --next_state 	<= Sampling4a;
+		next_state 	<= Sampling5;
 	
   When Sampling4a =>
 	 MAIN_CNT <= MAIN_CNT ;
@@ -241,7 +244,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb           <= '0';
     wr_ena            <= '1';
-      next_state 	<= Sampling5a;
+      --next_state 	<= Sampling5a;
+		next_state 	<= Sampling6;
 		
   When Sampling5a =>
     MAIN_CNT <= MAIN_CNT;
@@ -269,8 +273,8 @@ if (Clk'event and Clk = '1') then
     wr_addrclr        <= '0';
     wr_strb           <= '0';
     wr_ena            <= '1';
-      next_state 	<= Sampling6a;
-		--next_state 	<= Sampling8;
+      --next_state 	<= Sampling6a;
+		next_state 	<= Sampling7;
 		
   When Sampling6a => 
     MAIN_CNT <= MAIN_CNT;
