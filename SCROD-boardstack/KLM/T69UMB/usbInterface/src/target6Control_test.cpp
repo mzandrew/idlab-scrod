@@ -54,27 +54,38 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
 	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
 	control->registerWriteReadback(board_id, 52, 1, regValReadback); //veto hardware triggers
-	// //SAMPLESEL_ANY OFF
+
+	//set constant read address
+	control->registerWriteReadback(board_id, 21, 1, regValReadback);
+
+	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
+	//control->registerWriteReadback(board_id, 54, 1, regValReadback); //reset readout
+	//control->registerWriteReadback(board_id, 54, 0, regValReadback); //reset readout
 
 	//STOP SAMPLING
-	control->registerWriteReadback(board_id, 10, 1, regValReadback); //Stop sampling
+	if(0){
+		control->registerWriteReadback(board_id, 10, 1, regValReadback); //Start sampling
 
-	//Set RD ROWSEL and COLSEL based on current value of MAIN_CNT
-	int mainCnt = regValReadback;
-	int readAddress = mainCnt - 1;
-	if( readAddress < 0)
-		readAddress = 512 - readAddress;
-	control->registerWriteReadback(board_id, 21, readAddress, regValReadback);
+		//Set RD ROWSEL and COLSEL based on current value of MAIN_CNT
+		int mainCnt = regValReadback;
+		int readAddress = mainCnt - 1;
+		if( readAddress < 0)
+			readAddress = 512 - readAddress;
+		control->registerWriteReadback(board_id, 21, readAddress, regValReadback);
 
-	//Start Digitization
-	control->registerWriteReadback(board_id, 20, 1, regValReadback);
+		//Start Digitization
+		control->registerWriteReadback(board_id, 20, 1, regValReadback);
+	}
+	if(1){
+		control->registerWrite(board_id, 50, 1, regValReadback); //readout control start is 0
+	}
 
 	//start serial readout
-	control->registerWriteReadback(board_id, 30, 1, regValReadback); //serial readout ON
-	control->registerWriteReadback(board_id, 30, 0, regValReadback); //serial readout OFF
+	//control->registerWriteReadback(board_id, 30, 1, regValReadback); //serial readout ON
+	//control->registerWriteReadback(board_id, 30, 0, regValReadback); //serial readout OFF
 
 	//start event builder
-	control->registerWrite(board_id, 44, 1, regValReadback); //Start event builder
+	//control->registerWrite(board_id, 44, 1, regValReadback); //Start event builder
 	
 	//control->printPacketFromUSBFifo();//optionally just print the data packet
 	
@@ -124,6 +135,8 @@ int main(int argc, char* argv[]){
   	gPlot->Draw("AP");
   	c0->Update();
 
+	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
+
 	std::cout << "Please enter character, Q to quit" << std::endl;
 	std::cin >> ct;
 
@@ -134,14 +147,18 @@ int main(int argc, char* argv[]){
   	///myfile.close();
 
 	//stop and reset event builder
-	control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
-	control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
-	control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
+	//control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
+	//control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
+	//control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
 
 	//RESET
-	control->registerWriteReadback(board_id, 10, 0, regValReadback); //Start sampling
-	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
-	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
+	//control->registerWriteReadback(board_id, 10, 0, regValReadback); //Start sampling
+	//control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
+	//control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
+
+	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
+	//control->registerWriteReadback(board_id, 54, 1, regValReadback); //reset readout
+	//control->registerWriteReadback(board_id, 54, 0, regValReadback); //reset readout
 
 	}
 
