@@ -15,7 +15,8 @@ entity SerialDataRout is
    port (
         clk		 			 : in   std_logic;
         start	    		 : in   std_logic;  -- start serial readout
-
+		  WIN_CNT 		    : in   std_logic_vector(2 downto 0);
+		  
 		  IDLE_status				 : out  std_logic;
 		  busy				 : out  std_logic;
         samp_done	       : out  std_logic;  -- indicate that all sampled processed
@@ -99,7 +100,7 @@ sr_clk <= sr_clk_i;
 SAMP_DONE <= SAMP_DONE_out;
 samplesel <= internal_samplesel(4 downto 0);
 fifo_wr_clk <= clk;
-fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & "000" & internal_samplesel(4 downto 0) & dout;
+fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & WIN_CNT & internal_samplesel(4 downto 0) & dout;
 busy <= internal_busy;
 IDLE_status <= internal_idle;
 

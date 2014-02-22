@@ -159,7 +159,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CLOCK_4MHz_BUFG  : std_logic;
 	signal internal_CLOCK_ENABLE_I2C : std_logic;
 	signal internal_CLOCK_SST_BUFG   : std_logic;
-	signal internal_CLOCK_4xSST_BUFG : std_logic;
+	signal internal_CLOCK_8xSST_BUFG : std_logic;
 	
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
@@ -232,10 +232,12 @@ architecture Behavioral of scrod_top is
 	signal internal_READCTRL_evtbuild_make_ready  : std_logic := '0';
 	signal internal_READCTRL_LATCH_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_READCTRL_LATCH_DONE : std_logic := '0';
+	signal internal_READCTRL_WIN_CNT : std_logic_vector(2 downto 0) := (others => '0');
 	
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
 	signal internal_CMDREG_SOFTWARE_TRIGGER_VETO : std_logic := '0';
 	signal internal_CMDREG_HARDWARE_TRIGGER_ENABLE : std_logic := '0';
+	signal internal_CMDREG_SMP_START : std_logic := '0';
 	signal internal_CMDREG_SMP_STOP : std_logic := '0';
 	signal internal_CMDREG_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
@@ -253,6 +255,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_READCTRL_toggle_manual : std_logic := '0';
 
 	--ASIC SAMPLING CONTROL
+	signal internal_SMP_START : std_logic := '0';
 	signal internal_SMP_STOP : std_logic := '0';
 	signal internal_SMP_IDLE_status : std_logic := '0';
 	signal internal_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
@@ -299,6 +302,8 @@ architecture Behavioral of scrod_top is
 
 	signal i_hv_sck_dac : std_logic;
 	signal i_hv_din_dac : std_logic;
+	
+	signal internal_test_out : std_logic := '0';
 
 	
 	--Waveform FIFO component
@@ -323,8 +328,7 @@ END COMPONENT;
 begin
 
 	--Overall Signal Routing
-   --EX_TRIGGER <= internal_TRIGGER_ALL;
-	EX_TRIGGER <= internal_READCTRL_LATCH_DONE;
+   EX_TRIGGER <= internal_TRIGGER_ALL;
    internal_TRIGGER_ALL <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
 	
 	--Clock generation
@@ -350,7 +354,7 @@ begin
 		CLOCK_50MHz_BUFG  => internal_CLOCK_50MHz_BUFG,
 		CLOCK_4MHz_BUFG   => internal_CLOCK_4MHz_BUFG,
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG  => internal_CLOCK_4xSST_BUFG,
+		CLOCK_SSTx8_BUFG  => internal_CLOCK_8xSST_BUFG,
 		CLOCK_SST_BUFG    => internal_CLOCK_SST_BUFG,
 		--ASIC output clocks
 		ASIC_SST          => open,
@@ -444,6 +448,7 @@ begin
 	
 	--Sampling Signals
 	internal_CMDREG_SMP_STOP <= internal_OUTPUT_REGISTERS(10)(0);
+	internal_CMDREG_SMP_START <= internal_OUTPUT_REGISTERS(11)(0);
 
 	--Digitization Signals
    internal_CMDREG_DIG_STARTDIG <= internal_OUTPUT_REGISTERS(20)(0);
@@ -494,7 +499,7 @@ begin
 	internal_INPUT_REGISTERS(N_GPR + 1 ) <= internal_WAVEFORM_FIFO_DATA_OUT(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 2 ) <= "000000000000000" & internal_WAVEFORM_FIFO_EMPTY;
 	internal_INPUT_REGISTERS(N_GPR + 3 ) <= "000000000000000" & internal_WAVEFORM_FIFO_DATA_VALID;
-	internal_INPUT_REGISTERS(N_GPR + 4 ) <= "0000000" & internal_READCTRL_DIG_RD_ROWSEL & internal_READCTRL_DIG_RD_COLSEL;
+	internal_INPUT_REGISTERS(N_GPR + 4 ) <= "0000000" & internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL;
 	internal_INPUT_REGISTERS(N_GPR + 5 ) <= "0000000" & internal_READCTRL_LATCH_SMP_MAIN_CNT;
 	internal_INPUT_REGISTERS(N_GPR + 6 ) <= "0000000000" & internal_EVTBUILD_MAKE_READY & internal_EVTBUILD_DONE_SENDING_EVENT & internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status 
 										& internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS;
@@ -529,6 +534,7 @@ begin
 	--Control the sampling, digitization and serial resout processes following trigger
 	u_ReadoutControl: entity work.ReadoutControl PORT MAP(
 		clk => internal_CLOCK_50MHz_BUFG,
+		smp_clk => internal_CLOCK_8xSST_BUFG,
 		trigger => internal_READCTRL_trigger,
 		trig_delay => internal_READCTRL_trig_delay,
 		dig_offset => internal_READCTRL_dig_offset,
@@ -542,6 +548,7 @@ begin
 		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
 		LATCH_DONE => internal_READCTRL_LATCH_DONE,
 		READOUT_RESET => internal_READCTRL_readout_reset,
+		WIN_CNT => internal_READCTRL_WIN_CNT,
 		busy_status => internal_READCTRL_busy_status,
 		smp_stop => internal_READCTRL_smp_stop,
 		dig_start => internal_READCTRL_dig_start,
@@ -566,7 +573,8 @@ begin
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
 		--clk => internal_CLOCK_150MHz_BUFG,
-		clk => internal_CLOCK_50MHz_BUFG,
+		clk => internal_CLOCK_8xSST_BUFG,
+		start => internal_SMP_START,
 		stop => internal_SMP_STOP,
 		IDLE_status => internal_SMP_IDLE_STATUS,
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
@@ -577,6 +585,7 @@ begin
 		wr_strb_out => internal_WR_STRB,
 		wr_ena_out => internal_WR_ENA
 	);
+	internal_SMP_START <= internal_CMDREG_SMP_START;
 	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							 internal_CMDREG_SMP_STOP;
 	SSPIN <= internal_SSPIN;
@@ -619,6 +628,7 @@ begin
 	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
 		clk => internal_CLOCK_50MHz_BUFG,
 		start => internal_SROUT_START,
+		WIN_CNT => internal_READCTRL_WIN_CNT,
 		IDLE_status => internal_SROUT_IDLE_status,
 		busy => open,
 		samp_done => open,
@@ -693,6 +703,13 @@ begin
 			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
       end if;
    end process;
+	
+	--stupid clock test, ignore
+	--process ( internal_CLOCK_8xSST_BUFG) begin
+	--	if (rising_edge( internal_CLOCK_8xSST_BUFG)) then
+	--		internal_test_out <= NOT(internal_test_out);
+   --   end if;
+   --end process;
 	
 	--trigger counter
 	process (INTERNAL_COUNTER, internal_TRIGGER_ALL) begin
