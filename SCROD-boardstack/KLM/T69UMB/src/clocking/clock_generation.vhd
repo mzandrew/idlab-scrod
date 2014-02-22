@@ -30,7 +30,7 @@ entity clock_generation is
 		CLOCK_50MHz_BUFG  : out STD_LOGIC;
 		CLOCK_4MHz_BUFG   : out STD_LOGIC;
 		--ASIC control clocks
-		CLOCK_SSTx4_BUFG  : out STD_LOGIC;
+		CLOCK_SSTx8_BUFG  : out STD_LOGIC;
 		CLOCK_SST_BUFG    : out STD_LOGIC;
 		--ASIC output clocks
 		ASIC_SST          : out STD_LOGIC_VECTOR(ASICS_PER_ROW-1 downto 0);
@@ -137,12 +137,12 @@ begin
 	------------------------------------------------------
 	--        PLLs to generate all other clocks         --
 	------------------------------------------------------
-	--this takes in 21.2027 MHz in
+	--this takes in 31.25 MHz in
 	--     generates 50 MHz clock for general use @ 0 degrees
 	--               4 MHz clock for general use @ 0 degrees
-	--               sspx4   @ 84.8108 MHz @ 90 degrees
-   --               ssp     @ 21.2027 MHz @ 315 degree
-	--               wr_strb @ 42.4054 MHz @ 90 degrees
+	--               sspx8   @ 62.500 MHz @ 90 degrees
+   --               ssp     @ 7.812 MHz @ 315 degree
+	--               wr_strb @ 15.625 MHz @ 90 degrees
 	map_clockgen_ASIC : entity work.clockgen_asic_A
 	port map (
 		-- Clock in ports
@@ -150,7 +150,7 @@ begin
 		-- Clock out ports
 		CLK_50MHz_BUFG   => internal_CLOCK_50MHz_BUFG,
 		CLK_4MHz_BUFG    => internal_CLOCK_4MHz_BUFG,
-		CLK_SSTx4_BUFG   => CLOCK_SSTx4_BUFG,
+		CLK_SSTx8_BUFG   => CLOCK_SSTx8_BUFG,
 		CLK_SSP_BUFG     => internal_CLOCK_SSP_BUFG,
 		CLK_WR_STRB_BUFG => internal_CLOCK_WRITE_STROBE_BUFG,
 		-- Status and control signals
