@@ -672,7 +672,7 @@ begin
 	--Event builder provides ordered waveform data to readout_interfaces module
 	map_event_builder: entity work.event_builder PORT MAP(
 		READ_CLOCK => internal_EVTBUILD_READ_CLOCK,
-		SCROD_REV_AND_ID_WORD => x"00000" & "000" &internal_READCTRL_DIG_RD_ROWSEL & internal_READCTRL_DIG_RD_COLSEL,
+		SCROD_REV_AND_ID_WORD => x"00000" & "000" & internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
 		EVENT_NUMBER_WORD => x"00000001",
 		EVENT_TYPE_WORD => x"00000001",
 		EVENT_FLAG_WORD => x"00000001",
