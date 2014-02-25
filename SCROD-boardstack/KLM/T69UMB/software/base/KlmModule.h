@@ -5,6 +5,7 @@
 
 #include "base/DetectorInterface.h"
 #include "base/defines.h"
+#include "base/ScrodPacket.h"
 
 
 class KlmModule
@@ -27,6 +28,15 @@ public:
 		
 	void write_ASIC_register(uint8_t card, uint8_t address, uint16_t value);
 		/// Writes a value to the ASIC register.
+		
+	ScrodPacket* read_packet() const;
+		/// Reads the next packet and return it.
+		
+	void start();
+		/// Runs this module.
+		
+	void stop();
+		/// Stops this module.
 
 protected:
 
