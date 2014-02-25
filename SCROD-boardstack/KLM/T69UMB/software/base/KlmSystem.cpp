@@ -303,16 +303,25 @@ KlmModule* KlmSystem::operator[](module_id id)
 		return it->second;
 }
 
-void KlmSystem::start()
+void KlmSystem::start(std::ostream& output)
 {
 	KlmModuleMap::iterator x;
 	for(x = _modules.begin(); x != _modules.end(); x++)
-		x->second->start();
+	{
+		if(!x->second->start(&_received_data))
+		{
+			output << "ERROR: Module ID=" << x->first << " could not be started!" << endl;
+		}
+	}
 }
 
-void KlmSystem::stop()
+void KlmSystem::stop(std::ostream& output)
 {
 	KlmModuleMap::iterator x;
+	// announce stop
 	for(x = _modules.begin(); x != _modules.end(); x++)
 		x->second->stop();
+	// wait for them to finish
+	for(x = _modules.begin(); x != _modules.end(); x++)
+		x->second->wait_end(output);
 }

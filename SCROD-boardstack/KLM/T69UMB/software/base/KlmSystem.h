@@ -3,7 +3,6 @@
 
 #include "base/UsbInterface.h"	
 #include "base/KlmModule.h"
-#include "base/ObjectSync.h"
 #include "base/ScrodPacket.h"
 
 #define SCROD_REGISTER_ID	276
@@ -28,10 +27,10 @@ public:
 	KlmModule* operator[](module_id id);
 		/// Returns KlmModule or NULL if it is not found.
 		
-	void start();
+	void start(std::ostream& output);
 		/// Runs each module in its own thread, receiving data.
 		
-	void stop();
+	void stop(std::ostream& output);
 		/// Stops all the threads and stops receiving data.
 	
 	ScrodPacket* get_data();
