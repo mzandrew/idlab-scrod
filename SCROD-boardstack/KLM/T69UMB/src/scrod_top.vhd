@@ -233,7 +233,9 @@ architecture Behavioral of scrod_top is
 	signal internal_READCTRL_evtbuild_make_ready  : std_logic := '0';
 	signal internal_READCTRL_LATCH_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_READCTRL_LATCH_DONE : std_logic := '0';
-	signal internal_READCTRL_WIN_CNT : std_logic_vector(2 downto 0) := (others => '0');
+	signal internal_READCTRL_ASIC_NUM : std_logic_vector(3 downto 0) := (others => '0');
+	signal internal_READCTRL_RESET_EVENT_NUM : std_logic := '0';
+	signal internal_READCTRL_EVENT_NUM : std_logic_vector(31 downto 0) := x"00000000";
 	
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
 	signal internal_CMDREG_SOFTWARE_TRIGGER_VETO : std_logic := '0';
@@ -255,6 +257,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_EVTBUILD_DONE_SENDING_EVENT : std_logic := '0';
 	signal internal_CMDREG_EVTBUILD_PACKET_BUILDER_BUSY : std_logic := '0';
 	signal internal_CMDREG_READCTRL_toggle_manual : std_logic := '0';
+	signal internal_CMDREG_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_START : std_logic := '0';
@@ -476,6 +479,7 @@ begin
 	internal_CMDREG_READCTRL_toggle_manual <= internal_OUTPUT_REGISTERS(56)(0);
 	internal_CMDREG_READCTRL_win_num_to_read <= internal_OUTPUT_REGISTERS(57)(8 downto 0);
 	internal_CMDREG_READCTRL_readout_continue <= internal_OUTPUT_REGISTERS(58)(0);
+	internal_CMDREG_READCTRL_RESET_EVENT_NUM <= internal_OUTPUT_REGISTERS(59)(0);
 	
 	-- HV dac signals
 	i_dac_number <= internal_OUTPUT_REGISTERS(60)(15 downto 12);
@@ -552,7 +556,8 @@ begin
 		LATCH_DONE => internal_READCTRL_LATCH_DONE,
 		READOUT_RESET => internal_READCTRL_readout_reset,
 		READOUT_CONTINUE => internal_READCTRL_readout_continue,
-		WIN_CNT => internal_READCTRL_WIN_CNT,
+		RESET_EVENT_NUM => internal_READCTRL_RESET_EVENT_NUM,
+		ASIC_NUM => internal_READCTRL_ASIC_NUM,
 		busy_status => internal_READCTRL_busy_status,
 		smp_stop => internal_READCTRL_smp_stop,
 		dig_start => internal_READCTRL_dig_start,
@@ -560,7 +565,8 @@ begin
 		DIG_RD_COLSEL_S => internal_READCTRL_DIG_RD_COLSEL,
 		srout_start => internal_READCTRL_srout_start,
 		EVTBUILD_start => internal_READCTRL_evtbuild_start,
-		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready
+		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready,
+		EVENT_NUM => internal_READCTRL_EVENT_NUM
 	);
 	internal_SOFTWARE_TRIGGER_VETO <= internal_CMDREG_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER_ENABLE <= internal_CMDREG_HARDWARE_TRIGGER_ENABLE;
@@ -573,6 +579,7 @@ begin
 	internal_READCTRL_win_num_to_read <= internal_CMDREG_READCTRL_win_num_to_read;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue;
+	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
@@ -633,7 +640,9 @@ begin
 	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
 		clk => internal_CLOCK_50MHz_BUFG,
 		start => internal_SROUT_START,
-		WIN_CNT => internal_READCTRL_WIN_CNT,
+		EVENT_NUM => internal_READCTRL_EVENT_NUM,
+		WIN_ADDR => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+		ASIC_NUM => internal_READCTRL_ASIC_NUM,
 		IDLE_status => internal_SROUT_IDLE_status,
 		busy => open,
 		samp_done => open,
@@ -677,11 +686,11 @@ begin
 	--Event builder provides ordered waveform data to readout_interfaces module
 	map_event_builder: entity work.event_builder PORT MAP(
 		READ_CLOCK => internal_EVTBUILD_READ_CLOCK,
-		SCROD_REV_AND_ID_WORD => x"00000" & "000" & internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
-		EVENT_NUMBER_WORD => x"00000001",
-		EVENT_TYPE_WORD => x"00000001",
-		EVENT_FLAG_WORD => x"00000001",
-		NUMBER_OF_WAVEFORM_PACKETS_WORD => x"00000001",
+		SCROD_REV_AND_ID_WORD => internal_SCROD_REV_AND_ID_WORD,
+		EVENT_NUMBER_WORD => internal_READCTRL_EVENT_NUM,
+		EVENT_TYPE_WORD => x"65766e74",
+		EVENT_FLAG_WORD => x"00000000",
+		NUMBER_OF_WAVEFORM_PACKETS_WORD => x"00000000",
 		START_BUILDING_EVENT => internal_EVTBUILD_START_BUILDING_EVENT,
 		DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
 		MAKE_READY => internal_EVTBUILD_MAKE_READY,
@@ -699,6 +708,7 @@ begin
 							 internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
 	internal_EVTBUILD_MAKE_READY <= internal_READCTRL_evtbuild_make_ready when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							 internal_CMDREG_EVTBUILD_MAKE_READY;
+	internal_SCROD_REV_AND_ID_WORD <= x"00" & x"A3" & x"002c";
 	--internal_EVTBUILD_START_BUILDING_EVENT <= internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
 	--internal_EVTBUILD_MAKE_READY <= internal_CMDREG_EVTBUILD_MAKE_READY;
 	
