@@ -302,3 +302,17 @@ KlmModule* KlmSystem::operator[](module_id id)
 	else
 		return it->second;
 }
+
+void KlmSystem::start()
+{
+	KlmModuleMap::iterator x;
+	for(x = _modules.begin(); x != _modules.end(); x++)
+		x->second->start();
+}
+
+void KlmSystem::stop()
+{
+	KlmModuleMap::iterator x;
+	for(x = _modules.begin(); x != _modules.end(); x++)
+		x->second->stop();
+}

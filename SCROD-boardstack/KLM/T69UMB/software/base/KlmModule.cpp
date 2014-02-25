@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #include "base/KlmModule.h"
-#include "base/ScrodPacket.h"
+
 
 using namespace std;
 
@@ -70,6 +70,14 @@ scrod_word KlmModule::read_register(scrod_address address)
 	}
 }
 
+ScrodPacket* KlmModule::read_packet() const
+{
+	ScrodPacket* packet = new ScrodPacket;
+	_interface->receivePacket(packet);
+	
+	return packet;
+}
+
 void KlmModule::write_ASIC_register(uint8_t card, uint8_t address, uint16_t value)
 {
 	ScrodPacket packet;
@@ -85,3 +93,10 @@ void KlmModule::write_ASIC_register(uint8_t card, uint8_t address, uint16_t valu
 	write_register(SCROD_REGISTER_T6_STROBE, (scrod_register)0, true);
 }
 
+void KlmModule::start()
+{
+}
+
+void KlmModule::stop()
+{
+}
