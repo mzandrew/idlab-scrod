@@ -60,10 +60,14 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read
+	control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
+
+	//define output file		
+	ofstream dataFile;
+  	dataFile.open ("output_target6Control_takeData.dat", ios::out | ios::binary );
 
 	char ct = 0;
-	int digOffset = 6;
+	int digOffset = 20;
 	while(ct != 'Q'){
 
 		//make sure readout is off digOffset
@@ -80,58 +84,89 @@ int main(int argc, char* argv[]){
 		//do harware trigger, presumably trigger will occur shortly after hardware veto is disable
 		if(0){
 			control->registerWrite(board_id, 52, 1, regValReadback); //enable hardware triggers
-			//std::cout << "Send trigger, then enter character" << std::endl;
-			//std::cin >> ct;
+			std::cout << "Send trigger, then enter character" << std::endl;
+			std::cin >> ct;
 		}
 
-		//delay, just in case readout is still in progress
-		usleep(200);
-	
-		//parse the data packet, look for event packets
 		unsigned int eventdatabuf[65536];
-		int eventdataSize = 0;
-		control->getEventData(eventdatabuf, eventdataSize);
+		int eventdataSize = 20;
+		int numIter = 0;
 
-		//print data buffer
-		std::cout << "RESPONSE PACKET " << std::endl;
-		for(int j=0;j<eventdataSize; j++)
-			std::cout << "PACKET" << "\t" << std::hex << eventdatabuf[j] << std::endl;
-		std::cout << "END RESPONSE PACKET " << std::endl;
-		std::cout << std::endl;
-
-		//Get samples from data packet
 		unsigned int samples[512][32];
   		for(int i = 0 ; i < 512 ; i++)
   		for(int j = 0 ; j < 32 ; j++)
 			samples[i][j] = 0;
-		unsigned int addrNum = 1001;
-		for(int j=0;j<eventdataSize; j++){
-			if( eventdatabuf[j] == 0x00be11e2)
-				std::cout << "Packet Header " << std::hex << eventdatabuf[j] << std::endl;
-			if( eventdatabuf[j] == 0x065766e74 ){
-				addrNum = ((0x000001FF & eventdatabuf[j+1]) >> 0 );
-				std::cout << "Address number " << addrNum << std::endl;
-			}
-			//std::cout << "\t" << std::hex << eventdatabuf[j] << std::dec;
+
+		while(eventdataSize > 10 && numIter < 50){
+			//delay, just in case readout is still in progress
+			usleep(10);
+	
+			//parse the data packet, look for event packets
+			control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
+		
+			//print data buffer
+			//std::cout << "RESPONSE PACKET " << std::endl;
+			//for(int j=0;j<eventdataSize; j++){
+			//	unsigned int bitNum = ((0x0F000000 & eventdatabuf[j]) >> 24 );
+			//	unsigned int sampNum = ((0x001F0000 & eventdatabuf[j]) >> 16 );
+			//	unsigned int winNum = ((0x00E00000 & eventdatabuf[j]) >> 21 );
+			//	std::cout << std::hex << eventdatabuf[j];
+			//	std::cout << "\t" << bitNum;
+			//	std::cout << "\t" << sampNum;
+			//	std::cout << "\t" << winNum;
 			//	std::cout << std::endl;
-			if( (0xF0000000 & eventdatabuf[j]) != 0xD0000000 )
-				continue;
-			unsigned int bitNum = ((0x0F000000 & eventdatabuf[j]) >> 24 );
-			unsigned int sampNum = ((0x001F0000 & eventdatabuf[j]) >> 16 );
-			unsigned int winNum = ((0x00E00000 & eventdatabuf[j]) >> 21 );
-			std::cout << "\t" << std::hex << eventdatabuf[j] << std::dec;
-			std::cout << "\t\t" << addrNum;			
-			std::cout << "\t" << bitNum;
-			std::cout << "\t" << sampNum;
-			std::cout << "\t" << winNum;
-			std::cout << std::endl;
-			if( addrNum < 0 || addrNum > 511 || bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 || winNum < 1 || winNum > 4)
-				continue;
-			//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
-			//samples[addrNum][sampNum] = ((samples[addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
-			samples[winNum-1][sampNum] = ((samples[winNum-1][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+			//}
+			//std::cout << "END RESPONSE PACKET " << std::endl;
+			//std::cout << "RESPONSE PACKET SIZE: " << std::dec << eventdataSize << std::endl;
+			//std::cout << std::endl;
+
+			//toggle continue bit
+			control->registerWrite(board_id, 58, 1, regValReadback); //make sure readout is reset
+			control->registerWrite(board_id, 58, 0, regValReadback); //make sure readout is reset
+
+			//increment iterate count
+			numIter++;
+
+			unsigned int addrNum = 0;
+			for(int j=0;j<eventdataSize; j++){
+				if( eventdatabuf[j] == 0x00be11e2)
+					std::cout << "Packet Header " << std::hex << eventdatabuf[j] << std::endl;
+				if( eventdatabuf[j] == 0x065766e74 ){
+					addrNum = ((0x000001FF & eventdatabuf[j+1]) >> 0 );
+					std::cout << "Address number " << addrNum << std::endl;
+				}
+				std::cout << "RAW DATA\t" << std::hex << eventdatabuf[j] << std::dec;
+				if( (0xF0000000 & eventdatabuf[j]) != 0xD0000000 )
+					continue;
+				unsigned int bitNum = ((0x0F000000 & eventdatabuf[j]) >> 24 );
+				unsigned int sampNum = ((0x001F0000 & eventdatabuf[j]) >> 16 );
+				unsigned int winNum = ((0x00E00000 & eventdatabuf[j]) >> 21 );
+				//std::cout << "\t" << std::hex << eventdatabuf[j] << std::dec;
+				std::cout << "\t\t" << addrNum;			
+				std::cout << "\t" << bitNum;
+				std::cout << "\t" << sampNum;
+				std::cout << "\t" << winNum;
+				std::cout << std::endl;
+				if( addrNum < 0 || addrNum > 511 || bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 || winNum < 1)
+					continue;
+				//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
+				samples[addrNum][sampNum] = ((samples[addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+				//samples[winNum-1][sampNum] = ((samples[winNum-1][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+			}
+
+			//std::cout << "Please enter character, Q to quit data readout loop" << std::endl;
+			//std::cin >> ct;
+			//if( ct == 'Q' )
+			//	break;
 		}
 
+		//reset readout
+		control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
+		control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
+		control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
+		control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
+
+		//plot samples
   		TGraph *gPlot = new TGraph();
   		gPlot->SetMarkerColor(2);
   		gPlot->SetMarkerStyle(21);
@@ -167,20 +202,18 @@ int main(int argc, char* argv[]){
 		std::cout << "Please enter character, Q to quit" << std::endl;
 		std::cin >> ct;
 
-		
-
 		//digOffset = ct - '0';
 		//if( digOffset < 0 || digOffset > 50)
 		//	digOffset = 0;
 		//digOffset = digOffset + 10;
 
 		//save data to file
-		//ofstream myfile;
-  		//myfile.open ("output_target6Control_test.dat", ios::out | ios::binary );
 		//myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
-  		///myfile.close();
-
+		control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
 	}
+
+	//close output file
+  	dataFile.close();
 
 	//close USB interface
         control->closeUSBInterface();

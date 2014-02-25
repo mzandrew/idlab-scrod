@@ -5,6 +5,7 @@
 #include "idl_usb.h"
 #include "target6ControlClass.h"
 #include "packet_interface.h"
+#include <fstream>
 
 using namespace std;
 bool debugglobal = 0;
@@ -300,6 +301,17 @@ int target6ControlClass::parseResponsePacketFromUSBforReadWrite( int reg, int co
 int target6ControlClass::parseResponsePacketForEvents(unsigned int databuf[], int dataSize, unsigned int wavedatabuf[], int &wavedataSize){
 	wavedataSize = 0;
 	for(int j=0;j<dataSize; j++){
+		unsigned int bitNum = ((0x0F000000 &  databuf[j]) >> 24 );
+		unsigned int sampNum = ((0x001F0000 & databuf[j]) >> 16 );
+		unsigned int winNum = ((0x00E00000 & databuf[j]) >> 21 );
+		std::cout << std::hex << databuf[j];			
+		std::cout << "\t" << bitNum;
+		std::cout << "\t" << sampNum;
+		std::cout << "\t" << winNum;
+		std::cout << std::endl;
+
+
+		continue;
 		//detect packet header word
 		if( databuf[j] != 0x00BE11E2 )
 			continue;
@@ -316,9 +328,9 @@ int target6ControlClass::parseResponsePacketForEvents(unsigned int databuf[], in
 		if( packetType != 0x65766e74 )
 			continue;
 		//HACK - just check if temp sample data words are there
-		unsigned int firstSample = databuf[packetStartPos+5];
-		if( (firstSample & 0xF0000000 ) != 0xD0000000 )
-			continue;
+		//unsigned int firstSample = databuf[packetStartPos+5];
+		//if( (firstSample & 0xF0000000 ) != 0xD0000000 )
+		//	continue;
 		//add waveform data packet to the data packet buffer
 		//for now just assume entire remaining buffer is data, bad assumptionm
 		for(int pos = packetStartPos; pos < dataSize ; pos++){
@@ -339,6 +351,17 @@ int target6ControlClass::getEventData(unsigned int eventdatabuf[], int &eventdat
 
 	//parse the data packet and extract waveform packets only
 	parseResponsePacketForEvents(databuf,dataSize,eventdatabuf,eventdataSize);
+
+	return 1;
+}
+
+int target6ControlClass::writeEventToFile(unsigned int eventdatabuf[], int eventdataSize, std::ofstream& dataFile){
+	if( !dataFile.is_open() ){
+		std::cout << "File is not open for writing event" << std::endl;
+		return 0;
+	}
+
+	dataFile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
 
 	return 1;
 }

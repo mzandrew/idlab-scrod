@@ -222,6 +222,7 @@ architecture Behavioral of scrod_top is
 	signal internal_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_READCTRL_win_num_to_read : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_READCTRL_readout_reset : std_logic := '0';
+	signal internal_READCTRL_readout_continue : std_logic := '0';
 	signal internal_READCTRL_busy_status : std_logic := '0';
 	signal internal_READCTRL_smp_stop : std_logic := '0';
 	signal internal_READCTRL_dig_start  : std_logic := '0';
@@ -243,6 +244,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_win_num_to_read : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_readout_reset : std_logic := '0';
+	signal internal_CMDREG_READCTRL_readout_continue : std_logic := '0';
 	signal internal_CMDREG_DIG_STARTDIG : std_logic := '0';
 	signal internal_CMDREG_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 	signal internal_CMDREG_DIG_RD_COLSEL_S : STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
@@ -473,6 +475,7 @@ begin
 	internal_CMDREG_READCTRL_readout_reset <= internal_OUTPUT_REGISTERS(55)(0);
 	internal_CMDREG_READCTRL_toggle_manual <= internal_OUTPUT_REGISTERS(56)(0);
 	internal_CMDREG_READCTRL_win_num_to_read <= internal_OUTPUT_REGISTERS(57)(8 downto 0);
+	internal_CMDREG_READCTRL_readout_continue <= internal_OUTPUT_REGISTERS(58)(0);
 	
 	-- HV dac signals
 	i_dac_number <= internal_OUTPUT_REGISTERS(60)(15 downto 12);
@@ -548,6 +551,7 @@ begin
 		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
 		LATCH_DONE => internal_READCTRL_LATCH_DONE,
 		READOUT_RESET => internal_READCTRL_readout_reset,
+		READOUT_CONTINUE => internal_READCTRL_readout_continue,
 		WIN_CNT => internal_READCTRL_WIN_CNT,
 		busy_status => internal_READCTRL_busy_status,
 		smp_stop => internal_READCTRL_smp_stop,
@@ -568,6 +572,7 @@ begin
 	internal_READCTRL_dig_offset <= internal_CMDREG_READCTRL_dig_offset;
 	internal_READCTRL_win_num_to_read <= internal_CMDREG_READCTRL_win_num_to_read;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
+	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue;
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc

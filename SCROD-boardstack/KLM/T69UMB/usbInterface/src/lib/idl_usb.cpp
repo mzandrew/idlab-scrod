@@ -165,6 +165,10 @@ void usb_ClearEndpnt(unsigned char endpoint, unsigned char* data, int length, un
 int usb_XferData(unsigned char endpoint, unsigned char* data, int length, unsigned int timeout){
         int status;
         int xferd;
+
+	//unsigned int value = 1; // 5 sec. 
+        //UsbK_SetPipePolicy(dev_handle, endpoint, 0x07, sizeof(value), value); 
+
 //        printf("Xfering at %.4X End Point\n",endpoint);
         status = libusb_bulk_transfer(dev_handle, endpoint, data, length, &xferd, timeout);
 //        cout<<"Transferred: "<<xferd<<" bytes"<<endl;

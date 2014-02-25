@@ -23,6 +23,7 @@ public:
   int parseResponsePacketFromUSBforReadWrite( int reg, int command_id, unsigned int databuf[], int dataSize, int &regVal );
   int parseResponsePacketForEvents(unsigned int databuf[], int dataSize, unsigned int wavedatabuf[], int &wavedataSize);
   int getEventData(unsigned int eventdatabuf[], int &eventdataSize);
+  int writeEventToFile(unsigned int eventdatabuf[], int eventdataSize, std::ofstream& dataFile);
 };
 
 #endif

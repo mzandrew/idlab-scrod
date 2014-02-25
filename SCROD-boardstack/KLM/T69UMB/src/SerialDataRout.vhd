@@ -57,7 +57,7 @@ architecture Behavioral of SerialDataRout is
 	(
 	Idle,				  -- Idling until command start bit and store size	
 	WaitStart,
-	CheckType,
+	LoadHeader,
 	WaitAddr,	    -- Wait for address to settle, need docs to finilize
 	WaitLoad,	    -- Wait for load cmd to settle, need docs to finilize
 	WaitLoad1,	    -- Wait for load cmd to settle relatively to clk, need docs to finilize
@@ -91,7 +91,7 @@ architecture Behavioral of SerialDataRout is
 	signal   internal_idle : STD_LOGIC := '0';
 	
 	signal chan_data : STD_LOGIC_VECTOR(3 downto 0) := (others=>'0');
-	
+	signal internal_fifo_wr_din : STD_LOGIC_VECTOR(31 downto 0) := (others=>'0');
 --------------------------------------------------------------------------------
 
 begin
@@ -100,7 +100,8 @@ sr_clk <= sr_clk_i;
 SAMP_DONE <= SAMP_DONE_out;
 samplesel <= internal_samplesel(4 downto 0);
 fifo_wr_clk <= clk;
-fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & WIN_CNT & internal_samplesel(4 downto 0) & dout;
+--fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & WIN_CNT & internal_samplesel(4 downto 0) & dout;
+fifo_wr_din <= internal_fifo_wr_din;
 busy <= internal_busy;
 IDLE_status <= internal_idle;
 
@@ -199,8 +200,10 @@ if (Clk'event and Clk = '1') then
     Ev_CNT           <= (others=>'0');
 	 BIT_CNT				<= (others=>'0');
 	 smplsi_any       <= '0';
-	 start_fifo 		<= '0';
+	 --start_fifo 		<= '0';
+	 fifo_wr_en			<= '0';
 	 internal_srout_busy <= '0';
+	 internal_fifo_wr_din <= (others=>'0');
     if( internal_start_srout = '1') then   -- start (readout initiated)
       next_state 		  <= WaitStart;
     else
@@ -214,15 +217,28 @@ if (Clk'event and Clk = '1') then
     SAMP_DONE_out    <= '0';
 	 BIT_CNT				<= (others=>'0');
 	 smplsi_any       <= '0';
-	 start_fifo 		<= '0';
 	 internal_srout_busy <= '1';
+	 internal_fifo_wr_din <= x"ABCDABCD";
     if (Ev_CNT < ADDR_TIME) then   -- start (trigger was detected)
       Ev_CNT <= Ev_CNT + '1';
       next_state 	<= WaitStart;
     else
       Ev_CNT           <= (others=>'0');
-      next_state 	<= WaitAddr;
+      --next_state 	<= WaitAddr;
+		next_state 	<= LoadHeader;
     end if;
+	
+	--load initial sample packet header
+	When LoadHeader =>
+    sr_clk_i  	       <= '0';
+    sr_sel  	       <= '0';
+    SAMP_DONE_out    <= '0';
+	 BIT_CNT				<= (others=>'0');
+	 smplsi_any       <= '0';
+	 --start_fifo 		<= '1';
+	 fifo_wr_en			<= '1';
+	 internal_srout_busy <= '1';
+      next_state 	<= WaitAddr;
 
 	--turn smplsi_any on, wait to settle
    When WaitAddr =>
@@ -230,6 +246,8 @@ if (Clk'event and Clk = '1') then
     sr_sel  	       <= '0';
     smplsi_any       <= '1';
     SAMP_DONE_out        <= '0';
+	 --start_fifo 		<= '0';
+	 fifo_wr_en			<= '0';
     if (Ev_CNT < ADDR_TIME) then   -- start (trigger was detected)
       Ev_CNT <= Ev_CNT + '1';
       next_state 	<= WaitAddr;
@@ -343,7 +361,9 @@ if (Clk'event and Clk = '1') then
     sr_sel  	       <= '0';
     smplsi_any       <= '1';
     SAMP_DONE_out        <= '0';
-	 start_fifo		<= '1';
+	 --start_fifo		<= '1';
+	 fifo_wr_en			<= '1';
+	 internal_fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & WIN_CNT & internal_samplesel(4 downto 0) & dout;
 	 next_state 	<= StoreDataEnd;
 	 
 	When StoreDataEnd =>
@@ -352,7 +372,8 @@ if (Clk'event and Clk = '1') then
     smplsi_any       <= '1';
     SAMP_DONE_out        <= '0';
 	 BIT_CNT <= BIT_CNT + '1';
-	 start_fifo 	<= '0';
+	 --start_fifo 	<= '0';
+	 fifo_wr_en			<= '0';
 	 next_state 	<= ClkHigh;
 
 	--wait for start signal to go low
@@ -376,21 +397,22 @@ if (Clk'event and Clk = '1') then
 	 BIT_CNT           <= (others=>'0');
     SAMP_DONE_out        <= '0';
 	 internal_srout_busy <= '0';
+	 fifo_wr_en			<= '0';
 	 next_state 		<= Idle;
 	end case;
 end if;
 end process;
 
 --delay by one clock for proper latch
-process (clk) is
-begin
-if (clk'event and clk = '0') then
-  if( start_fifo = '1') then
-	fifo_wr_en <= '1';
-  else
-   fifo_wr_en <= '0';
-  end if;
-end if;
-end process;
+--process (clk) is
+--begin
+--if (clk'event and clk = '0') then
+--  if( start_fifo = '1') then
+--	fifo_wr_en <= '1';
+--  else
+--   fifo_wr_en <= '0';
+--  end if;
+--end if;
+--end process;
 
 end Behavioral;

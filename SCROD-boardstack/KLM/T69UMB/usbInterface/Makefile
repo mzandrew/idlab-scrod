@@ -5,7 +5,7 @@ LINK_OPTIONS = -L/usr/lib/i386-linux-gnu -lusb-1.0 `root-config --glibs`
 FINAL_OBJECT_FILES = bin/target6Control_readReg bin/target6Control_writeReg bin/target6Control_writeDacReg bin/target6Control_test bin/target6Control_testTrigger bin/target6Control_takeData
 
 # needed to link all:
-INTERMEDIATE_OBJECT_FILES = work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o
+INTERMEDIATE_OBJECT_FILES = work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6ControlClass.o
 
 default :
 	if [ ! -e src     ]; then mkdir     src; fi
