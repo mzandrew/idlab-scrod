@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
+	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read
 
 	//define output file		
 	ofstream dataFile;
@@ -68,12 +68,14 @@ int main(int argc, char* argv[]){
 
 	char ct = 0;
 	int digOffset = 20;
+	control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
 	while(ct != 'Q'){
+	//for( int numEv = 0 ; numEv < 10 ; numEv++ ){
+		//std::cout << "Event # " << numEv << std::endl;
 
 		//make sure readout is off digOffset
-		control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
-		control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
-		control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
+		control->registerWrite(board_id, 50, 0, regValReadback); //readout control start is 0
+		control->registerWrite(board_id, 52, 0, regValReadback); //veto hardware triggers
 		control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
 		control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
 
@@ -98,61 +100,62 @@ int main(int argc, char* argv[]){
 			samples[i][j] = 0;
 
 		while(eventdataSize > 10 && numIter < 50){
+		//while( numIter < 4){
 			//delay, just in case readout is still in progress
 			usleep(10);
+
+			//toggle continue bit
+			control->registerWrite(board_id, 58, 1, regValReadback); //allow readout to continue
+			control->registerWrite(board_id, 58, 0, regValReadback); //allow readout to continue
 	
 			//parse the data packet, look for event packets
 			control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
 		
-			//print data buffer
-			//std::cout << "RESPONSE PACKET " << std::endl;
-			//for(int j=0;j<eventdataSize; j++){
-			//	unsigned int bitNum = ((0x0F000000 & eventdatabuf[j]) >> 24 );
-			//	unsigned int sampNum = ((0x001F0000 & eventdatabuf[j]) >> 16 );
-			//	unsigned int winNum = ((0x00E00000 & eventdatabuf[j]) >> 21 );
-			//	std::cout << std::hex << eventdatabuf[j];
-			//	std::cout << "\t" << bitNum;
-			//	std::cout << "\t" << sampNum;
-			//	std::cout << "\t" << winNum;
-			//	std::cout << std::endl;
-			//}
-			//std::cout << "END RESPONSE PACKET " << std::endl;
-			//std::cout << "RESPONSE PACKET SIZE: " << std::dec << eventdataSize << std::endl;
-			//std::cout << std::endl;
-
-			//toggle continue bit
-			control->registerWrite(board_id, 58, 1, regValReadback); //make sure readout is reset
-			control->registerWrite(board_id, 58, 0, regValReadback); //make sure readout is reset
-
 			//increment iterate count
 			numIter++;
 
+			//save data to file
+			//myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
+			if( eventdataSize > 10 )
+				control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
+
+			
+			//print out packet
+			unsigned int bitNum = 0;
 			unsigned int addrNum = 0;
+			unsigned int asicNum = 0;
+			unsigned int sampNum = 0;
 			for(int j=0;j<eventdataSize; j++){
-				if( eventdatabuf[j] == 0x00be11e2)
-					std::cout << "Packet Header " << std::hex << eventdatabuf[j] << std::endl;
-				if( eventdatabuf[j] == 0x065766e74 ){
-					addrNum = ((0x000001FF & eventdatabuf[j+1]) >> 0 );
-					std::cout << "Address number " << addrNum << std::endl;
-				}
-				std::cout << "RAW DATA\t" << std::hex << eventdatabuf[j] << std::dec;
-				if( (0xF0000000 & eventdatabuf[j]) != 0xD0000000 )
+				//std::cout << "RAW DATA\t" << std::hex << eventdatabuf[j] << std::dec << std::endl;
+				//detect packet header
+				if( eventdatabuf[j] == 0x00be11e2){
+					std::cout << "\tPacket Header " << std::hex << eventdatabuf[j] << std::endl;
 					continue;
-				unsigned int bitNum = ((0x0F000000 & eventdatabuf[j]) >> 24 );
-				unsigned int sampNum = ((0x001F0000 & eventdatabuf[j]) >> 16 );
-				unsigned int winNum = ((0x00E00000 & eventdatabuf[j]) >> 21 );
-				//std::cout << "\t" << std::hex << eventdatabuf[j] << std::dec;
+				}
+				//detect sample packet header
+				if( (0xFFF00000 & eventdatabuf[j]) == 0xABC00000 ){
+					std::cout << "\tSample Packet Header " << std::hex << eventdatabuf[j] << std::endl;
+					addrNum = ( (eventdatabuf[j] >> 10) & 0x000001FF );
+					asicNum = ( (eventdatabuf[j] >> 6) & 0x0000000F );
+					sampNum = (eventdatabuf[j] & 0x0000001F);
+					continue;
+				}
+				if( (0xFFF00000 & eventdatabuf[j]) != 0xDEF00000 )
+					continue;
+				bitNum = ( (eventdatabuf[j] >> 16) & 0x0000000F );
+				std::cout << "\t" << std::hex << eventdatabuf[j] << std::dec;
 				std::cout << "\t\t" << addrNum;			
-				std::cout << "\t" << bitNum;
+				std::cout << "\t" << asicNum;
 				std::cout << "\t" << sampNum;
-				std::cout << "\t" << winNum;
+				std::cout << "\t" << bitNum;
 				std::cout << std::endl;
-				if( addrNum < 0 || addrNum > 511 || bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 || winNum < 1)
+				if( addrNum < 0 || addrNum > 511 || bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 || asicNum < 0 || asicNum > 10)
 					continue;
 				//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
 				samples[addrNum][sampNum] = ((samples[addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
 				//samples[winNum-1][sampNum] = ((samples[winNum-1][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
 			}
+			
 
 			//std::cout << "Please enter character, Q to quit data readout loop" << std::endl;
 			//std::cin >> ct;
@@ -160,12 +163,7 @@ int main(int argc, char* argv[]){
 			//	break;
 		}
 
-		//reset readout
-		control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
-		control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
-		control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
-		control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
-
+		
 		//plot samples
   		TGraph *gPlot = new TGraph();
   		gPlot->SetMarkerColor(2);
@@ -193,24 +191,16 @@ int main(int argc, char* argv[]){
 		std::cout << std::dec << "DIG MAIN_CNT " << regValReadback << std::endl;
 		std::cout << std::dec << "DIG OFFSET " << digOffset << std::endl;
 
-		//reset readout
-		control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
-		control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
-		control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
-		control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
-
 		std::cout << "Please enter character, Q to quit" << std::endl;
 		std::cin >> ct;
-
-		//digOffset = ct - '0';
-		//if( digOffset < 0 || digOffset > 50)
-		//	digOffset = 0;
-		//digOffset = digOffset + 10;
-
-		//save data to file
-		//myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
-		control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
+		
 	}
+
+	//reset readout
+	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
+	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
+	control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
+	control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
 
 	//close output file
   	dataFile.close();

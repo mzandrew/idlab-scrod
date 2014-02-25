@@ -15,7 +15,9 @@ entity SerialDataRout is
    port (
         clk		 			 : in   std_logic;
         start	    		 : in   std_logic;  -- start serial readout
-		  WIN_CNT 		    : in   std_logic_vector(2 downto 0);
+		  EVENT_NUM			 : in   std_logic_vector(31 downto 0);
+		  WIN_ADDR			 : in   std_logic_vector(8 downto 0);
+		  ASIC_NUM 		    : in   std_logic_vector(3 downto 0);
 		  
 		  IDLE_status				 : out  std_logic;
 		  busy				 : out  std_logic;
@@ -218,7 +220,7 @@ if (Clk'event and Clk = '1') then
 	 BIT_CNT				<= (others=>'0');
 	 smplsi_any       <= '0';
 	 internal_srout_busy <= '1';
-	 internal_fifo_wr_din <= x"ABCDABCD";
+	 internal_fifo_wr_din <= x"ABC" & '0' & WIN_ADDR & ASIC_NUM & '0' & internal_samplesel(4 downto 0);
     if (Ev_CNT < ADDR_TIME) then   -- start (trigger was detected)
       Ev_CNT <= Ev_CNT + '1';
       next_state 	<= WaitStart;
@@ -239,7 +241,7 @@ if (Clk'event and Clk = '1') then
 	 fifo_wr_en			<= '1';
 	 internal_srout_busy <= '1';
       next_state 	<= WaitAddr;
-
+		
 	--turn smplsi_any on, wait to settle
    When WaitAddr =>
     sr_clk_i  	       <= '0';
@@ -363,7 +365,7 @@ if (Clk'event and Clk = '1') then
     SAMP_DONE_out        <= '0';
 	 --start_fifo		<= '1';
 	 fifo_wr_en			<= '1';
-	 internal_fifo_wr_din <= x"D" & BIT_CNT(3 downto 0) & WIN_CNT & internal_samplesel(4 downto 0) & dout;
+	 internal_fifo_wr_din <= x"DEF" & BIT_CNT(3 downto 0) & dout;
 	 next_state 	<= StoreDataEnd;
 	 
 	When StoreDataEnd =>

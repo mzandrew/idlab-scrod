@@ -52,9 +52,10 @@ entity ReadoutControl is
 			  EVTBUILD_DONE_SENDING_EVENT : in  STD_LOGIC;
 			  READOUT_RESET  : in  STD_LOGIC;
 			  READOUT_CONTINUE : in STD_LOGIC;
+			  RESET_EVENT_NUM : in STD_LOGIC;
 			  LATCH_SMP_MAIN_CNT : out STD_LOGIC_VECTOR(8 downto 0);
 			  LATCH_DONE : out STD_LOGIC;
-			  WIN_CNT : out STD_LOGIC_VECTOR(2 downto 0);
+			  ASIC_NUM : out STD_LOGIC_VECTOR(3 downto 0);
 			  busy_status : out STD_LOGIC;
            smp_stop : out  STD_LOGIC;
            dig_start : out  STD_LOGIC;
@@ -62,7 +63,8 @@ entity ReadoutControl is
 			  DIG_RD_COLSEL_S : out STD_LOGIC_VECTOR(5 downto 0);
            srout_start : out  STD_LOGIC;
 			  EVTBUILD_start : out  STD_LOGIC;
-			  EVTBUILD_MAKE_READY : out  STD_LOGIC
+			  EVTBUILD_MAKE_READY : out  STD_LOGIC;
+			  EVENT_NUM : out STD_LOGIC_VECTOR(31 downto 0)
 	  );
 end ReadoutControl;
 
@@ -86,6 +88,8 @@ type trig_state_type is
 	START_DIG,
 	WAIT_DIGITIZATION_IDLE_LOW,
 	WAIT_DIGITIZATION_IDLE_HIGH,
+	SROUT_ASIC_LOOP,
+	SROUT_CHECK_ASIC_ENABLED,
 	WAIT_READOUT_RESET,
 	WAIT_READOUT_CONTINUE_HIGH,
 	WAIT_READOUT_CONTINUE_LOW,
@@ -126,12 +130,15 @@ signal internal_LATCH_DONE : std_logic := '0';
 signal internal_LATCH_SMP_MAIN_CNT : UNSIGNED(8 downto 0) := '0' & x"00";
 signal internal_win_cnt : UNSIGNED(8 downto 0) := (others=>'0');
 signal internal_busy_status : std_logic := '0';
+signal internal_asic_cnt : INTEGER := 0;
 signal internal_smp_stop : std_logic := '0';
 signal internal_dig_start : std_logic := '0';
 signal internal_srout_start : std_logic := '0';
 signal internal_EVTBUILD_start : std_logic := '0';
 signal internal_EVTBUILD_MAKE_READY : std_logic := '0';
 signal internal_READOUT_CONTINUE : std_logic := '0';
+signal internal_ASIC_SROUT_ENABLE_BITS : std_logic_vector(9 downto 0) := "0000000001";
+signal internal_EVENT_NUM : UNSIGNED(31 downto 0) := x"00000000";
 
 begin
 
@@ -144,7 +151,8 @@ EVTBUILD_MAKE_READY <= internal_EVTBUILD_MAKE_READY;
 DIG_RD_ROWSEL_S(2 downto 0) <= std_logic_vector(internal_SMP_MAIN_CNT(2 downto 0));
 DIG_RD_COLSEL_S(5 downto 0) <= std_logic_vector(internal_SMP_MAIN_CNT(8 downto 3));
 LATCH_SMP_MAIN_CNT <= std_logic_vector(internal_LATCH_SMP_MAIN_CNT);
-WIN_CNT <= std_logic_vector(internal_win_cnt(2 downto 0));
+ASIC_NUM <= std_logic_vector(to_unsigned(internal_asic_cnt,ASIC_NUM'length));
+EVENT_NUM <= std_logic_vector(internal_EVENT_NUM);
 
 --latch trigger and related signals to SAMPLING clock domain
 process(smp_clk)
@@ -204,6 +212,18 @@ Case next_SmpClk_state is
 end if;
 end process;
 
+--control event number
+process(RESET_EVENT_NUM, internal_LATCH_DONE)
+begin
+	if (RESET_EVENT_NUM = '1') then
+		internal_EVENT_NUM <= (others=>'0');
+	else
+		if( rising_edge(internal_LATCH_DONE) ) then
+			internal_EVENT_NUM <= internal_EVENT_NUM + 1;
+		end if;
+	end if;
+end process;
+
 --latch signals to local clock domain
 process(clk)
 begin
@@ -237,6 +257,7 @@ if (clk'event and clk = '1') then
 		internal_EVTBUILD_MAKE_READY <= '0';
 		LATCH_DONE <= '0';
 		internal_win_cnt <= (others=>'0');
+		internal_asic_cnt <= 0;
 	if( internal_LATCH_DONE = '1') then 
 		next_trig_state <= WAIT_TRIG_DELAY;
 	else
@@ -278,6 +299,7 @@ if (clk'event and clk = '1') then
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
 		internal_busy_status <= '0';
+		internal_asic_cnt <= 0;
 		internal_SMP_MAIN_CNT <= internal_LATCH_SMP_MAIN_CNT + internal_win_cnt - internal_dig_offset;
 		if( internal_win_cnt < internal_win_num_to_read ) then
 			internal_win_cnt <= internal_win_cnt + 1; --update # of windows digitized counter
@@ -321,21 +343,52 @@ if (clk'event and clk = '1') then
 		next_trig_state <= WAIT_DIGITIZATION_IDLE_HIGH;
 	else
 		--next_trig_state <= START_SROUT;
-		next_trig_state <= WAIT_READOUT_CONTINUE_HIGH;
+		--next_trig_state <= WAIT_READOUT_CONTINUE_HIGH;
+		next_trig_state <= SROUT_ASIC_LOOP;
 	end if;
+	
+	--LOOP OVER ASICs in SERIAL READOUT
+	--first check if asic cnt > 10, if yes then done serail readout, goto DIG_WINDOW_LOOP
+	--check ASIC readout bit, if 1 goto START_SROUT, 0 goto SROUT_ASIC_LOOP
+	When SROUT_ASIC_LOOP =>
+		internal_smp_stop <= '1';
+		internal_dig_start <= '1';
+		internal_srout_start <= '0';
+		internal_EVTBUILD_start <= '0';
+		internal_EVTBUILD_MAKE_READY <= '0';
+		if( internal_asic_cnt < 10 ) then
+			next_trig_state <= SROUT_CHECK_ASIC_ENABLED; --continue serial readout, go to ASIC check
+		else
+			next_trig_state <= DIG_WINDOW_LOOP; -- done serial readout, go back to digitization loop
+		end if;
+	
+   --Check if specific ASIC is enabled for readout	
+	When SROUT_CHECK_ASIC_ENABLED =>
+		internal_smp_stop <= '1';
+		internal_dig_start <= '1';
+		internal_srout_start <= '0';
+		internal_EVTBUILD_start <= '0';
+		internal_EVTBUILD_MAKE_READY <= '0';
+		internal_asic_cnt <= internal_asic_cnt + 1;
+		if( internal_ASIC_SROUT_ENABLE_BITS( internal_asic_cnt ) = '1') then
+			--next_trig_state <= START_SROUT; --asic corresponding to internal_asic_cnt is enabled, read out
+			next_trig_state <= WAIT_READOUT_CONTINUE_HIGH;
+		else
+			next_trig_state <= SROUT_ASIC_LOOP; --asic not enabled, go back to SROUT to check next ASIC
+		end if;
 	
 	--READOUT CONTINUE CHECK GOES HERE, PAUSE THE READOUT TO PREVENT USB BUFFER OVERFLOW
 	--IMPORTANT: Don't pause readout for first window, slightly faster
 	When WAIT_READOUT_CONTINUE_HIGH =>
-	internal_busy_status <= '0';
-	if( internal_win_cnt = "000000001" OR internal_READOUT_CONTINUE = '1' ) then 
+	if( internal_READOUT_CONTINUE = '1' ) then 
 		next_trig_state <= WAIT_READOUT_CONTINUE_LOW;
 	else
+		internal_busy_status <= '0';
 		next_trig_state <= WAIT_READOUT_CONTINUE_HIGH;
 	end if;
 	
 	When WAIT_READOUT_CONTINUE_LOW =>
-	if( internal_win_cnt = "000000001" OR internal_READOUT_CONTINUE = '0' ) then 
+	if( internal_READOUT_CONTINUE = '0' ) then 
 		next_trig_state <= START_SROUT;
 	else
 		next_trig_state <= WAIT_READOUT_CONTINUE_LOW;
@@ -395,16 +448,9 @@ if (clk'event and clk = '1') then
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '1'; --leave this high, gets cleared in START_DIG or READOUT_RESET
 		internal_busy_status <= '0'; --readout is not busy at this point
-			next_trig_state <= DIG_WINDOW_LOOP; --go back to check if any more windows need digitizing
+			--next_trig_state <= DIG_WINDOW_LOOP; --go back to check if any more windows need digitizing
 			--next_trig_state <= WAIT_READOUT_RESET;
-		--wait some number of clock cycles after sending data packet, let USB FIFO process
-		--if( x"1000" > INTERNAL_COUNTER ) then 
-		--	INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
-		--		next_trig_state <= SET_EVTBUILD_MAKE_READY;
-		--else
-		--	INTERNAL_COUNTER <= (Others => '0');
-		--		next_trig_state <=DIG_WINDOW_LOOP;
-		--end if;
+			next_trig_state <= SROUT_ASIC_LOOP;  --go back to SROUT_ASIC_LOOP to if more ASICs need to be read out
 			
 	--wait for readout to be reset via command interpreter controlled internal_LATCH_DONE
 	When WAIT_READOUT_RESET =>
