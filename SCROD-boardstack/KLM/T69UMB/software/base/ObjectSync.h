@@ -16,7 +16,7 @@ public:
 	virtual ~ObjectSync();
 		/// Destructor.
 
-	void insert(const T* object);
+	void insert(T* object);
 		/// Inserts an object to the list.
 
 	T* getObject();
@@ -49,7 +49,7 @@ ObjectSync<T>::~ObjectSync()
 }
 
 template<class T>
-void ObjectSync<T>::insert(const T* object)
+void ObjectSync<T>::insert(T* object)
 {
 	pthread_mutex_lock(&_data_mutex);
 	_data.push(object);

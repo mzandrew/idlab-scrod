@@ -12,7 +12,7 @@ KlmModule::KlmModule()
 }
 
 KlmModule::KlmModule(DetectorInterface* interface)
-: _interface(interface), _packet_id(0)
+: _interface(interface), _packet_id(0), _run(true)
 {
 }
 
@@ -93,10 +93,51 @@ void KlmModule::write_ASIC_register(uint8_t card, uint8_t address, uint16_t valu
 	write_register(SCROD_REGISTER_T6_STROBE, (scrod_register)0, true);
 }
 
-void KlmModule::start()
+bool KlmModule::start(ObjectSync<ScrodPacket>*	data_drain)
 {
+	_data_drain = data_drain;
+	
+	// start the thread
+	pthread_attr_init(&_thread_att);
+	pthread_attr_setdetachstate(&_thread_att, PTHREAD_CREATE_JOINABLE);
+	int rc = pthread_create(&_thread, &_thread_att, KlmModule::pt_starter, (void*)this);
+	if (rc)
+	{
+		return false;
+	}
+	
+	_run = true;
+	
+	return true;
 }
 
 void KlmModule::stop()
 {
+	_run = false;
+}
+
+void KlmModule::wait_end(std::ostream& output)
+{
+	void* status;
+	pthread_join(_thread, &status);
+}
+
+void* KlmModule::pt_starter(void* module)
+{
+	((KlmModule*)module)->run();
+	pthread_exit(NULL);
+}
+
+void KlmModule::run()
+{
+	// doing the actual thing
+	
+	ScrodPacket* pack;
+	
+	while(should_continue())
+	{
+		pack = this->read_packet();
+		if(pack)
+			_data_drain->insert(pack);
+	}	
 }

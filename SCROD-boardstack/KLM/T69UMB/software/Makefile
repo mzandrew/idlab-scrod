@@ -21,4 +21,4 @@ bin/KlmAsicWrite : tools/KlmAsicWrite.o $(OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS)
 bin/KlmConfigure : tools/KlmConfigure.o $(OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
 
 clean: 
-	-rm -rf tmp/* bin/*
+	-rm -rf base/*.o bin/* tools/*.o
