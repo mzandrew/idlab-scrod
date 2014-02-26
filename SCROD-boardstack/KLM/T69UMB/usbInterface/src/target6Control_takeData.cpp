@@ -60,14 +60,14 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read
+	control->registerWriteReadback(board_id, 57, 1, regValReadback); //set # of windows to read
 
 	//define output file		
 	ofstream dataFile;
   	dataFile.open ("output_target6Control_takeData.dat", ios::out | ios::binary );
 
 	char ct = 0;
-	int digOffset = 20;
+	int digOffset = 2;
 	control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
 	while(ct != 'Q'){
 	//for( int numEv = 0 ; numEv < 10 ; numEv++ ){
@@ -94,10 +94,11 @@ int main(int argc, char* argv[]){
 		int eventdataSize = 20;
 		int numIter = 0;
 
-		unsigned int samples[512][32];
+		unsigned int samples[10][512][32];
+  		for(int a = 0 ; a < 10 ; a++)
   		for(int i = 0 ; i < 512 ; i++)
   		for(int j = 0 ; j < 32 ; j++)
-			samples[i][j] = 0;
+			samples[a][i][j] = 0;
 
 		while(eventdataSize > 10 && numIter < 50){
 		//while( numIter < 4){
@@ -149,10 +150,12 @@ int main(int argc, char* argv[]){
 				std::cout << "\t" << sampNum;
 				std::cout << "\t" << bitNum;
 				std::cout << std::endl;
-				if( addrNum < 0 || addrNum > 511 || bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 || asicNum < 0 || asicNum > 10)
+				if( addrNum < 0 || addrNum > 511 || bitNum < 0 || bitNum > 11 || sampNum < 0 || sampNum > 31 || asicNum < 1 || asicNum > 10 )
 					continue;
 				//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
-				samples[addrNum][sampNum] = ((samples[addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+				samples[asicNum-1][addrNum][sampNum] 
+					= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+
 				//samples[winNum-1][sampNum] = ((samples[winNum-1][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
 			}
 			
@@ -163,25 +166,38 @@ int main(int argc, char* argv[]){
 			//	break;
 		}
 
-		
+		TGraph *gPlot[10];
+		int numPoint[10];
+		for(int a = 0 ; a < 10 ; a++){
+			numPoint[a] = 0;
+			gPlot[a] = new TGraph();
+  			gPlot[a]->SetMarkerColor(2);
+  			gPlot[a]->SetMarkerStyle(21);
+  			gPlot[a]->SetMarkerSize(1.5);
+		}		
+
 		//plot samples
-  		TGraph *gPlot = new TGraph();
-  		gPlot->SetMarkerColor(2);
-  		gPlot->SetMarkerStyle(21);
-  		gPlot->SetMarkerSize(1.5);
-		int numPoint = 0;
+		for(int a = 0 ; a < 10 ; a++)
 		for(int i = 0 ; i < 512 ; i++)
 		for(int j = 0 ; j < 32 ; j++){
-			if( samples[i][j] > 10){
+			if( samples[a][i][j] > 10){
+			//if(1){
 				//std::cout << std::dec << samples[i][j] << std::endl;
-				gPlot->SetPoint(numPoint,32*i + j,samples[i][j]);
-				numPoint++;
+				gPlot[a]->SetPoint(numPoint[a],32*i + j,samples[a][i][j]);
+				numPoint[a]++;
 			}
   		}
 
 		c0->Clear();
-		gPlot->GetYaxis()->SetRangeUser(0,4100);
-  		gPlot->Draw("AP");
+		c0->Divide(3,4);
+		for(int a = 0 ; a < 10 ; a++){
+			if( numPoint[a] < 10 )
+				continue;
+			c0->cd(a+1);
+			std::cout << std::dec << numPoint[a] << std::endl;
+			gPlot[a]->GetYaxis()->SetRangeUser(0,4100);
+  			gPlot[a]->Draw("AP");
+		}
   		c0->Update();
 
 		//check main_cnt variable

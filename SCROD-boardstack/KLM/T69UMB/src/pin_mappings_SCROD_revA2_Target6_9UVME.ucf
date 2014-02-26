@@ -254,283 +254,262 @@ NET BUSB_DO<15>			LOC= "R24";
 
 ########################################################
 
-NET "SR_CLOCK"			LOC= "M1";
+#NET SHOUT<0>					LOC= "R4";
+NET PCLK<0>						LOC= "T3";
+NET SIN<0>						LOC= "U3";
+
 #NET "TDC1_TRG_MON"			LOC= "N1";
+NET TDC1_TRG_16				LOC= "N2";
+NET TDC1_TRG<3>				LOC= "E3";
+NET TDC1_TRG<2>				LOC= "F3";
+NET TDC1_TRG<1>				LOC= "G4";
+NET TDC1_TRG<0>				LOC= "H5";
 
-NET TDC1_TRG_16			LOC= "N2";
-NET TDC1_TRG<3>			LOC= "E3";
-NET TDC1_TRG<2>			LOC= "F3";
-
-NET TDC1_TRG<1>			LOC= "G4";
-NET TDC1_TRG<0>			LOC= "H5";
-NET "WR_STRB"			LOC= "J4";
-
-NET "WR_ADVCLK"			LOC= "K3";
-NET "WR_ENA"			LOC= "L3";
-NET "SSTIN"			LOC= "M3";
-
-NET "SSPIN"			LOC= "N3";
-#NET "TDC1_RCO_SSPOUT"			LOC= "N5";
+NET SSPIN<0>					LOC= "N3";
+NET SSTIN<0>					LOC= "M3";
+NET WR_ADVCLK<0>				LOC= "K3";
+NET WR_STRB<0>					LOC= "J4";
+NET WR_ENA<0>					LOC= "L3";
+#NET "TDC1_RCO_SSPOUT"		LOC= "N5";
 #NET "TDC1_TSTOUT"			LOC= "P5";
 
-#NET "SHOUT"			LOC= "R4";
-NET PCLK<0>			LOC= "T3";
-NET SIN<0>			LOC= "U3";
+NET SR_CLOCK<0>				LOC= "M1";
+NET SAMPLESEL_ANY<0>			LOC= "U5";
 
-NET "SAMPLESEL_ANY"			LOC= "U5";
-NET "TDC_CS_DAC<0>"			LOC= "V4";
+NET TDC_CS_DAC<0>				LOC= "V4";
 
 ########################################################
 
-#NET "TDC2_TRG_4"			LOC= "F1";
-#NET "TDC2_TRG_3"			LOC= "E1";
-#NET "TDC2_TRG_2"			LOC= "C1";
-#NET "TDC2_TRG_1"			LOC= "C2";
-#NET "TDC2_WR_STRB"			LOC= "D1";
-#NET "TDC2_WR_ADVCLK"			LOC= "B2";
-#NET "TDC2_WR_ENA"			LOC= "E2";
-#NET "TDC2_SSTIN"			LOC= "B1";
-#NET "TDC2_SSPIN"			LOC= "G1";
+#NET SHOUT<1>					LOC= "J1";
+NET PCLK<1>						LOC= "J2";
+NET SIN<1>						LOC= "K1";
 
+#NET "TDC2_TRG_MON"			LOC= "W8";
+NET TDC2_TRG_16				LOC= "AD4";
+NET TDC2_TRG<3>				LOC= "F1";
+NET TDC2_TRG<2>				LOC= "E1";
+NET TDC2_TRG<1>				LOC= "C1";
+NET TDC2_TRG<0>				LOC= "C2";
+
+NET SSPIN<1>					LOC= "G1";
+NET SSTIN<1>					LOC= "B1";
+NET WR_STRB<1>					LOC= "D1";
+NET WR_ADVCLK<1>				LOC= "B2";
+NET WR_ENA<1>					LOC= "E2";
 #NET "TDC2_RCO_SSPOUT"			LOC= "G2";
 #NET "TDC2_TSTOUT"			LOC= "H1";
-#NET "TDC2_SHOUT"			LOC= "J1";
 
-NET PCLK<1>			LOC= "J2";
-NET SIN<1>			LOC= "K1";
-#NET "TDC2_SAMPLESEL_ANY"			LOC= "L1";
+NET SR_CLOCK<1>				LOC= "AC5";
+NET SAMPLESEL_ANY<1>			LOC= "L1";
 
-NET "TDC_CS_DAC<1>"			LOC= "L2";
-
-#NET "TDC2_TRG_16"			LOC= "AD4";
-#NET "TDC2_TRG_MON"			LOC= "W8";
-#NET "TDC2_SR_CLOCK"			LOC= "AC5";
+NET TDC_CS_DAC<1>				LOC= "L2";
 
 ########################################################
 
-NET "TDC_CS_DAC<2>"			LOC= "R10";
-#NET "TDC3_SAMPLESEL_ANY"			LOC= "AF4";
-NET SIN<2>			LOC= "AF5";
-
-NET PCLK<2>			LOC= "AE5";
-#NET "TDC3_SHOUT"			LOC= "AF6";
-#NET "TDC3_TSTOUT"			LOC= "AD6";
-
-#NET "TDC3_RCO_SSPOUT"			LOC= "AA10";
-#NET "TDC3_SSPIN"			LOC= "AA9";
-#NET "TDC3_SSTIN"			LOC= "V11";
-
-#NET "TDC3_WR_ENA"			LOC= "Y11";
-#NET "TDC3_WR_ADVCLK"			LOC= "AB13";
-#NET "TDC3_WR_STRB"			LOC= "V12";
-
-#NET "TDC3_TRG_1"			LOC= "AA12";
-#NET "TDC3_TRG_2"			LOC= "AA6";
-#NET "TDC3_TRG_3"			LOC= "P10";
-
-#NET "TDC3_SR_CLOCK"			LOC= "W12";
+#NET SHOUT<2>					LOC= "AF6";
+NET PCLK<2>						LOC= "AE5";
+NET SIN<2>						LOC= "AF5";
 
 #NET "TDC3_TRG_MON"			LOC= "Y13";
-#NET "TDC3_TRG_16"			LOC= "Y12";
-#NET "TDC3_TRG_4"			LOC= "V13";
+NET TDC3_TRG_16				LOC= "Y12";
+NET TDC3_TRG<3>				LOC= "V13";
+NET TDC3_TRG<2>				LOC= "P10";
+NET TDC3_TRG<1>				LOC= "AA6";
+NET TDC3_TRG<0>				LOC= "AA12";
 
+NET SSPIN<2>					LOC= "AA9";
+NET SSTIN<2>					LOC= "V11";
+NET WR_ADVCLK<2>				LOC= "AB13";
+NET WR_STRB<2>					LOC= "V12";
+NET WR_ENA<2>					LOC= "Y11";
+#NET "TDC3_RCO_SSPOUT"		LOC= "AA10";
+#NET "TDC3_TSTOUT"			LOC= "AD6";
+
+NET SR_CLOCK<2>				LOC= "W12";
+NET SAMPLESEL_ANY<2>			LOC= "AF4";
+
+NET TDC_CS_DAC<2>				LOC= "R10";
 
 ########################################################
 
-#NET "TDC4_TRG_2"			LOC= "AA7";
-#NET "TDC4_TRG_1"			LOC= "W7";
-#NET "TDC4_WR_STRB"			LOC= "AD5";
-
-#NET "TDC4_WR_ADVCLK"			LOC= "AC6";
-#NET "TDC4_WR_ENA"			LOC= "AB7";
-#NET "TDC4_SSTIN"			LOC= "AA8";
-
-#NET "TDC4_SSPIN"			LOC= "Y9";
-#NET "TDC4_RCO_SSPOUT"			LOC= "W9";
-#NET "TDC4_TSTOUT"			LOC= "W10";
-
-#NET "TDC4_SHOUT"			LOC= "AB11";
-NET PCLK<3>			LOC= "AB9";
-NET SIN<3>			LOC= "V10";
-
-#NET "TDC4_SAMPLESEL_ANY"			LOC= "AA11";
-NET "TDC_CS_DAC<3>"			LOC= "AA13";
-
-#NET "TDC4_TRG_3"			LOC= "H6";
-#NET "TDC4_TRG_4"			LOC= "K6";
-#NET "TDC4_TRG_16"			LOC= "K8";
+#NET SHOUT<3>					LOC= "AB11";
+NET PCLK<3>						LOC= "AB9";
+NET SIN<3>						LOC= "V10";
 
 #NET "TDC4_TRG_MON"			LOC= "L7";
-#NET "TDC4_SR_CLOCK"			LOC= "M6";
+NET TDC4_TRG_16				LOC= "K8";
+NET TDC4_TRG<3>				LOC= "K6";
+NET TDC4_TRG<2>				LOC= "H6";
+NET TDC4_TRG<1>				LOC= "AA7";
+NET TDC4_TRG<0>				LOC= "W7";
+
+NET SSPIN<3>					LOC= "Y9";
+NET SSTIN<3>					LOC= "AA8";
+NET WR_ADVCLK<3>				LOC= "AC6";
+NET WR_STRB<3>					LOC= "AD5";
+NET WR_ENA<3>					LOC= "AB7";
+#NET "TDC4_RCO_SSPOUT"		LOC= "W9";
+#NET "TDC4_TSTOUT"			LOC= "W10";
+
+NET SR_CLOCK<3>				LOC= "M6";
+NET SAMPLESEL_ANY<3>			LOC= "AA11";
+
+NET TDC_CS_DAC<3>				LOC= "AA13";
 
 ########################################################
-NET "TDC_CS_DAC<4>"			LOC= "N6";
 
-#NET "TDC5_SAMPLESEL_ANY"			LOC= "N8";
-NET SIN<4>			LOC= "P8";
-NET PCLK<4>			LOC= "R7";
+#NET "TDC5_SHOUT"				LOC= "T6";
+NET PCLK<4>						LOC= "R7";
+NET SIN<4>						LOC= "P8";
 
-#NET "TDC5_SHOUT"			LOC= "T6";
+#NET "TDC5_TRG_MON"			LOC= "T8";
+NET TDC5_TRG_16				LOC= "U8";
+NET TDC5_TRG<3>				LOC= "V7";
+NET TDC5_TRG<2>				LOC= "J9";
+NET TDC5_TRG<1>				LOC= "L9";
+NET TDC5_TRG<0>				LOC= "M9";
+
+NET SSPIN<4>					LOC= "Y6";
+NET SSTIN<4>					LOC= "K9";
+NET WR_STRB<4>					LOC= "N9";
+NET WR_ADVCLK<4>				LOC= "R9";
+NET WR_ENA<4>					LOC= "T9";
 #NET "TDC5_TSTOUT"			LOC= "U7";
 #NET "TDC5_SSPOUT"			LOC= "V6";
 
-#NET "TDC5_SSPIN"			LOC= "Y6";
-#NET "TDC5_SSTIN"			LOC= "K9";
-#NET "TDC5_SR_CLOCK"			LOC= "R8";
+NET SR_CLOCK<4>				LOC= "R8";
+NET SAMPLESEL_ANY<4>			LOC= "N8";
 
-#NET "TDC5_TRG_MON"			LOC= "T8";
-#NET "TDC5_TRG_16"			LOC= "U8";
-#NET "TDC5_TRG_4"			LOC= "V7";
-
-#NET "TDC5_TRG_3"			LOC= "J9";
-#NET "TDC5_TRG_2"			LOC= "L9";
-#NET "TDC5_TRG_1"			LOC= "M9";
-
-#NET "TDC5_WR_STRB"			LOC= "N9";
-#NET "TDC5_WR_ADVCLK"			LOC= "R9";
-#NET "TDC5_WR_ENA"			LOC= "T9";
+NET TDC_CS_DAC<4>				LOC= "N6";
 
 ########################################################
 
-#NET "TDC6_SR_CLOCK"			LOC= "AC25";
-#NET "TDC6_TRG_MON"			LOC= "AC26";
+#NET "TDC6_SHOUT"				LOC= "L24";
+NET PCLK<5>						LOC= "L23";
+NET SIN<5>						LOC= "M23";
 
-#NET "TDC6_TRG_16"			LOC= "AD26";
-#NET "TDC6_TRG_4"			LOC= "AE26";
-#NET "TDC6_TRG_3"			LOC= "AE25";
+#NET TDC6_TRG_MON				LOC= "AC26";
+NET TDC6_TRG_16				LOC= "AD26";
+NET TDC6_TRG<3>				LOC= "AE26";
+NET TDC6_TRG<2>				LOC= "AE25";
+NET TDC6_TRG<1>				LOC= "C24";
+NET TDC6_TRG<0>				LOC= "D24";
 
-#NET "TDC6_TRG_2"			LOC= "C24";
-#NET "TDC6_TRG_1"			LOC= "D24";
-
-#NET "TDC6_WR_STRB"			LOC= "E24";
-#NET "TDC6_WR_ADVCLK"			LOC= "F24";
-#NET "TDC6_WR_ENA"			LOC= "F22";
-
-#NET "TDC6_SSTIN"			LOC= "G23";
-#NET "TDC6_SSPIN"			LOC= "H22";
-#NET "TDC6_RCO_SSPOUT"			LOC= "J23";
-
+NET SSPIN<5>					LOC= "H22";
+NET SSTIN<5>					LOC= "G23";
+NET WR_ADVCLK<5>				LOC= "F24";
+NET WR_STRB<5>					LOC= "E24";
+NET WR_ENA<5>					LOC= "F22";
+#NET "TDC6_RCO_SSPOUT"		LOC= "J23";
 #NET "TDC6_TSTOUT"			LOC= "K24";
-#NET "TDC6_SHOUT"			LOC= "L24";
-NET PCLK<5>			LOC= "L23";
 
-NET SIN<5>			LOC= "M23";
-#NET "TDC6_SAMPLESEL_ANY"			LOC= "N23";
-NET "TDC_CS_DAC<5>"			LOC= "P24";
+NET SR_CLOCK<5>				LOC= "AC25";
+NET SAMPLESEL_ANY<5>			LOC= "N23";
+
+NET TDC_CS_DAC<5>				LOC= "P24";
 
 ########################################################
 
-#NET "TDC7_TRG_2"			LOC= "M10";
-#NET "TDC7_TRG_3"			LOC= "L10";
-#NET "TDC7_TRG_4"			LOC= "K10";
+#NET "TDC7_SHOUT"				LOC= "W25";
+NET PCLK<6>						LOC= "Y26";
+NET SIN<6>						LOC= "AA25";
 
-#NET "TDC7_TRG_16"			LOC= "AA15";
 #NET "TDC7_TRG_MON"			LOC= "V14";
-#NET "TDC7_SR_CLOCK"			LOC= "Y15";
+NET TDC7_TRG_16				LOC= "AA15";
+NET TDC7_TRG<3>				LOC= "K10";
+NET TDC7_TRG<2>				LOC= "L10";
+NET TDC7_TRG<1>				LOC= "M10";
+NET TDC7_TRG<0>				LOC= "P26";
 
-#NET "TDC7_TRG_1"			LOC= "P26";
-#NET "TDC7_WR_STRB"			LOC= "R26";
-#NET "TDC7_WR_ADVCLK"			LOC= "R25";
+NET SSPIN<6>					LOC= "U24";
+NET SSTIN<6>					LOC= "U23";
+NET WR_STRB<6>					LOC= "R26";
+NET WR_ADVCLK<6>				LOC= "R25";
+NET WR_ENA<6>					LOC= "T26";
+#NET TDC7_RCO_SSPOUT			LOC= "V26";
+#NET TDC7_TSTOUT				LOC= "W26";
 
-#NET "TDC7_WR_ENA"			LOC= "T26";
-#NET "TDC7_SSTIN"			LOC= "U23";
-#NET "TDC7_SSPIN"			LOC= "U24";
+NET SR_CLOCK<6>				LOC= "Y15";
+NET SAMPLESEL_ANY<6>			LOC= "AA26";
 
-#NET "TDC7_RCO_SSPOUT"			LOC= "V26";
-#NET "TDC7_TSTOUT"			LOC= "W26";
-#NET "TDC7_SHOUT"			LOC= "W25";
-
-NET PCLK<6>			LOC= "Y26";
-NET SIN<6>			LOC= "AA25";
-#NET "TDC7_SAMPLESEL_ANY"			LOC= "AA26";
-
-NET "TDC_CS_DAC<6>"			LOC= "AB26";
+NET TDC_CS_DAC<6>				LOC= "AB26";
 
 ########################################################
 
-NET "TDC_CS_DAC<7>"			LOC= "AA18";
-#NET "TDC8_SAMPLESEL_ANY"			LOC= "W16";
-NET SIN<7>			LOC= "AA19";
+#NET "TDC8_SHOUT"				LOC= "Y17";
+NET PCLK<7>						LOC= "U15";
+NET SIN<7>						LOC= "AA19";
 
-NET PCLK<7>			LOC= "U15";
-#NET "TDC8_SHOUT"			LOC= "Y17";
+#NET TDC8_TRG_MON"			LOC= "AA17";
+NET TDC8_TRG_16				LOC= "AB21";
+NET TDC8_TRG<3>				LOC= "W18";
+NET TDC8_TRG<2>				LOC= "AC22";
+NET TDC8_TRG<1>				LOC= "Y20";
+NET TDC8_TRG<0>				LOC= "AA22";
+
+NET SSPIN<7>					LOC= "AF22";
+NET SSTIN<7>					LOC= "B24";
+NET WR_ADVCLK<7>				LOC= "W20";
+NET WR_STRB<7>					LOC= "Y21";
+NET WR_ENA<7>					LOC= "AB22";
+#NET "TDC8_RCO_SSPOUT"			LOC= "W17";
 #NET "TDC8_TSTOUT"			LOC= "AA21";
 
-#NET "TDC8_RCO_SSPOUT"			LOC= "W17";
-#NET "TDC8_SSPIN"			LOC= "AF22";
-#NET "TDC8_SSTIN"			LOC= "B24";
+NET SR_CLOCK<7>				LOC= "V16";
+NET SAMPLESEL_ANY<7>			LOC= "W16";
 
-#NET "TDC8_WR_ENA"			LOC= "AB22";
-#NET "TDC8_WR_ADVCLK"			LOC= "W20";
-#NET "TDC8_WR_STRB"			LOC= "Y21";
-#NET "TDC8_SR_CLOCK"			LOC= "V16";
-#NET "TDC8_TRG_MON"			LOC= "AA17";
-#NET "TDC8_TRG_16"			LOC= "AB21";
-
-#NET "TDC8_TRG_4"			LOC= "W18";
-
-
-#NET "TDC8_TRG_3"			LOC= "AC22";
-#NET "TDC8_TRG_2"			LOC= "Y20";
-#NET "TDC8_TRG_1"			LOC= "AA22";
+NET TDC_CS_DAC<7>				LOC= "AA18";
 
 ########################################################
 
+#NET "TDC9_SHOUT"				LOC= "V15";
+NET PCLK<8>						LOC= "AA16";
+NET SIN<8>						LOC= "AB17";
 
-
-#NET "TDC9_SSTIN"			LOC= "U13";
-#NET "TDC9_SSPIN"			LOC= "W14";
-#NET "TDC9_RCO_SSPOUT"			LOC= "P17";
-
-#NET "TDC9_TSTOUT"			LOC= "AB15";
-#NET "TDC9_SHOUT"			LOC= "V15";
-NET PCLK<8>			LOC= "AA16";
-
-NET SIN<8>			LOC= "AB17";
-#NET "TDC9_SAMPLESEL_ANY"			LOC= "Y16";
-NET "TDC_CS_DAC<8>"			LOC= "AB19";
-
-#NET "TDC9_TRG_1"			LOC= "U21";
-#NET "TDC9_TRG_2"			LOC= "T20";
-#NET "TDC9_TRG_3"			LOC= "R20";
-
-#NET "TDC9_TRG_4"			LOC= "P19";
-#NET "TDC9_TRG_16"			LOC= "N19";
 #NET "TDC9_TRG_MON"			LOC= "N21";
+NET TDC9_TRG_16				LOC= "N19";
+NET TDC9_TRG<3>				LOC= "P19";
+NET TDC9_TRG<2>				LOC= "R20";
+NET TDC9_TRG<1>				LOC= "T20";
+NET TDC9_TRG<0>				LOC= "U21";
 
-#NET "TDC9_SR_CLOCK"			LOC= "M21";
+NET SSPIN<8>					LOC= "W14";
+NET SSTIN<8>					LOC= "U13";
+NET WR_ADVCLK<8>				LOC= "R18";
+NET WR_STRB<8>					LOC= "U9";
+NET WR_ENA<8>					LOC= "N18";
+#NET "TDC9_RCO_SSPOUT"		LOC= "P17";
+#NET "TDC9_TSTOUT"			LOC= "AB15";
 
+NET SR_CLOCK<8>				LOC= "M21";
+NET SAMPLESEL_ANY<8>			LOC= "Y16";
 
-#NET "TDC9_WR_STRB"			LOC= "U9";
-#NET "TDC9_WR_ADVCLK"			LOC= "R18";
-#NET "TDC9_WR_ENA"			LOC= "N18";
-
+NET TDC_CS_DAC<8>				LOC= "AB19";
 
 ########################################################
 
-NET "TDC_CS_DAC<9>"			LOC= "L20";
-#NET "TDC10_SAMPLESEL_ANY"			LOC= "K19";
-
-NET SIN<9>			LOC= "K21";
-NET PCLK<9>			LOC= "H20";
 #NET "TDC10_SHOUT"			LOC= "G20";
-#NET "TDC10_SR_CLOCK"			LOC= "K18";
+NET PCLK<9>						LOC= "H20";
+NET SIN<9>						LOC= "K21";
+
 #NET "TDC10_TRG_MON"			LOC= "V21";
+NET TDC10_TRG_16				LOC= "U20";
+NET TDC10_TRG<3>				LOC= "T19";
+NET TDC10_TRG<2>				LOC= "R19";
+NET TDC10_TRG<1>				LOC= "R21";
+NET TDC10_TRG<0>				LOC= "P21";
 
-#NET "TDC10_TRG_16"			LOC= "U20";
-#NET "TDC10_TRG_4"			LOC= "T19";
-#NET "TDC10_TRG_3"			LOC= "R19";
-
-#NET "TDC10_TRG_2"			LOC= "R21";
-#NET "TDC10_TRG_1"			LOC= "P21";
-#NET "TDC10_WR_STRB"			LOC= "N20";
-
-#NET "TDC10_WR_ADVCLK"			LOC= "M19";
-#NET "TDC10_WR_ENA"			LOC= "L19";
-#NET "TDC10_SSTIN"			LOC= "L21";
-
-#NET "TDC10_SSPIN"			LOC= "K20";
-#NET "TDC10_RCO_SSPOUT"			LOC= "J20";
+NET SSPIN<9>					LOC= "K20";
+NET SSTIN<9>					LOC= "L21";
+NET WR_ADVCLK<9>				LOC= "M19";
+NET WR_STRB<9>					LOC= "N20";
+NET WR_ENA<9>					LOC= "L19";
+#NET "TDC10_RCO_SSPOUT"		LOC= "J20";
 #NET "TDC10_TSTOUT"			LOC= "H21";
+
+NET SR_CLOCK<9>				LOC= "K18";
+NET SAMPLESEL_ANY<9>			LOC= "K19";
+
+NET TDC_CS_DAC<9>				LOC= "L20";
 
 ########################################################
