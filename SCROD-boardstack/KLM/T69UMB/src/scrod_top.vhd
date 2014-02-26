@@ -126,14 +126,18 @@ entity scrod_top is
 		--SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0)
 		
 		--Sampling Signals
-		SSTIN								 : out STD_LOGIC;
-		SSPIN								 : out STD_LOGIC;
-		WR_STRB 							 : out STD_LOGIC;
-		WR_ADVCLK 						 : out STD_LOGIC;
-		WR_ENA 						 	 : out STD_LOGIC;
+		SSTIN								 : out STD_LOGIC_VECTOR(9 downto 0);
+		SSPIN								 : out STD_LOGIC_VECTOR(9 downto 0);
+		WR_STRB 							 : out STD_LOGIC_VECTOR(9 downto 0);
+		WR_ADVCLK 						 : out STD_LOGIC_VECTOR(9 downto 0);
+		WR_ENA 						 	 : out STD_LOGIC_VECTOR(9 downto 0);
 		
 		--Digitization Signals
-
+		
+		--Serial Readout Signals
+		SR_CLOCK							 : out STD_LOGIC_VECTOR(9 downto 0);
+		SAMPLESEL_ANY 					 : out STD_LOGIC_VECTOR(9 downto 0);
+		
 		-- HV DAC
 		BUSA_SCK_DAC		          : out STD_LOGIC;
 		BUSA_DIN_DAC		          : out STD_LOGIC;
@@ -145,11 +149,36 @@ entity scrod_top is
 		TDC_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
 		TOP_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
 		
-		--Serial Readout Signals
-		SR_CLOCK							 : out STD_LOGIC;
-		SAMPLESEL_ANY 					 : out STD_LOGIC;
+		--TRIGGER SIGNALS
 		TDC1_TRG_16						 : in STD_LOGIC;
-		TDC1_TRG							 : in STD_LOGIC_VECTOR(3 downto 0)
+		TDC1_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC2_TRG_16						 : in STD_LOGIC;
+		TDC2_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC3_TRG_16						 : in STD_LOGIC;
+		TDC3_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC4_TRG_16						 : in STD_LOGIC;
+		TDC4_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC5_TRG_16						 : in STD_LOGIC;
+		TDC5_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC6_TRG_16						 : in STD_LOGIC;
+		TDC6_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC7_TRG_16						 : in STD_LOGIC;
+		TDC7_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC8_TRG_16						 : in STD_LOGIC;
+		TDC8_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC9_TRG_16						 : in STD_LOGIC;
+		TDC9_TRG							 : in STD_LOGIC_VECTOR(3 downto 0);
+		
+		TDC10_TRG_16					 : in STD_LOGIC;
+		TDC10_TRG						 : in STD_LOGIC_VECTOR(3 downto 0)
 	);
 end scrod_top;
 
@@ -260,42 +289,44 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 
 	--ASIC SAMPLING CONTROL
-	signal internal_SMP_START : std_logic := '0';
-	signal internal_SMP_STOP : std_logic := '0';
-	signal internal_SMP_IDLE_status : std_logic := '0';
-	signal internal_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
-	signal internal_SSTIN : std_logic := '0';
-	signal internal_SSPIN : std_logic := '0';
-	signal internal_WR_STRB : std_logic := '0';
-	signal internal_WR_ADVCLK : std_logic := '0';
-	signal internal_WR_ENA : std_logic := '0';
-	signal internal_WR_ADDRCLR : std_logic := '0';
+	signal internal_SMP_START 				: std_logic := '0';
+	signal internal_SMP_STOP 				: std_logic := '0';
+	signal internal_SMP_IDLE_status 		: std_logic := '0';
+	signal internal_SMP_MAIN_CNT 			: std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_SSTIN 					: std_logic := '0';
+	signal internal_SSPIN 					: std_logic := '0';
+	signal internal_WR_STRB 				: std_logic := '0';
+	signal internal_WR_ADVCLK 				: std_logic := '0';
+	signal internal_WR_ENA 					: std_logic := '0';
+	signal internal_WR_ADDRCLR 			: std_logic := '0';
 	
 	--ASIC DIGITIZATION CONTROL
-	signal internal_DIG_STARTDIG : std_logic := '0';
-	signal internal_DIG_IDLE_status : std_logic := '0';
-	signal internal_DIG_RD_ENA : std_logic := '0';
-	signal internal_DIG_CLR : std_logic := '0';
-	signal internal_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-	signal internal_DIG_RD_COLSEL_S : STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
-	signal internal_DIG_START : STD_LOGIC := '0';
-	signal internal_DIG_RAMP : STD_LOGIC := '0';
+	signal internal_DIG_STARTDIG 			: std_logic := '0';
+	signal internal_DIG_IDLE_status 		: std_logic := '0';
+	signal internal_DIG_RD_ENA 			: std_logic := '0';
+	signal internal_DIG_CLR 				: std_logic := '0';
+	signal internal_DIG_RD_ROWSEL_S 		: STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+	signal internal_DIG_RD_COLSEL_S 		: STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
+	signal internal_DIG_START 				: STD_LOGIC := '0';
+	signal internal_DIG_RAMP 				: STD_LOGIC := '0';
 	
 	--ASIC SERIAL READOUT
-	signal internal_SROUT_START : std_logic := '0';
-	signal internal_SROUT_IDLE_status : std_logic := '0';
-	signal internal_SROUT_SAMP_DONE : std_logic := '0';
-	signal internal_SROUT_SR_CLR : std_logic := '0';
-	signal internal_SROUT_SR_CLK : std_logic := '0';
-	signal internal_SROUT_SR_SEL : std_logic := '0';
-	signal internal_SROUT_SAMPLESEL : std_logic_vector(4 downto 0) := (others => '0');
+	signal internal_SROUT_START 			: std_logic := '0';
+	signal internal_SROUT_IDLE_status 	: std_logic := '0';
+	signal internal_SROUT_SAMP_DONE 		: std_logic := '0';
+	signal internal_SROUT_SR_CLR 			: std_logic := '0';
+	signal internal_SROUT_SR_CLK 			: std_logic := '0';
+	signal internal_SROUT_SR_SEL 			: std_logic := '0';
+	signal internal_SROUT_SAMPLESEL 		: std_logic_vector(4 downto 0) := (others => '0');
 	signal internal_SROUT_SAMPLESEL_ANY : std_logic := '0';
-	signal internal_SROUT_FIFO_WR_CLK       : std_logic;
-	signal internal_SROUT_FIFO_WR_EN       : std_logic;
-	signal internal_SROUT_FIFO_DATA_OUT       : std_logic_vector(31 downto 0);
+	signal internal_SROUT_FIFO_WR_CLK   : std_logic;
+	signal internal_SROUT_FIFO_WR_EN    : std_logic;
+	signal internal_SROUT_FIFO_DATA_OUT : std_logic_vector(31 downto 0);
+	signal internal_SROUT_dout 			: std_logic_vector(15 downto 0);
+	signal internal_SROUT_ASIC_CONTROL_WORD : std_logic_vector(9 downto 0);
 	
 	--WAVEFORM DATA FIFO
-	signal internal_WAVEFORM_FIFO_RST : std_logic := '0';
+	signal internal_WAVEFORM_FIFO_RST 	: std_logic := '0';
 	signal internal_EVTBUILD_MAKE_READY : std_logic := '0';
 	
 	-- MPPC DAC
@@ -325,8 +356,6 @@ architecture Behavioral of scrod_top is
 		empty : OUT STD_LOGIC;
 		valid : OUT STD_LOGIC
 	);
-
-	
 	
 END COMPONENT;
 	
@@ -380,7 +409,7 @@ begin
 		INPUT_REGISTERS              => internal_INPUT_REGISTERS,
 		REGISTER_UPDATED             => i_register_update,
 	
-		--NOT original implementation - SciFi specific
+		--NOT original implementation - KLM specific
 		WAVEFORM_FIFO_DATA_IN        => internal_EVTBUILD_DATA_OUT,
 		WAVEFORM_FIFO_EMPTY          => internal_EVTBUILD_EMPTY,
 		WAVEFORM_FIFO_DATA_VALID     => internal_EVTBUILD_DATA_VALID,
@@ -390,7 +419,7 @@ begin
 		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
 		WAVEFORM_PACKET_BUILDER_VETO => internal_EVTBUILD_PACKET_BUILDER_VETO,
 		
-		--WAVEFORM ROI readout disable for now (SciFi implementation)
+		--WAVEFORM ROI readout disable - command packets only
 		--WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
 		--WAVEFORM_FIFO_EMPTY          => '1',
 		--WAVEFORM_FIFO_DATA_VALID     => '0',
@@ -518,14 +547,14 @@ begin
 	
 	--TARGET6 DAC Control
 	u_TARGET6_DAC_CONTROL: entity work.TARGET6_DAC_CONTROL PORT MAP(
-			CLK => internal_CLOCK_50MHz_BUFG,
-			LOAD_PERIOD => internal_DAC_CONTROL_LOAD_PERIOD,
-			LATCH_PERIOD => internal_DAC_CONTROL_LATCH_PERIOD,
-			UPDATE => internal_DAC_CONTROL_UPDATE,
-			REG_DATA => internal_DAC_CONTROL_REG_DATA,
-			SIN => internal_DAC_CONTROL_SIN,
-			SCLK => internal_DAC_CONTROL_SCLK,
-			PCLK => internal_DAC_CONTROL_PCLK
+			CLK 				=> internal_CLOCK_50MHz_BUFG,
+			LOAD_PERIOD 	=> internal_DAC_CONTROL_LOAD_PERIOD,
+			LATCH_PERIOD 	=> internal_DAC_CONTROL_LATCH_PERIOD,
+			UPDATE 			=> internal_DAC_CONTROL_UPDATE,
+			REG_DATA 		=> internal_DAC_CONTROL_REG_DATA,
+			SIN 				=> internal_DAC_CONTROL_SIN,
+			SCLK 				=> internal_DAC_CONTROL_SCLK,
+			PCLK 				=> internal_DAC_CONTROL_PCLK
    );
 	--end generate;
 	BUSA_REGCLR <= '0';
@@ -540,33 +569,33 @@ begin
 	
 	--Control the sampling, digitization and serial resout processes following trigger
 	u_ReadoutControl: entity work.ReadoutControl PORT MAP(
-		clk => internal_CLOCK_50MHz_BUFG,
-		smp_clk => internal_CLOCK_8xSST_BUFG,
-		trigger => internal_READCTRL_trigger,
-		trig_delay => internal_READCTRL_trig_delay,
-		dig_offset => internal_READCTRL_dig_offset,
-		win_num_to_read => internal_READCTRL_win_num_to_read,
-		SMP_MAIN_CNT => internal_SMP_MAIN_CNT,
-		SMP_IDLE_status => internal_SMP_IDLE_STATUS,
-		DIG_IDLE_status => internal_DIG_IDLE_status,
+		clk 					=> internal_CLOCK_50MHz_BUFG,
+		smp_clk 				=> internal_CLOCK_8xSST_BUFG,
+		trigger 				=> internal_READCTRL_trigger,
+		trig_delay 			=> internal_READCTRL_trig_delay,
+		dig_offset 			=> internal_READCTRL_dig_offset,
+		win_num_to_read 	=> internal_READCTRL_win_num_to_read,
+		SMP_MAIN_CNT 		=> internal_SMP_MAIN_CNT,
+		SMP_IDLE_status 	=> internal_SMP_IDLE_STATUS,
+		DIG_IDLE_status 	=> internal_DIG_IDLE_status,
 		SROUT_IDLE_status => internal_SROUT_IDLE_status,
-		fifo_empty => internal_WAVEFORM_FIFO_EMPTY,
+		fifo_empty 			=> internal_WAVEFORM_FIFO_EMPTY,
 		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
 		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
-		LATCH_DONE => internal_READCTRL_LATCH_DONE,
-		READOUT_RESET => internal_READCTRL_readout_reset,
-		READOUT_CONTINUE => internal_READCTRL_readout_continue,
-		RESET_EVENT_NUM => internal_READCTRL_RESET_EVENT_NUM,
-		ASIC_NUM => internal_READCTRL_ASIC_NUM,
-		busy_status => internal_READCTRL_busy_status,
-		smp_stop => internal_READCTRL_smp_stop,
-		dig_start => internal_READCTRL_dig_start,
-		DIG_RD_ROWSEL_S => internal_READCTRL_DIG_RD_ROWSEL,
-		DIG_RD_COLSEL_S => internal_READCTRL_DIG_RD_COLSEL,
-		srout_start => internal_READCTRL_srout_start,
-		EVTBUILD_start => internal_READCTRL_evtbuild_start,
+		LATCH_DONE 			=> internal_READCTRL_LATCH_DONE,
+		READOUT_RESET 		=> internal_READCTRL_readout_reset,
+		READOUT_CONTINUE 	=> internal_READCTRL_readout_continue,
+		RESET_EVENT_NUM 	=> internal_READCTRL_RESET_EVENT_NUM,
+		ASIC_NUM 			=> internal_READCTRL_ASIC_NUM,
+		busy_status 		=> internal_READCTRL_busy_status,
+		smp_stop 			=> internal_READCTRL_smp_stop,
+		dig_start 			=> internal_READCTRL_dig_start,
+		DIG_RD_ROWSEL_S 	=> internal_READCTRL_DIG_RD_ROWSEL,
+		DIG_RD_COLSEL_S 	=> internal_READCTRL_DIG_RD_COLSEL,
+		srout_start 		=> internal_READCTRL_srout_start,
+		EVTBUILD_start 	=> internal_READCTRL_evtbuild_start,
 		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready,
-		EVENT_NUM => internal_READCTRL_EVENT_NUM
+		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM
 	);
 	internal_SOFTWARE_TRIGGER_VETO <= internal_CMDREG_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER_ENABLE <= internal_CMDREG_HARDWARE_TRIGGER_ENABLE;
@@ -584,90 +613,115 @@ begin
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
-		--clk => internal_CLOCK_150MHz_BUFG,
-		clk => internal_CLOCK_8xSST_BUFG,
-		start => internal_SMP_START,
-		stop => internal_SMP_STOP,
+		clk 			=> internal_CLOCK_8xSST_BUFG,
+		start 		=> internal_SMP_START,
+		stop 			=> internal_SMP_STOP,
 		IDLE_status => internal_SMP_IDLE_STATUS,
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
-		sspin_out => internal_SSPIN,
-		sstin_out => internal_SSTIN,
-		wr_advclk_out => internal_WR_ADVCLK,
+		sspin_out 	=> internal_SSPIN,
+		sstin_out 	=> internal_SSTIN,
+		wr_advclk_out 	=> internal_WR_ADVCLK,
 		wr_addrclr_out => internal_WR_ADDRCLR,
 		wr_strb_out => internal_WR_STRB,
-		wr_ena_out => internal_WR_ENA
+		wr_ena_out 	=> internal_WR_ENA
 	);
 	internal_SMP_START <= internal_CMDREG_SMP_START;
 	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							 internal_CMDREG_SMP_STOP;
-	SSPIN <= internal_SSPIN;
-	SSTIN <= internal_SSTIN;
-	WR_ADVCLK <= internal_WR_ADVCLK;
-	BUSA_WR_ADDRCLR <= internal_WR_ADDRCLR;
-	BUSB_WR_ADDRCLR <= internal_WR_ADDRCLR;
-	WR_STRB <= internal_WR_STRB;
-	WR_ENA <= internal_WR_ENA;
+	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
+	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
+	--SamplingLgc signals just get fanned out identically to each daughter card
+	gen_SamplingLgcSignals : for i in 0 to 9 generate
+		SSPIN(i) 		<= internal_SSPIN;
+		SSTIN(i) 		<= internal_SSTIN;
+		WR_ADVCLK(i) 	<= internal_WR_ADVCLK;
+		WR_STRB(i) 		<= internal_WR_STRB;
+		WR_ENA(i) 		<= internal_WR_ENA;
+	end generate;
 	
 	--digitizing logic
 	u_DigitizingLgc: entity work.DigitizingLgc PORT MAP(
-		clk => internal_CLOCK_50MHz_BUFG,
-		IDLE_status => internal_DIG_IDLE_status,
-		StartDig => internal_DIG_STARTDIG,
-		ramp_length => X"400",
-		rd_ena => internal_DIG_RD_ENA,
-		clr => internal_DIG_CLR,
-		startramp => internal_DIG_RAMP
+		clk 				=> internal_CLOCK_50MHz_BUFG,
+		IDLE_status 	=> internal_DIG_IDLE_status,
+		StartDig 		=> internal_DIG_STARTDIG,
+		ramp_length 	=> X"400",
+		rd_ena 			=> internal_DIG_RD_ENA,
+		clr 				=> internal_DIG_CLR,
+		startramp 		=> internal_DIG_RAMP
 	);
-	internal_DIG_STARTDIG <= internal_READCTRL_dig_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
+	internal_DIG_STARTDIG 	<= internal_READCTRL_dig_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							internal_CMDREG_DIG_STARTDIG;
-	BUSA_RD_ENA	<= internal_DIG_RD_ENA;
-	BUSA_RD_ROWSEL_S <= internal_READCTRL_DIG_RD_ROWSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
+	--BUSA and BUSB Digitzation signals are identical
+	BUSA_RD_ENA			<= internal_DIG_RD_ENA;
+	BUSA_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
 	                 internal_CMDREG_DIG_RD_ROWSEL_S;
-	BUSA_RD_COLSEL_S <= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
+	BUSA_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
 	                 internal_CMDREG_DIG_RD_COLSEL_S;				
-	BUSA_CLR <= internal_DIG_CLR;
-	BUSA_START <= internal_DIG_RAMP;
-	BUSA_RAMP <= internal_DIG_RAMP;
-	BUSB_RD_ENA	<= internal_DIG_RD_ENA;
-	BUSB_RD_ROWSEL_S <= internal_READCTRL_DIG_RD_ROWSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
+	BUSA_CLR 			<= internal_DIG_CLR;
+	BUSA_START 			<= internal_DIG_RAMP;
+	BUSA_RAMP 			<= internal_DIG_RAMP;
+	BUSB_RD_ENA			<= internal_DIG_RD_ENA;
+	BUSB_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
 	                 internal_CMDREG_DIG_RD_ROWSEL_S;
-	BUSB_RD_COLSEL_S <= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
+	BUSB_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
 	                 internal_CMDREG_DIG_RD_COLSEL_S;
-	BUSB_CLR <= internal_DIG_CLR;
-	BUSB_START <= internal_DIG_RAMP;
-	BUSB_RAMP <= internal_DIG_RAMP;	
+	BUSB_CLR 			<= internal_DIG_CLR;
+	BUSB_START 			<= internal_DIG_RAMP;
+	BUSB_RAMP 			<= internal_DIG_RAMP;	
 	
 	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
-		clk => internal_CLOCK_50MHz_BUFG,
-		start => internal_SROUT_START,
-		EVENT_NUM => internal_READCTRL_EVENT_NUM,
-		WIN_ADDR => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
-		ASIC_NUM => internal_READCTRL_ASIC_NUM,
+		clk 			=> internal_CLOCK_50MHz_BUFG,
+		start		 	=> internal_SROUT_START,
+		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
+		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+		ASIC_NUM 	=> internal_READCTRL_ASIC_NUM,
 		IDLE_status => internal_SROUT_IDLE_status,
-		busy => open,
-		samp_done => open,
-		dout => BUSA_DO, --NEED to ACCOMODATE BOTH BUSSES
-		--dout => x"ABCD", --NEED to ACCOMODATE BOTH BUSSES
-		sr_clr => internal_SROUT_SR_CLR,
-		sr_clk => internal_SROUT_SR_CLK,
-		sr_sel => internal_SROUT_SR_SEL,
-		samplesel => internal_SROUT_SAMPLESEL,
-		smplsi_any => internal_SROUT_SAMPLESEL_ANY,
-		fifo_wr_en => internal_SROUT_FIFO_WR_EN,
+		busy 			=> open,
+		samp_done 	=> open,
+		dout 			=> internal_SROUT_dout,
+		sr_clr 		=> internal_SROUT_SR_CLR,
+		sr_clk 		=> internal_SROUT_SR_CLK,
+		sr_sel 		=> internal_SROUT_SR_SEL,
+		samplesel 	=> internal_SROUT_SAMPLESEL,
+		smplsi_any 	=> internal_SROUT_SAMPLESEL_ANY,
+		fifo_wr_en 	=> internal_SROUT_FIFO_WR_EN,
 		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
 		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
 	);
 	internal_SROUT_START <= internal_READCTRL_srout_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							internal_CMDREG_SROUT_START;
-	BUSA_SAMPLESEL_S <= internal_SROUT_SAMPLESEL;
-	BUSA_SR_CLEAR <= internal_SROUT_SR_CLR;
-	BUSA_SR_SEL	<= internal_SROUT_SR_SEL;
-	SR_CLOCK	<= internal_SROUT_SR_CLK;
-	SAMPLESEL_ANY <= internal_SROUT_SAMPLESEL_ANY;
-	BUSB_SAMPLESEL_S <= (others=>'0');
-	BUSB_SR_CLEAR <=  '0';
-	BUSB_SR_SEL	<= '0';
+	--make serial readout bus signals identical
+	BUSA_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
+	BUSA_SR_CLEAR 		<= internal_SROUT_SR_CLR;
+	BUSA_SR_SEL			<= internal_SROUT_SR_SEL;
+	BUSB_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
+	BUSB_SR_CLEAR 		<=  internal_SROUT_SR_CLR;
+	BUSB_SR_SEL			<= internal_SROUT_SR_SEL;
 	
+	--Serial readout DO signal switches between buses based on internal_READCTRL_ASIC_NUM signal
+	internal_SROUT_dout <= BUSA_DO when (internal_READCTRL_ASIC_NUM < x"6") else
+								BUSB_DO;
+	
+	--multiplex DC specific serial readout signal to ASIC specified by internal_READCTRL_ASIC_NUM signal
+	internal_SROUT_ASIC_CONTROL_WORD 		<= "0000000001" when (internal_READCTRL_ASIC_NUM = x"1") else
+															"0000000010" when (internal_READCTRL_ASIC_NUM = x"2") else
+															"0000000100" when (internal_READCTRL_ASIC_NUM = x"3") else
+															"0000001000" when (internal_READCTRL_ASIC_NUM = x"4") else
+															"0000010000" when (internal_READCTRL_ASIC_NUM = x"5") else
+															"0000100000" when (internal_READCTRL_ASIC_NUM = x"6") else
+															"0001000000" when (internal_READCTRL_ASIC_NUM = x"7") else
+															"0010000000" when (internal_READCTRL_ASIC_NUM = x"8") else
+															"0100000000" when (internal_READCTRL_ASIC_NUM = x"9") else
+															"1000000000" when (internal_READCTRL_ASIC_NUM = x"A") else
+															"0000000000";
+	
+	--Only specified DC gets serial data signals, uses bit mask
+	gen_SAMPLESEL_ANY_CONTROL: for i in 0 to 9 generate
+		SR_CLOCK(i)			<= internal_SROUT_SR_CLK 			and internal_SROUT_ASIC_CONTROL_WORD(i);
+		SAMPLESEL_ANY(i) 	<= internal_SROUT_SAMPLESEL_ANY 	and internal_SROUT_ASIC_CONTROL_WORD(i);
+	end generate;
+	
+	--FIFO receives waveform samples produced by serial readout process
    u_waveform_fifo_wr32_rd32 : waveform_fifo_wr32_rd32
    PORT MAP (
 		rst => internal_WAVEFORM_FIFO_RST,
@@ -718,13 +772,6 @@ begin
 			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
       end if;
    end process;
-	
-	--stupid clock test, ignore
-	--process ( internal_CLOCK_8xSST_BUFG) begin
-	--	if (rising_edge( internal_CLOCK_8xSST_BUFG)) then
-	--		internal_test_out <= NOT(internal_test_out);
-   --   end if;
-   --end process;
 	
 	--trigger counter
 	process (INTERNAL_COUNTER, internal_TRIGGER_ALL) begin

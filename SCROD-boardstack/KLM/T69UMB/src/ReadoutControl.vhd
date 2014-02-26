@@ -137,7 +137,7 @@ signal internal_srout_start : std_logic := '0';
 signal internal_EVTBUILD_start : std_logic := '0';
 signal internal_EVTBUILD_MAKE_READY : std_logic := '0';
 signal internal_READOUT_CONTINUE : std_logic := '0';
-signal internal_ASIC_SROUT_ENABLE_BITS : std_logic_vector(9 downto 0) := "0000000001";
+signal internal_ASIC_SROUT_ENABLE_BITS : std_logic_vector(9 downto 0) := "1111111111";
 signal internal_EVENT_NUM : UNSIGNED(31 downto 0) := x"00000000";
 
 begin
