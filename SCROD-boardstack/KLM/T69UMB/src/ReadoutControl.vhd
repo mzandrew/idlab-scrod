@@ -44,6 +44,7 @@ entity ReadoutControl is
 			  trig_delay : in  STD_LOGIC_VECTOR(11 downto 0);
 			  dig_offset : in  STD_LOGIC_VECTOR(8 downto 0);
 			  win_num_to_read : in  STD_LOGIC_VECTOR(8 downto 0);
+			  asic_enable_bits : in  STD_LOGIC_VECTOR(9 downto 0);
 			  SMP_MAIN_CNT : in STD_LOGIC_VECTOR(8 downto 0);
 			  SMP_IDLE_status : in  STD_LOGIC;
 			  DIG_IDLE_status : in  STD_LOGIC;
@@ -237,6 +238,7 @@ if (clk'event and clk = '1') then
 	internal_trig_delay <= UNSIGNED(trig_delay);
 	internal_dig_offset <= UNSIGNED(dig_offset);
 	internal_win_num_to_read <= UNSIGNED(win_num_to_read);
+	internal_ASIC_SROUT_ENABLE_BITS <= asic_enable_bits;
 	internal_READOUT_CONTINUE <= READOUT_CONTINUE;
 end if;
 end process;
