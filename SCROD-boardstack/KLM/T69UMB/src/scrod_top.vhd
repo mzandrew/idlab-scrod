@@ -231,6 +231,7 @@ architecture Behavioral of scrod_top is
 	
 	--ASIC TRIGGER CONTROL
 	signal internal_TRIGGER_ALL : std_logic := '0';
+	signal internal_TRIGGER_ASIC : std_logic_vector(9 downto 0) := "0000000000";
 	signal INTERNAL_COUNTER : UNSIGNED(27 downto 0) :=  x"0000000";
 	signal internal_triggerCounter : UNSIGNED(15 downto 0) :=  x"0000";
 	signal internal_numTriggers : UNSIGNED(15 downto 0) :=  x"0000";
@@ -250,6 +251,7 @@ architecture Behavioral of scrod_top is
 	signal internal_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
 	signal internal_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_READCTRL_win_num_to_read : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_READCTRL_asic_enable_bits : std_logic_vector(9 downto 0) := (others => '0');
 	signal internal_READCTRL_readout_reset : std_logic := '0';
 	signal internal_READCTRL_readout_continue : std_logic := '0';
 	signal internal_READCTRL_busy_status : std_logic := '0';
@@ -274,6 +276,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_win_num_to_read : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_CMDREG_READCTRL_asic_enable_bits : std_logic_vector(9 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_readout_reset : std_logic := '0';
 	signal internal_CMDREG_READCTRL_readout_continue : std_logic := '0';
 	signal internal_CMDREG_DIG_STARTDIG : std_logic := '0';
@@ -363,7 +366,21 @@ begin
 
 	--Overall Signal Routing
    EX_TRIGGER <= internal_TRIGGER_ALL;
-   internal_TRIGGER_ALL <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
+   internal_TRIGGER_ASIC(0) <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
+	internal_TRIGGER_ASIC(1) <= TDC2_TRG_16 OR TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3);
+	internal_TRIGGER_ASIC(2) <= TDC3_TRG_16 OR TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3);
+	internal_TRIGGER_ASIC(3) <= TDC4_TRG_16 OR TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3);
+	internal_TRIGGER_ASIC(4) <= TDC5_TRG_16 OR TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3);
+	internal_TRIGGER_ASIC(5) <= TDC6_TRG_16 OR TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3);
+	internal_TRIGGER_ASIC(6) <= TDC7_TRG_16 OR TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3);
+	internal_TRIGGER_ASIC(7) <= TDC8_TRG_16 OR TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
+	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
+	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
+	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0);
+	--internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1) 
+	--OR internal_TRIGGER_ASIC(2) OR internal_TRIGGER_ASIC(3) OR internal_TRIGGER_ASIC(4) 
+	--OR internal_TRIGGER_ASIC(5) OR internal_TRIGGER_ASIC(6) OR internal_TRIGGER_ASIC(7) 
+	--OR internal_TRIGGER_ASIC(8) OR internal_TRIGGER_ASIC(9);
 	
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
@@ -500,7 +517,8 @@ begin
 	
 	--Readout control signals
 	internal_CMDREG_SOFTWARE_trigger <= internal_OUTPUT_REGISTERS(50)(0);
-	internal_CMDREG_SOFTWARE_TRIGGER_VETO <= internal_OUTPUT_REGISTERS(51)(0);
+	--internal_CMDREG_SOFTWARE_TRIGGER_VETO <= internal_OUTPUT_REGISTERS(51)(0);
+	internal_CMDREG_READCTRL_asic_enable_bits <= internal_OUTPUT_REGISTERS(51)(9 downto 0);
 	internal_CMDREG_HARDWARE_TRIGGER_ENABLE <= internal_OUTPUT_REGISTERS(52)(0);
 	internal_CMDREG_READCTRL_trig_delay <= internal_OUTPUT_REGISTERS(53)(11 downto 0);
 	internal_CMDREG_READCTRL_dig_offset <= internal_OUTPUT_REGISTERS(54)(8 downto 0);
@@ -575,6 +593,7 @@ begin
 		trig_delay 			=> internal_READCTRL_trig_delay,
 		dig_offset 			=> internal_READCTRL_dig_offset,
 		win_num_to_read 	=> internal_READCTRL_win_num_to_read,
+		asic_enable_bits  => internal_READCTRL_asic_enable_bits,
 		SMP_MAIN_CNT 		=> internal_SMP_MAIN_CNT,
 		SMP_IDLE_status 	=> internal_SMP_IDLE_STATUS,
 		DIG_IDLE_status 	=> internal_DIG_IDLE_status,
@@ -606,6 +625,7 @@ begin
 	internal_READCTRL_trig_delay <= internal_CMDREG_READCTRL_trig_delay;
 	internal_READCTRL_dig_offset <= internal_CMDREG_READCTRL_dig_offset;
 	internal_READCTRL_win_num_to_read <= internal_CMDREG_READCTRL_win_num_to_read;
+	internal_READCTRL_asic_enable_bits <= internal_CMDREG_READCTRL_asic_enable_bits;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
