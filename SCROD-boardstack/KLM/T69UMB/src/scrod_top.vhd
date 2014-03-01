@@ -267,6 +267,7 @@ architecture Behavioral of scrod_top is
 	signal internal_READCTRL_ASIC_NUM : std_logic_vector(3 downto 0) := (others => '0');
 	signal internal_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 	signal internal_READCTRL_EVENT_NUM : std_logic_vector(31 downto 0) := x"00000000";
+	signal internal_READCTRL_READOUT_DONE : std_logic := '0';
 	
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
 	signal internal_CMDREG_SOFTWARE_TRIGGER_VETO : std_logic := '0';
@@ -359,8 +360,22 @@ architecture Behavioral of scrod_top is
 		empty : OUT STD_LOGIC;
 		valid : OUT STD_LOGIC
 	);
+   END COMPONENT;
 	
-END COMPONENT;
+	COMPONENT buffer_fifo_wr32_rd32
+	PORT (
+		rst : IN STD_LOGIC;
+		wr_clk : IN STD_LOGIC;
+		rd_clk : IN STD_LOGIC;
+		din : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+		wr_en : IN STD_LOGIC;
+		rd_en : IN STD_LOGIC;
+		dout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+		full : OUT STD_LOGIC;
+		empty : OUT STD_LOGIC;
+		valid : OUT STD_LOGIC
+	);
+	END COMPONENT;
 	
 begin
 
@@ -376,7 +391,7 @@ begin
 	internal_TRIGGER_ASIC(7) <= TDC8_TRG_16 OR TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
 	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
 	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
-	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0);
+	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
 	--internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1) 
 	--OR internal_TRIGGER_ASIC(2) OR internal_TRIGGER_ASIC(3) OR internal_TRIGGER_ASIC(4) 
 	--OR internal_TRIGGER_ASIC(5) OR internal_TRIGGER_ASIC(6) OR internal_TRIGGER_ASIC(7) 
@@ -614,7 +629,8 @@ begin
 		srout_start 		=> internal_READCTRL_srout_start,
 		EVTBUILD_start 	=> internal_READCTRL_evtbuild_start,
 		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready,
-		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM
+		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM,
+		READOUT_DONE 		=> internal_READCTRL_READOUT_DONE
 	);
 	internal_SOFTWARE_TRIGGER_VETO <= internal_CMDREG_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER_ENABLE <= internal_CMDREG_HARDWARE_TRIGGER_ENABLE;
@@ -756,6 +772,8 @@ begin
 		empty => internal_WAVEFORM_FIFO_EMPTY,
 		valid => internal_WAVEFORM_FIFO_DATA_VALID
    );
+	
+	
 	
 	--Event builder provides ordered waveform data to readout_interfaces module
 	map_event_builder: entity work.event_builder PORT MAP(
