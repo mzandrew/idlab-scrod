@@ -37,6 +37,12 @@ int target6ControlClass::clearDataBuffer(){
 	return 1;
 }
 
+int target6ControlClass::usbTest(){
+	//printdev(&dev);
+	//list_endpoints(libusb_device *desc);
+	return 1;
+}
+
 //do simple register read
 int target6ControlClass::registerRead(unsigned int board_id, unsigned int reg, int &regValReadback) {
 	//clear data point
