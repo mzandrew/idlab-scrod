@@ -24,7 +24,7 @@ int setup_usb(void){
         //////////////////-Available USB devices
         dev_cnt = libusb_get_device_list(ctx, &dev);    //Get list of USB devices
 
-#ifdef USB_DEBUG
+//#ifdef USB_DEBUG
         if(dev_cnt < 0 ){
                 cout<<"No USB devices found"<<endl;
         }
@@ -46,7 +46,7 @@ int setup_usb(void){
                 cout<<"Could not find SCROD USB Device"<<endl;
                 exit(-2);
         }
-#endif
+//#endif
         //////////////////
 
         //////////////////-Open USB device
@@ -87,6 +87,7 @@ int setup_usb(void){
                 cout<<"Interface claimed"<<endl;
         }
         //////////////////
+
 }
 
 ///////////////////////////////////////--Code from Xin Gao
@@ -142,6 +143,11 @@ void printdev(libusb_device *dev) {
                 for(int j=0; j<inter->num_altsetting; j++) {
                         interdesc = &inter->altsetting[j];
                         cout<<"Interface Number: "<<(int)interdesc->bInterfaceNumber<<" | ";
+			cout<<"Alternate Setting: "<<(int)interdesc->bAlternateSetting<<" | ";
+			cout<<"Interface Class: "<<(int)interdesc->bInterfaceClass<<" | ";
+			cout<<"Interface Sub-Class: "<<(int)interdesc->bInterfaceSubClass<<" | ";
+			cout<<"Interface Protocol: "<<(int)interdesc->bInterfaceProtocol<<" | ";
+			cout<<"Interface: "<<(int)interdesc->iInterface<<" | ";
                         }
                 }
         cout<<endl<<endl<<endl;

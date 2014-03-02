@@ -211,19 +211,31 @@ architecture Behavioral of scrod_top is
    signal internal_EVENT_NUMBER                 : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
 	--Event builder + readout interface waveform data flow related
-	signal internal_WAVEFORM_FIFO_DATA_OUT       : std_logic_vector(31 downto 0);
-	signal internal_WAVEFORM_FIFO_EMPTY          : std_logic;
-	signal internal_WAVEFORM_FIFO_DATA_VALID     : std_logic;
-	signal internal_WAVEFORM_FIFO_READ_CLOCK     : std_logic;
-	signal internal_WAVEFORM_FIFO_READ_ENABLE    : std_logic;
+	signal internal_WAVEFORM_FIFO_DATA_OUT       : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_WAVEFORM_FIFO_EMPTY          : std_logic := '0';
+	signal internal_WAVEFORM_FIFO_DATA_VALID     : std_logic := '0';
+	signal internal_WAVEFORM_FIFO_READ_CLOCK     : std_logic := '0';
+	signal internal_WAVEFORM_FIFO_READ_ENABLE    : std_logic := '0';
 	signal internal_WAVEFORM_PACKET_BUILDER_BUSY	: std_logic := '0';
-	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic;
+	signal internal_WAVEFORM_PACKET_BUILDER_VETO : std_logic := '0';
 	
-	signal internal_EVTBUILD_DATA_OUT       : std_logic_vector(31 downto 0);
-	signal internal_EVTBUILD_EMPTY          : std_logic;
-	signal internal_EVTBUILD_DATA_VALID     : std_logic;
-	signal internal_EVTBUILD_READ_CLOCK     : std_logic;
-	signal internal_EVTBUILD_READ_ENABLE    : std_logic;
+	signal internal_EVTBUILD_FIFO_DATA_OUT					: std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_EVTBUILD_FIFO_EMPTY          : std_logic := '0';
+	signal internal_EVTBUILD_FIFO_DATA_VALID     : std_logic := '0';
+	signal internal_EVTBUILD_FIFO_READ_CLOCK     : std_logic := '0';
+	signal internal_EVTBUILD_FIFO_READ_ENABLE    : std_logic := '0';
+	
+	signal internal_READOUT_DATA_OUT					: std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_READOUT_DATA_VALID				: std_logic := '0';
+	signal internal_READOUT_EMPTY						: std_logic := '0';
+	signal internal_READOUT_READ_CLOCK     : std_logic := '0';
+	signal internal_READOUT_READ_ENABLE				: std_logic := '0';
+	
+	signal internal_EVTBUILD_DATA_OUT       : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_EVTBUILD_EMPTY          : std_logic := '0';
+	signal internal_EVTBUILD_DATA_VALID     : std_logic := '0';
+	signal internal_EVTBUILD_READ_CLOCK     : std_logic := '0';
+	signal internal_EVTBUILD_READ_ENABLE    : std_logic := '0';
 	signal internal_EVTBUILD_PACKET_BUILDER_BUSY	: std_logic := '0';
 	signal internal_EVTBUILD_PACKET_BUILDER_VETO : std_logic := '0';
 	signal internal_EVTBUILD_START_BUILDING_EVENT : std_logic := '0';
@@ -323,15 +335,21 @@ architecture Behavioral of scrod_top is
 	signal internal_SROUT_SR_SEL 			: std_logic := '0';
 	signal internal_SROUT_SAMPLESEL 		: std_logic_vector(4 downto 0) := (others => '0');
 	signal internal_SROUT_SAMPLESEL_ANY : std_logic := '0';
-	signal internal_SROUT_FIFO_WR_CLK   : std_logic;
-	signal internal_SROUT_FIFO_WR_EN    : std_logic;
-	signal internal_SROUT_FIFO_DATA_OUT : std_logic_vector(31 downto 0);
-	signal internal_SROUT_dout 			: std_logic_vector(15 downto 0);
-	signal internal_SROUT_ASIC_CONTROL_WORD : std_logic_vector(9 downto 0);
+	signal internal_SROUT_FIFO_WR_CLK   : std_logic := '0';
+	signal internal_SROUT_FIFO_WR_EN    : std_logic := '0';
+	signal internal_SROUT_FIFO_DATA_OUT : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_SROUT_dout 			: std_logic_vector(15 downto 0) := (others => '0');
+	signal internal_SROUT_ASIC_CONTROL_WORD : std_logic_vector(9 downto 0) := (others => '0');
 	
 	--WAVEFORM DATA FIFO
 	signal internal_WAVEFORM_FIFO_RST 	: std_logic := '0';
 	signal internal_EVTBUILD_MAKE_READY : std_logic := '0';
+	
+	--BUFFER CONTROL
+	signal internal_BUFFERCTRL_FIFO_RESET	: std_logic := '0';
+	signal internal_BUFFERCTRL_FIFO_WR_CLK : std_logic := '0';
+	signal internal_BUFFERCTRL_FIFO_WR_EN 	: std_logic := '0';
+	signal internal_BUFFERCTRL_FIFO_DIN 	: std_logic_vector(31 downto 0) := (others => '0');
 	
 	-- MPPC DAC
 	signal i_dac_number : std_logic_vector(3 downto 0);
@@ -442,11 +460,11 @@ begin
 		REGISTER_UPDATED             => i_register_update,
 	
 		--NOT original implementation - KLM specific
-		WAVEFORM_FIFO_DATA_IN        => internal_EVTBUILD_DATA_OUT,
-		WAVEFORM_FIFO_EMPTY          => internal_EVTBUILD_EMPTY,
-		WAVEFORM_FIFO_DATA_VALID     => internal_EVTBUILD_DATA_VALID,
-		WAVEFORM_FIFO_READ_CLOCK     => internal_EVTBUILD_READ_CLOCK,
-		WAVEFORM_FIFO_READ_ENABLE    => internal_EVTBUILD_READ_ENABLE,
+		WAVEFORM_FIFO_DATA_IN        => internal_READOUT_DATA_OUT,
+		WAVEFORM_FIFO_EMPTY          => internal_READOUT_EMPTY,
+		WAVEFORM_FIFO_DATA_VALID     => internal_READOUT_DATA_VALID,
+		WAVEFORM_FIFO_READ_CLOCK     => internal_READOUT_READ_CLOCK,
+		WAVEFORM_FIFO_READ_ENABLE    => internal_READOUT_READ_ENABLE,
 		WAVEFORM_PACKET_BUILDER_BUSY => internal_READCTRL_busy_status,
 		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
 		WAVEFORM_PACKET_BUILDER_VETO => internal_EVTBUILD_PACKET_BUILDER_VETO,
@@ -627,8 +645,8 @@ begin
 		DIG_RD_ROWSEL_S 	=> internal_READCTRL_DIG_RD_ROWSEL,
 		DIG_RD_COLSEL_S 	=> internal_READCTRL_DIG_RD_COLSEL,
 		srout_start 		=> internal_READCTRL_srout_start,
-		EVTBUILD_start 	=> internal_READCTRL_evtbuild_start,
-		EVTBUILD_MAKE_READY => internal_READCTRL_evtbuild_make_ready,
+		EVTBUILD_start 	=> open,
+		EVTBUILD_MAKE_READY => open,
 		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM,
 		READOUT_DONE 		=> internal_READCTRL_READOUT_DONE
 	);
@@ -643,7 +661,6 @@ begin
 	internal_READCTRL_win_num_to_read <= internal_CMDREG_READCTRL_win_num_to_read;
 	internal_READCTRL_asic_enable_bits <= internal_CMDREG_READCTRL_asic_enable_bits;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
-	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
@@ -762,39 +779,69 @@ begin
    PORT MAP (
 		rst => internal_WAVEFORM_FIFO_RST,
 		wr_clk => internal_SROUT_FIFO_WR_CLK,
-		--wr_clk => internal_CLOCK_50MHz_BUFG,
 		rd_clk => internal_WAVEFORM_FIFO_READ_CLOCK,
 		din => internal_SROUT_FIFO_DATA_OUT,
 		wr_en => internal_SROUT_FIFO_WR_EN,
 		rd_en => internal_WAVEFORM_FIFO_READ_ENABLE,
 		dout => internal_WAVEFORM_FIFO_DATA_OUT,
-		full => open,
 		empty => internal_WAVEFORM_FIFO_EMPTY,
 		valid => internal_WAVEFORM_FIFO_DATA_VALID
    );
 	
+	--Module reads out from waveform FIFO and places ASIC window-sized packets into buffer FIFO
+	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP(
+		clk => internal_CLOCK_50MHz_BUFG,
+		REQUEST_PACKET 				=> internal_READCTRL_readout_continue,
+		EVTBUILD_DONE					=> internal_EVTBUILD_DONE_SENDING_EVENT,
+		WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
+		WAVEFORM_FIFO_READ_ENABLE 	=> internal_WAVEFORM_FIFO_READ_ENABLE,
+		WAVEFORM_FIFO_DATA_OUT 		=> internal_WAVEFORM_FIFO_DATA_OUT,
+		WAVEFORM_FIFO_EMPTY 			=> internal_WAVEFORM_FIFO_EMPTY,
+		WAVEFORM_FIFO_DATA_VALID 	=> internal_WAVEFORM_FIFO_DATA_VALID,
+		BUFFER_FIFO_RESET 	=> internal_BUFFERCTRL_FIFO_RESET,
+		BUFFER_FIFO_WR_CLK 	=> internal_BUFFERCTRL_FIFO_WR_CLK,
+		BUFFER_FIFO_WR_EN 	=> internal_BUFFERCTRL_FIFO_WR_EN,
+		BUFFER_FIFO_DIN 		=> internal_BUFFERCTRL_FIFO_DIN,
+		EVTBUILD_START	 		=> internal_READCTRL_evtbuild_start,
+		EVTBUILD_MAKE_READY	=> internal_READCTRL_evtbuild_make_ready
+	);
+	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue;
 	
+	--Buffer FIFO, contains up to 512 32-bit words (will not lead to USB packet drops)
+	u_buffer_wr32_rd32 : buffer_fifo_wr32_rd32
+   PORT MAP (
+		rst 		=> internal_BUFFERCTRL_FIFO_RESET,
+		wr_clk	=> internal_BUFFERCTRL_FIFO_WR_CLK,
+		rd_clk 	=> internal_EVTBUILD_FIFO_READ_CLOCK,
+		din 		=> internal_BUFFERCTRL_FIFO_DIN,
+		wr_en 	=> internal_BUFFERCTRL_FIFO_WR_EN,
+		rd_en 	=> internal_EVTBUILD_FIFO_READ_ENABLE,
+		dout 		=> internal_EVTBUILD_FIFO_DATA_OUT,
+		full 		=> open,
+		empty 	=> internal_EVTBUILD_FIFO_EMPTY,
+		valid 	=> internal_EVTBUILD_FIFO_DATA_VALID
+	);
 	
 	--Event builder provides ordered waveform data to readout_interfaces module
 	map_event_builder: entity work.event_builder PORT MAP(
-		READ_CLOCK => internal_EVTBUILD_READ_CLOCK,
-		SCROD_REV_AND_ID_WORD => internal_SCROD_REV_AND_ID_WORD,
-		EVENT_NUMBER_WORD => internal_READCTRL_EVENT_NUM,
-		EVENT_TYPE_WORD => x"65766e74",
-		EVENT_FLAG_WORD => x"00000000",
+		READ_CLOCK 					=> internal_READOUT_READ_CLOCK,
+		SCROD_REV_AND_ID_WORD 	=> internal_SCROD_REV_AND_ID_WORD,
+		EVENT_NUMBER_WORD 		=> internal_READCTRL_EVENT_NUM,
+		EVENT_TYPE_WORD 			=> x"65766e74",
+		EVENT_FLAG_WORD 			=> x"00000000",
 		NUMBER_OF_WAVEFORM_PACKETS_WORD => x"00000000",
-		START_BUILDING_EVENT => internal_EVTBUILD_START_BUILDING_EVENT,
-		DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
-		MAKE_READY => internal_EVTBUILD_MAKE_READY,
-		WAVEFORM_FIFO_DATA => internal_WAVEFORM_FIFO_DATA_OUT,
-		WAVEFORM_FIFO_DATA_VALID => internal_WAVEFORM_FIFO_DATA_VALID,
-		WAVEFORM_FIFO_EMPTY => internal_WAVEFORM_FIFO_EMPTY,
-		WAVEFORM_FIFO_READ_ENABLE => internal_WAVEFORM_FIFO_READ_ENABLE,
-		WAVEFORM_FIFO_READ_CLOCK => internal_WAVEFORM_FIFO_READ_CLOCK,
-		FIFO_DATA_OUT => internal_EVTBUILD_DATA_OUT,
-		FIFO_DATA_VALID => internal_EVTBUILD_DATA_VALID,
-		FIFO_EMPTY => internal_EVTBUILD_EMPTY,
-		FIFO_READ_ENABLE => internal_EVTBUILD_READ_ENABLE
+		START_BUILDING_EVENT 	=> internal_EVTBUILD_START_BUILDING_EVENT,
+		DONE_SENDING_EVENT 		=> internal_EVTBUILD_DONE_SENDING_EVENT,
+		MAKE_READY 					=> internal_EVTBUILD_MAKE_READY,
+		WAVEFORM_FIFO_DATA 		=> internal_EVTBUILD_FIFO_DATA_OUT,
+		WAVEFORM_FIFO_DATA_VALID => internal_EVTBUILD_FIFO_DATA_VALID,
+		WAVEFORM_FIFO_EMPTY 		=> internal_EVTBUILD_FIFO_EMPTY,
+		WAVEFORM_FIFO_READ_ENABLE => internal_EVTBUILD_FIFO_READ_ENABLE,
+		WAVEFORM_FIFO_READ_CLOCK => internal_EVTBUILD_FIFO_READ_CLOCK,
+		FIFO_DATA_OUT 				=> internal_READOUT_DATA_OUT,
+		FIFO_DATA_VALID 			=> internal_READOUT_DATA_VALID,
+		FIFO_EMPTY					=> internal_READOUT_EMPTY,
+		FIFO_READ_ENABLE 			=> internal_READOUT_READ_ENABLE
 	);
 	internal_EVTBUILD_START_BUILDING_EVENT <= internal_READCTRL_evtbuild_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							 internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;

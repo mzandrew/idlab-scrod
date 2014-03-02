@@ -1,9 +1,9 @@
-#ifndef IRS3BCONTROLCLASS__H
-#define IRS3BCONTROLCLASS__H
+#ifndef TARGET6CONTROLCLASS__H
+#define TARGET6CONTROLCLASS__H
 
 #define IN_ADDR (0x86)          //Endpoint 6 (FPGA2USB Endpoint)
 #define OUT_ADDR (0x02)         //Endpoint 2 (USB2FPGA Endpoint)
-#define usbbuf_size (512)
+#define usbbuf_size (10240)     //roginally 512
 
 class target6ControlClass {
 private:
@@ -15,6 +15,7 @@ public:
   int initializeUSBInterface();
   int closeUSBInterface();
   int clearDataBuffer();
+  int usbTest();
   int registerRead(unsigned int board_id, unsigned int reg, int &regValReadback);
   int registerWrite(unsigned int board_id, unsigned int reg, unsigned int regVal, int &regValReadback);
   int registerWriteReadback(unsigned int board_id, unsigned int reg, unsigned int regVal, int &regValReadback);

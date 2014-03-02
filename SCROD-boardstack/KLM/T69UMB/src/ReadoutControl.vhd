@@ -312,8 +312,8 @@ if (clk'event and clk = '1') then
 			internal_win_cnt <= internal_win_cnt + 1; --update # of windows digitized counter
 			next_trig_state <= WAIT_DIG_ADDR; --read out window specified by internal_SMP_MAIN_CNT
 		else
-			--next_trig_state <= WAIT_READOUT_RESET; -- done readout, go to wait for reset state
-			next_trig_state <= START_EVTBUILD; -- done readout, start data packet creation
+			next_trig_state <= WAIT_READOUT_RESET; -- done readout, go to wait for reset state
+			--next_trig_state <= START_EVTBUILD; -- done readout, start data packet creation
 		end if;
 	
 	--provide some time for new read address to settle

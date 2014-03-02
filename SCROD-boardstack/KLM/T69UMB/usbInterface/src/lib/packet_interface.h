@@ -5,7 +5,7 @@
 
 typedef unsigned int packet_word;
 #define NUMBER_OF_BYTES_PER_WORD (sizeof(packet_word))
-#define MAXIMUM_PACKET_SIZE_IN_WORDS (512)
+#define MAXIMUM_PACKET_SIZE_IN_WORDS (10240) //originally 512
 #define MAXIMUM_PACKET_SIZE_IN_BYTES (MAXIMUM_PACKET_SIZE_IN_WORDS*NUMBER_OF_BYTES_PER_WORD)
 
 #define PACKET_HEADER           (0x00BE11E2) //hex:BELLE2

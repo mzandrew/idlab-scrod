@@ -60,6 +60,7 @@ architecture Behavioral of SerialDataRout is
 	Idle,				  -- Idling until command start bit and store size	
 	WaitStart,
 	LoadHeader,
+	LoadHeader2,
 	WaitAddr,	    -- Wait for address to settle, need docs to finilize
 	WaitLoad,	    -- Wait for load cmd to settle, need docs to finilize
 	WaitLoad1,	    -- Wait for load cmd to settle relatively to clk, need docs to finilize
@@ -70,7 +71,7 @@ architecture Behavioral of SerialDataRout is
 	clkLowHold,	      -- Clock low, now at 62.5 MHz ,can investigate later at higher speed
 	StoreDataSt,	  -- Store shifted in data
 	StoreDataEnd,
-	WaitTrig
+	CheckWindowEnd
 	);
 	signal next_state					: sr_state_type := Idle;
 	signal		internal_start : std_logic := '0';
@@ -220,7 +221,6 @@ if (Clk'event and Clk = '1') then
 	 BIT_CNT				<= (others=>'0');
 	 smplsi_any       <= '0';
 	 internal_srout_busy <= '1';
-	 internal_fifo_wr_din <= x"ABC" & '0' & WIN_ADDR & ASIC_NUM & '0' & internal_samplesel(4 downto 0);
     if (Ev_CNT < ADDR_TIME) then   -- start (trigger was detected)
       Ev_CNT <= Ev_CNT + '1';
       next_state 	<= WaitStart;
@@ -237,8 +237,20 @@ if (Clk'event and Clk = '1') then
     SAMP_DONE_out    <= '0';
 	 BIT_CNT				<= (others=>'0');
 	 smplsi_any       <= '0';
-	 --start_fifo 		<= '1';
 	 fifo_wr_en			<= '1';
+	 internal_fifo_wr_din <= x"ABC" & '0' & WIN_ADDR & ASIC_NUM & '0' & internal_samplesel(4 downto 0);
+	 internal_srout_busy <= '1';
+      next_state 	<= LoadHeader2;
+	
+	--so dumb, temporaroily add second header word to deal with dumb FIFO buffer process
+	When LoadHeader2 =>
+    sr_clk_i  	       <= '0';
+    sr_sel  	       <= '0';
+    SAMP_DONE_out    <= '0';
+	 BIT_CNT				<= (others=>'0');
+	 smplsi_any       <= '0';
+	 fifo_wr_en			<= '1';
+	 internal_fifo_wr_din <= x"ABC" & '0' & WIN_ADDR & ASIC_NUM & '0' & internal_samplesel(4 downto 0);
 	 internal_srout_busy <= '1';
       next_state 	<= WaitAddr;
 		
@@ -317,7 +329,7 @@ if (Clk'event and Clk = '1') then
     else
       sr_clk_i  	       <= '0';
       --next_state 	<= StoreDataSt;
-		next_state 	<= WaitTrig;
+		next_state 	<= CheckWindowEnd;
     end if;
 	
 	When ClkHighHold =>
@@ -379,17 +391,18 @@ if (Clk'event and Clk = '1') then
 	 next_state 	<= ClkHigh;
 
 	--wait for start signal to go low
-   When WaitTrig =>
+   When CheckWindowEnd =>
     sr_clk_i  	       <= '0';
     sr_sel  	       <= '0';
     smplsi_any       <= '0';
 	 next_state 		<= Idle;
-    --SAMP_DONE_out        <= '1';
-	 --if( internal_start_srout = '0' ) then
-    --  next_state 		<= Idle;
-	 --else
-	 --	next_state 	<= WaitTrig;
-	 --end if;
+	 --add a footer to end of window
+	 internal_fifo_wr_din <= x"FACEFACE";
+	 if( internal_samplesel = "011111" ) then
+      fifo_wr_en			<= '1';
+	 else
+	 	fifo_wr_en			<= '0';
+	 end if;
 	 
   When Others =>
     sr_clk_i  	       <= '0';
