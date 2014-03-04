@@ -25,6 +25,10 @@ public:
   int parseResponsePacketForEvents(unsigned int databuf[], int dataSize, unsigned int wavedatabuf[], int &wavedataSize);
   int getEventData(unsigned int eventdatabuf[], int &eventdataSize);
   int writeEventToFile(unsigned int eventdatabuf[], int eventdataSize, std::ofstream& dataFile);
+  int writeDACReg(unsigned int board_id, int dcNum, int regNum, int regVal);
+  int resetTriggers(unsigned int board_id);
+  int sendTrigger(unsigned int board_id, bool softwareOrHardware);
+  int continueReadout(unsigned int board_id);
 };
 
 #endif
