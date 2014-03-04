@@ -371,3 +371,162 @@ int target6ControlClass::writeEventToFile(unsigned int eventdatabuf[], int event
 
 	return 1;
 }
+
+int target6ControlClass::writeDACReg(unsigned int board_id, int dcNum, int regNum, int regVal){
+
+	if( dcNum < 0 || dcNum > 9 ){
+		std::cout << "writeDACReg - invalid dcNum input: " << dcNum << std::endl;
+		return 0;
+	}
+
+	if( regNum < 0 || regNum > 255 ){
+		std::cout << "writeDACReg - invalid regNum input: " << regNum << std::endl;
+		return 0;
+	}
+
+	if( regVal < 0 || regVal > 4095 ){
+		std::cout << "writeDACReg - invalid regVal input: " << regVal << std::endl;
+		return 0;
+	}
+
+	//clear data point
+ 	clearDataBuffer();
+
+	int regValReadback;
+
+	//begin ASIC DAC programming through software, uses regNum and regVal
+	std::cout << "Start DAC Program Process - Writing DC # " << dcNum << "\tRegister " << regNum << "\tValue " << regVal << std::endl;
+
+	///set up data buffers that are used in USB interface
+	int size = 0;
+	unsigned int *outbuf;
+
+	//create command packet
+	int command_id = 13;
+	packet command_stack;
+	command_stack.ClearPacket();
+	command_stack.CreateCommandPacket(command_id,board_id);
+	//clear update i/o register (register #0)
+	command_stack.AddWriteToPacket(1, 0);
+	//set the correct bit in the DAC loading DC# mask
+	command_stack.AddWriteToPacket(4, (1 << dcNum));
+	//write desired ASIC register # and DAC to corresponding firmware i/o registers
+	command_stack.AddWriteToPacket(2, regNum);
+	command_stack.AddWriteToPacket(3, regVal);
+	//toggle bit of update i/o register (register #0)
+	command_stack.AddWriteToPacket(1, 1);
+	command_stack.AddWriteToPacket(1, 0);
+	outbuf = command_stack.AssemblePacket(size);
+
+	//send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
+	
+	/*
+	//clear update i/o register (register #0)
+	registerWriteReadback(board_id, 1, 0, regValReadback);
+
+	//set the correct bit in the DAC loading DC# mask
+	registerWriteReadback(board_id, 4, (1 << dcNum) , regValReadback);
+
+	//initialize the DAC loading and latch period registers to something reasonable
+	//registerWriteReadback(board_id, 5, 256 , regValReadback);
+	//registerWriteReadback(board_id, 6, 640 , regValReadback);
+
+	//write desired ASIC register # and DAC to corresponding firmware i/o registers
+	registerWriteReadback(board_id, 2, regNum, regValReadback);
+	registerWriteReadback(board_id, 3, regVal, regValReadback);
+
+	//set bit of update i/o register (register #0)
+	registerWriteReadback(board_id, 1, 1, regValReadback);
+
+	//wait some time
+	//usleep(100);
+
+	//clear update i/o register (register #0)
+	//registerWriteReadback(board_id, 1, 0, regValReadback);
+	*/	
+
+	return 1;
+}
+
+int target6ControlClass::resetTriggers(unsigned int board_id){
+
+	//clear data point
+ 	clearDataBuffer();
+
+	///set up data buffers that are used in USB interface
+	int size = 0;
+	unsigned int *outbuf;
+
+	//create command packet
+	int command_id = 13;
+	packet command_stack;
+	command_stack.ClearPacket();
+	command_stack.CreateCommandPacket(command_id,board_id);
+	command_stack.AddWriteToPacket(71, 0);
+	command_stack.AddWriteToPacket(71, 1);
+	command_stack.AddWriteToPacket(71, 0);
+	outbuf = command_stack.AssemblePacket(size);
+
+	//send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
+
+	return 1;
+}
+
+int target6ControlClass::sendTrigger(unsigned int board_id, bool softwareOrHardware){
+
+	//clear data point
+ 	clearDataBuffer();
+
+	///set up data buffers that are used in USB interface
+	int size = 0;
+	unsigned int *outbuf;
+
+	//create command packet
+	int command_id = 13;
+	packet command_stack;
+	command_stack.ClearPacket();
+	command_stack.CreateCommandPacket(command_id,board_id);
+	command_stack.AddWriteToPacket(50, 0);
+	command_stack.AddWriteToPacket(52, 0);
+	command_stack.AddWriteToPacket(55, 1);
+	command_stack.AddWriteToPacket(55, 0);
+	//Software trigger
+	if(softwareOrHardware == 0)
+		command_stack.AddWriteToPacket(50, 1);
+	//Hardware trigger
+	else
+		command_stack.AddWriteToPacket(52, 1);
+	outbuf = command_stack.AssemblePacket(size);
+
+	//send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
+
+	return 1;
+}
+
+int target6ControlClass::continueReadout(unsigned int board_id){
+
+	//clear data point
+ 	clearDataBuffer();
+
+	///set up data buffers that are used in USB interface
+	int size = 0;
+	unsigned int *outbuf;
+
+	//create command packet
+	int command_id = 13;
+	packet command_stack;
+	command_stack.ClearPacket();
+	command_stack.CreateCommandPacket(command_id,board_id);
+	command_stack.AddWriteToPacket(58, 0);
+	command_stack.AddWriteToPacket(58, 1);
+	outbuf = command_stack.AssemblePacket(size);
+
+	//send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
+
+	return 1;
+}
+

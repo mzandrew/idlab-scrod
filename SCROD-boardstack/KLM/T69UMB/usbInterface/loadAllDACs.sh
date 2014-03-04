@@ -1,13 +1,13 @@
 #!/bin/bash
 
-./setDACs.sh 0
-#./setDACs.sh 1
-#./setDACs.sh 2
-#./setDACs.sh 3
-#./setDACs.sh 4
-#./setDACs.sh 5
-#./setDACs.sh 6
-#./setDACs.sh 7
-#./setDACs.sh 8
-#./setDACs.sh 9
+./bin/target6Control_writeDefaultDacRegs 0
+./bin/target6Control_writeDefaultDacRegs 1
+./bin/target6Control_writeDefaultDacRegs 2
+./bin/target6Control_writeDefaultDacRegs 3
+./bin/target6Control_writeDefaultDacRegs 4
+./bin/target6Control_writeDefaultDacRegs 5
+./bin/target6Control_writeDefaultDacRegs 6
+./bin/target6Control_writeDefaultDacRegs 7
+./bin/target6Control_writeDefaultDacRegs 8
+./bin/target6Control_writeDefaultDacRegs 9
 

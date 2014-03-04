@@ -244,9 +244,12 @@ architecture Behavioral of scrod_top is
 	--ASIC TRIGGER CONTROL
 	signal internal_TRIGGER_ALL : std_logic := '0';
 	signal internal_TRIGGER_ASIC : std_logic_vector(9 downto 0) := "0000000000";
-	signal INTERNAL_COUNTER : UNSIGNED(27 downto 0) :=  x"0000000";
-	signal internal_triggerCounter : UNSIGNED(15 downto 0) :=  x"0000";
-	signal internal_numTriggers : UNSIGNED(15 downto 0) :=  x"0000";
+	signal internal_TRIGGER_ASIC_control_word : std_logic_vector(9 downto 0) := "0000000000";
+	signal internal_TRIGCOUNT_ena : std_logic := '0';
+	signal internal_TRIGCOUNT_rst : std_logic := '0';
+	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 16;
+	type TARGET6_TRIGGER_SCALERS is array(9 downto 0) of std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);	
+	signal internal_TRIGCOUNT_scaler : TARGET6_TRIGGER_SCALERS;
 	
 	--ASIC DAC CONTROL
 	signal internal_DAC_CONTROL_UPDATE : std_logic := '0';
@@ -357,13 +360,9 @@ architecture Behavioral of scrod_top is
 	signal i_dac_value  : std_logic_vector(7 downto 0);
 	signal i_dac_update : std_logic;
 	signal i_dac_update_extended : std_logic;
-
 	signal i_hv_sck_dac : std_logic;
 	signal i_hv_din_dac : std_logic;
-	
-	signal internal_test_out : std_logic := '0';
 
-	
 	--Waveform FIFO component
 	COMPONENT waveform_fifo_wr32_rd32
 	PORT (
@@ -409,11 +408,17 @@ begin
 	internal_TRIGGER_ASIC(7) <= TDC8_TRG_16 OR TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
 	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
 	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
-	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
-	--internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1) 
-	--OR internal_TRIGGER_ASIC(2) OR internal_TRIGGER_ASIC(3) OR internal_TRIGGER_ASIC(4) 
-	--OR internal_TRIGGER_ASIC(5) OR internal_TRIGGER_ASIC(6) OR internal_TRIGGER_ASIC(7) 
-	--OR internal_TRIGGER_ASIC(8) OR internal_TRIGGER_ASIC(9);
+	--internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
+	internal_TRIGGER_ALL <= (internal_TRIGGER_ASIC(0) AND internal_TRIGGER_ASIC_control_word(0) )
+		OR ( internal_TRIGGER_ASIC(1) AND internal_TRIGGER_ASIC_control_word(1) )
+		OR ( internal_TRIGGER_ASIC(2) AND internal_TRIGGER_ASIC_control_word(2) )
+		OR ( internal_TRIGGER_ASIC(3) AND internal_TRIGGER_ASIC_control_word(3) )
+		OR ( internal_TRIGGER_ASIC(4) AND internal_TRIGGER_ASIC_control_word(4) )
+		OR ( internal_TRIGGER_ASIC(5) AND internal_TRIGGER_ASIC_control_word(5) )
+		OR ( internal_TRIGGER_ASIC(6) AND internal_TRIGGER_ASIC_control_word(6) )
+		OR ( internal_TRIGGER_ASIC(7) AND internal_TRIGGER_ASIC_control_word(7) )
+		OR ( internal_TRIGGER_ASIC(8) AND internal_TRIGGER_ASIC_control_word(8) )
+		OR ( internal_TRIGGER_ASIC(9) AND internal_TRIGGER_ASIC_control_word(9) );
 	
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
@@ -570,6 +575,11 @@ begin
 	TDC_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(3 downto 0);
 	TOP_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(7 downto 4);
 
+	--Trigger control
+	internal_TRIGCOUNT_ena <= internal_OUTPUT_REGISTERS(70)(0);
+	internal_TRIGCOUNT_rst <= internal_OUTPUT_REGISTERS(71)(0);
+	internal_TRIGGER_ASIC_control_word <= internal_OUTPUT_REGISTERS(72)(9 downto 0);
+
 	--------Input register mapping--------------------
 	--Map the first N_GPR output registers to the first set of read registers
 	gen_OUTREG_to_INREG: for i in 0 to N_GPR-1 generate
@@ -590,8 +600,16 @@ begin
 	internal_INPUT_REGISTERS(N_GPR + 5 ) <= "0000000" & internal_READCTRL_LATCH_SMP_MAIN_CNT;
 	internal_INPUT_REGISTERS(N_GPR + 6 ) <= "0000000000" & internal_EVTBUILD_MAKE_READY & internal_EVTBUILD_DONE_SENDING_EVENT & internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status 
 										& internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS;
-	internal_INPUT_REGISTERS(N_GPR + 10 ) <= std_logic_vector(INTERNAL_COUNTER(15 downto 0));
-	internal_INPUT_REGISTERS(N_GPR + 11) <= std_logic_vector(internal_numTriggers);
+	internal_INPUT_REGISTERS(N_GPR + 10 ) <= internal_TRIGCOUNT_scaler(0)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 11 ) <= internal_TRIGCOUNT_scaler(1)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 12 ) <= internal_TRIGCOUNT_scaler(2)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 13 ) <= internal_TRIGCOUNT_scaler(3)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 14 ) <= internal_TRIGCOUNT_scaler(4)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 15 ) <= internal_TRIGCOUNT_scaler(5)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 16 ) <= internal_TRIGCOUNT_scaler(6)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 17 ) <= internal_TRIGCOUNT_scaler(7)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 18 ) <= internal_TRIGCOUNT_scaler(8)(15 downto 0);
+	internal_INPUT_REGISTERS(N_GPR + 19 ) <= internal_TRIGCOUNT_scaler(9)(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
 
    --ASIC control processes
@@ -798,6 +816,11 @@ begin
 		WAVEFORM_FIFO_DATA_OUT 		=> internal_WAVEFORM_FIFO_DATA_OUT,
 		WAVEFORM_FIFO_EMPTY 			=> internal_WAVEFORM_FIFO_EMPTY,
 		WAVEFORM_FIFO_DATA_VALID 	=> internal_WAVEFORM_FIFO_DATA_VALID,
+		--WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
+		--WAVEFORM_FIFO_READ_ENABLE 	=> open,
+		--WAVEFORM_FIFO_DATA_OUT 		=> (others=>'0'),
+		--WAVEFORM_FIFO_EMPTY 			=> '1',
+		--WAVEFORM_FIFO_DATA_VALID 	=> '0',
 		BUFFER_FIFO_RESET 	=> internal_BUFFERCTRL_FIFO_RESET,
 		BUFFER_FIFO_WR_CLK 	=> internal_BUFFERCTRL_FIFO_WR_CLK,
 		BUFFER_FIFO_WR_EN 	=> internal_BUFFERCTRL_FIFO_WR_EN,
@@ -851,27 +874,16 @@ begin
 	--internal_EVTBUILD_START_BUILDING_EVENT <= internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
 	--internal_EVTBUILD_MAKE_READY <= internal_CMDREG_EVTBUILD_MAKE_READY;
 	
-   --counter process
-   process (internal_CLOCK_50MHz_BUFG) begin
-		if (rising_edge(internal_CLOCK_50MHz_BUFG)) then
-			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
-      end if;
-   end process;
-	
-	--trigger counter
-	process (INTERNAL_COUNTER, internal_TRIGGER_ALL) begin
-		if (INTERNAL_COUNTER = x"0000000") then
-			internal_numTriggers <= internal_triggerCounter;
-			internal_triggerCounter <= x"0000";
-		else
-			if( rising_edge(internal_TRIGGER_ALL) ) then
-				internal_triggerCounter <= internal_triggerCounter  + 1;
-			end if;
-      end if;
-   end process;
-	
-	--Event builder
-	
+	gen_trigger_counters : for i in 0 to 9 generate
+		u_trigger_scaler_single_channel: entity work.trigger_scaler_single_channel Port Map ( 
+			SIGNAL_TO_COUNT => internal_TRIGGER_ASIC(i),
+			CLOCK           => internal_CLOCK_50MHz_BUFG,
+			READ_ENABLE     => internal_TRIGCOUNT_ena,
+			RESET_COUNTER   => internal_TRIGCOUNT_rst,
+			SCALER          => internal_TRIGCOUNT_scaler(i)
+		);
+	end generate;
+
 	--------------
 	-- MPPC DACs
 	--------------
@@ -889,7 +901,7 @@ begin
 		DIN_DAC		 => i_hv_din_dac,
 		CS_DAC       => TDC_CS_DAC
 	);
-
+   --TDC_CS_DAC <= "0000000000";
 	BUSA_SCK_DAC <= i_hv_sck_dac;
 	BUSB_SCK_DAC <= i_hv_sck_dac;
 	BUSA_DIN_DAC <= i_hv_din_dac;

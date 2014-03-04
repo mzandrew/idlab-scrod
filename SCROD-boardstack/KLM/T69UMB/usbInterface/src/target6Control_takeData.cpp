@@ -57,7 +57,7 @@ int main(int argc, char* argv[]){
 	control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
 	control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
 	control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
-	control->registerWriteReadback(board_id, 51, 0x3FF, regValReadback); //enable ASICs for readout
+	control->registerWriteReadback(board_id, 51, 0x1, regValReadback); //enable ASICs for readout
 	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
 	control->registerWriteReadback(board_id, 53, 8, regValReadback); //set trigger delay
 	control->registerWriteReadback(board_id, 54, 0, regValReadback); //set digitization window offset
@@ -66,6 +66,7 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
 	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
+	control->registerWrite(board_id, 72, 0x1, regValReadback); //enable trigger bits
 
 	//define output file		
 	ofstream dataFile;
@@ -77,43 +78,29 @@ int main(int argc, char* argv[]){
 
 	char ct = 0;
 	//while(ct != 'Q'){
-	for( int numEv = 0 ; numEv < 100 ; numEv++ ){
+	for( int numEv = 0 ; numEv < 2000 ; numEv++ ){
 		std::cout << "Event # " << numEv << std::endl;
-
-		//clear data buffer
-		//control->clearDataBuffer();
-		//usleep(500);
-
-		//make sure readout is off digOffset
-		control->registerWrite(board_id, 50, 0, regValReadback); //readout control start is 0
-		control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
-		control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
-		control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
-		control->registerWrite(board_id, 58, 0, regValReadback); 
-
 		//do software trigger
-		if(1){
-			control->registerWrite(board_id, 50, 1, regValReadback); //readout control start is 0
+		if(0){
+			control->sendTrigger(board_id,0);
 		}
 		//do harware trigger, presumably trigger will occur shortly after hardware veto is disable
-		if(0){
-			control->registerWrite(board_id, 52, 1, regValReadback); //enable hardware triggers
+		if(1){
+			control->sendTrigger(board_id,1);
+			usleep(50);
 			//std::cout << "Send trigger, then enter character" << std::endl;
 			//std::cin >> ct;
 		}
 
-		//give the trigger some time
-		//usleep(50);
-
 		int first = 1;
-		//while(1){
-		while(eventdataSize > 100 || first ==  1){
+		int numSmall = 0;
+		numIter = 0;
+		while( (eventdataSize > 100 || numSmall < 3 ) && numIter < 25 ){
 		//while( numIter < 4){
 			//delay, just in case readout is still in progress
 			
 			//toggle continue bit
-			control->registerWrite(board_id, 58, 0, regValReadback); //allow readout to continue
-			control->registerWrite(board_id, 58, 1, regValReadback); //allow readout to continue
+			control->continueReadout(board_id);
 
 			//usleep(100);
 	
@@ -127,17 +114,21 @@ int main(int argc, char* argv[]){
 			//myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
 			if( eventdataSize > 100 ){
 				first = 0;
+				numSmall = 0;
 				control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
 			}
-		}
-	}
+			else
+				numSmall++;
+		} //end while loop
+		if( first == 0 )
+			std::cout << "\tRecorded waveform data" << std::endl;
+	}//end event loop
 
 	//reset readout
 	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
 	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
 	control->registerWrite(board_id, 55, 1, regValReadback); //make sure readout is reset
 	control->registerWrite(board_id, 55, 0, regValReadback); //make sure readout is reset
-	control->registerWrite(board_id, 58, 0, regValReadback); 
 
 	//close output file
   	dataFile.close();

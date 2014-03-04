@@ -43,6 +43,9 @@ int main(int argc, char* argv[]){
 	//begin ASIC DAC programming through software, uses regNum and regVal
 	std::cout << "Start DAC Program Process - Writing DC # " << dcNum << "\tRegister " << regNum << "\tValue " << regVal << std::endl;
 	
+	control->writeDACReg(board_id, dcNum, regNum, regVal);
+
+	/*
 	//clear update i/o register (register #0)
 	control->registerWriteReadback(board_id, 1, 0, regValReadback);
 
@@ -50,8 +53,8 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 4, (1 << dcNum) , regValReadback);
 
 	//initialize the DAC loading and latch period registers to something reasonable
-	control->registerWriteReadback(board_id, 5, 128 , regValReadback);
-	control->registerWriteReadback(board_id, 6, 320 , regValReadback);
+	control->registerWriteReadback(board_id, 5, 256 , regValReadback);
+	control->registerWriteReadback(board_id, 6, 640 , regValReadback);
 
 	//write desired ASIC register # and DAC to corresponding firmware i/o registers
 	control->registerWriteReadback(board_id, 2, regNum, regValReadback);
@@ -61,11 +64,13 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 1, 1, regValReadback);
 
 	//wait some time
-	usleep(50);
+	usleep(100);
 
 	//clear update i/o register (register #0)
 	control->registerWriteReadback(board_id, 1, 0, regValReadback);
 
+	*/
+	
 	//close USB interface
         control->closeUSBInterface();
 
