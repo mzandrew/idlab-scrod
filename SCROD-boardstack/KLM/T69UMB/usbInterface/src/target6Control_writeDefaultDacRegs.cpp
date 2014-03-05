@@ -49,28 +49,28 @@ int main(int argc, char* argv[]){
 	//control->writeDACReg(board_id, dcNum, regNum, regVal);
 
 	//Trigger thresholds (PCLK 1-15)
-	control->writeDACReg(board_id, dcNum, 0, 0);
-	control->writeDACReg(board_id, dcNum, 1, 0);
-	control->writeDACReg(board_id, dcNum, 2, 0);
-	control->writeDACReg(board_id, dcNum, 3, 0);
-	control->writeDACReg(board_id, dcNum, 4, 0);
-	control->writeDACReg(board_id, dcNum, 5, 0);
-	control->writeDACReg(board_id, dcNum, 6, 0);
-	control->writeDACReg(board_id, dcNum, 7, 0);
-	control->writeDACReg(board_id, dcNum, 8, 0);
-	control->writeDACReg(board_id, dcNum, 9, 0);
-	control->writeDACReg(board_id, dcNum, 10, 0);
-	control->writeDACReg(board_id, dcNum, 11, 0);
-	control->writeDACReg(board_id, dcNum, 12, 0);
-	control->writeDACReg(board_id, dcNum, 13, 0);
-	control->writeDACReg(board_id, dcNum, 14, 0);
-	control->writeDACReg(board_id, dcNum, 15, 0);
+	control->writeDACReg(board_id, dcNum, 0, 1700);
+	control->writeDACReg(board_id, dcNum, 1, 1700);
+	control->writeDACReg(board_id, dcNum, 2, 1700);
+	control->writeDACReg(board_id, dcNum, 3, 1700);
+	control->writeDACReg(board_id, dcNum, 4, 1700);
+	control->writeDACReg(board_id, dcNum, 5, 1700);
+	control->writeDACReg(board_id, dcNum, 6, 1700);
+	control->writeDACReg(board_id, dcNum, 7, 1700);
+	control->writeDACReg(board_id, dcNum, 8, 1700);
+	control->writeDACReg(board_id, dcNum, 9, 1700);
+	control->writeDACReg(board_id, dcNum, 10, 1700);
+	control->writeDACReg(board_id, dcNum, 11, 1700);
+	control->writeDACReg(board_id, dcNum, 12, 1700);
+	control->writeDACReg(board_id, dcNum, 13, 1700);
+	control->writeDACReg(board_id, dcNum, 14, 1700);
+	control->writeDACReg(board_id, dcNum, 15, 1700);
 	//ITBias (PCLK_17)
 	control->writeDACReg(board_id, dcNum, 16, 1300);
 	//SPAREbias (PCLK_18)
 	control->writeDACReg(board_id, dcNum, 17, 1300);
 	//Vbias (PCLK_19)
-	control->writeDACReg(board_id, dcNum, 18, 1200);
+	control->writeDACReg(board_id, dcNum, 18, 900);
 	//GGbias (PCLK_20)
 	control->writeDACReg(board_id, dcNum, 19, 1600);
 	//TRGbias (PCLK_21)

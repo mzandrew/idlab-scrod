@@ -68,8 +68,8 @@ int main(int argc, char* argv[]){
 	for(int c = 0 ; c < 16 ; c++){
 		int count[10];
 		//loop over channel trigger threshold values
-		for(int i = 0 ; i < 25 ; i++){
-			int threshold = 1950+4*i;
+		for(int i = 0 ; i < 50 ; i++){
+			int threshold = 1800+5*i;
 
 			//reset scalers
 			control->registerWriteReadback(board_id, 71, 1 , regValReadback); //reset high

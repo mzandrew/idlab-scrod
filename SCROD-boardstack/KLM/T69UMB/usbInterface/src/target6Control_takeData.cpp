@@ -23,10 +23,24 @@ TApplication *theApp;
 using namespace std;
 
 int main(int argc, char* argv[]){
-	if (argc != 1){
-    		std::cout << "wrong number of arguments: usage ./target6Control_test" << std::endl;
+	if (argc != 3){
+    		std::cout << "wrong number of arguments: usage ./target6Control_takeData <number events> <trigger type: software = 0 or ASIC trigger = 1>" << std::endl;
     		return 0;
   	}
+
+	//get event #
+	int numEvents = atoi(argv[1]);
+	if( numEvents <= 0 ){
+		std::cout << "Invalid number of events, exiting" << std::endl;
+		return 0;
+	}
+
+	//get trigger type
+	int trigType = atoi(argv[2]);
+	if( trigType != 0 && trigType != 1 ){
+		std::cout << "Invalid trigger type, exiting" << std::endl;
+		return 0;
+	}
 
 	//define application object
 	theApp = new TApplication("App", &argc, argv);
@@ -57,7 +71,7 @@ int main(int argc, char* argv[]){
 	control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
 	control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
 	control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
-	control->registerWriteReadback(board_id, 51, 0x1, regValReadback); //enable ASICs for readout
+	control->registerWriteReadback(board_id, 51, 0x3FF, regValReadback); //enable ASICs for readout
 	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
 	control->registerWriteReadback(board_id, 53, 8, regValReadback); //set trigger delay
 	control->registerWriteReadback(board_id, 54, 0, regValReadback); //set digitization window offset
@@ -66,7 +80,7 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
 	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
-	control->registerWrite(board_id, 72, 0x1, regValReadback); //enable trigger bits
+	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
 
 	//define output file		
 	ofstream dataFile;
@@ -78,14 +92,15 @@ int main(int argc, char* argv[]){
 
 	char ct = 0;
 	//while(ct != 'Q'){
-	for( int numEv = 0 ; numEv < 2000 ; numEv++ ){
-		std::cout << "Event # " << numEv << std::endl;
+	for( int numEv = 0 ; numEv < numEvents ; numEv++ ){
+		if( numEv % 10 == 0 )
+			std::cout << "Event # " << numEv << std::endl;
 		//do software trigger
-		if(0){
+		if(trigType){
 			control->sendTrigger(board_id,0);
 		}
 		//do harware trigger, presumably trigger will occur shortly after hardware veto is disable
-		if(1){
+		if(trigType){
 			control->sendTrigger(board_id,1);
 			usleep(50);
 			//std::cout << "Send trigger, then enter character" << std::endl;
@@ -120,8 +135,8 @@ int main(int argc, char* argv[]){
 			else
 				numSmall++;
 		} //end while loop
-		if( first == 0 )
-			std::cout << "\tRecorded waveform data" << std::endl;
+		//if( first == 0 )
+		//	std::cout << "\tRecorded waveform data" << std::endl;
 	}//end event loop
 
 	//reset readout
