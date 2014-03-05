@@ -96,11 +96,11 @@ int main(int argc, char* argv[]){
 		if( numEv % 10 == 0 )
 			std::cout << "Event # " << numEv << std::endl;
 		//do software trigger
-		if(trigType){
+		if(trigType == 0){
 			control->sendTrigger(board_id,0);
 		}
 		//do harware trigger, presumably trigger will occur shortly after hardware veto is disable
-		if(trigType){
+		else{
 			control->sendTrigger(board_id,1);
 			usleep(50);
 			//std::cout << "Send trigger, then enter character" << std::endl;
