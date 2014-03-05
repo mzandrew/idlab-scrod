@@ -53,14 +53,20 @@ TApplication *theApp;
 //void parseTarget6Data(std::string inputFileName){
 int main(int argc, char* argv[]){
 	//define input file and parsing
-	std::string inputFileName = "output_target6Control_takeData.dat";
+	//std::string inputFileName = "output_target6Control_takeData.dat";
+
+	if (argc != 2){
+    		std::cout << "wrong number of arguments: usage ./parseTarget6Data <filename>" << std::endl;
+    		return 0;
+  	}
+
 	ifstream infile;
 	
 	//define application object
 	theApp = new TApplication("App", &argc, argv);
 
-	std::cout << " inputFileName " << inputFileName << std::endl;
-	infile.open(inputFileName.c_str(), std::ifstream::in | std::ifstream::binary);  
+	//std::cout << " inputFileName " << inputFileName << std::endl;
+	infile.open(argv[1], std::ifstream::in | std::ifstream::binary);  
 
         if (infile.fail()) {
 		std::cout << "Error opening input file, exiting" << std::endl;
