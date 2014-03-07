@@ -1,15 +1,11 @@
-//compile with: g++ -o parseTarget6Data parseTarget6Data.cxx `root-config --cflags --glibs`
-
+//compile independently with: g++ -o parseTarget6Data parseTarget6Data.cxx `root-config --cflags --glibs`
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
 
 #include "TROOT.h"
-#include <TGraph.h>
-#include <TH1.h>
 #include "TApplication.h"
-#include "TCanvas.h"
 #include <TFile.h>
 #include "TTree.h"
 #include "TSystem.h"	
@@ -17,13 +13,12 @@
 #include "TObjArray.h"
 using namespace std;
 
-//void initializeRootTree();
+void initializeRootTree();
 void processBuffer(unsigned int *buffer_uint, int sizeInUint32);
 void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32);
 void resetWaveformArray();
 void saveWaveformArrayToTree();
-//int processWaveform(unsigned int *buffer_uint, int bufPos, int sizeInUint32);
-//TString getOutputFileName(std::string inputFileName);
+TString getOutputFileName(std::string inputFileName);
 
 //array to store motherboard event waveform data, very crude
 const int numDC = 10;
@@ -31,47 +26,49 @@ const int numCHAN = 16;
 const int numADDR = 512;
 const int numSAMP = 32;
 const int numBIT = 12;
-unsigned int waveformArray[numDC][numCHAN][numADDR][numSAMP]; //DC, ADDRESS, SAMPLE
+bool waveformValid[numDC][numCHAN][numADDR]; //DC, CHANNEL, ADDRESS
+unsigned int waveformArray[numDC][numCHAN][numADDR][numSAMP]; //DC, CHANNEL, ADDRESS, SAMPLE
 int currentEventNumber;
 
-//Set tree variables as global for quick implementation
+//Define output tree
+#define POINTS_PER_WAVEFORM    32
+#define MEMORY_DEPTH           512
+#define NASICS                 10
+#define NCHS                   16
+const Int_t MaxROI(400);
 TTree *tree;
-UInt_t scrodId;
-UInt_t winId;
-int electronicsModule;
-int eventNum;
-int asicCol;
-int asicRow;
-int asicCh;
-int window;
-//int samples[POINTS_PER_WAVEFORM];
+Int_t eventNum;
+Int_t nROI;
+UInt_t scrodId[MaxROI];
+Int_t asicNum[MaxROI];
+Int_t asicCh[MaxROI];
+Int_t windowNum[MaxROI];
+Int_t samples[MaxROI][POINTS_PER_WAVEFORM];
 
-TCanvas *c0;
 //global TApplication object declared here for simplicity
 TApplication *theApp;
 
 //void parseTarget6Data(std::string inputFileName){
 int main(int argc, char* argv[]){
-	//define input file and parsing
-	//std::string inputFileName = "output_target6Control_takeData.dat";
-
+	//check # arguments
 	if (argc != 2){
     		std::cout << "wrong number of arguments: usage ./parseTarget6Data <filename>" << std::endl;
     		return 0;
   	}
 
+	//define input file and parsing
+	std::string inputFileName = argv[1];
+	std::cout << " inputFileName " << inputFileName << std::endl;
 	ifstream infile;
-	
-	//define application object
-	theApp = new TApplication("App", &argc, argv);
-
-	//std::cout << " inputFileName " << inputFileName << std::endl;
 	infile.open(argv[1], std::ifstream::in | std::ifstream::binary);  
 
         if (infile.fail()) {
 		std::cout << "Error opening input file, exiting" << std::endl;
 		return 0;
 	}
+
+	//define application object
+	theApp = new TApplication("App", &argc, argv);
 
     	// get length of file:
     	infile.seekg (0, infile.end);
@@ -93,11 +90,13 @@ int main(int argc, char* argv[]){
 	}
     	infile.close();
 
-	//initialize TCanvas
-	c0 = new TCanvas("c0","c0",1300,800);
+	//define output file name
+	TString outputFileName(getOutputFileName(inputFileName));
+	std::cout << " outputFileName " << outputFileName << std::endl;
+	TFile g(outputFileName , "RECREATE");
 
 	//initialize tree to store trigger bit data
-	//initializeRootTree();
+	initializeRootTree();
 
 	//intialize waveform array
 	currentEventNumber = -1;
@@ -105,28 +104,18 @@ int main(int argc, char* argv[]){
 	
 	//process file buffer
 	processBuffer(buffer_uint,size_in_bytes/4);
-	return 0;
 
-	/*
-	//define output file name, write out tree data
-	TString outputFileName(getOutputFileName(inputFileName));
-
-	std::cout << " outputFileName " << outputFileName << std::endl;
-	TFile g(outputFileName , "RECREATE");
+	//write tree to file
+	g.cd();
 	tree->Write();
 
         //Write out the settings used in creating the data tree:
-        Int_t numberOfElectronicsModules(NELECTRONICSMODULES);
-	Int_t numberOfAsicRows(NROWS);
-	Int_t numberOfAsicColumns(NCOLS);
+	Int_t numberOfAsics(NASICS);
 	Int_t numberOfAsicChannels(NCHS);
 	Int_t numberOfWindows(MEMORY_DEPTH);
 	Int_t numberOfSamples(POINTS_PER_WAVEFORM);
-
         TTree* MetaDataTree = new TTree("MetaData", "metadata");  
-        MetaDataTree->Branch("nEModules", &numberOfElectronicsModules, "nEModules/I");   
-        MetaDataTree->Branch("nAsicRows", &numberOfAsicRows, "nAsicRows/I");
-        MetaDataTree->Branch("nAsicColumns", &numberOfAsicColumns, "nAsicColumns/I");
+        MetaDataTree->Branch("nAsics", &numberOfAsics, "nAsics/I");
         MetaDataTree->Branch("nAsicChannels", &numberOfAsicChannels, "nAsicChannels/I");
         MetaDataTree->Branch("nWindows", &numberOfWindows, "nWindows/I");
         MetaDataTree->Branch("nSamples", &numberOfSamples, "nSamples/I");
@@ -134,65 +123,47 @@ int main(int argc, char* argv[]){
         MetaDataTree->Write();  
 
 	g.Close();
-	return;
-	*/
+	return 0;
 }
 
-/*
 //initialize tree to store trigger bit data
 void initializeRootTree(){
-	tree = new TTree("T","TARGET6 Waveform");
-	tree->Branch("scrodId", &scrodId, "scrodId/i");
-	tree->Branch("winId", &winId, "winId/i");
-        tree->Branch("eModule", &electronicsModule, "eModule/I");
+	tree = new TTree("T","TARGET6_Data");
 	tree->Branch("eventNum", &eventNum, "eventNum/I");
-	tree->Branch("asicCol", &asicCol, "asicCol/I");
-	tree->Branch("asicRow", &asicRow, "asicRow/I");
-	tree->Branch("asicCh", &asicCh, "asicCh/I");
-	tree->Branch("window", &window, "window/I");
+	tree->Branch("nROI", &nROI, "nROI/I");
+	tree->Branch("scrodId", &scrodId, "scrodId[nROI]/I");
+	tree->Branch("asicNum", &asicNum, "asicNum[nROI]/I");
+	tree->Branch("asicCh", &asicCh, "asicCh[nROI]/I");
+	tree->Branch("windowNum", &windowNum, "windowNum[nROI]/I");
         //set array size to store in root file:
-        TString samplesBranchLeafList("samples[");
+        TString samplesBranchLeafList("samples[nROI][");
 	samplesBranchLeafList += POINTS_PER_WAVEFORM;
 	samplesBranchLeafList += "]/I";
 	tree->Branch("samples", &samples, samplesBranchLeafList);
 	return;
 }
-*/
 
 //reset the array storing waveform data
 void saveWaveformArrayToTree(){
-	TGraph *gPlot = new TGraph();
-	gPlot = new TGraph();
-  	gPlot->SetMarkerColor(2);
-  	gPlot->SetMarkerStyle(21);
-  	gPlot->SetMarkerSize(1.5);
-
-	//loop over all channels
+	//loop over all ASICs/channels
+	eventNum = currentEventNumber;
+	Int_t ROI = 0;
     	for(int d = 0 ; d < numDC ; d++)
-	for(int c = 0 ; c < numCHAN ; c++){
-		//load samples
-		gPlot->Set(0);
-  		for(int a = 0 ; a < numADDR ; a++)
-  		for(int s = 0 ; s < numSAMP ; s++){
-			if( waveformArray[d][c][a][s] > 0 )
-				gPlot->SetPoint( gPlot->GetN(),32*a + s,waveformArray[d][c][a][s]);
-		}
-
-		if( gPlot->GetN() == 0 )
+	for(int c = 0 ; c < numCHAN ; c++)
+  	for(int a = 0 ; a < numADDR ; a++){
+		if( waveformValid[d][c][a] == 0 )
 			continue;
-
-		std::cout << "Event # " << currentEventNumber;
-		std::cout << "\tChannel # " << c;
-		std::cout << std::endl;
-		c0->Clear();
-		gPlot->GetYaxis()->SetRangeUser(0,4100);
-  		gPlot->Draw("AP");
-		c0->Update();
+		scrodId[ROI] = 0;
+		asicNum[ROI] = d;
+		asicCh[ROI] = c;
+		windowNum[ROI] = a;
+  		for(int s = 0 ; s < numSAMP ; s++)
+			samples[ROI][s] = waveformArray[d][c][a][s];
+		ROI++;
 		
-		std::cout << "Please enter a character to continue" << std::endl;
-		char ct;
-		std::cin >> ct;
-	}
+	}//end of numADDR loop
+	nROI = ROI;
+	tree->Fill();
 	return;
 }	
 
@@ -201,8 +172,10 @@ void resetWaveformArray(){
     	for(int d = 0 ; d < numDC ; d++)
 	for(int c = 0 ; c < numCHAN ; c++)
   	for(int a = 0 ; a < numADDR ; a++)
-  	for(int s = 0 ; s < numSAMP ; s++)
+  	for(int s = 0 ; s < numSAMP ; s++){
+		waveformValid[d][c][a] = 0;
 		waveformArray[d][c][a][s] = 0;
+	}
 	return;
 }	
 
@@ -270,7 +243,7 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 	if( (0xFFF00000 & buffer_uint[bufPos+5]) != 0xABC00000 )
 		return;
 
-	//at this point should have window data - loop over window data until encounter end of packet
+	//at this point should have window data - loop over window data until encounter end of window packet
 	int count = 0;
 	while( ((0xFFF00000 & buffer_uint[bufPos+5+count]) == 0xABC00000 ) || ((0xFFF00000 & buffer_uint[bufPos+5+count]) == 0xDEF00000 ) ){
 		//std::cout << std::hex << buffer_uint[bufPos+5+count] << std::dec;
@@ -315,25 +288,20 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 
 			//at this point have sample bit word, save to waveform array
 			for(int chanNum = 0 ; chanNum < numCHAN ; chanNum++ ){
+				waveformValid[asicNum][chanNum][addrNum] = 1;
 				waveformArray[asicNum][chanNum][addrNum][sampNum] 
-				= ( waveformArray[asicNum][chanNum][addrNum][sampNum] | ( ( (buffer_uint[bufPos+5+count] >> chanNum) &  0x1 ) << (numBIT - bitNum -1) ) );
+				= ( waveformArray[asicNum][chanNum][addrNum][sampNum] | 
+				( ( (buffer_uint[bufPos+5+count] >> chanNum) &  0x1 ) << (numBIT - bitNum -1) ));
 			}
-		}
-		//std::cout << std::endl;
+		}//end of check sample packet data
 
 		//increment position
 		count++;
 	}
 
-	//std::cout << "LAST WORD " << std::endl;
-	//std::cout << std::hex << buffer_uint[bufPos+5+count] << std::dec;
-	//std::cout << std::endl;
-	//char ct;
-	//std::cin >> ct;
 	return;
 }
 
-/*
 TString getOutputFileName(std::string inputFileName) {
 
         TString fileName(inputFileName);
@@ -348,4 +316,3 @@ TString getOutputFileName(std::string inputFileName) {
 	delete strings;
 	return outputFileName;
 }
-*/
