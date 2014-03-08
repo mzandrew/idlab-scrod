@@ -155,7 +155,7 @@ int target6DataClass::plotWaveformTreeFile(TCanvas *c0){
 	return 1;
 }
 
-int target6DataClass::measurePedestals(TCanvas *c0){
+int target6DataClass::measurePedestals(){
 	if( isWaveformTree == 0){
 		std::cout << "measurePedestals : Waveform tree file not loaded, exiting" << std::endl;
 		return 0;
@@ -248,6 +248,121 @@ int target6DataClass::measurePedestals(TCanvas *c0){
 	//delete histograms
 	//for (int i(0); i<numberOfHistograms; ++i)
 	//	delete histos.at(i);
+
+	return 1;
+}
+
+int target6DataClass::makeHitTree(){
+	if( isWaveformTree == 0){
+		std::cout << "plotWaveformTreeFile : Waveform tree file not loaded, exiting" << std::endl;
+		return 0;
+	}
+	
+	//define graph object
+	TGraph *gPlot[NASICS][NCHS];
+	for(int d = 0 ; d < NASICS ; d++)
+	for(int c = 0 ; c < NCHS ; c++){
+		gPlot[d][c] = new TGraph();
+		gPlot[d][c]->SetMarkerColor(2);
+  		gPlot[d][c]->SetMarkerStyle(21);
+  		gPlot[d][c]->SetMarkerSize(1.5);
+	}
+
+	//define output pedestal file name
+	TString outputFileName("output_target6DataClass_hitTreeFile.root");
+	std::cout << " outputFileName " << outputFileName << std::endl;
+	TFile g(outputFileName , "RECREATE");
+
+	//create output hit tree
+	TTree* hitTree = new TTree("HitTree", "Hit Tree");
+  	Int_t hitTree_eventNum;
+  	Int_t hitTree_asicNum;
+  	Int_t hitTree_asicCh;
+ 	Float_t hitTree_time;
+  	Float_t hitTree_height;
+  	hitTree->Branch("eventNum", &hitTree_eventNum, "eventNum/I");
+  	hitTree->Branch("asicNum", &hitTree_asicNum, "asicNum/I");   
+  	hitTree->Branch("asicCh", &hitTree_asicCh, "asicCh/I");
+  	hitTree->Branch("time", &hitTree_time, "time/F");  
+  	hitTree->Branch("height", &hitTree_height, "height/F");
+
+	//loop over waveform tree
+  	Long64_t nEntries(tree->GetEntries());
+  	for(Long64_t entry(0); entry<nEntries; ++entry) {
+    		tree->GetEntry(entry);
+
+		//reset graphs
+		for(int d = 0 ; d < NASICS ; d++)
+		for(int c = 0 ; c < NCHS ; c++)
+			gPlot[d][c]->Set(0);
+		
+		//load samples into graphs
+		for( int n = 0 ; n < nROI ; n++){
+			for(int s = 0 ; s < POINTS_PER_WAVEFORM ; s++ ){
+				int sampVal = samples[n][s];
+				double pedVal = 0;
+				if( isPedestalTree == 1 ){
+					Long64_t entryToGet(s + POINTS_PER_WAVEFORM*windowNum[n] + POINTS_PER_WAVEFORM*MEMORY_DEPTH*asicCh[n] 
+						+ POINTS_PER_WAVEFORM*MEMORY_DEPTH*NCHS*asicNum[n] );
+					pedestalTree->GetEntry(entryToGet);
+					pedVal = pedestal_mean;
+				}
+				gPlot[ asicNum[n] ][ asicCh[n] ]->SetPoint( gPlot[ asicNum[n] ][ asicCh[n] ]->GetN(), 
+					s + POINTS_PER_WAVEFORM*windowNum[n], sampVal - pedVal );
+			}
+		}
+
+		//loop through waveform graphs, measure pulse heights
+		for(int d = 0 ; d < NASICS ; d++)
+		for(int c = 0 ; c < NCHS ; c++){
+			//skip empty waveforms
+			if( gPlot[ d ][ c ]->GetN() < 10 )
+				continue;
+			//check waveforms
+			double pX, pY;
+			//check if the pedestal subtraction was applied correctly
+			int numUncorr = 0;
+			for( int s = 0 ; s < gPlot[ d ][ c ]->GetN() ; s++ ){
+				gPlot[ d ][ c ]->GetPoint( s, pX, pY );
+				if( pY > 50 )
+					numUncorr++;
+			}
+			if( numUncorr > 16 )
+				continue;
+
+			//identify minimum point in waveform
+			Float_t minX = 0;
+			Float_t minY = 4100;
+			for( int s = 1 ; s < gPlot[ d ][ c ]->GetN() ; s++ ){
+				gPlot[ d ][ c ]->GetPoint( s, pX, pY );
+				if( pY < minY ){
+					minX = pX;
+					minY = pY;
+				}
+			}
+
+			//load height/sample "time" into tree
+			if( minY > -50 )
+				continue;
+			hitTree_eventNum = eventNum;
+  			hitTree_asicNum = d;
+  			hitTree_asicCh = c;
+ 			hitTree_time = minX;
+  			hitTree_height = minY;
+        		hitTree->Fill();
+		} //end ROI loop
+  	}//entries - end event loop 
+
+	//save hit tree
+	hitTree->Write();
+	g.Close();
+
+	//delete graphs
+	//define graph object
+	for(int d = 0 ; d < NASICS ; d++)
+	for(int c = 0 ; c < NCHS ; c++){
+		delete gPlot[d][c];
+	}
 
 	return 1;
 }
