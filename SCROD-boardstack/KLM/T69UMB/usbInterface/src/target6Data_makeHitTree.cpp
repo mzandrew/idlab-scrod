@@ -24,7 +24,7 @@ using namespace std;
 
 int main(int argc, char* argv[]){
 	if (argc != 2){
-    		std::cout << "wrong number of arguments: usage ./target6Data_measurePedestals <file name>" << std::endl;
+    		std::cout << "wrong number of arguments: usage ./target6Data_viewWaveformTree <file name>" << std::endl;
     		return 0;
   	}
 
@@ -41,8 +41,10 @@ int main(int argc, char* argv[]){
 		delete data;
 		return 0;
 	}
+
+	data->getPedestalFile("output_target6DataClass_pedestalFile.root");
 	
-	data->measurePedestals();
+	data->makeHitTree();
 
 	//delete target6 data object
 	delete data;

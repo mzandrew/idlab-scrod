@@ -40,7 +40,8 @@ public:
 	int getWaveformTreeFile(TString inputFileName);
 	int getPedestalFile(TString inputFileName);
 	int plotWaveformTreeFile(TCanvas *c0);
-	int measurePedestals(TCanvas *c0);
+	int measurePedestals();
+	int makeHitTree();
 };
 
 #endif
