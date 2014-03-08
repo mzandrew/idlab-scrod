@@ -23,8 +23,8 @@ TApplication *theApp;
 using namespace std;
 
 int main(int argc, char* argv[]){
-	if (argc != 2){
-    		std::cout << "wrong number of arguments: usage ./target6Data_viewWaveformTree <file name>" << std::endl;
+	if (argc != 3){
+    		std::cout << "wrong number of arguments: usage ./target6Data_viewWaveformTree <file name> <pedestal file name>" << std::endl;
     		return 0;
   	}
 
@@ -32,6 +32,7 @@ int main(int argc, char* argv[]){
 	theApp = new TApplication("App", &argc, argv);
 
 	std::cout << "Input file name "  << theApp->Argv()[1] << std::endl;
+	std::cout << "Pedestal file name "  << theApp->Argv()[2] << std::endl;
 
 	//create target6 interface object
 	target6DataClass *data = new target6DataClass();
@@ -42,7 +43,7 @@ int main(int argc, char* argv[]){
 		return 0;
 	}
 
-	data->getPedestalFile("output_target6DataClass_pedestalFile.root");
+	data->getPedestalFile(theApp->Argv()[2]);
 	
 	data->makeHitTree();
 
