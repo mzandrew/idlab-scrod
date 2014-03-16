@@ -34,6 +34,9 @@ double windowHigh = windowTime+10.;
 TFile* outputFile;
 
 //histograms
+TH1F *hPulseHeightAll;
+TH1F *hPulseTimeAll;
+
 TH1F *hPulseHeightCut;
 TH1F *hPulseTimeCut;
 TH1F *hPulseSampleCut;
@@ -43,9 +46,8 @@ TH2F *hPulseTimeVsSmp128PosCut;
 TH2F *hPulseTimeVsFTSWCut;
 TH2F *hPulseTimeVsHeightCut;
 TH2F *hFTSWVsSmp128Cut;
-
+TH1F *hSampleTimes;
 TH2F *hPulseTimeVsResidualSmpPos;
-
 TH1F *hPulseHeightFinal;
 TH1F *hPulseTimeFinal;
 TH1F *hPulseSampleFinal;
@@ -112,10 +114,12 @@ int main(int argc, char* argv[]){
 	//initialize tree branches
 	data->setTreeBranches();
 
+	//loop over all events, histogram overall distributions
+
 	//load pulse info into arrays
 	data->selectPulsesForArray();
 
-	//loop over selected events, histogram pulse time distributions
+	//loop over selected events, histogram selected pulse time distributions
   	for(int entry = 0; entry < data->numUsed; entry++) {
 		//skip events not in arrays
   		if( entry >= maxNumEvt )
@@ -154,8 +158,7 @@ int main(int argc, char* argv[]){
   	for(int i = 0 ; i < gPulseTimeVsSmp128Index->GetN() ; i++ ){
 		double smpTime = gPulseTimeVsSmp128Index->Eval(i+0.5,0,"");
 		data->smp128StartTimes[i] = data->smp128StartTimes[i] - ( smpTime - time0 );
-		//calculate sample width for bin i - 1
-		//if( i > 0 ) hSampleWidths->SetBinContent(i, smp128StartTimes[i] - smp128StartTimes[i-1] );
+		hSampleTimes->SetBinContent(i, data->smp128StartTimes[i] );
   	}
 
 	//loop over selected events, measure pulse time dependence on sample position
@@ -204,8 +207,8 @@ int main(int argc, char* argv[]){
 		//apply sample position correction
        		//double smpPosCorr = gPulseTimeVsSmp128Pos->Eval( smpPosIn128Array + smpPos ,0,"");
     		//pulseTime = pulseTime - smpPosCorr + windowLow + (windowHigh - windowLow)/2.;
-		double smpPosCorr = gResidualPulseTimeVsSmpPos->Eval( (smpPosIn128Array % 2) + smpPos ,0,"");
-    		pulseTime = pulseTime - smpPosCorr + windowLow + (windowHigh - windowLow)/2.;
+		//double smpPosCorr = gResidualPulseTimeVsSmpPos->Eval( (smpPosIn128Array % 2) + smpPos ,0,"");
+    		//pulseTime = pulseTime - smpPosCorr + windowLow + (windowHigh - windowLow)/2.;
 		//FTSW correction
 		//double ftswPosCorr = gPulseTimeVsFTSW->Eval( data->ftsw_A[entry] ,0,"");
 		//pulseTime = pulseTime - ftswPosCorr + windowLow + (windowHigh - windowLow)/2.;
@@ -215,12 +218,12 @@ int main(int argc, char* argv[]){
 		if( data->ftsw_A[entry] < 650 || data->ftsw_A[entry] > 1660 )
 			continue;
 		//cut on sample #
-		if( smpPosIn128Array >= 126 )
+		if( smpPosIn128Array >= 127 )
 			continue;
 		//measure pulse time vs event #
 		gPulseTimeVsEventNum->SetPoint( gPulseTimeVsEventNum->GetN() , data->eventNum_A[entry],  pulseTime );
 		//cut on event #
-		if( data->eventNum_A[entry] < 25000 )
+		if( data->eventNum_A[entry] < 0 )
 			continue;
 
 		//histogram selected pulse distributions
@@ -261,6 +264,8 @@ int initializeGlobalHistograms(){
   	hPulseTimeVsHeightCut = new TH2F("hPulseTimeVsHeightCut","Pulse Time Vs Height",40,10,1610,400,windowLow,windowHigh);
   	hFTSWVsSmp128Cut  = new TH2F("hFTSWVsSmp128Cut","FTSW Vs Sample Bin Array #",128,0,128,2100,0,2100);
 	
+	hSampleTimes = new TH1F("hSampleTimes","",128,0,128);
+
 	hPulseTimeVsResidualSmpPos = new TH2F("hPulseTimeVsResidualSmpPos","Pulse Time Vs Residual Sample Position (Index Mod 2)",40,0,2,1000,windowLow,windowHigh);
 
 	hPulseHeightFinal = new TH1F("hPulseHeightFinal","Pulse Height Distribution",1000,-50,1950.);
@@ -287,6 +292,7 @@ int writeOutputFile(){
   	hPulseTimeVsHeightCut->Write();
   	hFTSWVsSmp128Cut->Write();
 
+	hSampleTimes->Write();
 	hPulseTimeVsResidualSmpPos->Write();
 
 	hPulseHeightFinal->Write();
