@@ -139,6 +139,7 @@ int topDataClass::setTreeBranches(){
 	return 1;
 }
 
+//load pulse info into arrays
 int topDataClass::selectPulsesForArray(){
 	if( isTOPTree == 0 ){
 		std::cout << "selectPulsesForArray: tree object not loaded, quitting" << std::endl;
@@ -203,6 +204,7 @@ int topDataClass::selectPulsesForArray(){
 	return 1;
 }
 
+//get pulse sample index out of 128 bin array
 int topDataClass::getSmpPosIn128Array(int entry){
 	//skip events not in arrays
   	if( entry >= maxNumEvt )
@@ -211,6 +213,7 @@ int topDataClass::getSmpPosIn128Array(int entry){
 	return (int( first_0_A[entry] )*64 + int( smp_0_A[entry] )) % 128;
 }
 
+//get pulse position within sample
 double topDataClass::getSmpPos(int entry){
 	//skip events not in arrays
   	if( entry >= maxNumEvt )
@@ -237,12 +240,16 @@ double topDataClass::measurePulseTime(int entry){
 //standalone function calculates pulse time, taking into account variable sample periods and FTSW correction
 double topDataClass::measurePulseTimeStandalone(int infirst, int inref, int insmp, int inftsw, double inFTSW_SCALE, double inavg128Period, double insmp128StartTimes[], 	double insmpPrevY, double insmpNextY, double intarget){
 
+    //calculate number of windows elapsed since "reference window"/128 bin window pair in which trigger occurred
     int numWinAfterRef = (infirst - inref + 64 ) % 64 - 1; //subtract to account for reference window is always odd, start counting from next even window
+    //count # of 128 bin windows elapsed since reference window
     int num128ArraysAfterRef = numWinAfterRef / 2 + ((infirst % 2)*64 + int(insmp))/128;
+    //identify sample bin in 128 bin window
     int smpPosIn128Array = (int(infirst)*64 + int(insmp)) % 128;
+    //calculate FTSW TDC correction, accounts for asynchronous trigger
     double phaseCorr = inFTSW_SCALE * inftsw;
 
-    //define approximate time to return if an error is detected
+    //define initial approximate pulse time to return if an error is detected in subsequent
     double timeEstimate = (num128ArraysAfterRef)*inavg128Period + phaseCorr;
 
     //make sure sample array bin # is valid
