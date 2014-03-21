@@ -30,7 +30,7 @@ int main(int argc, char* argv[]){
 	control->initializeUSBInterface();
 
 	//define the SCROD ID for board stack, hardcoded for now
-	unsigned int board_id = 0x00A20021;
+	unsigned int board_id = 0x0;
 
 	//try routing input calibration signal - board id, row, col ch, enable/disable
 	control->selectCalibrationDestination(board_id, row, col, ch, enable);

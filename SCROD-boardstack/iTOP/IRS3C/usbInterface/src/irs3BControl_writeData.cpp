@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
 	control->initializeUSBInterface();
 
 	//define the SCROD ID for board stack, hardcoded for now
-	unsigned int board_id = 0x00A20021;
+	unsigned int board_id = 0x0;
 
 	//set forced readout mode: registers 171 - 178
 	//row 0 col 2 = register 175, lower 8 bits, set channel 2 for readout

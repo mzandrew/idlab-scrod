@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
 	control->initializeUSBInterface();
 
 	//define the SCROD ID for board stack, hardcoded for now
-	unsigned int board_id = 0x00A20021;
+	unsigned int board_id = 0x0;
 
 	//run test loop functions
 	//scanVadjNWinTimeOffsets(board_id, control, data);
