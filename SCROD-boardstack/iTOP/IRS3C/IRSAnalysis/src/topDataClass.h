@@ -68,8 +68,16 @@ public:
 	int tr_pmt;
   	int tr_pmtch;
 
+	//timing marker channel variables
+	int marker_mod;
+	int marker_row;
+	int marker_col;
+	int marker_ch;
+	bool isTimingMarker;
+
 	//channel of interest pulse info storage arrays
 	int numUsed;
+	int entryNum_A[maxNumEvt];
 	int eventNum_A[maxNumEvt];
 	int ftsw_A[maxNumEvt];
 	double adc_0_A[maxNumEvt];
@@ -87,11 +95,16 @@ public:
 	int smpFall_Fix100_A[maxNumEvt];
 	double smpFallPrevY_Fix100_A[maxNumEvt];
 	double smpFallNextY_Fix100_A[maxNumEvt];
+	double mark_adc_0_A[maxNumEvt];
+	int mark_first_0_A[maxNumEvt];
+	int mark_ref_0_A[maxNumEvt];
+	int mark_smp_0_A[maxNumEvt];
+	double mark_smpPrevY_0_A[maxNumEvt];
+	double mark_smpNextY_0_A[maxNumEvt];
 
 	//Sample-DT variables
 	//basic constants
-	double smp128StartTimes[128]; 
-	double smp128Widths[127];
+	double smp128StartTimes[128];
 
 	//analysis constansts
 	double windowTime;
@@ -99,16 +112,30 @@ public:
 	//functions
 	topDataClass();
   	~topDataClass();
-	int openSummaryTree(TString inputFileName);
+
 	int setAnalysisChannel(int mod, int row, int col, int ch);
+	int setTimingMarkerChannel(int mod, int row, int col, int ch);
+	
+	int openSummaryTree(TString inputFileName);
 	int setTreeBranches();
+
+	int getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime);
+
 	int selectPulsesForArray();
-	double measurePulseTime(int entry);
-	int getSmpPosIn128Array(int entry);
+
+	double measurePulseTimeArrayEntry(int entry, bool useFTSWTDCCorr);
+	double measurePulseTimeStandalone(int infirst, int inref, int insmp, int inftsw, double inFTSW_SCALE, double inavg128Period, double insmp128StartTimes[], double insmpPrevY, double insmpNextY, double intarget);
+	int getSmpBinNumIn128Array(int entry);
 	double getSmpPos(int entry);
-	double measurePulseTimeStandalone(int infirst, int inref, int insmp, int inftsw, double inFTSW_SCALE, double inavg128Period, double insmp128StartTimes[],
-		double insmpPrevY, double insmpNextY, double intarget);
+
+	int getTimingMarkerNHitNum(int entry, int &markerHitNum);
+	double measureMarkerTimeArrayEntry(int entry, bool useFTSWTDCCorr);
+	int getMarkerSmpBinNumIn128Array(int entry);
+	double getMarkerSmpPos(int entry);
+
 	int makeCorrectionGraph(TH2F *h2dIn, TGraphErrors *gOut, bool meanOrRms, double minEntries, double range, double maxErr);
+
+	int measurePulseMarkerTimeDifferenceDistribution(TH1F *hPulseTimeMarkTimeDiff, TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNum);
 };
 
 #endif
