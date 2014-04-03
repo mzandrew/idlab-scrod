@@ -13,14 +13,15 @@ public:
 	void sendPacket(ScrodPacket* packet);
 		/// Sends packet to detector.
 		
-	void receivePacket(ScrodPacket* packet);
-		/// Receives a packet.
+	bool receivePacket(ScrodPacket* packet);
+		/// Receives a packet. Returns false on the timeout.
 
 protected:
-	virtual void send_data(unsigned char* data, int length) const = 0;
+
+	virtual void send_data(unsigned char* data, int length, unsigned int timeout) const = 0;
 		/// Sends the data. If error occurs, std::runtime_error is thrown.
 	
-	virtual int receive_data(unsigned char* data, int length) const = 0;
+	virtual int receive_data(unsigned char* data, int length, unsigned int timeout) const = 0;
 		/// Receives the data and returns the number ob bytes received.
 		
 protected:
@@ -35,7 +36,7 @@ private:
 inline void DetectorInterface::sendPacket(ScrodPacket* packet)
 {
 	// get packet buffer and send it
-	this->send_data(packet->get_raw_data(), packet->get_raw_data_length());
+	this->send_data(packet->get_raw_data(), packet->get_raw_data_length(), 0);
 }
 
 #endif

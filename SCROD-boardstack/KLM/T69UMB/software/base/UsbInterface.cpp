@@ -50,16 +50,16 @@ module_id UsbDevice::getDeviceID() const
 	return _id;
 }
 
-void UsbDevice::send_data(unsigned char* data, int length) const
+void UsbDevice::send_data(unsigned char* data, int length, unsigned int timeout) const
 {
 	int transferred, status;
 	
 	while(true)
 	{
-		//cout << "Sending " << length << " bytes." << endl;
-		//for(int i=0; i<length/4; i++)
-		//	printf("0x%08x\n", *((uint32_t*)(data+i*4)));
-		status = libusb_bulk_transfer(_handle, USB_OUT_ENDPOINT | LIBUSB_ENDPOINT_OUT, data, length, &transferred, 0);
+		cout << "Sending " << length << " bytes." << endl;
+		for(int i=0; i<length/4; i++)
+			printf("0x%08x\n", *((uint32_t*)(data+i*4)));
+		status = libusb_bulk_transfer(_handle, USB_OUT_ENDPOINT | LIBUSB_ENDPOINT_OUT, data, length, &transferred, timeout);
 		if(status == 0)
 		{
 			// all ok
@@ -70,7 +70,7 @@ void UsbDevice::send_data(unsigned char* data, int length) const
 			else
 				continue; // go on and finish
 		}
-		else if(status == LIBUSB_ERROR_TIMEOUT || status == LIBUSB_ERROR_PIPE || status == LIBUSB_ERROR_OVERFLOW)
+		else if(status == LIBUSB_ERROR_TIMEOUT)
 		{
 			// time needed
 			length -= transferred;
@@ -80,7 +80,7 @@ void UsbDevice::send_data(unsigned char* data, int length) const
 			else
 				continue; // go on and finish
 		}
-		else if(status == LIBUSB_ERROR_NO_DEVICE)
+		else if(status == LIBUSB_ERROR_NO_DEVICE || status == LIBUSB_ERROR_PIPE || status == LIBUSB_ERROR_OVERFLOW)
 		{
 			// no device any more
 			char text[100];
@@ -97,7 +97,7 @@ void UsbDevice::send_data(unsigned char* data, int length) const
 	}    	
 }
 
-int UsbDevice::receive_data(unsigned char* data, int length) const
+int UsbDevice::receive_data(unsigned char* data, int length, unsigned int timeout) const
 {
 	int transferred, status, total;
 	
@@ -106,7 +106,7 @@ int UsbDevice::receive_data(unsigned char* data, int length) const
 	total = 0;
 	while(true)
 	{
-		status = libusb_bulk_transfer(_handle, USB_IN__ENDPOINT | LIBUSB_ENDPOINT_IN, data, length, &transferred, 0);
+		status = libusb_bulk_transfer(_handle, USB_IN__ENDPOINT | LIBUSB_ENDPOINT_IN, data, length, &transferred, timeout);
 		if(status == 0)
 		{
 			// all ok
@@ -119,20 +119,23 @@ int UsbDevice::receive_data(unsigned char* data, int length) const
 			else
 				continue; // go on and finish
 		}
-		else if(status == LIBUSB_ERROR_TIMEOUT || status == LIBUSB_ERROR_PIPE || status == LIBUSB_ERROR_OVERFLOW)
+		else if(status == LIBUSB_ERROR_TIMEOUT)
 		{
+			// timeout
+			return -1;
+			
 			//if(transferred != 0)
 			//	cout << "Timeout with " << transferred << endl;
 			// time needed
-			length -= transferred;
-			data += transferred;
-			total += transferred;
-			if(length == 0)
-				return total;
-			else
-				continue; // go on and finish
+			//length -= transferred;
+			//data += transferred;
+			//total += transferred;
+			//if(length == 0)
+				//return total;
+			//else
+				//continue; // go on and finish
 		}
-		else if(status == LIBUSB_ERROR_NO_DEVICE)
+		else if(status == LIBUSB_ERROR_NO_DEVICE || status == LIBUSB_ERROR_PIPE || status == LIBUSB_ERROR_OVERFLOW)
 		{
 			// no device any more
 			char text[100];
@@ -300,7 +303,7 @@ void UsbInterface::open_all_devices(std::ostream& output, uint16_t vid, uint16_t
 				}
 
 				// done
-				//output << "Device (bus=" << (int)libusb_get_bus_number(devices[i]) << " addr=" << (int)libusb_get_device_address(devices[i]) <<"): loaded under DeviceID=" << (int)tmp_device->getDeviceID() << "." << endl;
+				output << "Device (bus=" << (int)libusb_get_bus_number(devices[i]) << " addr=" << (int)libusb_get_device_address(devices[i]) <<"): loaded under DeviceID=" << (int)tmp_device->getDeviceID() << "." << endl;
 			}
 		}
 	}

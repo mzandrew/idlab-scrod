@@ -5,8 +5,6 @@
 #include "base/KlmModule.h"
 #include "base/ScrodPacket.h"
 
-#define SCROD_REGISTER_ID	276
-
 class KlmSystem
 	/// Class encapsulating the entire KLM system readout.
 {
@@ -35,6 +33,9 @@ public:
 	
 	ScrodPacket* get_data();
 		/// Returns received packet.
+
+	void write_register(scrod_address address, scrod_register value, bool verify = true);
+		/// Writes a value to the desired register.
 
 	// static function
 	static KlmSystem& KLM();

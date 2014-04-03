@@ -13,6 +13,9 @@ class KlmModule
 	/// Class for high lavel KLM module manipulation.
 {
 public:
+	
+	typedef enum { hw_trigger, sw_trigger } TrgType_t;
+
 	KlmModule(DetectorInterface* interface);
 		/// Constructor.
 	
@@ -29,6 +32,9 @@ public:
 		
 	void write_ASIC_register(uint8_t card, uint8_t address, uint16_t value);
 		/// Writes a value to the ASIC register.
+		
+	int send_trigger(KlmModule::TrgType_t trigger);
+		/// Sends the trigger.
 		
 	ScrodPacket* read_packet() const;
 		/// Reads the next packet and return it.

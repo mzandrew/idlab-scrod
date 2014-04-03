@@ -13,16 +13,22 @@ DetectorInterface::~DetectorInterface()
 {
 }
 
-void DetectorInterface::receivePacket(ScrodPacket* packet)
+bool DetectorInterface::receivePacket(ScrodPacket* packet)
 {
 	int size_to_follow;
+	int response;
 	
 	// tries to receive the packet
 	packet->prepare_size(2);
 	
 	//cout << "Start with the header ... " << endl;
 	// read the first two 
-	this->receive_data(packet->get_raw_data(), 2*sizeof(scrod_word));
+	response = this->receive_data(packet->get_raw_data(), 2*sizeof(scrod_word), USB_TIMEOUT_MS);
+	if(response == -1)
+	{
+		// time out
+		return false;
+	}
 	
 	// on basis of length field prepare the rest of the vector
 	size_to_follow = packet->get_payload_length();
@@ -30,7 +36,13 @@ void DetectorInterface::receivePacket(ScrodPacket* packet)
 	packet->prepare_size(size_to_follow+2), true;
 	
 	// read the rest of the packet
-	this->receive_data(packet->get_raw_data() + 2*sizeof(scrod_word), size_to_follow*sizeof(scrod_word));
+	response = this->receive_data(packet->get_raw_data() + 2*sizeof(scrod_word), size_to_follow*sizeof(scrod_word), USB_TIMEOUT_MS);
+	if(response == -1)
+	{
+		// time out
+		return false;
+	}
 	
 	// packet is ready
+	return true;
 }
