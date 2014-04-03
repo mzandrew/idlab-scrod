@@ -26,10 +26,10 @@ public:
 	module_id getDeviceID() const;
 		/// Returns device ID.
 		
-	void send_data(unsigned char* data, int length) const;
+	void send_data(unsigned char* data, int length, unsigned int timeout) const;
 		/// Sends the data. If error occurs, std::runtime_error is thrown.
 	
-	int receive_data(unsigned char* data, int length) const;
+	int receive_data(unsigned char* data, int length, unsigned int timeout) const;
 		/// Receives the data and returns the number ob bytes received.
 		
 protected:

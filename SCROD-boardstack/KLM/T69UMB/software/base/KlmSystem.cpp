@@ -111,7 +111,7 @@ void KlmSystem::initialize(std::ostream& output, char* configuration)
 			KlmModule* mod = new KlmModule(dev);
 			scrod_word mod_id;
 			mod_id = mod->read_register(SCROD_REGISTER_ID);
-			//cout << "Module identified with ID=" << mod_id << endl;
+			cout << "Module identified with ID=" << mod_id << endl;
 			
 			// insert
 			std::pair<KlmModuleMap::iterator,bool> ret;
@@ -324,4 +324,12 @@ void KlmSystem::stop(std::ostream& output)
 	// wait for them to finish
 	for(x = _modules.begin(); x != _modules.end(); x++)
 		x->second->wait_end(output);
+}
+
+void KlmSystem::write_register(scrod_address address, scrod_register value, bool verify)
+{
+	KlmModuleMap::iterator x;
+	// announce stop
+	for(x = _modules.begin(); x != _modules.end(); x++)
+		x->second->write_register(address, value, verify);	
 }
