@@ -65,7 +65,7 @@ int main(int argc, char* argv[]){
 	//get pedestal waveforms	
 	control->clearDataBuffer();
 	control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, 0);
-	for( int nevt = 0 ; nevt < 10000 ; nevt++){
+	for( int nevt = 0 ; nevt < 200 ; nevt++){
 		//send software trigger
 		control->sendSoftwareTrigger(board_id);
 
@@ -80,8 +80,8 @@ int main(int argc, char* argv[]){
 	}
 	//make pedestal
 	data->getPedestalValues();
-	}
 
+	/*
 	TH1D *hProj = data->hPed->ProjectionY("hProj", 0,64*64,"");
 
 	c0->Clear();
@@ -94,8 +94,11 @@ int main(int argc, char* argv[]){
 	hProj->Draw();
 	c0->Update();
 	std::cin >> ct;	
+	
+	delete hProj;
+	*/
 
-	return 0;
+	}
 
 	//reroute calibration signal to intended channel
 	control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, 1);
@@ -117,7 +120,7 @@ int main(int argc, char* argv[]){
 
 		//find pulse times
 		//data->findPulseTimesFixedThreshold(100., 0, 767);
-		data->findPulseTimesFixedThreshold(100., 0, 3700);
+		//data->findPulseTimesFixedThreshold(100., 0, 3700);
 
 		//if( data->pulseTimes.size() != 2 )
 		//	continue;
