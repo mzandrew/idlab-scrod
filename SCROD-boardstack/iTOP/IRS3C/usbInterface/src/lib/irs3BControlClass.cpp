@@ -115,7 +115,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 	//Set general ASIC DACs ---------------------------------------------------
 
 	//Set DAC buffer biases 
-	if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x400, regValReadback) )
+	if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x340, regValReadback) )
 		std::cout << "Failed to set DAC_BUF_BIASES " << std::endl;
 
 	//Set VadjP DAC buffer biases
@@ -131,11 +131,11 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		std::cout << "Failed to set DAC_BUF_BIAS_VADJN " << std::endl;
 	
 	//Set SBBIAS
-	if( !registerWriteReadback(board_id, SBBIAS, 0x400, regValReadback) )
+	if( !registerWriteReadback(board_id, SBBIAS, 0x380, regValReadback) )
 		std::cout << "Failed to set SBBIAS " << std::endl;
 
 	//Set PUBIAS
-	if( !registerWriteReadback(board_id, PUBIAS, 3300, regValReadback) )
+	if( !registerWriteReadback(board_id, PUBIAS, 3056, regValReadback) )
 		std::cout << "Failed to set PUBIAS " << std::endl;
 
 	//Set CMPBias
@@ -143,7 +143,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		std::cout << "Failed to set CMPBIAS " << std::endl;
 
 	//Set CMPBias2
-	if( !registerWriteReadback(board_id, CMPBIAS2, 750, regValReadback) )
+	if( !registerWriteReadback(board_id, CMPBIAS2, 1000, regValReadback) )
 		std::cout << "Failed to set CMPBIAS2 " << std::endl;
 
 	//Set TRGBias	
@@ -156,10 +156,10 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		if( !registerWriteReadback(board_id, WBIAS_base + i, 1310, regValReadback) )
 			std::cout << "Failed to set WBIAS, register " << WBIAS_base + i << std::endl;
 		//Set VBias
-		if( !registerWriteReadback(board_id, VBIAS_base + i, 0x380, regValReadback) )
+		if( !registerWriteReadback(board_id, VBIAS_base + i, 0x300, regValReadback) )
 			std::cout << "Failed to set VBIAS, register " << VBIAS_base + i << std::endl;
 		//Set VBias2
-		if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x370, regValReadback) )
+		if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x300, regValReadback) )
 			std::cout << "Failed to set VBIAS2, register " << VBIAS2_base + i << std::endl;
 		//Set Wilkinson DACs
 		if( !registerWriteReadback(board_id, VDLY_base + i, 2000, regValReadback) )
