@@ -30,6 +30,8 @@ public:
   int initializeAsicDACs_irs3B_carrierRevC(unsigned int board_id);
   int sendSoftwareTrigger(unsigned int board_id);
   int getWaveformData(unsigned int wavedatabuf[], int &wavedataSize);
+  int writeEventToFile(unsigned int eventdatabuf[], int eventdataSize, std::ofstream& dataFile);
+  int setForcedReadoutRegister(int board_id, int rowNum, int colNum, int chNum );
 
 };
 

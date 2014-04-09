@@ -32,6 +32,9 @@ Command: fxload -D /dev/bus/usb/002/016 -I fw.hex -c 0x01 -s Vend_Ax.hex -t fx2
 
 4) Initialize frontend + ASICs: ./bin/irs3BControl_initialize
 
+5) Try reading a generial i/o register #0: ./bin/irs3BControl_readReg 0
+-if there is a "Permission denied." error, give the USB interface the required permissions eg: sudo chmod a+rw /dev/bus/usb/<bus #>/<device #>
+
 5) Try taking data: ./bin/irs3BControl_takeData
 -hardcode to route calibration input to ASIC row 0 col 2 ch 2, does software triggered forced readouts on this channel
 -this should display sampled waveforms one at a time

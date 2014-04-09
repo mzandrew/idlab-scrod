@@ -2,6 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include "idl_usb.h"
 #include "irs3BControlClass.h"
 #include "irs3b_registers.h"
@@ -12,11 +13,25 @@ bool debugglobal = 0;
 
 int irs3BControlClass::sendSoftwareTrigger(unsigned int board_id){
 
-	int regValReadback;
-	//software trigger is bit 14 of register SWTRIG_PED_FLAGS
-	registerWrite(board_id, SWTRIG_PED_FLAGS, 0x0000, regValReadback);
-	registerWrite(board_id, SWTRIG_PED_FLAGS, 0x4000, regValReadback);
-	//registerWrite(board_id, SWTRIG_PED_FLAGS, 0x0000, regValReadback);
+	//clear data point
+        clearDataBuffer();
+
+        ///set up data buffers that are used in USB interface
+        int size = 0;
+        unsigned int *outbuf;
+
+        //create command packet
+        int command_id = 13;
+        packet command_stack;
+        command_stack.ClearPacket();
+        command_stack.CreateCommandPacket(command_id,board_id);
+        command_stack.AddWriteToPacket(SWTRIG_PED_FLAGS, 0x0000);
+        command_stack.AddWriteToPacket(SWTRIG_PED_FLAGS, 0x4000);
+
+	outbuf = command_stack.AssemblePacket(size);
+
+        //send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
 
 	return 1;
 }
@@ -480,6 +495,17 @@ int irs3BControlClass::parseResponsePacketFromUSBforReadWrite( int reg, int comm
 	return 1;
 }
 
+int irs3BControlClass::writeEventToFile(unsigned int eventdatabuf[], int eventdataSize, std::ofstream& dataFile){
+        if( !dataFile.is_open() ){
+                std::cout << "File is not open for writing event" << std::endl;
+                return 0;
+        }
+
+        dataFile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
+
+        return 1;
+}
+
 //simple function to send a word over I2C bus
 int irs3BControlClass::i2c_write(unsigned int board_id, unsigned int regw, unsigned int regr, unsigned int addr, unsigned int cmd, int data){
 	//define I2C commands to be sent over bus
@@ -729,3 +755,40 @@ int irs3BControlClass::selectCalibrationDestination(unsigned int board_id, unsig
 
 	return 1;
 }
+
+int irs3BControlClass::setForcedReadoutRegister(int board_id, int rowNum, int colNum, int chNum ){
+
+	int ForcedReadoutReg = -1;
+	int ForcedReadoutVal = -1;
+	int regValReadback = 0;
+	
+	//reset forced readout registers (171-178) ignore readout registers (179-186)
+	for( int i = 171 ; i <= 186 ; i++ )
+		registerWrite(board_id, i, 0, regValReadback);
+
+	if( colNum == 0 && ( rowNum == 0 || rowNum == 1) )
+		ForcedReadoutReg = 171;
+	if( colNum == 0 && ( rowNum == 2 || rowNum == 3) )
+		ForcedReadoutReg = 172;	
+	if( colNum == 1 && ( rowNum == 0 || rowNum == 1) )
+		ForcedReadoutReg = 173;
+	if( colNum == 1 && ( rowNum == 2 || rowNum == 3) )
+		ForcedReadoutReg = 174;	
+	if( colNum == 2 && ( rowNum == 0 || rowNum == 1) )
+		ForcedReadoutReg = 175;
+	if( colNum == 2 && ( rowNum == 2 || rowNum == 3) )
+		ForcedReadoutReg = 176;	
+	if( colNum == 3 && ( rowNum == 0 || rowNum == 1) )
+		ForcedReadoutReg = 177;
+	if( colNum == 3 && ( rowNum == 2 || rowNum == 3) )
+		ForcedReadoutReg = 178;	
+	int shiftBits = chNum + (rowNum % 2)*8;
+	ForcedReadoutVal = (0x1 << shiftBits);
+
+	if( ForcedReadoutReg < 0 || ForcedReadoutVal < 0 )
+		return 0;
+
+	registerWrite(board_id, ForcedReadoutReg, ForcedReadoutVal, regValReadback);
+	return 1;
+}
+
