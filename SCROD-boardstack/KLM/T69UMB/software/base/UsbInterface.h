@@ -23,9 +23,6 @@ public:
 	void close();
 		/// Close the connection
 		
-	module_id getDeviceID() const;
-		/// Returns device ID.
-		
 	void send_data(unsigned char* data, int length, unsigned int timeout) const;
 		/// Sends the data. If error occurs, std::runtime_error is thrown.
 	
@@ -39,7 +36,11 @@ private:
 		/// Unreachable constructor.
 
 	libusb_device_handle* _handle;
-	module_id _id;
+	
+	// device data buffer
+	mutable unsigned char	_dev_buffer[USB_ENDPOINT_PACKET_SIZE];
+	mutable unsigned int	_dev_buffer_pointer;
+	mutable unsigned int	_dev_buffer_length;
 };
 
 class UsbInterface

@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <stdio.h>
+#include <cstring>
 
 #include "base/UsbInterface.h"
 
@@ -11,17 +12,21 @@ using namespace std;
 
 UsbDevice::UsbDevice()
 {
+	_dev_buffer_pointer = 0;
+	_dev_buffer_length = 0;
 }
 
 UsbDevice::UsbDevice(libusb_device_handle* handle, module_id id)
 {
 	_handle = handle;
-	_id = id;
+	setDeviceID(id);
 	
 	// clear the handle
 	int transferred, status, total, length;
 	unsigned char buff[10];
 	
+	_dev_buffer_pointer = 0;
+	_dev_buffer_length = 0;
 	total = 0;
 	transferred = 1;
 	length = 10;
@@ -45,20 +50,15 @@ UsbDevice::~UsbDevice()
 	close();
 }
 
-module_id UsbDevice::getDeviceID() const
-{
-	return _id;
-}
-
 void UsbDevice::send_data(unsigned char* data, int length, unsigned int timeout) const
 {
 	int transferred, status;
 	
 	while(true)
 	{
-		cout << "Sending " << length << " bytes." << endl;
-		for(int i=0; i<length/4; i++)
-			printf("0x%08x\n", *((uint32_t*)(data+i*4)));
+		//cout << "Sending " << length << " bytes." << endl;
+		//for(int i=0; i<length/4; i++)
+		//	printf("0x%08x\n", *((uint32_t*)(data+i*4)));
 		status = libusb_bulk_transfer(_handle, USB_OUT_ENDPOINT | LIBUSB_ENDPOINT_OUT, data, length, &transferred, timeout);
 		if(status == 0)
 		{
@@ -99,57 +99,146 @@ void UsbDevice::send_data(unsigned char* data, int length, unsigned int timeout)
 
 int UsbDevice::receive_data(unsigned char* data, int length, unsigned int timeout) const
 {
-	int transferred, status, total;
-	
-	//cout << "Trying with length " << length << endl;
+	int transferred, status, todo, total;
 	
 	total = 0;
-	while(true)
+	
+	// transfer from before
+	if(_dev_buffer_length > 0)
 	{
-		status = libusb_bulk_transfer(_handle, USB_IN__ENDPOINT | LIBUSB_ENDPOINT_IN, data, length, &transferred, timeout);
-		if(status == 0)
+		//cout << "Before(" << _dev_buffer_pointer << "," << _dev_buffer_length << "," << length << ")";
+		if(_dev_buffer_length >= length)
 		{
-			// all ok
-			length -= transferred;
-			data += transferred;
-			total += transferred;
-			total += transferred;
-			if(length == 0)
-				return total;
-			else
-				continue; // go on and finish
-		}
-		else if(status == LIBUSB_ERROR_TIMEOUT)
-		{
-			// timeout
-			return -1;
-			
-			//if(transferred != 0)
-			//	cout << "Timeout with " << transferred << endl;
-			// time needed
-			//length -= transferred;
-			//data += transferred;
-			//total += transferred;
-			//if(length == 0)
-				//return total;
-			//else
-				//continue; // go on and finish
-		}
-		else if(status == LIBUSB_ERROR_NO_DEVICE || status == LIBUSB_ERROR_PIPE || status == LIBUSB_ERROR_OVERFLOW)
-		{
-			// no device any more
-			char text[100];
-			sprintf(text, "Device with DeviceID=%u dissapiered from the USB.", getDeviceID());
-			throw runtime_error(text);
+			memcpy(data, _dev_buffer+_dev_buffer_pointer, length);
+			_dev_buffer_pointer += length;
+			_dev_buffer_length -= length;
+			//cout << "All before" << endl;
+			return length;
 		}
 		else
 		{
-			// other errors
-			char text[100];
-			sprintf(text, "Device with DeviceID=%u had problem (%i) during bulk read.", getDeviceID(), status);
-			throw runtime_error(text);
+			memcpy(data, _dev_buffer+_dev_buffer_pointer, _dev_buffer_length);
+			data += _dev_buffer_length;
+			total += _dev_buffer_length;
+			length -= _dev_buffer_length;
+			_dev_buffer_pointer = 0;
+			_dev_buffer_length = 0;
 		}
-	} 
+	}	
+	
+	// how many whole packets?
+	int packets = length/USB_ENDPOINT_PACKET_SIZE;
+	if(packets > 0)
+	{
+		todo = packets*USB_ENDPOINT_PACKET_SIZE;
+		// read the whole packets
+		while(true)
+		{
+			status = libusb_bulk_transfer(_handle, USB_IN__ENDPOINT | LIBUSB_ENDPOINT_IN, data, todo, &transferred, timeout);
+			//cout << "Packet(" << packets << "," << todo << "," << total << ")";
+			if(status == 0)
+			{
+				// all ok
+				todo -= transferred;
+				data += transferred;
+				total += transferred;
+				if(todo == 0)
+					break; // all read
+				else
+					continue; // go on and finish
+			}
+			else if(status == LIBUSB_ERROR_TIMEOUT)
+			{
+				// timeout
+				//cout << endl;
+				return total;
+			}
+			else if(status == LIBUSB_ERROR_OVERFLOW)
+			{
+				// overflow
+				char text[100];
+				sprintf(text, "Device with DeviceID=%u has overflow problem.", getDeviceID());
+				throw runtime_error(text);
+			}
+			else if(status == LIBUSB_ERROR_NO_DEVICE || status == LIBUSB_ERROR_PIPE)
+			{
+				// no device any more
+				char text[100];
+				sprintf(text, "Device with DeviceID=%u dissapiered from the USB.", getDeviceID());
+				throw runtime_error(text);
+			}
+			else
+			{
+				// other errors
+				char text[100];
+				sprintf(text, "Device with DeviceID=%u had problem (%i) during bulk read.", getDeviceID(), status);
+				throw runtime_error(text);
+			}
+		}
+		
+		// here all the packets were read
+		length -= packets*USB_ENDPOINT_PACKET_SIZE;
+	 }
+	 
+	 // is there a partial read left?
+	 if(length > 0)
+	 {
+		_dev_buffer_pointer = 0;
+		_dev_buffer_length = 0;		
+		todo = USB_ENDPOINT_PACKET_SIZE;	
+		while(true)
+		{
+			status = libusb_bulk_transfer(_handle, USB_IN__ENDPOINT | LIBUSB_ENDPOINT_IN, _dev_buffer+_dev_buffer_length, todo, &transferred, timeout);
+			//cout << "End(" << length << "," << todo << "," << total << "," << _dev_buffer_length << ")";
+			if(status == 0)
+			{
+				// all ok
+				todo -= transferred;
+				total += transferred;
+				_dev_buffer_length += transferred;
+				if(_dev_buffer_length >= length)
+				{
+					memcpy(data, _dev_buffer, length);
+					_dev_buffer_pointer = length;
+					_dev_buffer_length -= length;
+					//cout << "Done(" << _dev_buffer_pointer << "," << _dev_buffer_length << ")";
+					break; // all read
+				}
+				else
+					continue; // go on and finish
+			}
+			else if(status == LIBUSB_ERROR_TIMEOUT)
+			{
+				// timeout
+				//cout << endl;
+				return total;
+			}
+			else if(status == LIBUSB_ERROR_OVERFLOW)
+			{
+				// overflow
+				char text[100];
+				sprintf(text, "Device with DeviceID=%u has overflow problem.", getDeviceID());
+				throw runtime_error(text);
+			}
+			else if(status == LIBUSB_ERROR_NO_DEVICE || status == LIBUSB_ERROR_PIPE)
+			{
+				// no device any more
+				char text[100];
+				sprintf(text, "Device with DeviceID=%u dissapiered from the USB.", getDeviceID());
+				throw runtime_error(text);
+			}
+			else
+			{
+				// other errors
+				char text[100];
+				sprintf(text, "Device with DeviceID=%u had problem (%i) during bulk read.", getDeviceID(), status);
+				throw runtime_error(text);
+			}
+		}
+	}
+	
+	//cout << endl;
+	return total;
 }
 
 //

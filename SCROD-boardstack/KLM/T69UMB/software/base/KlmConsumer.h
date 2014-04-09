@@ -24,9 +24,24 @@ public:
 		
 	ObjectSync<ScrodPacket>* get_data_drain();
 		/// Returns the data input object.
+		
+	virtual void process_packet(ScrodPacket* packet);
+		/// Process the packets.
+		
+	virtual void initialize();
+		/// Prepare for running.
+		
+	virtual void deinitialize();
+		/// Finish after running.
 
 	static void* pt_starter(void* consumer);
 		/// Starts the module.
+
+	int get_packet_count() const;
+		/// Returns the number of processed packets.
+		
+	void process_next_packet();
+		/// Processes only the next packet.
 
 protected:
 
@@ -39,6 +54,10 @@ private:
 		/// Runs this module.		
 	
 private:
+
+	mutable pthread_mutex_t _data_mutex;
+
+	int				_packet_counter;
 
 	bool			_run;
 

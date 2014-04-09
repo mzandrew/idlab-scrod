@@ -32,6 +32,9 @@ public:
 		
 	void write_ASIC_register(uint8_t card, uint8_t address, uint16_t value);
 		/// Writes a value to the ASIC register.
+	
+	void setDeviceID(module_id id);
+		/// Sets the ID of the underlying device.
 		
 	int send_trigger(KlmModule::TrgType_t trigger);
 		/// Sends the trigger.
@@ -76,6 +79,11 @@ private:
 	pthread_attr_t	_thread_att;
 	ObjectSync<ScrodPacket>*	_data_drain;
 };
+
+inline void KlmModule::setDeviceID(module_id id)
+{
+	_interface->setDeviceID(id);
+}
 
 inline bool KlmModule::should_continue() const
 {

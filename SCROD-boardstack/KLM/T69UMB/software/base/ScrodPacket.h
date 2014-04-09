@@ -39,18 +39,17 @@ public:
 	scrod_word get_register_value() const;
 		/// Returns the value of the register within the reply packet.
 	
+	unsigned char* get_raw_data();
+		/// Returns a pointer to the raw data.
+		
+	int get_raw_data_length();
+		/// Returns length of the packet in bytes.
 
 protected:
 
 	void create_command(const scrod_word command, scrod_word cmd_id, bool silent = true);
 		/// Creates a command packet.
-	
-	unsigned char* get_raw_data();
-		/// Returns a pointer to the raw data.
-		
-	int get_raw_data_length();
-		/// returns the length of raw data.
-		
+
 	// for reading
 	void prepare_size(int size, bool resize = false);
 		/// Prepares vector to have at least this size.
@@ -91,7 +90,7 @@ inline unsigned char* ScrodPacket::get_raw_data()
 
 inline int ScrodPacket::get_raw_data_length()
 {
-	return _data.size()*sizeof(scrod_word);
+	return _data.size() * sizeof(scrod_word);
 }
 
 inline void ScrodPacket::prepare_size(int size, bool resize)

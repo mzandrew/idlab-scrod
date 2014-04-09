@@ -35,7 +35,7 @@ typedef uint16_t scrod_address;
 
 #define USB_IN__ENDPOINT (0x86)
 #define USB_OUT_ENDPOINT (0x02)
-
+#define USB_ENDPOINT_PACKET_SIZE (512)
 #define USB_TIMEOUT_MS   (10000)
 
 #endif
