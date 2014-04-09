@@ -15,7 +15,7 @@ DetectorInterface::~DetectorInterface()
 
 bool DetectorInterface::receivePacket(ScrodPacket* packet)
 {
-	int size_to_follow;
+	unsigned int size_to_follow;
 	int response;
 	
 	// tries to receive the packet
@@ -24,7 +24,7 @@ bool DetectorInterface::receivePacket(ScrodPacket* packet)
 	//cout << "Start with the header ... " << endl;
 	// read the first two 
 	response = this->receive_data(packet->get_raw_data(), 2*sizeof(scrod_word), USB_TIMEOUT_MS);
-	if(response == -1)
+	if(response < 2*sizeof(scrod_word))
 	{
 		// time out
 		return false;
@@ -37,7 +37,7 @@ bool DetectorInterface::receivePacket(ScrodPacket* packet)
 	
 	// read the rest of the packet
 	response = this->receive_data(packet->get_raw_data() + 2*sizeof(scrod_word), size_to_follow*sizeof(scrod_word), USB_TIMEOUT_MS);
-	if(response == -1)
+	if(response < size_to_follow*sizeof(scrod_word))
 	{
 		// time out
 		return false;

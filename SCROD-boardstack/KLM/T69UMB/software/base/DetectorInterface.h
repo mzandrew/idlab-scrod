@@ -10,11 +10,17 @@ public:
 	virtual ~DetectorInterface();
 		/// Destructor.
 		
-	void sendPacket(ScrodPacket* packet);
+	virtual void sendPacket(ScrodPacket* packet);
 		/// Sends packet to detector.
 		
-	bool receivePacket(ScrodPacket* packet);
+	virtual bool receivePacket(ScrodPacket* packet);
 		/// Receives a packet. Returns false on the timeout.
+
+	module_id getDeviceID() const;
+		/// Returns device ID.
+		
+	void setDeviceID(module_id id);
+		/// Returns device ID.
 
 protected:
 
@@ -30,8 +36,19 @@ protected:
 		/// Constructor.
 	
 private:
-
+	module_id _id;
 };
+
+
+inline void DetectorInterface::setDeviceID(module_id id)
+{
+	_id = id;
+}
+
+inline module_id DetectorInterface::getDeviceID() const
+{
+	return _id;
+}
 
 inline void DetectorInterface::sendPacket(ScrodPacket* packet)
 {

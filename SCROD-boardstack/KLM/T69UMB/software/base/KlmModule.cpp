@@ -109,15 +109,19 @@ int KlmModule::send_trigger(KlmModule::TrgType_t trigger)
 	int size = 0;
 	unsigned int *outbuf;
 
-	write_register(50, (scrod_register)0, true);
-	write_register(52, (scrod_register)0, true);
-	write_register(55, (scrod_register)1, true);
-	write_register(55, (scrod_register)0, true);
+	write_register(50, (scrod_register)0, false);
+	write_register(52, (scrod_register)0, false);
+	write_register(55, (scrod_register)1, false);
+	write_register(55, (scrod_register)0, false);
 	
 	if(trigger == KlmModule::hw_trigger)
-		write_register(52, (scrod_register)1, true);
+	{
+		write_register(52, (scrod_register)1, false);
+	}
 	else
-		write_register(50, (scrod_register)1, true);
+	{
+		write_register(50, (scrod_register)1, false);
+	}
 }
 
 bool KlmModule::start(ObjectSync<ScrodPacket>*	data_drain)

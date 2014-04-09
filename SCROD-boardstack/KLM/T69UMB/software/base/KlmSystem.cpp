@@ -111,6 +111,7 @@ void KlmSystem::initialize(std::ostream& output, char* configuration)
 			KlmModule* mod = new KlmModule(dev);
 			scrod_word mod_id;
 			mod_id = mod->read_register(SCROD_REGISTER_ID);
+			mod->setDeviceID(mod_id);
 			cout << "Module identified with ID=" << mod_id << endl;
 			
 			// insert
@@ -303,12 +304,12 @@ KlmModule* KlmSystem::operator[](module_id id)
 		return it->second;
 }
 
-void KlmSystem::start(std::ostream& output)
+void KlmSystem::start(std::ostream& output, ObjectSync<ScrodPacket>* data_drain)
 {
 	KlmModuleMap::iterator x;
 	for(x = _modules.begin(); x != _modules.end(); x++)
 	{
-		if(!x->second->start(&_received_data))
+		if(!x->second->start(data_drain))
 		{
 			output << "ERROR: Module ID=" << x->first << " could not be started!" << endl;
 		}
@@ -332,4 +333,12 @@ void KlmSystem::write_register(scrod_address address, scrod_register value, bool
 	// announce stop
 	for(x = _modules.begin(); x != _modules.end(); x++)
 		x->second->write_register(address, value, verify);	
+}
+
+void KlmSystem::send_trigger(KlmModule::TrgType_t trigger)
+{
+	KlmModuleMap::iterator x;
+	// send triggers
+	for(x = _modules.begin(); x != _modules.end(); x++)
+		x->second->send_trigger(trigger);	
 }
