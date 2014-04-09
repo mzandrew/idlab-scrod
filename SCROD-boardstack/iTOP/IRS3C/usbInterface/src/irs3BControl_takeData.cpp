@@ -15,19 +15,40 @@ using namespace std;
 TApplication *theApp;
 
 //global variables for quick testing
-//setting variables for readouts on row 0 col 2 ch 2
-//set forced readout mode: registers 171 - 178, row 0 col 2 = register 175, lower 8 bits, set channel 2 for readout
-int ForcedReadoutReg = 175; //Forced readout for row 0 col 2 ch 2
-int ForcedReadoutVal = 0x0004; //Forced readout for row 0 col 2 ch 2
-int rowNum = 0;
-int colNum = 2;
-int chNum = 2;
-
 int main(int argc, char* argv[]){
-	if (argc != 1) {
-		cout << "irs3BControl_takeData " << endl;
+	int rowNum = -1;
+	int colNum = -1;
+	int chNum = -1;
+	int calEnable = -1;
+
+	if (argc != 5) {
+		cout << "irs3BControl_takeData <rowNum> <colNum> <chNum> <calEnable>" << endl;
 		return 1;
 	}
+
+	rowNum = atoi(argv[1]);
+        if( rowNum < 0 || rowNum > 3 ){
+                std::cout << "Invalid row number requested, exiting" << std::endl;
+                return 0;
+        }
+
+	colNum = atoi(argv[2]);
+        if( colNum < 0 || colNum > 3 ){
+                std::cout << "Invalid col number requested, exiting" << std::endl;
+                return 0;
+        }
+
+	chNum = atoi(argv[3]);
+        if( chNum < 0 || chNum > 7 ){
+                std::cout << "Invalid ch number requested, exiting" << std::endl;
+                return 0;
+        }
+
+	calEnable  = atoi(argv[4]);
+	if( calEnable != 0 && calEnable != 1 ){
+                std::cout << "Invalid cal enable setting, exiting" << std::endl;
+                return 0;
+        }
 
 	//define application object
 	theApp = new TApplication("App", &argc, argv);
@@ -46,14 +67,13 @@ int main(int argc, char* argv[]){
 
 	//define the SCROD ID for board stack, hardcoded for now
 	unsigned int board_id = 0x0;
+	int regValReadback;
 
 	//set forced readout mode: registers 171 - 178
-	//row 0 col 2 = register 175, lower 8 bits, set channel 2 for readout
-	int regValReadback;
-	control->registerWrite(board_id, ForcedReadoutReg, ForcedReadoutVal, regValReadback);
+	control->setForcedReadoutRegister(board_id, rowNum, colNum, chNum );
 
 	//set minimum and maximum lookbacks
-	control->registerWrite(board_id, 163, 59, regValReadback); //max lookback
+	control->registerWrite(board_id, 163, 7, regValReadback); //max lookback
 	control->registerWrite(board_id, 164, 0, regValReadback); //minimum lookback
 
 	//set first and last allowed windows
@@ -61,47 +81,29 @@ int main(int argc, char* argv[]){
 	control->registerWrite(board_id, 162, 59, regValReadback);
 
 	char ct;
-	if(1){
-	//get pedestal waveforms	
-	control->clearDataBuffer();
-	control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, 0);
-	for( int nevt = 0 ; nevt < 200 ; nevt++){
-		//send software trigger
-		control->sendSoftwareTrigger(board_id);
+	if(0){
+		//get pedestal waveforms	
+		control->clearDataBuffer();
+		control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, 0);
+		for( int nevt = 0 ; nevt < 400 ; nevt++){
+			//send software trigger
+			control->sendSoftwareTrigger(board_id);
 
-		//get waveform data
-		unsigned int wavedatabuf[8192];
-		int wavedataSize = 0;
-		control->getWaveformData(wavedatabuf,wavedataSize);
-		data->grCh->Set(0);
-		data->grChRef->Set(0);
-		data->loadDataPacket(wavedatabuf, wavedataSize);
-		data->fillPedestal();
-	}
-	//make pedestal
-	data->getPedestalValues();
-
-	/*
-	TH1D *hProj = data->hPed->ProjectionY("hProj", 0,64*64,"");
-
-	c0->Clear();
-	c0->Divide(2);
-	c0->cd(1);
-	data->hPed->GetYaxis()->SetRangeUser(1000,2000);
-	data->hPed->Draw("COLZ");
-	c0->cd(2);
-	hProj->GetXaxis()->SetRangeUser(1000,2000);
-	hProj->Draw();
-	c0->Update();
-	std::cin >> ct;	
-	
-	delete hProj;
-	*/
-
+			//get waveform data
+			unsigned int wavedatabuf[8192];
+			int wavedataSize = 0;
+			control->getWaveformData(wavedatabuf,wavedataSize);
+			data->grCh->Set(0);
+			data->grChRef->Set(0);
+			data->loadDataPacket(wavedatabuf, wavedataSize);
+			data->fillPedestal();
+		}
+		//make pedestal
+		data->getPedestalValues();
 	}
 
 	//reroute calibration signal to intended channel
-	control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, 1);
+	control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, calEnable);
 
 	//take waveform data, applying pedestal correction
 	int nEvents = 0;
