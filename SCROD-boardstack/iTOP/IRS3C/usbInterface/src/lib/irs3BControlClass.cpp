@@ -130,7 +130,8 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 	//Set general ASIC DACs ---------------------------------------------------
 
 	//Set DAC buffer biases 
-	if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x340, regValReadback) )
+	//if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x340, regValReadback) )
+	if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x280, regValReadback) )
 		std::cout << "Failed to set DAC_BUF_BIASES " << std::endl;
 
 	//Set VadjP DAC buffer biases
@@ -155,14 +156,17 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 
 	//Set CMPBias
 	if( !registerWriteReadback(board_id, CMPBIAS, 1075, regValReadback) )
+	//if( !registerWriteReadback(board_id, CMPBIAS, 850, regValReadback) )
 		std::cout << "Failed to set CMPBIAS " << std::endl;
 
 	//Set CMPBias2
 	if( !registerWriteReadback(board_id, CMPBIAS2, 1000, regValReadback) )
+	//if( !registerWriteReadback(board_id, CMPBIAS2, 800, regValReadback) )
 		std::cout << "Failed to set CMPBIAS2 " << std::endl;
 
 	//Set TRGBias	
-	if( !registerWriteReadback(board_id, TRGBIAS, 0x3e8, regValReadback) )
+	//if( !registerWriteReadback(board_id, TRGBIAS, 0x3e8, regValReadback) )
+	if( !registerWriteReadback(board_id, TRGBIAS, 0x300, regValReadback) )
 		std::cout << "Failed to set TRGBIAS " << std::endl;
 
 	//Set ASIC-specific DACs ---------------------------------------------------
@@ -171,10 +175,12 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		if( !registerWriteReadback(board_id, WBIAS_base + i, 1310, regValReadback) )
 			std::cout << "Failed to set WBIAS, register " << WBIAS_base + i << std::endl;
 		//Set VBias
-		if( !registerWriteReadback(board_id, VBIAS_base + i, 0x300, regValReadback) )
+		//if( !registerWriteReadback(board_id, VBIAS_base + i, 0x300, regValReadback) )
+		if( !registerWriteReadback(board_id, VBIAS_base + i, 0x2a0, regValReadback) )
 			std::cout << "Failed to set VBIAS, register " << VBIAS_base + i << std::endl;
 		//Set VBias2
-		if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x300, regValReadback) )
+		//if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x300, regValReadback) )
+		if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x2a0, regValReadback) )
 			std::cout << "Failed to set VBIAS2, register " << VBIAS2_base + i << std::endl;
 		//Set Wilkinson DACs
 		if( !registerWriteReadback(board_id, VDLY_base + i, 2000, regValReadback) )
@@ -183,7 +189,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		if( !registerWriteReadback(board_id, VADJP_base + i, 0xAC00, regValReadback) )
 			std::cout << "Failed to set VADJP_base, register " << VADJP_base + i << std::endl;
 		//Set VadjN DAC values
-		if( !registerWriteReadback(board_id, VADJN_base + i, 25000, regValReadback) )
+		if( !registerWriteReadback(board_id, VADJN_base + i, 24800, regValReadback) )
 			std::cout << "Failed to set VADJN_base, register " << VADJN_base + i << std::endl;
 	}
 
@@ -685,10 +691,10 @@ int irs3BControlClass::setupGPIOs_irs3B_carrierRevC(unsigned int board_id){
 	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW13_GPIO2_ADDR, 0x03, 0x00) ) return 0;
 
 	std::cout << "Setting SAMPSEL_ANY high on GPIO2 (everything else low)" << std::endl;
-	if( !i2c_write(board_id, I2C_BUS_3_WR, I2C_BUS_3_RD, ROW02_GPIO2_ADDR, 0x01, 0x40) ) return 0;
-	if( !i2c_write(board_id, I2C_BUS_3_WR, I2C_BUS_3_RD, ROW13_GPIO2_ADDR, 0x01, 0x40) ) return 0;
-	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW02_GPIO2_ADDR, 0x01, 0x40) ) return 0;
-	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW13_GPIO2_ADDR, 0x01, 0x40) ) return 0;
+	if( !i2c_write(board_id, I2C_BUS_3_WR, I2C_BUS_3_RD, ROW02_GPIO2_ADDR, 0x01, 0xC0) ) return 0;
+	if( !i2c_write(board_id, I2C_BUS_3_WR, I2C_BUS_3_RD, ROW13_GPIO2_ADDR, 0x01, 0xC0) ) return 0;
+	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW02_GPIO2_ADDR, 0x01, 0xC0) ) return 0;
+	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW13_GPIO2_ADDR, 0x01, 0xC0) ) return 0;
 
 	std::cout << "Setting interconnect GPIO0 as outputs" << std::endl;
 	if( !i2c_write(board_id, I2C_BUS_7_WR, I2C_BUS_7_RD, interconnect_revC_GPIO0_ADDR, 0x01, 0x00) ) return 0;
