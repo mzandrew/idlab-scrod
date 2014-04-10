@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "base/KlmModule.h"
 
@@ -103,7 +104,7 @@ void KlmModule::write_ASIC_register(uint8_t card, uint8_t address, uint16_t valu
 
 int KlmModule::send_trigger(KlmModule::TrgType_t trigger)
 {
-
+	//std::cout << "Trigger send for " << _interface->getDeviceID() << endl;
 
 	///set up data buffers that are used in USB interface
 	int size = 0;
@@ -162,13 +163,27 @@ void* KlmModule::pt_starter(void* module)
 void KlmModule::run()
 {
 	// doing the actual thing
-	
-	ScrodPacket* pack;
-	
-	while(should_continue())
+
+	try
 	{
-		pack = this->read_packet();
-		if(pack)
-			_data_drain->insert(pack);
-	}	
+		ScrodPacket* pack;
+		
+		while(should_continue())
+		{
+			pack = this->read_packet();
+			if(pack)
+			{
+				//std::cout << "Packet processed for " << _interface->getDeviceID() << endl;
+				_data_drain->insert(pack);
+			}
+		}	
+	}
+	catch(std::exception& e)
+	{
+		std::cout << "Process for module " << _interface->getDeviceID() << " died !! exception caught: " << e.what() << endl;
+	}
+	catch(...)
+	{
+		std::cout << "Process for module " << _interface->getDeviceID() << " died !! unknown exxception" << endl;
+	}
 }

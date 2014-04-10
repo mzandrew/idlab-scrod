@@ -135,7 +135,7 @@ int UsbDevice::receive_data(unsigned char* data, int length, unsigned int timeou
 		while(true)
 		{
 			status = libusb_bulk_transfer(_handle, USB_IN__ENDPOINT | LIBUSB_ENDPOINT_IN, data, todo, &transferred, timeout);
-			//cout << "Packet(" << packets << "," << todo << "," << total << ")";
+			//cout << "Packet(" << packets << "," << todo << "," << total << "," << transferred << ")";
 			if(status == 0)
 			{
 				// all ok
@@ -150,7 +150,8 @@ int UsbDevice::receive_data(unsigned char* data, int length, unsigned int timeou
 			else if(status == LIBUSB_ERROR_TIMEOUT)
 			{
 				// timeout
-				//cout << endl;
+				cout << endl;
+				//continue;
 				return total;
 			}
 			else if(status == LIBUSB_ERROR_OVERFLOW)
