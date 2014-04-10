@@ -6,7 +6,8 @@ unsigned int ROW02_GPIO1_ADDR = 0x7A;
 unsigned int ROW02_GPIO2_ADDR = 0x7C;
 unsigned int ROW13_GPIO0_ADDR = 0x70;
 unsigned int ROW13_GPIO1_ADDR = 0x72;
-unsigned int ROW13_GPIO2_ADDR = 0x74;
+//unsigned int ROW13_GPIO2_ADDR = 0x74; //RevC
+unsigned int ROW13_GPIO2_ADDR = 0x7E; //intermediate - RevD
 unsigned int interconnect_revC_GPIO0_ADDR = 0x40;
 unsigned int interconnect_revC_GPIO1_ADDR = 0x42;
 
