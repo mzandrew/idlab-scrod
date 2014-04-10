@@ -53,23 +53,34 @@ void* KlmConsumer::pt_starter(void* consumer)
 
 void KlmConsumer::run()
 {
-	// doing the actual thing
-	ScrodPacket* packet;
-	while(should_continue())
+	try
 	{
-		// get packet
-		packet = _data_source.getObject();
-		if(packet)
+		// doing the actual thing
+		ScrodPacket* packet;
+		while(should_continue())
 		{
-			// process it
-			this->process_packet(packet);
-			// remove the packet
-			delete packet;
+			// get packet
+			packet = _data_source.getObject();
+			if(packet)
+			{
+				// process it
+				this->process_packet(packet);
+				// remove the packet
+				delete packet;
+			}
+			else
+				break;
 		}
-		else
-			break;
+		this->deinitialize();
 	}
-	this->deinitialize();
+	catch(std::exception& e)
+	{
+		std::cout << "Consumer died !! exception caught: " << e.what() << endl;
+	}
+	catch(...)
+	{
+		std::cout << "Consumer died !! unknown exxception" << endl;
+	}	
 }
 
 void KlmConsumer::process_packet(ScrodPacket* packet)

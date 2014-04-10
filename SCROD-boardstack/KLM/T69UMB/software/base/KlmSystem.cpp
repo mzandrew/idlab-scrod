@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <algorithm>
+#include <csignal>
 
 #include "base/KlmSystem.h"
 #include "base/tinyxml2.h"
@@ -27,6 +28,8 @@ void KlmSystem::Cleanup()
 
 KlmSystem::KlmSystem()
 {
+	pthread_mutex_init(&_kill_mutex, NULL);
+	pthread_cond_init (&_kill_cv, NULL);
 }
 
 KlmSystem::~KlmSystem()
@@ -293,6 +296,9 @@ void KlmSystem::uninitialize()
 	// cleanup USB
 	UsbInterface::USB().close_all_devices();
 	UsbInterface::Cleanup();
+	
+	pthread_mutex_destroy(&_kill_mutex);
+	pthread_cond_destroy(&_kill_cv);
 }
 
 KlmModule* KlmSystem::operator[](module_id id)
@@ -341,4 +347,20 @@ void KlmSystem::send_trigger(KlmModule::TrgType_t trigger)
 	// send triggers
 	for(x = _modules.begin(); x != _modules.end(); x++)
 		x->second->send_trigger(trigger);	
+}
+
+
+void KlmSystem::signalHandler( int signum )
+{
+	pthread_cond_signal(&KlmSystem::KLM()._kill_cv);	
+}
+
+void KlmSystem::waitForTerminationRequest()
+{
+	// register the signal handler
+	signal(SIGTERM, KlmSystem::signalHandler); 
+	
+	// wait for the signal
+	pthread_mutex_lock(&_kill_mutex);
+	pthread_cond_wait(&_kill_cv, &_kill_mutex);
 }
