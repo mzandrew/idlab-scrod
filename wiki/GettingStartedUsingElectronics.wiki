@@ -24,6 +24,8 @@ After running the initialization scripts, the current draw should change to (pre
   * 3.85V@0.216A (with 1 fiber transceiver installed)
   * 5.60V@0.616A
 
+[https://www.phys.hawaii.edu/elog/iTOP-IRS3/172 elog entry #172 detailing one measurement of these currents for a full boardstack]
+
 ==a computer==
 Either with USB or fiber optics (SFP).
 
