@@ -216,6 +216,25 @@ int topDataClass::selectPulsesForArray(){
 			mark_smpNextY = tdc0_smpNextY_mcp[markerHitNum];
 		}
 
+		//count # of laser pulses in this event on PMT of interest
+		int numLaserPulse = 0;
+		for( int i = 0 ; i < nhit ; i++ ){
+
+			//determine if pulses is on PMT of interest
+			if( pmtid_mcp[i] != tr_pmt ) continue;
+
+			//get pulse times
+			double pulseTime = measurePulseTimeStandalone(firstWindow[i], refWindow[i], smp0_mcp[i], ftsw, FTSW_SCALE, avg128Period, smp128StartTimes, 
+				tdc0_smpPrevY_mcp[i], tdc0_smpNextY_mcp[i], cfdFraction*adc0_mcp[i]);
+
+			if( pulseTime > windowTime - 100. && pulseTime < windowTime + 100. )
+				numLaserPulse++;
+		}
+
+		//optional: skip event if multiple laser pulses
+		if( numLaserPulse > 1 )
+			continue;
+
 		//loop over all the hits in the event, store accepted pulses
     		for( int i = 0 ; i < nhit ; i++ ){
 
@@ -243,6 +262,7 @@ int topDataClass::selectPulsesForArray(){
 			if( numUsed < maxNumEvt && pulseTime > windowTime - 100. && pulseTime < windowTime + 100. ){
 				entryNum_A[numUsed] = entry;
 				eventNum_A[numUsed] = eventNum;
+				//numLaserPulse_A[numUsed] = numLaserPulse;
     				ftsw_A[numUsed] = ftsw;
     				adc_0_A[numUsed] = adc0_mcp[i];
     				first_0_A[numUsed] = firstWindow[i];

@@ -33,6 +33,8 @@ g++ -o RecTOProot_dev6 src/RecTOProot_dev6.cc `root-config --cflags --glibs`
 6) Compile simple analysis program
 g++ -o topDataClass_doAnalysis src/topDataClass_doAnalysis.cpp `root-config --cflags --glibs`
 
+7) Compile simple hit rate measurement program
+g++ -o checkHitRate src/checkHitRate.C `root-config --cflags --glibs`
 
 Processing Data:
 

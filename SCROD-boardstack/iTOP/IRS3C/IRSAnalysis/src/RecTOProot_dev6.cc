@@ -48,6 +48,7 @@ struct _top {
   Short_t pmtid_mcp[MaxROI];
   Short_t ch_mcp[MaxROI];
   Float_t adc0_mcp[MaxROI];
+  Float_t tdc0_mcp[MaxROI];
   Float_t base_mcp[MaxROI];
   Short_t pmtflag_mcp[MaxROI];
   Float_t smp_mcp[MaxROI];
@@ -141,6 +142,7 @@ void initRootTree(TTree* tr_rawdata, struct _rawdata& rawdata,
   tr_top->Branch("pmt", &(top.pmtid_mcp), "pmt[nhit]/S");
   tr_top->Branch("ch", &(top.ch_mcp), "ch[nhit]/S"); 
   tr_top->Branch("adc0", &(top.adc0_mcp), "adc0[nhit]/F");    //IRS3B unit?
+  tr_top->Branch("tdc0", &(top.tdc0_mcp), "tdc0[nhit]/F");
   tr_top->Branch("base", &(top.base_mcp), "base[nhit]/F");    //IRS3B unit?
   tr_top->Branch("pmtflag", &(top.pmtflag_mcp), "pmtflag[nhit]/S"); 
   tr_top->Branch("smp", &(top.smp_mcp), "smp[nhit]/F");    //sample number
@@ -201,6 +203,7 @@ void waveformAna(struct _rawdata& rawdata, struct _top& top, IRS3Bana& ana){
     double pulseSmpFix100 = -1; 
     double pulseSmpFix100Fall = -1;
     double pulseHeight = -1;
+    double pulseTime = -1;
     double pulseBaseline = -1;
     bool pulseTimeFlag = 0;
     int maxSampleNum;
@@ -216,7 +219,7 @@ void waveformAna(struct _rawdata& rawdata, struct _top& top, IRS3Bana& ana){
     pulseBaseline = tempY;
 
     //CFD section
-    if( !ana.FindThresholdSampleAndTime(maxSampleNum,pulseHeight*0.2, pulseSample, tempY) ){
+    if( !ana.FindThresholdSampleAndTime(maxSampleNum,pulseHeight*0.2, pulseSample, pulseTime) ){
 	  //when valid pulse time not found, set pulse time to first sample of waveform
     	  pulseTimeFlag = 1;
 	  pulseSample = 0.5;
@@ -226,6 +229,7 @@ void waveformAna(struct _rawdata& rawdata, struct _top& top, IRS3Bana& ana){
     top.firstWindow[top.nhit] = rawdata.firstWindow[r];
     top.pmtid_mcp[top.nhit] = BIIpmt;
     top.ch_mcp[top.nhit] = BIIch;  
+    top.tdc0_mcp[top.nhit] = pulseTime;
     top.adc0_mcp[top.nhit] = pulseHeight;
     top.base_mcp[top.nhit] = pulseBaseline;
     top.pmtflag_mcp[top.nhit] = 0;

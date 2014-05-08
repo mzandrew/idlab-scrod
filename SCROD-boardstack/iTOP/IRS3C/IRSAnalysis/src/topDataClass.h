@@ -13,6 +13,7 @@
 #define NCHS                   8
 const Int_t MaxROI(400);
 double FTSW_SCALE = 0.045056; //ns per FTSW DAC
+//double FTSW_SCALE = 0.050056; //ns per FTSW DAC
 double avg128Period = 128./2.715; //ns
 double defaultSmpWidth = 1./2.715;
 double sampleWidthScaleFactor = 1.0;

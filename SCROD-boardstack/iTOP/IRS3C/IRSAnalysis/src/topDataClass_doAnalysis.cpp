@@ -28,7 +28,8 @@ int initializeGlobalHistograms();
 int writeOutputFile();
 
 //hardcoded constants relevant to laser data
-double windowTime = 1077.5;
+//double windowTime = 1253;
+double windowTime = 1240;
 double windowLow = windowTime-10.;
 double windowHigh = windowTime+10.;
 
@@ -53,6 +54,7 @@ TH1F *hSampleTimes;
 TH1F *hSampleWidths;
 TH2F *hResidualPulseTimeVsSmpPos;
 TH2F *hResidualMarkerTimeVsSmpPos;
+TH2F *hResidualPulseTimeVsHeight;
 
 TH1F *hPulseHeightFinal;
 TH1F *hPulseTimeFinal;
@@ -71,12 +73,14 @@ TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal;
 TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal;
 
 TGraphErrors *gPulseTimeVsFTSW;
+TGraphErrors *gPulseTimeVsHeight;
 TGraphErrors *gPulseTimeVsSmp128Index;
 TGraphErrors *gPulseTimeVsSmp128Pos;
 TGraphErrors *gResidualPulseTimeVsSmpPos;
 TGraphErrors *gResidualMarkerTimeVsSmpPos;
 TGraphErrors *gPulseTimeVsEventNum;
 TGraphErrors *gPulseTimeResVsSmp128Index;
+TGraphErrors *gPulseTimeResVsHeight;
 TGraphErrors *gTest;
 
 int main(int argc, char* argv[]){
@@ -101,7 +105,7 @@ int main(int argc, char* argv[]){
 	data->setAnalysisChannel( inMod, inRow, inCol, inCh );
 
 	//specify timing marker channel
-	data->setTimingMarkerChannel( 0, 0, 1, 2 );
+	data->setTimingMarkerChannel( 0, 2, 0, 2 );
 
 	//specify time window
 	data->windowTime = windowTime;
@@ -167,9 +171,9 @@ int main(int argc, char* argv[]){
 
 	//parameterize pulse time as a function of different variables
 	gPulseTimeVsFTSW = new TGraphErrors();
-	data->makeCorrectionGraph(hPulseTimeVsFTSWCut, gPulseTimeVsFTSW, 0, 25, 2, 0.2);
+	data->makeCorrectionGraph(hPulseTimeVsFTSWCut, gPulseTimeVsFTSW, 0, 25, 2, 0.5);
 	gPulseTimeVsSmp128Index = new TGraphErrors();
-	data->makeCorrectionGraph(hPulseTimeVsSmp128Cut, gPulseTimeVsSmp128Index, 0, 25, 2, 0.2);
+	data->makeCorrectionGraph(hPulseTimeVsSmp128Cut, gPulseTimeVsSmp128Index, 0, 25, 2, 0.5);
 	gPulseTimeVsSmp128Pos = new TGraphErrors();
 	data->makeCorrectionGraph(hPulseTimeVsSmp128PosCut, gPulseTimeVsSmp128Pos, 0, 25, 2, 0.2);
 
@@ -183,7 +187,7 @@ int main(int argc, char* argv[]){
 			hSampleWidths->SetBinContent(i, data->smp128StartTimes[i] - data->smp128StartTimes[i-1] );
   	}
 
-	//loop over selected events, measure pulse time dependence on sample position
+	//loop over selected events, histogram residual distributions
   	for(int entry = 0; entry < data->numUsed; entry++) {
 		//skip events not in arrays
   		if( entry >= maxNumEvt )
@@ -199,7 +203,7 @@ int main(int argc, char* argv[]){
 
 		//apply cuts to make sample position dependence clearer
 		//Cut on ends of FTSW range
-		if( data->ftsw_A[entry] < 650 || data->ftsw_A[entry] > 1660 )
+		if( data->ftsw_A[entry] < 650 || data->ftsw_A[entry] > 1650 )
 			continue;
 		//cut on sample #
 		if( smpBinNumIn128Array >= 126 )
@@ -212,6 +216,7 @@ int main(int argc, char* argv[]){
 		double markerSmpPos = data->getMarkerSmpPos(entry);
 		int markerSmpBinNum = data->getMarkerSmpBinNumIn128Array(entry);
 		hResidualMarkerTimeVsSmpPos->Fill( (markerSmpBinNum % 2) + markerSmpPos , markerTime );
+		hResidualPulseTimeVsHeight->Fill(pulseHeight, pulseTime );
   	}
 
 	//parameterize pulse time as a function of sample position
@@ -219,6 +224,9 @@ int main(int argc, char* argv[]){
 	data->makeCorrectionGraph(hResidualPulseTimeVsSmpPos, gResidualPulseTimeVsSmpPos, 0, 25, 2, 0.2);
 	gResidualMarkerTimeVsSmpPos = new TGraphErrors();
 	data->makeCorrectionGraph(hResidualMarkerTimeVsSmpPos, gResidualMarkerTimeVsSmpPos, 0, 25, 2, 0.2);
+
+	gPulseTimeVsHeight = new TGraphErrors();
+	data->makeCorrectionGraph(hResidualPulseTimeVsHeight, gPulseTimeVsHeight, 0, 25, 2, 0.2);
 	
 	//loop over selected events, apply corrections histogram pulse time distributions
 	//monitor pulse time vs event #
@@ -238,14 +246,17 @@ int main(int argc, char* argv[]){
        		//double smpPosCorr = gPulseTimeVsSmp128Pos->Eval( smpPosIn128Array + smpPos ,0,"");
     		//pulseTime = pulseTime - smpPosCorr + windowLow + (windowHigh - windowLow)/2.;
 		double smpPosCorr = gResidualPulseTimeVsSmpPos->Eval( (smpBinNumIn128Array % 2) + smpPos ,0,"");
-    		pulseTime = pulseTime - smpPosCorr + windowLow + (windowHigh - windowLow)/2.;
+    		//pulseTime = pulseTime - smpPosCorr + windowLow + (windowHigh - windowLow)/2.;
 		//FTSW correction
 		//double ftswPosCorr = gPulseTimeVsFTSW->Eval( data->ftsw_A[entry] ,0,"");
 		//pulseTime = pulseTime - ftswPosCorr + windowLow + (windowHigh - windowLow)/2.;
+		//timewalk correction
+		double timewalkCorr = gPulseTimeVsHeight->Eval( pulseHeight ,0,"");
+		pulseTime = pulseTime - timewalkCorr + windowLow + (windowHigh - windowLow)/2.;
 
 		//apply analysis cuts
 		//Cut on ends of FTSW range
-		if( data->ftsw_A[entry] < 650 || data->ftsw_A[entry] > 1660 )
+		if( data->ftsw_A[entry] < 650 || data->ftsw_A[entry] > 1650 )
 			continue;
 		//cut on sample #
 		if( smpBinNumIn128Array >= 127 )
@@ -269,6 +280,9 @@ int main(int argc, char* argv[]){
 		hResidualPulseTimeVsSmpPosFinal->Fill( (smpBinNumIn128Array % 2) + smpPos , pulseTime );
 		hPulseTimeVsFirstWindowFinal->Fill( data->first_0_A[entry] , pulseTime );
 
+		if( smpBinNumIn128Array == 10 )
+			gTest->SetPoint( gTest->GetN() , data->ftsw_A[entry] , pulseTime );
+
 		//get timing marker
 		double pulseTimeNoFTSWTDCCorr = data->measurePulseTimeArrayEntry(entry,0);
 		double markerTime = data->measureMarkerTimeArrayEntry(entry,0);
@@ -277,18 +291,23 @@ int main(int argc, char* argv[]){
 		double markerPosCorr = gResidualMarkerTimeVsSmpPos->Eval( (markerSmpBinNum % 2) + markerSmpPos ,0,"");
 		//if(smpBinNumIn128Array == 41){
 		if(1){
-			hPulseTimeMarkTimeDiffFinal->Fill( (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
-			gTest->SetPoint( gTest->GetN() , markerTime - markerPosCorr , pulseTimeNoFTSWTDCCorr - smpPosCorr );
+			//hPulseTimeMarkTimeDiffFinal->Fill( (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
+			hPulseTimeMarkTimeDiffFinal->Fill( (pulseTimeNoFTSWTDCCorr - timewalkCorr ) - (markerTime) );
+			//gTest->SetPoint( gTest->GetN() , markerTime - markerPosCorr , pulseTimeNoFTSWTDCCorr - smpPosCorr );
 		}
-		hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Fill( markerSmpBinNum , (pulseTimeNoFTSWTDCCorr) - (markerTime ) );
+
+		hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Fill( markerSmpBinNum , (pulseTimeNoFTSWTDCCorr - timewalkCorr ) - (markerTime ) );
 		//hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Fill( smpBinNumIn128Array , (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
 		hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal->Fill( smpBinNumIn128Array , markerSmpBinNum
-			 , (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
+			 , (pulseTimeNoFTSWTDCCorr - timewalkCorr) - (markerTime) );
 	}
 
 	//parameterize pulse time resolution as function of sample #
 	gPulseTimeResVsSmp128Index = new TGraphErrors();
 	data->makeCorrectionGraph(hPulseTimeVsSmp128Final, gPulseTimeResVsSmp128Index, 1, 25, 2, 0.2);
+
+	gPulseTimeResVsHeight = new TGraphErrors();
+	data->makeCorrectionGraph(hPulseTimeVsHeightFinal, gPulseTimeResVsHeight, 1, 25, 2, 0.2);
 
 	//write output file
 	writeOutputFile();
@@ -308,10 +327,10 @@ int initializeGlobalHistograms(){
   	hPulseTimeCut = new TH1F("hPulseTimeCut","Pulse Time Distribution",50000,0,64*64*1./2.7515);
   	hPulseSampleCut = new TH1F("hPulseSampleCut","Pulse Sample Distribution",256,0,256);
   	hPulseSmp128Cut = new TH1F("hPulseSmp128Cut","Pulse Sample Distribution",128,0,128);
-  	hPulseTimeVsSmp128Cut = new TH2F("hPulseTimeVsSmp128Cut","",128,0,128,2000,windowLow,windowHigh);
-	hPulseTimeVsSmp128PosCut = new TH2F("hPulseTimeVsSmp128PosCut","",640,0,128,2000,windowLow,windowHigh);
+  	hPulseTimeVsSmp128Cut = new TH2F("hPulseTimeVsSmp128Cut","",128,0,128,1000,windowLow,windowHigh);
+	hPulseTimeVsSmp128PosCut = new TH2F("hPulseTimeVsSmp128PosCut","",640,0,128,1000,windowLow,windowHigh);
   	hPulseTimeVsFTSWCut = new TH2F("hPulseTimeVsFTSWCut","",2100,0,2100,2000,windowLow,windowHigh);
-  	hPulseTimeVsHeightCut = new TH2F("hPulseTimeVsHeightCut","Pulse Time Vs Height",40,10,1610,400,windowLow,windowHigh);
+  	hPulseTimeVsHeightCut = new TH2F("hPulseTimeVsHeightCut","Pulse Time Vs Height",20,10,1610,400,windowLow,windowHigh);
   	hFTSWVsSmp128Cut  = new TH2F("hFTSWVsSmp128Cut","FTSW Vs Sample Bin Array #",128,0,128,2100,0,2100);
 	
 	hSampleTimes = new TH1F("hSampleTimes","",128,0,128);
@@ -319,13 +338,14 @@ int initializeGlobalHistograms(){
 
 	hResidualPulseTimeVsSmpPos = new TH2F("hResidualPulseTimeVsSmpPos","Pulse Time Vs Residual Sample Position (Index Mod 2)",40,0,2,1000,windowLow,windowHigh);
 	hResidualMarkerTimeVsSmpPos = new TH2F("hResidualMarkerTimeVsSmpPos","Marker Time Vs Residual Sample Position (Index Mod 2)",40,0,2,1000,windowLow,windowHigh);
+	hResidualPulseTimeVsHeight = new TH2F("hResidualPulseTimeVsHeight","Pulse Time Vs Height",20,10,1610,400,windowLow,windowHigh);
 
 	hPulseHeightFinal = new TH1F("hPulseHeightFinal","Pulse Height Distribution",1000,-50,1950.);
   	hPulseTimeFinal = new TH1F("hPulseTimeFinal","Pulse Time Distribution",50000,0,64*64*1./2.7515);
   	hPulseSampleFinal = new TH1F("hPulseSampleFinal","Pulse Sample Distribution",256,0,256);
   	hPulseSmp128Final = new TH1F("hPulseSmp128Final","Pulse Sample Distribution",128,0,128);
-  	hPulseTimeVsSmp128Final = new TH2F("hPulseTimeVsSmp128Final","",128,0,128,2000,windowLow,windowHigh);
-	hPulseTimeVsSmp128PosFinal = new TH2F("hPulseTimeVsSmp128PosFinal","",640,0,128,2000,windowLow,windowHigh);
+  	hPulseTimeVsSmp128Final = new TH2F("hPulseTimeVsSmp128Final","",128,0,128,1000,windowLow,windowHigh);
+	hPulseTimeVsSmp128PosFinal = new TH2F("hPulseTimeVsSmp128PosFinal","",640,0,128,1000,windowLow,windowHigh);
   	hPulseTimeVsFTSWFinal = new TH2F("hPulseTimeVsFTSWFinal","",2100,0,2100,2000,windowLow,windowHigh);
   	hPulseTimeVsHeightFinal = new TH2F("hPulseTimeVsHeightFinal","Pulse Time Vs Height",400,10,1610,1000,windowLow,windowHigh);
   	hFTSWVsSmp128Final  = new TH2F("hFTSWVsSmp128Final","FTSW Vs Sample Bin Array #",128,0,128,2100,0,2100);
@@ -333,7 +353,7 @@ int initializeGlobalHistograms(){
 	hPulseTimeVsFirstWindowFinal = new TH2F("hPulseTimeVsFirstWindowFinal","Pulse Time Vs First Window #",64,0,64,1000,windowLow,windowHigh);
 
 	hPulseTimeMarkTimeDiffFinal = new TH1F("hPulseTimeMarkTimeDiffFinal","Pulse and Timing Marker Time Difference",1000000,-64*64*1./2.7515,64*64*1./2.7515);
-	hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal = new TH2F("hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal","",128,0,128,100000,-100,100.);
+	hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal = new TH2F("hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal","",128,0,128,10000,-1100,-1000.);
 	hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal = new TH2F("hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal","",128,0,128,128,0,128);
 }
 
@@ -358,6 +378,7 @@ int writeOutputFile(){
 
 	hResidualPulseTimeVsSmpPos->Write();
 	hResidualMarkerTimeVsSmpPos->Write();
+	hResidualPulseTimeVsHeight->Write();
 
 	hPulseHeightFinal->Write();
   	hPulseTimeFinal->Write();
@@ -378,10 +399,12 @@ int writeOutputFile(){
 	gPulseTimeVsFTSW->Write("gPulseTimeVsFTSW");
 	gPulseTimeVsSmp128Index->Write("gPulseTimeVsSmp128Index");
 	gPulseTimeVsSmp128Pos->Write("gPulseTimeVsSmp128Pos");
+	gPulseTimeVsHeight->Write("gPulseTimeVsHeight");
 	gResidualPulseTimeVsSmpPos->Write("gResidualPulseTimeVsSmpPos");
 	gResidualMarkerTimeVsSmpPos->Write("gResidualMarkerTimeVsSmpPos");
 	gPulseTimeVsEventNum->Write("gPulseTimeVsEventNum");
 	gPulseTimeResVsSmp128Index->Write("gPulseTimeResVsSmp128Index");
+	gPulseTimeResVsHeight->Write("gPulseTimeResVsHeight");
 	gTest->Write("gTest");
 	outputFile->Close();
 	return 1;

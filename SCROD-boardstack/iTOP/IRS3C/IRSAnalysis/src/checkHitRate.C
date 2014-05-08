@@ -21,7 +21,7 @@ using namespace std;
 #define MaxROI 1000
 TCanvas* c0;
 
-double laserTime = 1126.;
+double laserTime = 1277.;
 
 //tree
 TTree* tr_top;
@@ -109,7 +109,8 @@ int main(int argc, char *argv[]){
   tr_top->SetBranchAddress("ch",&(ch_mcp));
   //tr_top->SetBranchAddress("pmtflag_mcp",&(pmtflag_mcp));
   //tr_top->SetBranchAddress("pmtflag_ch",&(pmtflag_ch));
-  tr_top->SetBranchAddress("smp",&(smp_mcp));             
+  tr_top->SetBranchAddress("smp",&(smp_mcp));  
+  tr_top->SetBranchAddress("tdc0",&(tdc0_mcp));           
   tr_top->SetBranchAddress("adc0",&(adc0_mcp));
   tr_top->SetBranchAddress("ftsw",&(ftsw));
 
@@ -120,7 +121,7 @@ int main(int argc, char *argv[]){
     pulseAna();
   }//entries
 
-  std::cout << "HIT RATE - assuming 10000 events in run " << std::endl;
+  std::cout << "HIT RATE - assuming " << numEvents << " events in run " << std::endl;
   for(int m = 0 ; m < 4 ; m++ ){
   for(int r = 0 ; r < 4 ; r++ ){
   for(int c = 0 ; c < 4 ; c++ ){
@@ -202,6 +203,7 @@ void pulseAna(){
 		hPulseHeightAll->Fill(adc0_mcp[i]);
 		hNumPulsesMod[asicMod]->Fill(10*asicCol + asicCh, asicRow );
 		hPulseTimeAll->Fill(tdc0_mcp[i]/1000.);
+		//std::cout << tdc0_mcp[i]/1000. << std::endl;
 		if( tdc0_mcp[i]/1000. > laserTime - 47.17 && tdc0_mcp[i]/1000. < laserTime + 47.17 )
 			hNumLaserPulsesMod[asicMod]->Fill(10*asicCol + asicCh, asicRow );
 	}//end loop over nhit
