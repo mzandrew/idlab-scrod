@@ -7,17 +7,11 @@
 #include "TH2.h"
 
 //define global constants
-#define POINTS_PER_WAVEFORM    64
-#define MEMORY_DEPTH           512
-#define NASICS                 1
-#define NCHS                   8
+#define NMODS    4
+#define NROWS    4
+#define NCOLS    4
+#define NCHS	 8
 const Int_t MaxROI(400);
-double FTSW_SCALE = 0.045056; //ns per FTSW DAC
-//double FTSW_SCALE = 0.050056; //ns per FTSW DAC
-double avg128Period = 128./2.715; //ns
-double defaultSmpWidth = 1./2.715;
-double sampleWidthScaleFactor = 1.0;
-double cfdFraction = 0.2;
 const int maxNumEvt = 1000000;
 
 class topDataClass {
@@ -103,31 +97,37 @@ public:
 	double mark_smpPrevY_0_A[maxNumEvt];
 	double mark_smpNextY_0_A[maxNumEvt];
 
-	//Sample-DT variables
+	//Calibration variables
 	//basic constants
 	double smp128StartTimes[128];
+	double FTSW_SCALE; //ns per FTSW DAC
+	double avg128Period; //ns
+	double defaultSmpWidth;
+	double sampleWidthScaleFactor;
+	double cfdFraction;
 
 	//analysis constansts
 	double windowTime;
 
-	//functions
+	//Functions ------------------------------------------------
 	topDataClass();
   	~topDataClass();
 
 	int setAnalysisChannel(int mod, int row, int col, int ch);
-	int setTimingMarkerChannel(int mod, int row, int col, int ch);
-	
+	int setTimingMarkerChannel(int mod, int row, int col, int ch);	
 	int openSummaryTree(TString inputFileName);
 	int setTreeBranches();
-
-	int getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime);
-
 	int selectPulsesForArray();
 
+	double measurePulseTimeTreeEntry(int hitIndex , bool useFTSWTDCCorr);
 	double measurePulseTimeArrayEntry(int entry, bool useFTSWTDCCorr);
 	double measurePulseTimeStandalone(int infirst, int inref, int insmp, int inftsw, double inFTSW_SCALE, double inavg128Period, double insmp128StartTimes[], double insmpPrevY, double insmpNextY, double intarget);
 	int getSmpBinNumIn128Array(int entry);
+	int getSmp128IndexTreeEntry(int hitIndex);
 	double getSmpPos(int entry);
+	double getSmpPosTreeEntry(int hitIndex);
+	int getSmpFall128IndexTreeEntry(int hitIndex);
+	double getSmpFallPosTreeEntry(int hitIndex);
 
 	int getTimingMarkerNHitNum(int entry, int &markerHitNum);
 	double measureMarkerTimeArrayEntry(int entry, bool useFTSWTDCCorr);
@@ -136,6 +136,7 @@ public:
 
 	int makeCorrectionGraph(TH2F *h2dIn, TGraphErrors *gOut, bool meanOrRms, double minEntries, double range, double maxErr);
 
+	int getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime);
 	int measurePulseMarkerTimeDifferenceDistribution(TH1F *hPulseTimeMarkTimeDiff, TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNum);
 };
 

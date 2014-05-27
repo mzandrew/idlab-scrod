@@ -42,8 +42,14 @@ topDataClass::topDataClass(){
 
 	numUsed = 0;
 
-  	//initialize start times of 128 sample array bins (element 0 time = sample 0 within array)
- 	smp128StartTimes[0] = 0.;
+	//initialize calibration variables to default values  	
+	FTSW_SCALE = 0.045056; //ns per FTSW DAC
+	avg128Period = 128./2.715; //ns
+	defaultSmpWidth = 1./2.715;
+	sampleWidthScaleFactor = 1.0;
+	cfdFraction = 0.2;
+	//initialize start times of 128 sample array bins (element 0 time = sample 0 within array)
+	smp128StartTimes[0] = 0.;
   	for(int i = 1 ; i < 128 ; i++ )
 		smp128StartTimes[i] = smp128StartTimes[i-1] + defaultSmpWidth*sampleWidthScaleFactor; //ns
 
@@ -158,31 +164,6 @@ int topDataClass::setTreeBranches(){
 	return 1;
 }
 
-int topDataClass::getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime){
-	if( isTOPTree == 0 ){
-		std::cout << "getOverallDistributions: tree object not loaded, quitting" << std::endl;
-		return 0;
-	}
-
-	//loop over tr_rawdata entries
-  	Long64_t nEntries(tr_top->GetEntries());
-  	for(Long64_t entry(0); entry<nEntries; ++entry) {
-    		tr_top->GetEntry(entry);
-
-		//loop over all the hits in the event, store accepted pulses
-    		for( int i = 0 ; i < nhit ; i++ ){
-			//get pulse times
-			double pulseTime = measurePulseTimeStandalone(firstWindow[i], refWindow[i], smp0_mcp[i], ftsw, FTSW_SCALE, avg128Period, smp128StartTimes, 
-				tdc0_smpPrevY_mcp[i], tdc0_smpNextY_mcp[i], cfdFraction*adc0_mcp[i]);
-
-			hPulseHeight->Fill(adc0_mcp[i]);
-			hPulseTime->Fill(pulseTime);
-		}
-	}
-
-	return 1;
-}
-
 //load pulse info into arrays
 int topDataClass::selectPulsesForArray(){
 	if( isTOPTree == 0 ){
@@ -224,16 +205,14 @@ int topDataClass::selectPulsesForArray(){
 			if( pmtid_mcp[i] != tr_pmt ) continue;
 
 			//get pulse times
-			double pulseTime = measurePulseTimeStandalone(firstWindow[i], refWindow[i], smp0_mcp[i], ftsw, FTSW_SCALE, avg128Period, smp128StartTimes, 
-				tdc0_smpPrevY_mcp[i], tdc0_smpNextY_mcp[i], cfdFraction*adc0_mcp[i]);
-
+			double pulseTime = measurePulseTimeTreeEntry(i,1);
 			if( pulseTime > windowTime - 100. && pulseTime < windowTime + 100. )
 				numLaserPulse++;
 		}
 
 		//optional: skip event if multiple laser pulses
-		if( numLaserPulse > 1 )
-			continue;
+		//if( numLaserPulse > 1 )
+		//	continue;
 
 		//loop over all the hits in the event, store accepted pulses
     		for( int i = 0 ; i < nhit ; i++ ){
@@ -252,8 +231,7 @@ int topDataClass::selectPulsesForArray(){
 				continue;
 
 			//get pulse times
-			double pulseTime = measurePulseTimeStandalone(firstWindow[i], refWindow[i], smp0_mcp[i], ftsw, FTSW_SCALE, avg128Period, smp128StartTimes, 
-				tdc0_smpPrevY_mcp[i], tdc0_smpNextY_mcp[i], cfdFraction*adc0_mcp[i]);
+			double pulseTime = measurePulseTimeTreeEntry(i,1);
 
 			//CUT : remove pulse flagged as bad due to pulse overflow
 			//if( pmtflag_mcp[i] == 1 ) continue;
@@ -291,6 +269,17 @@ int topDataClass::selectPulsesForArray(){
   	}//end entries loop
 
 	return 1;
+}
+
+double topDataClass::measurePulseTimeTreeEntry(int hitIndex , bool useFTSWTDCCorr){
+	if( hitIndex < 0 || hitIndex >= nhit )
+		return -1.E+6;
+
+	int FTSWTDC = 0;
+	if( useFTSWTDCCorr )
+		FTSWTDC = ftsw;
+	return measurePulseTimeStandalone(firstWindow[hitIndex], refWindow[hitIndex], smp0_mcp[hitIndex], FTSWTDC, FTSW_SCALE, avg128Period, smp128StartTimes, 
+				tdc0_smpPrevY_mcp[hitIndex], tdc0_smpNextY_mcp[hitIndex], cfdFraction*adc0_mcp[hitIndex]);
 }
 
 double topDataClass::measurePulseTimeArrayEntry(int entry, bool useFTSWTDCCorr){
@@ -352,12 +341,57 @@ double topDataClass::measurePulseTimeStandalone(int infirst, int inref, int insm
 }
 
 //get pulse sample index out of 128 bin array
+int topDataClass::getSmp128IndexTreeEntry(int hitIndex){
+	//skip events not in arrays
+	if( hitIndex < 0 || hitIndex >= nhit )
+		return -1;
+
+	return (int( firstWindow[hitIndex] )*64 + int( smp0_mcp[hitIndex] )) % 128;
+}
+
+//get pulse falling edge sample index out of 128 bin array
+int topDataClass::getSmpFall128IndexTreeEntry(int hitIndex){
+	//skip events not in arrays
+	if( hitIndex < 0 || hitIndex >= nhit )
+		return -1;
+
+	return (int( firstWindow[hitIndex] )*64 + int( smp0Fall_mcp[hitIndex] )) % 128;
+}
+
 int topDataClass::getSmpBinNumIn128Array(int entry){
 	//skip events not in arrays
   	if( entry >= maxNumEvt )
 		return -1;
 
 	return (int( first_0_A[entry] )*64 + int( smp_0_A[entry] )) % 128;
+}
+
+//get pulse position within sample
+double topDataClass::getSmpPosTreeEntry(int hitIndex){
+	//skip hits not in tree
+	if( hitIndex < 0 || hitIndex >= nhit )
+		return -1;
+
+	double edgeSlope = (tdc0_smpNextY_mcp[hitIndex] - tdc0_smpPrevY_mcp[hitIndex])/1.;
+    	double edgeTime = -1.;
+	if(edgeSlope > 0 )
+		edgeTime = (cfdFraction*adc0_mcp[hitIndex] - tdc0_smpPrevY_mcp[hitIndex])/edgeSlope;
+	
+	return edgeTime;
+}
+
+//get pulse falling edge position within sample
+double topDataClass::getSmpFallPosTreeEntry(int hitIndex){
+	//skip hits not in tree
+	if( hitIndex < 0 || hitIndex >= nhit )
+		return -1;
+
+	double edgeSlope = (tdc0Fall_smpNextY_mcp[hitIndex] - tdc0Fall_smpPrevY_mcp[hitIndex])/1.;
+    	double edgeTime = -1.;
+	if(edgeSlope < 0 )
+		edgeTime = (cfdFraction*adc0_mcp[hitIndex] - tdc0Fall_smpPrevY_mcp[hitIndex])/edgeSlope;
+	
+	return edgeTime;
 }
 
 //get pulse position within sample
@@ -499,6 +533,31 @@ int topDataClass::makeCorrectionGraph(TH2F *h2dIn, TGraphErrors *gOut, bool mean
 
 	if( gOut->GetN() < 3 )
 		return 0;
+
+	return 1;
+}
+
+int topDataClass::getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime){
+	if( isTOPTree == 0 ){
+		std::cout << "getOverallDistributions: tree object not loaded, quitting" << std::endl;
+		return 0;
+	}
+
+	//loop over tr_rawdata entries
+  	Long64_t nEntries(tr_top->GetEntries());
+  	for(Long64_t entry(0); entry<nEntries; ++entry) {
+    		tr_top->GetEntry(entry);
+
+		//loop over all the hits in the event, store accepted pulses
+    		for( int i = 0 ; i < nhit ; i++ ){
+			//get pulse times
+			double pulseTime = measurePulseTimeStandalone(firstWindow[i], refWindow[i], smp0_mcp[i], ftsw, FTSW_SCALE, avg128Period, smp128StartTimes, 
+				tdc0_smpPrevY_mcp[i], tdc0_smpNextY_mcp[i], cfdFraction*adc0_mcp[i]);
+
+			hPulseHeight->Fill(adc0_mcp[i]);
+			hPulseTime->Fill(pulseTime);
+		}
+	}
 
 	return 1;
 }
