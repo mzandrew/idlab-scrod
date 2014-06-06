@@ -2,17 +2,12 @@
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h> 
 #include <math.h>
 #include "irs3BControlClass.h"
 #include "irs3BDataClass.h"
 #include "TApplication.h"
-#include "TCanvas.h"
-#include "TAxis.h"
-#include "TF1.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TGraphErrors.h"
 
 using namespace std;
 
@@ -46,9 +41,6 @@ int main(int argc, char* argv[]){
 	//define application object
 	theApp = new TApplication("App", &argc, argv);
 
-	//create irs3b data object
-	irs3BDataClass *data = new irs3BDataClass();
-
 	//create irs3b interface object
 	irs3BControlClass *control = new irs3BControlClass();
 
@@ -62,7 +54,7 @@ int main(int argc, char* argv[]){
 	//write Trigger interfaces register to specify ASIC of interest
 	int trigInterfacesRegVal = (0x8000 | ((colNum & 0x3) << 2) | (rowNum & 0x3) );
 	if( !control->registerWriteReadback(board_id, 4, trigInterfacesRegVal, regValReadback) )
-			std::cout << "Trigger Interfaces Register write failed" << std::endl;
+		std::cout << "Trigger Interfaces Register write failed" << std::endl;
 
 	//vary trigger threshold of channel in question
 	std::cout << "Testing Trigger Threshold for Row # " << rowNum << "\tCol # " << colNum << "\tCh # " << chNum << std::endl;
@@ -71,17 +63,16 @@ int main(int argc, char* argv[]){
 	int trigScaler = 0;
 	int numSteps = 100;
 	int trigThreshInit = 1800;
-	int trigThreshDACStep = 2;
+	int trigThreshDACStep = 3;
 	int trigThreshVal = trigThreshInit;
+	bool pedestalFound = 0;
+	int threshold = 0;
 	for(int i = 0 ; i < numSteps ; i++ ){
 		trigThreshVal = trigThreshInit + i*trigThreshDACStep;
 		//write trigger threshold DAC register
-		//for(int j = 0 ; j < 4*4*8 ; j+ ) 
-			//if( !control->registerWriteReadback(board_id, 13+j, trigThreshInit, regValReadback) )
 		if( !control->registerWriteReadback(board_id, trigThreshReg, trigThreshVal, regValReadback) )
 			std::cout << "Trigger Threshold Register write failed" << std::endl;
 			
-
 		//pause after changing DAC
 		sleep(1);
 
@@ -90,14 +81,28 @@ int main(int argc, char* argv[]){
 			std::cout << "Register read failed, exiting" << std::endl;
 
 		std::cout << "Trigger DAC " << trigThreshVal << "\tScaler " << trigScaler << std::endl;
+		if( trigScaler > 60000 )
+			pedestalFound = 1;
+		else if( trigScaler < 100 && pedestalFound ){
+			std::cout << "Trigger threshold identified, exiting" << std::endl;
+			threshold = trigThreshVal;
+			break;
+		}
 	}
+
+	char name[100];
+	memset(name,0,sizeof(char)*100 );
+	sprintf(name,"output_measureTriggerThresholds_%.1i_%.1i_%.1i.dat",rowNum,colNum,chNum);
+	ofstream dataFile;
+        dataFile.open (name, ios::out );
+	dataFile << "triggerThreshold[" << rowNum << "][" << colNum << "][" << chNum << "] = " << threshold << ";" << std::endl;
+	dataFile.close();
 
 	//close USB interface
         control->closeUSBInterface();
 
 	//delete irs3b interface object
 	delete control;
-	delete data;
 
 	return 1;
 }
