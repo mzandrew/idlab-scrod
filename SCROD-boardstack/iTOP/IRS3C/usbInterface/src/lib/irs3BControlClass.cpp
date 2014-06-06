@@ -129,7 +129,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		std::cout << "Failed to set MIN_NUM_WINDOWS " << std::endl;
 	
 	//set number of window pairs to sample after trigger
-	if( !registerWriteReadback(board_id, NUM_WINPAIRS_SAMP, 0, regValReadback) )
+	if( !registerWriteReadback(board_id, NUM_WINPAIRS_SAMP, 32, regValReadback) )
 		std::cout << "Failed to set NUM_WINPAIRS_SAMP " << std::endl;
 
 	//set first and last allowed windows
