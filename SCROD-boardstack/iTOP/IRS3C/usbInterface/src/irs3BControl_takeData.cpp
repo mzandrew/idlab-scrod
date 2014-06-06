@@ -73,19 +73,19 @@ int main(int argc, char* argv[]){
 	control->setForcedReadoutRegister(board_id, rowNum, colNum, chNum );
 
 	//set minimum and maximum lookbacks
-	control->registerWrite(board_id, 163, 7, regValReadback); //max lookback
-	control->registerWrite(board_id, 164, 0, regValReadback); //minimum lookback
+	control->registerWrite(board_id, 163, 59, regValReadback); //max lookback
+	control->registerWrite(board_id, 164, 4, regValReadback); //minimum lookback
 
 	//set first and last allowed windows
 	control->registerWrite(board_id, 161, 0, regValReadback);
-	control->registerWrite(board_id, 162, 59, regValReadback);
+	control->registerWrite(board_id, 162, 63, regValReadback);
 
 	char ct;
-	if(0){
+	if(1){
 		//get pedestal waveforms	
 		control->clearDataBuffer();
 		control->selectCalibrationDestination(board_id, rowNum, colNum, chNum, 0);
-		for( int nevt = 0 ; nevt < 400 ; nevt++){
+		for( int nevt = 0 ; nevt < 2000 ; nevt++){
 			//send software trigger
 			control->sendSoftwareTrigger(board_id);
 
@@ -111,6 +111,7 @@ int main(int argc, char* argv[]){
 	while( ct != 'Q' ){
 		//send software trigger
 		control->sendSoftwareTrigger(board_id);
+		//control->sendHardwareTrigger(board_id);
 
 		//get waveform data
 		unsigned int wavedatabuf[8192];
@@ -121,25 +122,26 @@ int main(int argc, char* argv[]){
 		data->loadDataPacket(wavedatabuf, wavedataSize);
 
 		//find pulse times
-		//data->findPulseTimesFixedThreshold(100., 0, 767);
-		//data->findPulseTimesFixedThreshold(100., 0, 3700);
-
-		//if( data->pulseTimes.size() != 2 )
-		//	continue;
-		//std::cout << "Pulse 0 " << data->pulseTimes.at(0);
-		//std::cout << "\tPulse 1 " << data->pulseTimes.at(1);
-		//std::cout << "\tDifference " << data->pulseTimes.at(1) -  data->pulseTimes.at(0);
-		//std::cout << std::endl;
+		/*
+		data->findPulseTimesFixedThreshold(100., 0, 383);
+		if( data->pulseTimes.size() != 1 || data->pulseFallTimes.size() != 1 )
+			continue;
+		if( ( int(data->pulseTimes.at(0)) % 128 ) > (int(data->pulseFallTimes.at(0)) % 128 ) )
+			std::cout << "DIFF ";
+		else
+			std::cout << "SAME ";
+		//std::cout << "Sample Array # " << int(data->pulseTimes.at(0)) % 128;
+		//std::cout << "\tPulse Rise " << data->pulseTimes.at(0);
+		//std::cout << "\tPulse Fall " << data->pulseFallTimes.at(0);
+		std::cout << "\tDifference " << data->pulseFallTimes.at(0) -  data->pulseTimes.at(0);
+		std::cout << std::endl;
+		*/
 
 		c0->Clear();
 		//c0->Divide(2);
 		//c0->cd(1);
-		//data->grChRef->GetXaxis()->SetRangeUser(0,767);
-		//data->grChRef->GetYaxis()->SetRangeUser(800,1600);
-		//data->grChRef->Draw("ALP");
-		//data->grCh->GetYaxis()->SetRangeUser(-100,300);
-		//data->grCh->Draw("ALP");
-		//c0->cd(2);
+		//data->grChRef->GetXaxis()->SetRangeUser(0,256);
+		data->grChRef->GetXaxis()->SetTitle("Bin # (368ps per sample)");
 		data->grChRef->Draw("ALP");
 		c0->Update();
 

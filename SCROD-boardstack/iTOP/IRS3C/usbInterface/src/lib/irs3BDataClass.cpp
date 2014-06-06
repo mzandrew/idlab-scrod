@@ -181,11 +181,11 @@ int irs3BDataClass::findPulseTimesFixedThreshold(double threshold, int minSamp, 
 	//look for fixed threshold
 	pulseTimes.clear();
 	pulseFallTimes.clear();
-	for( int i = 0 ; i < grCh->GetN() ; i++){
+	for( int i = 0 ; i < grChRef->GetN() ; i++){
 		double posX, posY;
-		grCh->GetPoint(i,posX,posY);
+		grChRef->GetPoint(i,posX,posY);
 		double posXNext, posYNext;
-		grCh->GetPoint(i+1,posXNext,posYNext);
+		grChRef->GetPoint(i+1,posXNext,posYNext);
 
 		//look for pulse within range
 		if( posX < minSamp || posX >= maxSamp )

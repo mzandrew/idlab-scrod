@@ -9,7 +9,7 @@ using namespace std;
 
 int main(int argc, char* argv[]){
 	if (argc != 5) {
-		cout << "irs3BControl_initialize <row> <col> <ch> <enable/disable>" << endl;
+		cout << "irs3BControl_routeCal <row> <col> <ch> <enable/disable>" << endl;
 		return 1;
 	}
 

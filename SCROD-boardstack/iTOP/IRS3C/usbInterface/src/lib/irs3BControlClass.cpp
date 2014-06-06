@@ -36,6 +36,31 @@ int irs3BControlClass::sendSoftwareTrigger(unsigned int board_id){
 	return 1;
 }
 
+int irs3BControlClass::sendHardwareTrigger(unsigned int board_id){
+
+	//clear data point
+        clearDataBuffer();
+
+        ///set up data buffers that are used in USB interface
+        int size = 0;
+        unsigned int *outbuf;
+
+        //create command packet
+        int command_id = 13;
+        packet command_stack;
+        command_stack.ClearPacket();
+        command_stack.CreateCommandPacket(command_id,board_id);
+        command_stack.AddWriteToPacket(SWTRIG_PED_FLAGS, 0x0000);
+        command_stack.AddWriteToPacket(SWTRIG_PED_FLAGS, 0x8000);
+
+	outbuf = command_stack.AssemblePacket(size);
+
+        //send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
+
+	return 1;
+}
+
 int irs3BControlClass::getWaveformData(unsigned int wavedatabuf[], int &wavedataSize){
 	//read back the data packet
 	unsigned int databuf[65536];
@@ -89,12 +114,16 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 
 	//Set readout control signals ---------------------------------------------------
 
+	//set trigger interfaces register
+	if( !registerWriteReadback(board_id, TRG_INTF, 0x8000, regValReadback) )
+		std::cout << "Failed to set TRG_INTF " << std::endl;
+
 	//clear hardware/software trigger masks
 	if( !registerWriteReadback(board_id, SWTRIG_PED_FLAGS, 0x0, regValReadback) )
 		std::cout << "Failed to set SWTRIG_PED_FLAGS " << std::endl;
 
 	//set minimum and maximum lookbacks
-	if( !registerWriteReadback(board_id, MAX_NUM_WINDOWS, 15, regValReadback) )
+	if( !registerWriteReadback(board_id, MAX_NUM_WINDOWS, 59, regValReadback) )
 		std::cout << "Failed to set MAX_NUM_WINDOWS " << std::endl;
 	if( !registerWriteReadback(board_id, MIN_NUM_WINDOWS, 0, regValReadback) )
 		std::cout << "Failed to set MIN_NUM_WINDOWS " << std::endl;
@@ -106,7 +135,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 	//set first and last allowed windows
 	if( !registerWriteReadback(board_id, FIRST_ALLOWED_WINDOW, 0, regValReadback) )
 		std::cout << "Failed to set FIRST_ALLOWED_WINDOW " << std::endl;
-	if( !registerWriteReadback(board_id, LAST_ALLOWED_WINDOW, 15, regValReadback) )
+	if( !registerWriteReadback(board_id, LAST_ALLOWED_WINDOW, 63, regValReadback) )
 		std::cout << "Failed to set LAST_ALLOWED_WINDOW " << std::endl;
 
 	//use external VadjN DAC
@@ -130,8 +159,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 	//Set general ASIC DACs ---------------------------------------------------
 
 	//Set DAC buffer biases 
-	//if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x340, regValReadback) )
-	if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x280, regValReadback) )
+	if( !registerWriteReadback(board_id, DAC_BUF_BIASES, 0x400, regValReadback) )
 		std::cout << "Failed to set DAC_BUF_BIASES " << std::endl;
 
 	//Set VadjP DAC buffer biases
@@ -147,26 +175,23 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		std::cout << "Failed to set DAC_BUF_BIAS_VADJN " << std::endl;
 	
 	//Set SBBIAS
-	if( !registerWriteReadback(board_id, SBBIAS, 0x380, regValReadback) )
+	if( !registerWriteReadback(board_id, SBBIAS, 0x400, regValReadback) )
 		std::cout << "Failed to set SBBIAS " << std::endl;
 
 	//Set PUBIAS
-	if( !registerWriteReadback(board_id, PUBIAS, 3056, regValReadback) )
+	if( !registerWriteReadback(board_id, PUBIAS, 0xBF0 , regValReadback) )
 		std::cout << "Failed to set PUBIAS " << std::endl;
 
 	//Set CMPBias
-	if( !registerWriteReadback(board_id, CMPBIAS, 1075, regValReadback) )
-	//if( !registerWriteReadback(board_id, CMPBIAS, 850, regValReadback) )
+	if( !registerWriteReadback(board_id, CMPBIAS, 0x500, regValReadback) )
 		std::cout << "Failed to set CMPBIAS " << std::endl;
 
 	//Set CMPBias2
 	if( !registerWriteReadback(board_id, CMPBIAS2, 1000, regValReadback) )
-	//if( !registerWriteReadback(board_id, CMPBIAS2, 800, regValReadback) )
 		std::cout << "Failed to set CMPBIAS2 " << std::endl;
 
 	//Set TRGBias	
-	//if( !registerWriteReadback(board_id, TRGBIAS, 0x3e8, regValReadback) )
-	if( !registerWriteReadback(board_id, TRGBIAS, 0x300, regValReadback) )
+	if( !registerWriteReadback(board_id, TRGBIAS, 0x3e8, regValReadback) )
 		std::cout << "Failed to set TRGBIAS " << std::endl;
 
 	//Set ASIC-specific DACs ---------------------------------------------------
@@ -175,12 +200,10 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		if( !registerWriteReadback(board_id, WBIAS_base + i, 1310, regValReadback) )
 			std::cout << "Failed to set WBIAS, register " << WBIAS_base + i << std::endl;
 		//Set VBias
-		//if( !registerWriteReadback(board_id, VBIAS_base + i, 0x300, regValReadback) )
-		if( !registerWriteReadback(board_id, VBIAS_base + i, 0x2a0, regValReadback) )
+		if( !registerWriteReadback(board_id, VBIAS_base + i, 0x310, regValReadback) )
 			std::cout << "Failed to set VBIAS, register " << VBIAS_base + i << std::endl;
 		//Set VBias2
-		//if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x300, regValReadback) )
-		if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x2a0, regValReadback) )
+		if( !registerWriteReadback(board_id, VBIAS2_base + i, 0x300, regValReadback) )
 			std::cout << "Failed to set VBIAS2, register " << VBIAS2_base + i << std::endl;
 		//Set Wilkinson DACs
 		if( !registerWriteReadback(board_id, VDLY_base + i, 2000, regValReadback) )
@@ -189,7 +212,7 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 		if( !registerWriteReadback(board_id, VADJP_base + i, 0xAC00, regValReadback) )
 			std::cout << "Failed to set VADJP_base, register " << VADJP_base + i << std::endl;
 		//Set VadjN DAC values
-		if( !registerWriteReadback(board_id, VADJN_base + i, 24800, regValReadback) )
+		if( !registerWriteReadback(board_id, VADJN_base + i, 0x6150, regValReadback) )
 			std::cout << "Failed to set VADJN_base, register " << VADJN_base + i << std::endl;
 	}
 
@@ -203,7 +226,6 @@ int irs3BControlClass::initializeAsicDACs_irs3B_carrierRevC(unsigned int board_i
 			std::cout << "Failed to set TIMING_PHASE_base, register " << TIMING_PHASE_base + i << std::endl;
 		//TIMING_SSP_base
 		if( !registerWriteReadback(board_id, TIMING_SSP_base + i, 0x1060, regValReadback) )
-		//if( !registerWriteReadback(board_id, TIMING_SSP_base + i, 0x1064, regValReadback) )
 			std::cout << "Failed to set TIMING_SSP_base, register " << TIMING_SSP_base + i << std::endl;
 		//TIMING_S1_base
 		if( !registerWriteReadback(board_id, TIMING_S1_base + i, 0x5828, regValReadback) )
@@ -727,6 +749,7 @@ int irs3BControlClass::selectCalibrationDestination(unsigned int board_id, unsig
 	value |= 1 << 3; //# CAL_EN = 1 # this enables the '138 outputs that drive the MUX selects
 	value |= column << 4;
 	value |= channel << 0;
+
 	unsigned int value_for_carrier0 = base_value;
 	unsigned int value_for_carrier1 = base_value;
 	unsigned int value_for_carrier2 = base_value;
@@ -758,6 +781,16 @@ int irs3BControlClass::selectCalibrationDestination(unsigned int board_id, unsig
 	if( !i2c_write(board_id, I2C_BUS_3_WR, I2C_BUS_3_RD, ROW13_GPIO2_ADDR, 0x01, value_for_carrier1) ) return 0;
 	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW02_GPIO2_ADDR, 0x01, value_for_carrier2) ) return 0;
 	if( !i2c_write(board_id, I2C_BUS_4_WR, I2C_BUS_4_RD, ROW13_GPIO2_ADDR, 0x01, value_for_carrier3) ) return 0;
+
+	//setting up interconnect routing
+	unsigned int mask = 0x0;
+	if( row == 1 )
+		mask = 0x40;
+	if( row == 2 )
+		mask = 0x80;
+	if( row == 3 )
+		mask = 0xC0;
+	if( !i2c_write(board_id, I2C_BUS_7_WR, I2C_BUS_7_RD, interconnect_revC_GPIO1_ADDR, 0x01, (0x3c | mask)) ) return 0;
 
 	return 1;
 }
