@@ -53,6 +53,7 @@ int main(int argc, char* argv[]){
 		control->registerWrite(board_id, i, 0, regValReadback);
 
 	//take waveform data, applying pedestal correction
+	int nHit = 0;
 	for( int nevt = 0 ; nevt < numEvents ; nevt++){
 		//send hardware trigger
 		//control->sendHardwareTrigger(board_id);
@@ -62,9 +63,13 @@ int main(int argc, char* argv[]){
 		unsigned int eventdatabuf[65536];
 		int eventdataSize = 0;
 		control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
-		
+
 		if( eventdataSize > 10 )
 			control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
+		if(  eventdataSize > 20 ){
+			nHit++;
+			std::cout << "nHit " << nHit << std::endl;
+		}
 		if( nevt % 100 == 0 )
 			std::cout << nevt << std::endl;
 	}

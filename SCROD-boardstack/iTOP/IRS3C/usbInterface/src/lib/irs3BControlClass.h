@@ -23,6 +23,7 @@ public:
   int parseResponsePacketForWaveforms(unsigned int databuf[], int dataSize,unsigned int wavedatabuf[], int &wavedataSize);
   int i2c_read(unsigned int board_id, unsigned int regw, unsigned int regr, unsigned int addr, int &regValOut);
   int i2c_write(unsigned int board_id, unsigned int regw, unsigned int regr, unsigned int addr, unsigned int cmd, int data);
+  int setSCRODEEPROM(unsigned short int board_id_to_write, unsigned short int board_revision_to_write);
   int readTemperatures(unsigned int board_id);
   int readTemperature(unsigned int board_id, int row, int col, int &temperature);
   int selectCalibrationDestination(unsigned int board_id, unsigned int row_in, unsigned int column_in, unsigned int channel_in, bool enable);
