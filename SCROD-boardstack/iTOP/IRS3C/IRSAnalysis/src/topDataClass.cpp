@@ -188,6 +188,9 @@ int topDataClass::selectPulsesForArray(){
 		int mark_smp = -1;
 		double mark_smpPrevY = -1;
 		double mark_smpNextY = -1;
+		int mark_smpFix100 = -1;
+		double mark_smpFix100PrevY = -1;
+		double mark_smpFix100NextY = -1;
 		if( markerHitNum >= 0 && markerHitNum < nhit ){
 			mark_adc = adc0_mcp[markerHitNum];
 			mark_first = firstWindow[markerHitNum];
@@ -195,6 +198,9 @@ int topDataClass::selectPulsesForArray(){
 			mark_smp = smp0_mcp[markerHitNum];
 			mark_smpPrevY = tdc0_smpPrevY_mcp[markerHitNum];
 			mark_smpNextY = tdc0_smpNextY_mcp[markerHitNum];
+			mark_smpFix100 = smpFix100_mcp[markerHitNum];
+			mark_smpFix100PrevY = tdcFix100_smpPrevY_mcp[markerHitNum];
+			mark_smpFix100NextY = tdcFix100_smpNextY_mcp[markerHitNum];
 		}
 
 		//count # of laser pulses in this event on PMT of interest
@@ -263,6 +269,9 @@ int topDataClass::selectPulsesForArray(){
 				mark_smp_0_A[numUsed] = mark_smp;
 				mark_smpPrevY_0_A[numUsed] = mark_smpPrevY;
 				mark_smpNextY_0_A[numUsed] = mark_smpNextY;
+				mark_smp_Fix100_A[numUsed] = mark_smpFix100;
+				mark_smpPrevY_Fix100_A[numUsed] = mark_smpFix100PrevY;
+				mark_smpNextY_Fix100_A[numUsed] = mark_smpFix100NextY;
     				numUsed++;
 			}
 		}//end ROIs loop
@@ -341,73 +350,46 @@ double topDataClass::measurePulseTimeStandalone(int infirst, int inref, int insm
 }
 
 //get pulse sample index out of 128 bin array
-int topDataClass::getSmp128IndexTreeEntry(int hitIndex){
-	//skip events not in arrays
-	if( hitIndex < 0 || hitIndex >= nhit )
-		return -1;
-
-	return (int( firstWindow[hitIndex] )*64 + int( smp0_mcp[hitIndex] )) % 128;
+int topDataClass::getSmp128Bin(int firstWindow, int smpNum){
+	return (int( firstWindow )*64 + int( smpNum )) % 128;
 }
 
-//get pulse falling edge sample index out of 128 bin array
-int topDataClass::getSmpFall128IndexTreeEntry(int hitIndex){
-	//skip events not in arrays
-	if( hitIndex < 0 || hitIndex >= nhit )
-		return -1;
-
-	return (int( firstWindow[hitIndex] )*64 + int( smp0Fall_mcp[hitIndex] )) % 128;
-}
-
-int topDataClass::getSmpBinNumIn128Array(int entry){
-	//skip events not in arrays
-  	if( entry >= maxNumEvt )
-		return -1;
-
-	return (int( first_0_A[entry] )*64 + int( smp_0_A[entry] )) % 128;
+//get pulse sample index out of 128 bin array
+int topDataClass::getSmp256Bin(int firstWindow, int smpNum){
+	return (int( firstWindow )*64 + int( smpNum )) % 256;
 }
 
 //get pulse position within sample
-double topDataClass::getSmpPosTreeEntry(int hitIndex){
-	//skip hits not in tree
-	if( hitIndex < 0 || hitIndex >= nhit )
-		return -1;
-
-	double edgeSlope = (tdc0_smpNextY_mcp[hitIndex] - tdc0_smpPrevY_mcp[hitIndex])/1.;
+double topDataClass::getSmpPos(double smpNextY, double smpPrevY, double adc0){
+	double edgeSlope = (smpNextY - smpPrevY)/1.;
     	double edgeTime = -1.;
 	if(edgeSlope > 0 )
-		edgeTime = (cfdFraction*adc0_mcp[hitIndex] - tdc0_smpPrevY_mcp[hitIndex])/edgeSlope;
+		edgeTime = (cfdFraction*adc0 - smpPrevY)/edgeSlope;
+	
+	return edgeTime;
+}
+
+//get pulse position within sample
+double topDataClass::getSmpFixThreshPos(double smpNextY, double smpPrevY, double thresh){
+	double edgeSlope = (smpNextY - smpPrevY)/1.;
+    	double edgeTime = -1.;
+	if(edgeSlope > 0 )
+		edgeTime = (thresh - smpPrevY)/edgeSlope;
 	
 	return edgeTime;
 }
 
 //get pulse falling edge position within sample
-double topDataClass::getSmpFallPosTreeEntry(int hitIndex){
-	//skip hits not in tree
-	if( hitIndex < 0 || hitIndex >= nhit )
-		return -1;
-
-	double edgeSlope = (tdc0Fall_smpNextY_mcp[hitIndex] - tdc0Fall_smpPrevY_mcp[hitIndex])/1.;
+double topDataClass::getSmpFallPos(double smpNextY, double smpPrevY, double adc0){
+	double edgeSlope = (smpNextY - smpPrevY)/1.;
     	double edgeTime = -1.;
 	if(edgeSlope < 0 )
-		edgeTime = (cfdFraction*adc0_mcp[hitIndex] - tdc0Fall_smpPrevY_mcp[hitIndex])/edgeSlope;
+		edgeTime = (cfdFraction*adc0 - smpPrevY)/edgeSlope;
 	
 	return edgeTime;
 }
 
-//get pulse position within sample
-double topDataClass::getSmpPos(int entry){
-	//skip events not in arrays
-  	if( entry >= maxNumEvt )
-		return -1;
-
-	double edgeSlope = (smpNextY_0_A[entry] - smpPrevY_0_A[entry])/1.;
-    	double edgeTime = -1.;
-	if(edgeSlope > 0 )
-		edgeTime = (cfdFraction*adc_0_A[entry] - smpPrevY_0_A[entry])/edgeSlope;
-	
-	return edgeTime;
-}
-
+//get index in hit array corresponding to timing marker
 int topDataClass::getTimingMarkerNHitNum(int entry, int &markerHitNum){
 
 	if( entry < 0 || entry >= tr_top->GetEntries() ){
@@ -421,7 +403,6 @@ int topDataClass::getTimingMarkerNHitNum(int entry, int &markerHitNum){
 	bool markerFound = 0;
 	markerHitNum = -1;
     	for( int i = 0 ; i < nhit ; i++ ){
-
 		//get the ASIC row, column and channel associated with the PMT channel
 		int asicMod = BII_2_Emod(pmtid_mcp[i], ch_mcp[i]);
 		int asicRow = BII_2_ASICrow(pmtid_mcp[i], ch_mcp[i]);
@@ -444,6 +425,7 @@ int topDataClass::getTimingMarkerNHitNum(int entry, int &markerHitNum){
 	return markerFound;
 }
 
+//get timing marker time, given index in hit array
 double topDataClass::measureMarkerTimeArrayEntry(int entry, bool useFTSWTDCCorr){
 	//skip events not in arrays
   	if( entry >= maxNumEvt )
@@ -457,29 +439,7 @@ double topDataClass::measureMarkerTimeArrayEntry(int entry, bool useFTSWTDCCorr)
 		mark_smpPrevY_0_A[entry], mark_smpNextY_0_A[entry], cfdFraction*mark_adc_0_A[entry]);
 }
 
-//get pulse sample index out of 128 bin array
-int topDataClass::getMarkerSmpBinNumIn128Array(int entry){
-	//skip events not in arrays
-  	if( entry >= maxNumEvt )
-		return -1;
-
-	return (int( mark_first_0_A[entry] )*64 + int( mark_smp_0_A[entry] )) % 128;
-}
-
-//get pulse position within sample
-double topDataClass::getMarkerSmpPos(int entry){
-	//skip events not in arrays
-  	if( entry >= maxNumEvt )
-		return -1;
-
-	double edgeSlope = (mark_smpNextY_0_A[entry] - mark_smpPrevY_0_A[entry])/1.;
-    	double edgeTime = -1.;
-	if(edgeSlope > 0 )
-		edgeTime = (cfdFraction*mark_adc_0_A[entry] - mark_smpPrevY_0_A[entry])/edgeSlope;
-	
-	return edgeTime;
-}
-
+//make a graph based on the input histogram
 int topDataClass::makeCorrectionGraph(TH2F *h2dIn, TGraphErrors *gOut, bool meanOrRms, double minEntries, double range, double maxErr){
 	if( !h2dIn || ! gOut )
 		return 0;
@@ -534,53 +494,5 @@ int topDataClass::makeCorrectionGraph(TH2F *h2dIn, TGraphErrors *gOut, bool mean
 	if( gOut->GetN() < 3 )
 		return 0;
 
-	return 1;
-}
-
-int topDataClass::getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime){
-	if( isTOPTree == 0 ){
-		std::cout << "getOverallDistributions: tree object not loaded, quitting" << std::endl;
-		return 0;
-	}
-
-	//loop over tr_rawdata entries
-  	Long64_t nEntries(tr_top->GetEntries());
-  	for(Long64_t entry(0); entry<nEntries; ++entry) {
-    		tr_top->GetEntry(entry);
-
-		//loop over all the hits in the event, store accepted pulses
-    		for( int i = 0 ; i < nhit ; i++ ){
-			//get pulse times
-			double pulseTime = measurePulseTimeStandalone(firstWindow[i], refWindow[i], smp0_mcp[i], ftsw, FTSW_SCALE, avg128Period, smp128StartTimes, 
-				tdc0_smpPrevY_mcp[i], tdc0_smpNextY_mcp[i], cfdFraction*adc0_mcp[i]);
-
-			hPulseHeight->Fill(adc0_mcp[i]);
-			hPulseTime->Fill(pulseTime);
-		}
-	}
-
-	return 1;
-}
-
-int topDataClass::measurePulseMarkerTimeDifferenceDistribution(TH1F *hPulseTimeMarkTimeDiff, TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNum){
-	if( !isTimingMarker ){
-		std::cout << "measurePulseMarkerTimeDifferenceDistribution : Timing marker channel not specified, exiting" << std::endl;
-		return 0;
-	}
-	hPulseTimeMarkTimeDiff->Reset();
-  	hPulseTimeMarkTimeDiffVsMarkSmpBinNum->Reset();
-	for(int entry = 0; entry < numUsed; entry++) {
-		//skip events not in arrays
-  		if( entry >= maxNumEvt )
-			continue;
-		//get pulse time
-		double pulseTimeNoFTSWTDCCorr = measurePulseTimeArrayEntry(entry,0);
-		//get timing marker
-		double markerTime = measureMarkerTimeArrayEntry(entry,0);
-		//get sample #
-		int smpBinNum = getSmpBinNumIn128Array(entry);
-		hPulseTimeMarkTimeDiff->Fill( (pulseTimeNoFTSWTDCCorr) - (markerTime) );
-		hPulseTimeMarkTimeDiffVsMarkSmpBinNum->Fill( smpBinNum , (pulseTimeNoFTSWTDCCorr) - (markerTime ) );
-	}
 	return 1;
 }

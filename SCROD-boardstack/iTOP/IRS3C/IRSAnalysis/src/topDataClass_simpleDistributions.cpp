@@ -1,4 +1,4 @@
-//compile with: g++ -o topDataClass_checkHitRate src/topDataClass_checkHitRate.cpp `root-config --cflags --glibs`
+//compile with: g++ -o topDataClass_simpleDistributions src/topDataClass_simpleDistributions.cpp `root-config --cflags --glibs`
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
@@ -216,8 +216,12 @@ int getDistributions(topDataClass *data){
 			//get pulse times
 			double pulseTime = data->measurePulseTimeTreeEntry(i,1);
 			double pulseHeight = data->adc0_mcp[i];
-			double smpPos = data->getSmp128IndexTreeEntry(i) + data->getSmpPosTreeEntry(i);
-			double smpFallPos = data->getSmpFall128IndexTreeEntry(i) + data->getSmpFallPosTreeEntry(i);
+			//int getSmp128Bin(int firstWindow, int smpNum);
+			//double getSmpPos(double smpNextY, double smpPrevY, double adc0);
+			double smpPos = data->getSmp128Bin( data->firstWindow[i], data->smp0_mcp[i] ) 
+				+ data->getSmpPos( data->tdc0_smpNextY_mcp[i] , data->tdc0_smpPrevY_mcp[i] , data->adc0_mcp[i] );
+			double smpFallPos = data->getSmp128Bin( data->firstWindow[i], data->smp0Fall_mcp[i] ) 
+				+ data->getSmpFallPos( data->tdc0Fall_smpNextY_mcp[i] , data->tdc0Fall_smpPrevY_mcp[i] , data->adc0_mcp[i] );
 			double pulseWidth = smpFallPos - smpPos;
 			if( smpFallPos < smpPos )
 				pulseWidth = smpFallPos + 128 - smpPos;
@@ -238,7 +242,7 @@ int getDistributions(topDataClass *data){
 
 			hNumPulsesMod[asicMod]->Fill(10*asicCol + asicCh, asicRow );
 			//if( tdc0_mcp[i]/1000. > laserTime - 47.17 && tdc0_mcp[i]/1000. < laserTime + 47.17 )
-				hNumLaserPulsesMod[asicMod]->Fill(10*asicCol + asicCh, asicRow );
+			hNumLaserPulsesMod[asicMod]->Fill(10*asicCol + asicCh, asicRow );
 		}
 	}
 
@@ -275,6 +279,19 @@ int printInfo(){
 			std::cout << "\tAvg Diff " << meanDiff << "\tRms Diff " << rmsDiff;
 			std::cout << std::endl;
 		}
+  	}}}}//end print out
+
+	std::cout << "Number of Pulses" << std::endl;
+  	for(int m = 0 ; m < 4 ; m++ ){
+  	for(int r = 0 ; r < 4 ; r++ ){
+  	for(int c = 0 ; c < 4 ; c++ ){
+  	for(int ch = 0 ; ch < 8 ; ch++ ){
+		double num = hNumPulsesMod[m]->GetBinContent( 1 + ch + 10*c , 1 + r );
+		double numLaser = hNumLaserPulsesMod[m]->GetBinContent( 1 + ch + 10*c , 1 + r );
+		if( num <= 0. ) continue;
+		std::cout << " Module " << m << "\tRow " << r << "\tCol " << c << "\tCh " << ch << std::endl;
+		std::cout << "\t# Hits " << num << "\t# Laser Hits " << numLaser;
+		std::cout << std::endl;
   	}}}}//end print out
 
 	return 0;

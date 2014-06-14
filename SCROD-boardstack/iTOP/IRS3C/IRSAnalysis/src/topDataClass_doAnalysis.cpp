@@ -26,10 +26,11 @@ using namespace std;
 //helper functions
 int initializeGlobalHistograms();
 int writeOutputFile();
+int getDistributions(topDataClass *data);
 
 //hardcoded constants relevant to laser data
 //double windowTime = 1253;
-double windowTime = 1240;
+double windowTime = 1077;
 double windowLow = windowTime-10.;
 double windowHigh = windowTime+10.;
 
@@ -70,7 +71,6 @@ TH2F *hPulseTimeVsFirstWindowFinal;
 
 TH1F *hPulseTimeMarkTimeDiffFinal;
 TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal;
-TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal;
 
 TGraphErrors *gPulseTimeVsFTSW;
 TGraphErrors *gPulseTimeVsHeight;
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]){
 	data->setAnalysisChannel( inMod, inRow, inCol, inCh );
 
 	//specify timing marker channel
-	data->setTimingMarkerChannel( 0, 2, 0, 2 );
+	data->setTimingMarkerChannel( 0, 0, 1, 0 );
 
 	//specify time window
 	data->windowTime = windowTime;
@@ -137,8 +137,8 @@ int main(int argc, char* argv[]){
 	//initialize tree branches
 	data->setTreeBranches();
 
-	//make basic overall distributions
-	data->getOverallDistributions(hPulseHeightAll, hPulseTimeAll);
+	//get overall distributions
+	getDistributions(data);
 
 	//load pulse info into arrays
 	data->selectPulsesForArray();
@@ -151,8 +151,8 @@ int main(int argc, char* argv[]){
 
 		double pulseTime = data->measurePulseTimeArrayEntry(entry,1);
 		double pulseHeight = data->adc_0_A[entry];
-		int smpBinNumIn128Array = data->getSmpBinNumIn128Array(entry);
-		double smpPos =	data->getSmpPos(entry);
+		int smpBinNumIn128Array = data->getSmp128Bin( data->first_0_A[entry], data->smp_0_A[entry] );
+		double smpPos =	data->getSmpPos( data->smpNextY_0_A[entry] , data->smpPrevY_0_A[entry] , pulseHeight );
 	
 		//for calibration purposes, cut on pulse height
 		if( 0 && pulseHeight < 100 ) continue;
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]){
 
 	//use pulse time vs sample index to measure sample-DTs
   	double time0 = gPulseTimeVsSmp128Index->Eval(0+0.5,0,"");
-  	for(int i = 0 ; i < gPulseTimeVsSmp128Index->GetN() ; i++ ){
+  	if(0) for(int i = 0 ; i < gPulseTimeVsSmp128Index->GetN() ; i++ ){
 		double smpTime = gPulseTimeVsSmp128Index->Eval(i+0.5,0,"");
 		data->smp128StartTimes[i] = data->smp128StartTimes[i] - ( smpTime - time0 );
 		hSampleTimes->SetBinContent(i, data->smp128StartTimes[i] );
@@ -195,8 +195,8 @@ int main(int argc, char* argv[]){
 
 		double pulseTime = data->measurePulseTimeArrayEntry(entry,1);
 		double pulseHeight = data->adc_0_A[entry];
-		int smpBinNumIn128Array = data->getSmpBinNumIn128Array(entry);
-		double smpPos =	data->getSmpPos(entry);
+		int smpBinNumIn128Array = data->getSmp128Bin( data->first_0_A[entry], data->smp_0_A[entry] );
+		double smpPos =	data->getSmpPos( data->smpNextY_0_A[entry] , data->smpPrevY_0_A[entry] , pulseHeight );
 	
 		//for calibration purposes, cut on pulse height
 		if( 0 && pulseHeight < 100 ) continue;
@@ -210,13 +210,14 @@ int main(int argc, char* argv[]){
 			continue;
 	
 		//histogram selected pulse distributions
+		hResidualPulseTimeVsHeight->Fill(pulseHeight, pulseTime );
 		hResidualPulseTimeVsSmpPos->Fill( (smpBinNumIn128Array % 2) + smpPos , pulseTime );
 
+		//use timing marker information
 		double markerTime = data->measureMarkerTimeArrayEntry(entry,1);
-		double markerSmpPos = data->getMarkerSmpPos(entry);
-		int markerSmpBinNum = data->getMarkerSmpBinNumIn128Array(entry);
-		hResidualMarkerTimeVsSmpPos->Fill( (markerSmpBinNum % 2) + markerSmpPos , markerTime );
-		hResidualPulseTimeVsHeight->Fill(pulseHeight, pulseTime );
+		double markerSmpPos = data->getSmpPos( data->mark_smpNextY_0_A[entry] , data->mark_smpPrevY_0_A[entry] , pulseHeight );
+		int markerSmpBinNumIn128Array = data->getSmp128Bin( data->mark_first_0_A[entry], data->mark_smp_0_A[entry] );
+		hResidualMarkerTimeVsSmpPos->Fill( (markerSmpBinNumIn128Array % 2) + markerSmpPos , markerTime );
   	}
 
 	//parameterize pulse time as a function of sample position
@@ -224,7 +225,6 @@ int main(int argc, char* argv[]){
 	data->makeCorrectionGraph(hResidualPulseTimeVsSmpPos, gResidualPulseTimeVsSmpPos, 0, 25, 2, 0.2);
 	gResidualMarkerTimeVsSmpPos = new TGraphErrors();
 	data->makeCorrectionGraph(hResidualMarkerTimeVsSmpPos, gResidualMarkerTimeVsSmpPos, 0, 25, 2, 0.2);
-
 	gPulseTimeVsHeight = new TGraphErrors();
 	data->makeCorrectionGraph(hResidualPulseTimeVsHeight, gPulseTimeVsHeight, 0, 25, 2, 0.2);
 	
@@ -239,8 +239,8 @@ int main(int argc, char* argv[]){
 
 		double pulseTime = data->measurePulseTimeArrayEntry(entry,1);
 		double pulseHeight = data->adc_0_A[entry];
-		int smpBinNumIn128Array = data->getSmpBinNumIn128Array(entry);
-		double smpPos =	data->getSmpPos(entry);
+		int smpBinNumIn128Array = data->getSmp128Bin( data->first_0_A[entry], data->smp_0_A[entry] );
+		double smpPos =	data->getSmpPos( data->smpNextY_0_A[entry] , data->smpPrevY_0_A[entry] , pulseHeight );
 
 		//apply sample position correction
        		//double smpPosCorr = gPulseTimeVsSmp128Pos->Eval( smpPosIn128Array + smpPos ,0,"");
@@ -283,23 +283,18 @@ int main(int argc, char* argv[]){
 		if( smpBinNumIn128Array == 10 )
 			gTest->SetPoint( gTest->GetN() , data->ftsw_A[entry] , pulseTime );
 
-		//get timing marker
+		//use timing marker information
 		double pulseTimeNoFTSWTDCCorr = data->measurePulseTimeArrayEntry(entry,0);
 		double markerTime = data->measureMarkerTimeArrayEntry(entry,0);
-		double markerSmpPos = data->getMarkerSmpPos(entry);
-		int markerSmpBinNum = data->getMarkerSmpBinNumIn128Array(entry);
-		double markerPosCorr = gResidualMarkerTimeVsSmpPos->Eval( (markerSmpBinNum % 2) + markerSmpPos ,0,"");
-		//if(smpBinNumIn128Array == 41){
-		if(1){
-			//hPulseTimeMarkTimeDiffFinal->Fill( (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
-			hPulseTimeMarkTimeDiffFinal->Fill( (pulseTimeNoFTSWTDCCorr - timewalkCorr ) - (markerTime) );
-			//gTest->SetPoint( gTest->GetN() , markerTime - markerPosCorr , pulseTimeNoFTSWTDCCorr - smpPosCorr );
-		}
-
-		hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Fill( markerSmpBinNum , (pulseTimeNoFTSWTDCCorr - timewalkCorr ) - (markerTime ) );
+		double markerSmpPos = data->getSmpPos( data->mark_smpNextY_0_A[entry] , data->mark_smpPrevY_0_A[entry] , pulseHeight );
+		int markerSmpBinNumIn128Array = data->getSmp128Bin( data->mark_first_0_A[entry], data->mark_smp_0_A[entry] );
+		double markerPosCorr = gResidualMarkerTimeVsSmpPos->Eval( (markerSmpBinNumIn128Array % 2) + markerSmpPos ,0,"");
+	
+		hPulseTimeMarkTimeDiffFinal->Fill( pulseTimeNoFTSWTDCCorr - markerTime );
+		hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Fill( markerSmpBinNumIn128Array , pulseTimeNoFTSWTDCCorr - markerTime );
+		//hPulseTimeMarkTimeDiffFinal->Fill( (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
 		//hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Fill( smpBinNumIn128Array , (pulseTimeNoFTSWTDCCorr - smpPosCorr) - (markerTime - markerPosCorr) );
-		hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal->Fill( smpBinNumIn128Array , markerSmpBinNum
-			 , (pulseTimeNoFTSWTDCCorr - timewalkCorr) - (markerTime) );
+		
 	}
 
 	//parameterize pulse time resolution as function of sample #
@@ -353,8 +348,7 @@ int initializeGlobalHistograms(){
 	hPulseTimeVsFirstWindowFinal = new TH2F("hPulseTimeVsFirstWindowFinal","Pulse Time Vs First Window #",64,0,64,1000,windowLow,windowHigh);
 
 	hPulseTimeMarkTimeDiffFinal = new TH1F("hPulseTimeMarkTimeDiffFinal","Pulse and Timing Marker Time Difference",1000000,-64*64*1./2.7515,64*64*1./2.7515);
-	hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal = new TH2F("hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal","",128,0,128,10000,-1100,-1000.);
-	hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal = new TH2F("hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal","",128,0,128,128,0,128);
+	hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal = new TH2F("hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal","",128,0,128,10000,-100,100.);
 }
 
 int writeOutputFile(){
@@ -394,7 +388,6 @@ int writeOutputFile(){
 
 	hPulseTimeMarkTimeDiffFinal->Write();
 	hPulseTimeMarkTimeDiffVsMarkSmpBinNumFinal->Write();
-	hPulseTimeMarkTimeDiffVsMarkSmpBinNumVsSmpBinNumFinal->Write();
 
 	gPulseTimeVsFTSW->Write("gPulseTimeVsFTSW");
 	gPulseTimeVsSmp128Index->Write("gPulseTimeVsSmp128Index");
@@ -410,3 +403,38 @@ int writeOutputFile(){
 	return 1;
 }
 
+int getDistributions(topDataClass *data){
+	if( data->isTOPTree == 0 ){
+		std::cout << "getDistributions: tree object not loaded, quitting" << std::endl;
+		return 0;
+	}
+
+	//loop over tr_rawdata entries
+  	Long64_t nEntries(data->tr_top->GetEntries());
+  	for(Long64_t entry(0); entry<nEntries; ++entry) {
+    		data->tr_top->GetEntry(entry);
+
+		//loop over all the hits in the event, store accepted pulses
+    		for( int i = 0 ; i < data->nhit ; i++ ){
+			int pmt_i =  data->pmtid_mcp[i] - 1;
+			int pmtch_i =  data->ch_mcp[i] - 1;
+			int asicMod = BII_2_Emod(data->pmtid_mcp[i], data->ch_mcp[i]);
+			int asicRow = BII_2_ASICrow(data->pmtid_mcp[i], data->ch_mcp[i]);
+			int asicCol = BII_2_ASICcol(data->pmtid_mcp[i], data->ch_mcp[i]);
+			int asicCh  = BII_2_ASICch(data->pmtid_mcp[i], data->ch_mcp[i]);
+
+			//require legitimate channel
+			if( asicMod < 0 || asicMod >= NMODS || asicRow < 0 || asicRow >= NROWS || asicCol < 0 || asicCol >= NCOLS || asicCh < 0 || asicCh >= NCHS )
+				continue;
+
+			//get pulse times
+			double pulseTime = data->measurePulseTimeTreeEntry(i,1);
+			double pulseHeight = data->adc0_mcp[i];
+
+			hPulseHeightAll->Fill(pulseHeight);
+			hPulseTimeAll->Fill(pulseTime);
+		}
+	}
+
+	return 1;
+}
