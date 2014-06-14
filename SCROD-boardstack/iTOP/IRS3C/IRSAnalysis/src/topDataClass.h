@@ -96,6 +96,9 @@ public:
 	int mark_smp_0_A[maxNumEvt];
 	double mark_smpPrevY_0_A[maxNumEvt];
 	double mark_smpNextY_0_A[maxNumEvt];
+	int mark_smp_Fix100_A[maxNumEvt];
+	double mark_smpPrevY_Fix100_A[maxNumEvt];
+	double mark_smpNextY_Fix100_A[maxNumEvt];
 
 	//Calibration variables
 	//basic constants
@@ -122,22 +125,17 @@ public:
 	double measurePulseTimeTreeEntry(int hitIndex , bool useFTSWTDCCorr);
 	double measurePulseTimeArrayEntry(int entry, bool useFTSWTDCCorr);
 	double measurePulseTimeStandalone(int infirst, int inref, int insmp, int inftsw, double inFTSW_SCALE, double inavg128Period, double insmp128StartTimes[], double insmpPrevY, double insmpNextY, double intarget);
-	int getSmpBinNumIn128Array(int entry);
-	int getSmp128IndexTreeEntry(int hitIndex);
-	double getSmpPos(int entry);
-	double getSmpPosTreeEntry(int hitIndex);
-	int getSmpFall128IndexTreeEntry(int hitIndex);
-	double getSmpFallPosTreeEntry(int hitIndex);
+
+	int getSmp128Bin(int firstWindow, int smpNum);
+	int getSmp256Bin(int firstWindow, int smpNum);
+	double getSmpPos(double smpNextY, double smpPrevY, double adc0);
+	double getSmpFallPos(double smpNextY, double smpPrevY, double adc0);
+	double getSmpFixThreshPos(double smpNextY, double smpPrevY, double thresh);
 
 	int getTimingMarkerNHitNum(int entry, int &markerHitNum);
 	double measureMarkerTimeArrayEntry(int entry, bool useFTSWTDCCorr);
-	int getMarkerSmpBinNumIn128Array(int entry);
-	double getMarkerSmpPos(int entry);
 
 	int makeCorrectionGraph(TH2F *h2dIn, TGraphErrors *gOut, bool meanOrRms, double minEntries, double range, double maxErr);
-
-	int getOverallDistributions(TH1F *hPulseHeight, TH1F *hPulseTime);
-	int measurePulseMarkerTimeDifferenceDistribution(TH1F *hPulseTimeMarkTimeDiff, TH2F *hPulseTimeMarkTimeDiffVsMarkSmpBinNum);
 };
 
 #endif
