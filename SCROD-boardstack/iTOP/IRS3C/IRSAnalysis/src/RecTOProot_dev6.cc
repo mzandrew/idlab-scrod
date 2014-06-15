@@ -83,6 +83,9 @@ int main(int argc, char *argv[]){
   sprintf(inputFilename,"%s",argv[1]);
   sprintf(outputFilename,"%s",argv[2]);
 
+  std::cout << "Input File Name " << inputFilename << std::endl;
+  std::cout << "Output File Name " << outputFilename << std::endl;
+
   TFile* fin = new TFile(inputFilename);
   TTree* tr_rawdata = (TTree*) fin->Get("rawData");
 
@@ -215,7 +218,7 @@ void waveformAna(struct _rawdata& rawdata, struct _top& top, IRS3Bana& ana){
     pulseHeight = ana.GetTruncatedMean(maxSampleNum); 
  
     //get baseline estimate
-    ana.g->GetPoint( TMath::FloorNint( pulseSample )-7, tempT , tempY );
+    ana.g->GetPoint( TMath::FloorNint( maxSampleNumber )-20, tempT , tempY );
     pulseBaseline = tempY;
 
     //CFD section

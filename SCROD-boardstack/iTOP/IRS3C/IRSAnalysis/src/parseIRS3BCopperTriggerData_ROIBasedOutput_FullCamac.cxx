@@ -26,7 +26,7 @@ using namespace std;
 #define NCHS                   8
 #define NWORDS_EVENT_HEADER    11
 #define NWORDS_WAVE_PACKET     42
-#define NELECTRONICSMODULES    5
+#define NELECTRONICSMODULES    4
 
 void initializeRootTree(std::string inputFileName);
 void processBuffer(unsigned int *buffer_uint, int sizeInUint32);
@@ -52,7 +52,6 @@ const Int_t MaxROI(400);
 const Int_t MaxSciFiHits(250);
 const int windowsPerROI(4);
 const int samplesPerROI(windowsPerROI*POINTS_PER_WAVEFORM);
-
 
 TFile* outputFile;
 TTree* newTree;
@@ -112,17 +111,14 @@ bool includeSampleNum(false);
 bool includeRunNumber(true);
 bool includeTruncatedWaveFormFlag(true);
 
-	
-
-
-
 void parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac() {
         std::cout << "Usage:  parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac(inputFileName, [pedestalFileName], [camacFileName])" << std::endl;
         std::cout << "        This script will convert a data file from the IRS3B readout to a root file based on a" << std::endl;
-	std::cout << "        collection of ROIs for each trigger/event." << std::endl;
-	std::cout << "        If a pedestal file name is provided then pedestal subtracted vales are errors are stored." << std::endl; 
+	    std::cout << "        collection of ROIs for each trigger/event." << std::endl;
+	    std::cout << "        If a pedestal file name is provided then pedestal subtracted vales are errors are stored." << std::endl; 
         std::cout << "        If a camac file name is provided camacTDC values will be written." << std::endl;
 }
+
 void parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac(std::string inputFileName, TString pedestalFileName);
 void parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac(std::string inputFileName, TString pedestalFileName, TString camacFileName);
 
@@ -151,43 +147,57 @@ void parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac(std::string inputFileN
 	ifstream infile;	
 	std::cout << " inputFileName " << inputFileName << std::endl;
 	infile.open(inputFileName.c_str(), std::ifstream::in | std::ifstream::binary);  
-        new_runNum = getRunNumber(TString(inputFileName));
+    new_runNum = getRunNumber(TString(inputFileName));
 
-        if (infile.fail()) {
+    //check for valid files
+    if (infile.fail()) {
 		std::cerr << "Error opening input file, exiting" << std::endl;
 		exit(-1);
 	}
 
-        if (writeCamacTDCValues) {
-	  std::cout << " camacFileName " << camacFileName << std::endl;
-	  camacFile = new TFile(camacFileName);
-  	  if (camacFile->IsZombie()) {
-		std::cout << "Error opening camac file" << std::endl;
-		exit(-1);
-  	  }
-  	  //initialize tree branches
-  	  camacTree = (TTree*) camacFile->Get("camac");
-	  if( !camacTree )
-		exit(-1);
-          camacTree->SetBranchAddress("event", &camac_eventNum);
-  	  camacTree->SetBranchAddress("time1", &camacTime_sec);
-  	  camacTree->SetBranchAddress("time2", &camacTime_msec);
-          camacTree->SetBranchAddress("trigS_tdc", &trigS_tdc);
-          camacTree->SetBranchAddress("trigS_adc", &trigS_adc);
-          camacTree->SetBranchAddress("trigM_tdc", &trigM_tdc);
-          camacTree->SetBranchAddress("trigM_adc", &trigM_adc);
-          camacTree->SetBranchAddress("timing_tdc", &timing_tdc);
-          camacTree->SetBranchAddress("timing_adc", &timing_adc);
-          camacTree->SetBranchAddress("veto_adc", &veto_adc);	  
-          camacTree->SetBranchAddress("ratemon", &ratemon);
-          camacTree->SetBranchAddress("ftsw", &ftsw);
-          camacTree->SetBranchAddress("rf", &rf);
-          camacTree->SetBranchAddress("eventtag", &eventtag);
-          camacTree->SetBranchAddress("c3377nhit", &c3377nhit);
-          camacTree->SetBranchAddress("c3377tdc", &c3377tdc);
-          camacTree->SetBranchAddress("c3377lt", &c3377lt);
-          camacTree->SetBranchAddress("c3377ch", &c3377ch);
-        }
+    if (subtractPedestals){
+		TFile* pedFile;
+	    std::cout << " pedestalFileName " << pedestalFileName << std::endl;
+	    pedFile = new TFile(pedestalFileName);
+		if (pedFile->IsZombie()) {
+        	std::cerr << "Error opening pedestal file, exiting" << std::endl;
+	        exit(-1);
+	    }		
+	 	pedFile->Close();
+	}	
+
+	if (writeCamacTDCValues) {
+		std::cout << " camacFileName " << camacFileName << std::endl;
+		camacFile = new TFile(camacFileName);
+  	  	if (camacFile->IsZombie()) {
+			std::cout << "Error opening camac file" << std::endl;
+			exit(-1);
+	  	}
+  	
+  	 
+	  	//initialize tree branches
+  		camacTree = (TTree*) camacFile->Get("camac");
+		if( !camacTree )
+			exit(-1);
+        camacTree->SetBranchAddress("event", &camac_eventNum);
+  	  	camacTree->SetBranchAddress("time1", &camacTime_sec);
+  	  	camacTree->SetBranchAddress("time2", &camacTime_msec);
+     	camacTree->SetBranchAddress("trigS_tdc", &trigS_tdc);
+        camacTree->SetBranchAddress("trigS_adc", &trigS_adc);
+        camacTree->SetBranchAddress("trigM_tdc", &trigM_tdc);
+        camacTree->SetBranchAddress("trigM_adc", &trigM_adc);
+        camacTree->SetBranchAddress("timing_tdc", &timing_tdc);
+        camacTree->SetBranchAddress("timing_adc", &timing_adc);
+        camacTree->SetBranchAddress("veto_adc", &veto_adc);	  
+        camacTree->SetBranchAddress("ratemon", &ratemon);
+        camacTree->SetBranchAddress("ftsw", &ftsw);
+        camacTree->SetBranchAddress("rf", &rf);
+        camacTree->SetBranchAddress("eventtag", &eventtag);
+        camacTree->SetBranchAddress("c3377nhit", &c3377nhit);
+        camacTree->SetBranchAddress("c3377tdc", &c3377tdc);
+        camacTree->SetBranchAddress("c3377lt", &c3377lt);
+        camacTree->SetBranchAddress("c3377ch", &c3377ch);
+	}
 
     	// get length of file:
     	infile.seekg (0, infile.end);
@@ -221,14 +231,14 @@ void parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac(std::string inputFileN
 	processBuffer(buffer_uint,size_in_bytes/4);
         
 	//fill final entry:
-        //if (writeCamacTDCValues) {getCamacTDC(lastEventNum);}	
+    //if (writeCamacTDCValues) {getCamacTDC(lastEventNum);}	
 	//newTree->Fill();
 	//write out tree
-        newTree->Write();
+    newTree->Write();
 
 
         //Write out the settings used in creating the data tree:
-        Int_t numberOfElectronicsModules(NELECTRONICSMODULES);
+    Int_t numberOfElectronicsModules(NELECTRONICSMODULES);
 	Int_t numberOfAsicRows(NROWS);
 	Int_t numberOfAsicColumns(NCOLS);
 	Int_t numberOfAsicChannels(NCHS);
@@ -350,7 +360,6 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 	if( bufPos+7 >= sizeInUint32 )
 		return;
 
-
 	//Detect header word
 	if( buffer_uint[bufPos] != PACKET_HEADER )
 		return;
@@ -366,7 +375,7 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
         //With only one module set this to zero for limited backwards compatibility:
         if (1==NELECTRONICSMODULES) {electronicsModule = 0;}
 	else {electronicsModule = convertScrodIdToElectronicsModuleNumber(scrodId);}
-        
+        //std::cout << std::hex << scrodId << "\t" << electronicsModule << std::endl;
         if (eventNum != lastEventNum) {
           static bool eventNumberWarning(true);
           if (lastEventNum > eventNum && eventNumberWarning) {
@@ -404,9 +413,6 @@ int processWaveform(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 	//check for buffer overflow
 	if( bufPos+1 >= sizeInUint32 )
 		return 2;
-
-
-        
 
 	//update window ID
 	winId = buffer_uint[bufPos];	
@@ -509,11 +515,15 @@ TString getOutputFileName(std::string inputFileName) {
 }
 
 Int_t getRunNumber(TString fileName) {
-
+  
   TObjArray* strings = fileName.Tokenize("-");
+  if( strings->At(2) == 0 )
+	return -1;
   TObjString* objstring = (TObjString*) strings->At(2);
   TString string(objstring->GetString());
   TObjArray* strings2 = string.Tokenize("r");
+  if( strings2->At(1) == 0 )
+	return -1;
   TObjString* objstring2 = (TObjString*) strings2->At(1);
   TString string2(objstring2->GetString());  
   return string2.Atoi();

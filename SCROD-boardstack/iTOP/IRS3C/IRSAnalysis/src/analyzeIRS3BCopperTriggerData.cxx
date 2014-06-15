@@ -28,7 +28,7 @@ using namespace std;
 #define NCHS                   8
 #define NWORDS_EVENT_HEADER    11
 #define NWORDS_WAVE_PACKET     42
-#define NELECTRONICSMODULES    1
+#define NELECTRONICSMODULES    4
 //This will need to be modified when we move to running with more than one electronics module.
 
 void initializeHistograms();
@@ -174,6 +174,8 @@ void processTree(){
 		//std::cout << "event " << i << std::endl;
 		tree->GetEvent(i);
 		//detect if new event
+		if( eModule != 1 || window != 0)
+			continue;
 		if( prevEventNum != eventNum ){
 			//std::cout << "NEW EVENT " << std::endl;
 			//do something for new event
@@ -219,6 +221,7 @@ void plotSamples(){
 		
 		if (subtractPedestals) {
                   pedestalSubtracted[i] = val[i] - GetPedestalValue(eModule, asicRow, asicCol, asicCh, window, i);
+		  //pedestalSubtracted[i] = val[i] - GetPedestalValue(0, asicRow, asicCol, asicCh, window, i);
 		  pedestalSubtractedError[i] = GetPedestalRMS(eModule, asicRow, asicCol, asicCh, window, i);
 		}
 	}
@@ -288,9 +291,9 @@ void plotSamples(){
 
 
 	c1->Update();
-	std::cout << "Enter character to continue" << std::endl;
+	//std::cout << "Enter character to continue" << std::endl;
 	char ct;
-	std::cin >> ct;
+	//std::cin >> ct;
 
 	gr->Delete();
         if (subtractPedestals) {
@@ -305,13 +308,13 @@ Float_t GetPedestalValue(Int_t ped_eModule, Int_t ped_asicRow, Int_t ped_asicCol
   //Will need to update to use eModule when we start running with more than 1 electronics module.
 
   //Try to guess where the entry is based on the structure of the pedestal root file:
-  int numberOfElectronicsModules(1);
+  int numberOfElectronicsModules(4);
   int numberOfAsicRows(4);  
   int numberOfAsicColumns(4);
   int numberOfAsicChannels(8);
   int numberOfWindows(64);
   
-  pedestalTree->GetEntry(ped_sample + POINTS_PER_WAVEFORM*ped_window + POINTS_PER_WAVEFORM*numberOfWindows*ped_asicCh +  POINTS_PER_WAVEFORM*numberOfWindows*numberOfAsicChannels*ped_asicCol + POINTS_PER_WAVEFORM*numberOfWindows*numberOfAsicChannels*numberOfAsicColumns*ped_asicRow);
+  pedestalTree->GetEntry(ped_sample + POINTS_PER_WAVEFORM*ped_window + POINTS_PER_WAVEFORM*numberOfWindows*ped_asicCh +  POINTS_PER_WAVEFORM*numberOfWindows*numberOfAsicChannels*ped_asicCol + POINTS_PER_WAVEFORM*numberOfWindows*numberOfAsicChannels*numberOfAsicColumns*ped_asicRow + POINTS_PER_WAVEFORM*numberOfWindows*numberOfAsicChannels*numberOfAsicColumns*numberOfAsicRows*ped_eModule);
   
   
   if (ped_asicRow == pedestalAsicRow && ped_asicCol == pedestalAsicCol && ped_asicCh == pedestalAsicCh && ped_window == pedestalWindow && ped_sample == pedestalSample) {
