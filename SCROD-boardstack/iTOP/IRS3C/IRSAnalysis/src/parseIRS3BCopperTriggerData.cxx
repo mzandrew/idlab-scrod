@@ -23,7 +23,7 @@ using namespace std;
 #define NCHS                   8
 #define NWORDS_EVENT_HEADER    11
 #define NWORDS_WAVE_PACKET     42
-#define NELECTRONICSMODULES    5
+#define NELECTRONICSMODULES    4
 
 void initializeRootTree();
 void processBuffer(unsigned int *buffer_uint, int sizeInUint32);
@@ -54,29 +54,29 @@ void parseIRS3BCopperTriggerData(std::string inputFileName){
 	std::cout << " inputFileName " << inputFileName << std::endl;
 	infile.open(inputFileName.c_str(), std::ifstream::in | std::ifstream::binary);  
 
-        if (infile.fail()) {
+    if (infile.fail()) {
 		std::cout << "Error opening input file, exiting" << std::endl;
 		exit(-1);
 	}
 
-    	// get length of file:
-    	infile.seekg (0, infile.end);
-    	int size_in_bytes = infile.tellg();
-    	infile.seekg (0, infile.beg);
+    // get length of file:
+    infile.seekg (0, infile.end);
+    int size_in_bytes = infile.tellg();
+    infile.seekg (0, infile.beg);
 
-    	char * buffer = new char [size_in_bytes];
+    char * buffer = new char [size_in_bytes];
 	unsigned int *buffer_uint = (unsigned int *) buffer;
 
-    	std::cout << "Reading " << size_in_bytes << " bytes... ";
+    std::cout << "Reading " << size_in_bytes << " bytes... ";
 
-    	// read data as a block:
-    	infile.read (buffer,size_in_bytes);
-    	if (infile) {
-      		std::cout << "all characters read successfully." << std::endl;
-    	} else {
-      		std::cout << "error: only " << infile.gcount() << " could be read" << std::endl;
+    // read data as a block:
+    infile.read (buffer,size_in_bytes);
+    if (infile) {
+    	std::cout << "all characters read successfully." << std::endl;
+    } else {
+      	std::cout << "error: only " << infile.gcount() << " could be read" << std::endl;
 	}
-    	infile.close();
+    infile.close();
 
 	//initialize tree to store trigger bit data
 	initializeRootTree();
@@ -91,23 +91,23 @@ void parseIRS3BCopperTriggerData(std::string inputFileName){
 	TFile g(outputFileName , "RECREATE");
 	tree->Write();
 
-        //Write out the settings used in creating the data tree:
-        Int_t numberOfElectronicsModules(NELECTRONICSMODULES);
+    //Write out the settings used in creating the data tree:
+    Int_t numberOfElectronicsModules(NELECTRONICSMODULES);
 	Int_t numberOfAsicRows(NROWS);
 	Int_t numberOfAsicColumns(NCOLS);
 	Int_t numberOfAsicChannels(NCHS);
 	Int_t numberOfWindows(MEMORY_DEPTH);
 	Int_t numberOfSamples(POINTS_PER_WAVEFORM);
 
-        TTree* MetaDataTree = new TTree("MetaData", "metadata");  
-        MetaDataTree->Branch("nEModules", &numberOfElectronicsModules, "nEModules/I");   
-        MetaDataTree->Branch("nAsicRows", &numberOfAsicRows, "nAsicRows/I");
-        MetaDataTree->Branch("nAsicColumns", &numberOfAsicColumns, "nAsicColumns/I");
-        MetaDataTree->Branch("nAsicChannels", &numberOfAsicChannels, "nAsicChannels/I");
-        MetaDataTree->Branch("nWindows", &numberOfWindows, "nWindows/I");
-        MetaDataTree->Branch("nSamples", &numberOfSamples, "nSamples/I");
-        MetaDataTree->Fill();
-        MetaDataTree->Write();  
+    TTree* MetaDataTree = new TTree("MetaData", "metadata");  
+    MetaDataTree->Branch("nEModules", &numberOfElectronicsModules, "nEModules/I");   
+    MetaDataTree->Branch("nAsicRows", &numberOfAsicRows, "nAsicRows/I");
+    MetaDataTree->Branch("nAsicColumns", &numberOfAsicColumns, "nAsicColumns/I");
+    MetaDataTree->Branch("nAsicChannels", &numberOfAsicChannels, "nAsicChannels/I");
+    MetaDataTree->Branch("nWindows", &numberOfWindows, "nWindows/I");
+    MetaDataTree->Branch("nSamples", &numberOfSamples, "nSamples/I");
+    MetaDataTree->Fill();
+    MetaDataTree->Write();  
 
 	g.Close();
 	return;
@@ -118,14 +118,14 @@ void initializeRootTree(){
 	tree = new TTree("T","IRS3B Waveform");
 	tree->Branch("scrodId", &scrodId, "scrodId/i");
 	tree->Branch("winId", &winId, "winId/i");
-        tree->Branch("eModule", &electronicsModule, "eModule/I");
+    tree->Branch("eModule", &electronicsModule, "eModule/I");
 	tree->Branch("eventNum", &eventNum, "eventNum/I");
 	tree->Branch("asicCol", &asicCol, "asicCol/I");
 	tree->Branch("asicRow", &asicRow, "asicRow/I");
 	tree->Branch("asicCh", &asicCh, "asicCh/I");
 	tree->Branch("window", &window, "window/I");
-        //set array size to store in root file:
-        TString samplesBranchLeafList("samples[");
+    //set array size to store in root file:
+    TString samplesBranchLeafList("samples[");
 	samplesBranchLeafList += POINTS_PER_WAVEFORM;
 	samplesBranchLeafList += "]/I";
 	tree->Branch("samples", &samples, samplesBranchLeafList);
@@ -139,7 +139,7 @@ void processBuffer(unsigned int *buffer_uint, int sizeInUint32){
 	for(int pos = 0 ; pos < sizeInUint32 ; pos++ )
 		parseDataPacket(buffer_uint,pos,sizeInUint32);
 		
-    	delete[] buffer_uint;
+    delete[] buffer_uint;
 	return;
 }	
 
@@ -160,8 +160,8 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 	//get packet header info
 	scrodId = buffer_uint[bufPos+3];
 	eventNum = buffer_uint[bufPos+5];
-        //With only one module set this to zero for limited backwards compatibility:
-        if (1==NELECTRONICSMODULES) {electronicsModule = 0;}
+    //With only one module set this to zero for limited backwards compatibility:
+    if (1==NELECTRONICSMODULES) {electronicsModule = 0;}
 	else {electronicsModule = convertScrodIdToElectronicsModuleNumber(scrodId);	
 	}
 	//std::cout << electronicsModule << std::endl;
@@ -232,15 +232,25 @@ bool extractBit(char byte, int pos) {
 }
 
 TString getOutputFileName(std::string inputFileName) {
-
-        TString fileName(inputFileName);
-        TObjArray* strings = fileName.Tokenize("/");
-        TObjString* objstring = (TObjString*) strings->At(strings->GetLast());
-        TString string(objstring->GetString());
-        TString outputFileName("output_");
-        outputFileName += string;
-        outputFileName.ReplaceAll(".dat", ".root");
-        outputFileName.ReplaceAll(".rawdata", ".root");
+    TString defaultFileName("output_parseIRS3BCopperTriggerData_datFile.root");    
+    TString fileName(inputFileName);
+    TObjArray* strings = fileName.Tokenize("/");
+    TObjString* objstring = (TObjString*) strings->At(strings->GetLast());
+	if( objstring->Sizeof() == 0 ){
+    	std::cout << "Error getting file name, token string size is " << objstring->Sizeof() << std::endl;
+		return defaultFileName;
+	}
+    
+	TString string(objstring->GetString());
+    if( string.Sizeof() == 0 ){
+         std::cout << "Error getting file name, string size is " << string.Sizeof() << std::endl;
+         return defaultFileName;
+	}
+	
+	TString outputFileName("output_parseIRS3BCopperTriggerData_");
+    outputFileName += string;
+    outputFileName.ReplaceAll(".dat", ".root");
+    outputFileName.ReplaceAll(".rawdata", ".root");
 	strings->SetOwner(kTRUE);
 	delete strings;
 	return outputFileName;
