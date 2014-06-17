@@ -41,6 +41,8 @@ entity scrod_top is
 		I2C_DAC_SDA_R01             : inout STD_LOGIC;
 		I2C_DAC_SCL_R23             : inout STD_LOGIC;
 		I2C_DAC_SDA_R23             : inout STD_LOGIC;
+		--ENABLE AMPLIFIER REGULATOR
+		SHUTDOWN_AMP_5V 				 : out std_logic;	
 		
 		----------------------------------------------
 		------------ASIC Related Pins-----------------
@@ -159,6 +161,11 @@ entity scrod_top is
 		USB_RDY1                    : out STD_LOGIC;
 		USB_WAKEUP                  : in  STD_LOGIC;
 		USB_CLKOUT		             : in  STD_LOGIC;
+		
+		---------------------------------------------
+		--------------TRIGGER LEMO------------
+		---------------------------------------------
+		TRIG								 : out  STD_LOGIC;
 		
 		---------------------------------------------
 		--------------MONITOR HEADER PINS------------
@@ -321,15 +328,22 @@ architecture Behavioral of scrod_top is
 	signal internal_CAL_PULSE          : std_logic;
 	signal internal_MON2_OR_CAL_SELECT : std_logic;
 	signal internal_MON0_ENABLE        : std_logic;
+	--A,plifier intergace
+	signal internal_SHUTDOWN_AMP_5V      : std_logic;
 
 begin 
 	--Monitor pins 
+	SHUTDOWN_AMP_5V  <= internal_SHUTDOWN_AMP_5V;
 	--The first monitor pin is truly dedicated monitoring
 	MON(0) <= internal_MON_HEADER_MONTIMING_RCO when internal_MON0_ENABLE = '1' else
 					'0' when internal_MON0_ENABLE = '0' else
 					'X';
 	--SPARE <= internal_MON2_OR_CAL_SIGNAL;
 	SPARE <= not internal_USE_EXTERNAL_VADJ_DACS;
+	
+	TRIG <= (internal_SOFTWARE_TRIGGER and not(internal_SOFTWARE_TRIGGER_VETO))
+			OR (internal_HARDWARE_TRIGGER and not(internal_HARDWARE_TRIGGER_VETO));
+	
 	--The second two form an LVDS pair that goes to CAL_EDGE_P/N
 	map_cal_mon_pair : OBUFDS port map(I => internal_MON2_OR_CAL_SIGNAL, O => MON(1), OB => MON(2));
 --	MON(2) <= internal_SST_MON;  --Unfortunately this can't be mapped out easily anymore since it's from a clock buffer and can't be muxed with others signals.
@@ -746,6 +760,8 @@ begin
 	
 	internal_ASIC_CMPBIAS2                  <= internal_OUTPUT_REGISTERS( 155)(11 downto 0); --Register 155: CMPBIAS2 - comparator bias for wilkinson comparators - shared for all ASICs
 
+   internal_SHUTDOWN_AMP_5V 						<= internal_OUTPUT_REGISTERS( 160)(0); --Register 160: Amplifier Interface register
+	
 	internal_FIRST_ALLOWED_WINDOW     <= internal_OUTPUT_REGISTERS(161)(internal_FIRST_ALLOWED_WINDOW'length-1 downto 0);     --Register 161: Bits 8-0: First allowed analog storage window
 	internal_LAST_ALLOWED_WINDOW      <= internal_OUTPUT_REGISTERS(162)(internal_LAST_ALLOWED_WINDOW'length-1 downto 0);      --         162: Bits 8-0: Last allowed analog storage window
 	internal_MAX_WINDOWS_TO_LOOK_BACK <= internal_OUTPUT_REGISTERS(163)(internal_MAX_WINDOWS_TO_LOOK_BACK'length-1 downto 0); --Register 163: Bits 8-0: Maximum number of windows to look back

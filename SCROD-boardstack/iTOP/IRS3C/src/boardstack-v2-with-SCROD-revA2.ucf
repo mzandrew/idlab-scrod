@@ -392,7 +392,9 @@ NET AsicIn_STORAGE_TO_WILK_ENABLE LOC = AB21;
 
 # MON (test/debugging inputs/outputs)
 # !!!!!CHANGE THESE FOR Interconnect Rev C!!!!!
-NET USE_LOCAL_CLOCK_JUMPER LOC = J16 | IOSTANDARD = LVCMOS33 | PULLUP; # remote clock enable # pulled up on interconnect revB with 2.2k
+#NET USE_LOCAL_CLOCK_JUMPER LOC = J16 | IOSTANDARD = LVCMOS33 | PULLUP; # remote clock enable # pulled up on interconnect revB with 2.2k
+NET USE_LOCAL_CLOCK_JUMPER LOC = D22 | IOSTANDARD = LVCMOS33 | PULLUP; # remote clock enable # pulled up on interconnect revB with 2.2k
+NET SHUTDOWN_AMP_5V LOC = J16 | IOSTANDARD = LVCMOS33;  
 NET MON<0> LOC = H14 | IOSTANDARD = LVCMOS33;
 NET MON<1> LOC = J15 | IOSTANDARD = LVDS_33;  #+ input to CAL EDGE
 NET MON<2> LOC = H15 | IOSTANDARD = LVDS_33;  #- input to CAL EDGE
@@ -463,6 +465,10 @@ NET RJ45_RSV_P LOC = ae15 | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_RSV_N LOC = af15 | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_CLK_P LOC = ae13 | IOSTANDARD = LVDS_25 | diff_term=true;
 NET RJ45_CLK_N LOC = af13 | IOSTANDARD = LVDS_25 | diff_term=true;
+
+# Trigger
+
+NET TRIG LOC = D21 | IOSTANDARD = LVTTL;
 
 NET SPARE LOC = R25;
 
