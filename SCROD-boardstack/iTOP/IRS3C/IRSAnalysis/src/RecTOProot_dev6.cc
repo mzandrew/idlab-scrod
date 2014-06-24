@@ -218,7 +218,7 @@ void waveformAna(struct _rawdata& rawdata, struct _top& top, IRS3Bana& ana){
     pulseHeight = ana.GetTruncatedMean(maxSampleNum); 
  
     //get baseline estimate
-    ana.g->GetPoint( TMath::FloorNint( maxSampleNumber )-20, tempT , tempY );
+    ana.g->GetPoint( TMath::FloorNint( maxSampleNum )-20, tempT , tempY );
     pulseBaseline = tempY;
 
     //CFD section
