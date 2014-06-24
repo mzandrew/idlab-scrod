@@ -1,27 +1,22 @@
-Instructions - March 14, 2014
+Instructions - June 22, 2014
 
-This set of programs is intended to provide a simple way to measure time resolution for a single IRS3 ASIC channel. It should be straightforward to modify and test different methods. There are three types of data:
+This set of programs is intended to provide a simple way to process IRS3 RevC/D carrier data quickly. It should be straightforward to modify and test different methods. It is not intended to replace TOPCAF, and should not be developed further. There are three types of data:
 
 -Raw data: binary SCROD or CAMAC data packets
--Processed waveform data tree: ROI sampled waveforms organized in a TTree structure, output by parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac.cxx
--Summary trees: tree containing pulse time and charge information, output by RecTOProot_dev6.cc
-
+-Processed waveform data tree: ROI sampled waveforms organized by event in a TTree structure, output by program parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac.cxx
+-Summary trees: tree containing pulse time and charge information, output by program RecTOProot_dev6.cc
 
 Setting up analysis programs:
--assumes initial working directory is IRSAnalysis
+-commands assume working directory is IRSAnalysis
 
 1) Compile basic data parser program: 
 g++ -o parseIRS3BCopperTriggerData src/parseIRS3BCopperTriggerData.cxx `root-config --cflags --glibs`
 
 2) Compile sample pedestal value measurement program:
--go to src directory: 
-cd src
-make -f GNUmakefile.GetMeanAndRMSFromIRS3BCopperTriggerData
--go up back one directory: 
-cd ../
+g++ -o makePedestalFile src/makePedestalFile.cpp `root-config --cflags --glibs`
 
 3) Modify and recompile CAMAC conversion program:
-g++ -o ConvertCAMAC_hawaiiTestSetup src/ConvertCAMAC_hawaiiTestSetup.cc `root-config --cflags --glibs`
+g++ -o ConvertCAMAC_CRTSetup src/ConvertCAMAC_CRTSetup.cc `root-config --cflags --glibs`
 -may need to modify the program with the current crate controller ID #, #define HEADER 0x00ccXXXX
 
 4) Compile ROI data parser program:
@@ -30,11 +25,11 @@ g++ -o parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac src/parseIRS3BCopper
 5) Compile summary tree creator: 
 g++ -o RecTOProot_dev6 src/RecTOProot_dev6.cc `root-config --cflags --glibs`
 
-6) Compile simple analysis program
-g++ -o topDataClass_doAnalysis src/topDataClass_doAnalysis.cpp `root-config --cflags --glibs`
+6) Compile simple summary distributions program
+g++ -o topDataClass_simpleDistributions src/topDataClass_simpleDistributions.cpp `root-config --cflags --glibs`
 
-7) Compile simple hit rate measurement program
-g++ -o checkHitRate src/checkHitRate.C `root-config --cflags --glibs`
+7) Compile simple analysis program
+g++ -o topDataClass_doAnalysis src/topDataClass_doAnalysis.cpp `root-config --cflags --glibs`
 
 Processing Data:
 
@@ -44,26 +39,23 @@ Processing Data:
 -run pedestal measurement program on parsed pedestal data:
 ./src/GetMeanAndRMSFromIRS3BCopperTriggerData <output of parser for pedestal file>
 -produces "pedestal file"
+-script processPedestalData.sh automates this procedure, usage: ./processPedestalData.sh <pedestal file>
 
-2) Process the ROI data:
+2) Process the ROI waveform data, produce waveform data tree file
 -parse the CAMAC data file:
-./ConvertCAMAC_hawaiiTestSetup <raw CAMAC file> <desired output file name>
--parse the ROI data, apply pedestal correction, integrating the CAMAC data:
+./ConvertCAMAC_CRTSetup <raw CAMAC file> <desired output file name>
+-parse the ROI data, apply pedestal correction, integrate CAMAC data:
 ./parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac <raw ROI data file> <pedestal file name> <processed CAMAC file name>
--produce the waveform data tree file
--the processIRS3BData.sh script shows how to run these programs and can be used to automatically process a run after the pedestal file is specified
+-script processIRSData.sh automates this procedure, usage:
+./processIRSData.sh <IRSAnalysis executable location> <data file> <pedestal tree file> <camac tree file>
+-script processIRSDataNoCmc.sh automates this procedure, no CAMAC data required
+-script processIRSDataNoPedNoCmc.sh automates this procedure, no CAMAC/pedestal data required
 
-3) Produce the summary tree
+3) Produce the summary tree file
 -run the summary tree conversion program:
 ./RecTOProot_dev6 <ROI waveform data tree file> <desired output file name>
 
-
 Analyzing the Summary Tree
 
-1) Run the simple analysis program
--program topDataClass_doAnalysis.cpp has a hard-coded "windowTime" variable that needs to be set, defines pulse time window
--run the analysis program on summary-tree file
-./topDataClass_doAnalysis summaryTree__281.root 0 0 0 2
--output should contain histograms that can be used to measure system time resolution
-
-
+1) Run the simple summary distribution program
+./topDataClass_simpleDistributions <summary tree file>
