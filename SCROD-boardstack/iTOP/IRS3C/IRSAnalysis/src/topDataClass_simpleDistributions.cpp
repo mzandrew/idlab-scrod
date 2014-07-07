@@ -17,10 +17,10 @@
 #include "topDataClass.h"
 #include "topDataClass.cpp"
 
+using namespace std;
+
 //global TApplication object declared here for simplicity
 TApplication *theApp;
-
-using namespace std;
 
 //helper functions
 int initializeGlobalHistograms();
@@ -29,9 +29,9 @@ int getDistributions(topDataClass *data);
 int printInfo();
 
 //hardcoded constants relevant to laser data
-double windowTime = 1030;
-double windowLow = windowTime-20.;
-double windowHigh = windowTime+20.;
+double windowTime = 1115.;
+double windowLow = windowTime - 10.;
+double windowHigh = windowTime + 10.;
 
 //output file pointer
 TFile* outputFile;
@@ -42,18 +42,25 @@ TH1F *hPulseTimeAll;
 TH1F *hPulseWidthAll;
 TH1F *hPulseWidthSameWinAll;
 TH1F *hPulseWidthDiffWinAll;
+TH1F *hNHit;
 TH2F *hNumPulsesMod[4];
+TH2F *hNumNonLaserPulsesMod[4];
 TH2F *hNumLaserPulsesMod[4];
-TH2F *hDarkNoiseRateMod[4];
+TH2F *hLaserRatePMTArray;
+TH2F *hDarkNoiseRatePMTArray;
+TH2F *hNumPulsePMTArray;
+TH1F *hPulseHeightAsic[NMODS][NROWS][NCOLS];
+TH1F *hPulseWidthSameWinAsic[NMODS][NROWS][NCOLS];
+TH1F *hPulseWidthDiffWinAsic[NMODS][NROWS][NCOLS];
+TH2F *hPulseHeightVsSmp256Asic[NMODS][NROWS][NCOLS];
+TH2F *hPulseWidthSameVsSmp256Asic[NMODS][NROWS][NCOLS];
+TH2F *hPulseWidthDiffVsSmp256Asic[NMODS][NROWS][NCOLS];
+TH2F *hPulseWidthVsHeightAsic[NMODS][NROWS][NCOLS];
 TH1F *hPulseHeightCh[NMODS][NROWS][NCOLS][NCHS];
 TH1F *hPulseBaseCh[NMODS][NROWS][NCOLS][NCHS];
 TH1F *hPulseTimeCh[NMODS][NROWS][NCOLS][NCHS];
 TH1F *hPulseWidthSameWinCh[NMODS][NROWS][NCOLS][NCHS];
 TH1F *hPulseWidthDiffWinCh[NMODS][NROWS][NCOLS][NCHS];
-TH1F *hPulseHeightAsic[NMODS][NROWS][NCOLS];
-TH1F *hPulseWidthSameWinAsic[NMODS][NROWS][NCOLS];
-TH1F *hPulseWidthDiffWinAsic[NMODS][NROWS][NCOLS];
-TH2F *hPulseHeightVsSmp256Asic[NMODS][NROWS][NCOLS];
 
 TGraphErrors *gTest;
 
@@ -121,6 +128,11 @@ int initializeGlobalHistograms(){
 	hPulseWidthAll = new TH1F("hPulseWidthAll","Pulse Width Distribution",3000,-150,150.);
 	hPulseWidthSameWinAll = new TH1F("hPulseWidthSameWinAll","Pulse Width Same Window Distribution",3000,-150,150.);
 	hPulseWidthDiffWinAll = new TH1F("hPulseWidthDiffWinAll","Pulse Width Different Window Distribution",3000,-150,150.);
+	hNHit = new TH1F("hNHit","Number of Hits per Event",200,0.,200.);
+
+	hNumPulsePMTArray = new TH2F("hNumPulsePMTArray","Number of Pulses - Looking Towards PMTs from Quartz",64,0,64,8,0,8);
+	hDarkNoiseRatePMTArray = new TH2F("hDarkNoiseRatePMTArray","Dark Noise Rate (kHz) - Looking Towards PMTs from Quartz",64,0,64,8,0,8);
+	hLaserRatePMTArray = new TH2F("hLaserRatePMTArray","Laser # Hits per Event - Looking Towards PMTs from Quartz",64,0,64,8,0,8);
 
 	char name[100];
   	char title[200];
@@ -133,54 +145,17 @@ int initializeGlobalHistograms(){
 
 		memset(name,0,sizeof(char)*100 );
 		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hNumNonLaserPulsesMod_%.2i",m);
+		sprintf(title,"Number of Non-Laser Pulses Module %.2i ASIC ROW # vs 8 x COL # + CH #",m);
+  		hNumNonLaserPulsesMod[m] = new TH2F(name,title,4*8,0,4*8,4,0,4);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
 		sprintf(name,"hNumLaserPulsesMod_%.2i",m);
 		sprintf(title,"Number of Laser Pulses Module %.2i ASIC ROW # vs 8 x COL # + CH #",m);
   		hNumLaserPulsesMod[m] = new TH2F(name,title,4*8,0,4*8,4,0,4);
-
-		memset(name,0,sizeof(char)*100 );
-		memset(title,0,sizeof(char)*200 );
-		sprintf(name,"hDarkNoiseRateMod_%.2i",m);
-		sprintf(title,"Dark Noise Rate Module %.2i ASIC ROW # vs 8 x COL # + CH #",m);
-	  	hDarkNoiseRateMod[m] = new TH2F(name,title,4*8,0,4*8,4,0,4);
-		
   	}
-
-	for(int m = 0 ; m < NMODS ; m++ )
-  	for(int r = 0 ; r < NROWS ; r++ )
-  	for(int c = 0 ; c < NCOLS ; c++ )
-  	for(int ch = 0 ; ch < NCHS ; ch++ ){
-
-		memset(name,0,sizeof(char)*100 );
-		memset(title,0,sizeof(char)*200 );
-		sprintf(name,"hPulseHeightCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
-		sprintf(title,"Pulse Heights");
-		hPulseHeightCh[m][r][c][ch] = new TH1F(name,title,200,-50,1950.);
-
-		memset(name,0,sizeof(char)*100 );
-		memset(title,0,sizeof(char)*200 );
-		sprintf(name,"hPulseTimeCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
-		sprintf(title,"Pulse Times");
-		hPulseTimeCh[m][r][c][ch] = new TH1F(name,title,10000,-64*64*1./2.7515,64*64*1./2.7515);
-
-		memset(name,0,sizeof(char)*100 );
-		memset(title,0,sizeof(char)*200 );
-		sprintf(name,"hPulseBaseCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
-		sprintf(title,"Baselines");
-		hPulseBaseCh[m][r][c][ch] = new TH1F(name,title,200,-100.,100.);
-
-		memset(name,0,sizeof(char)*100 );
-		memset(title,0,sizeof(char)*200 );
-		sprintf(name,"hPulseWidthSameWinCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
-		sprintf(title,"Pulse Widths");
-		hPulseWidthSameWinCh[m][r][c][ch] = new TH1F(name,title,300,-150,150.);
-
-		memset(name,0,sizeof(char)*100 );
-		memset(title,0,sizeof(char)*200 );
-		sprintf(name,"hPulseWidthDiffWinCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
-		sprintf(title,"Pulse Widths");
-		hPulseWidthDiffWinCh[m][r][c][ch] = new TH1F(name,title,300,-150,150.);
-	}
-
+	
 	for(int m = 0 ; m < NMODS ; m++ )
 	for(int r = 0 ; r < NROWS ; r++ )
     	for(int c = 0 ; c < NCOLS ; c++ ){
@@ -207,6 +182,59 @@ int initializeGlobalHistograms(){
 		sprintf(name,"hPulseHeightVsSmp256Asic_%.2i_%.2i_%.2i",m,r,c);
 		sprintf(title,"Pulse Heights Vs Sample Bin #");
 		hPulseHeightVsSmp256Asic[m][r][c] = new TH2F(name,title,256,0,256,200,-50,1950.);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseWidthVsHeightAsic_%.2i_%.2i_%.2i",m,r,c);
+		sprintf(title,"Pulse Width Vs Height");
+		hPulseWidthVsHeightAsic[m][r][c] = new TH2F(name,title,200,-50,1950.,300,0,30.);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseWidthSameVsSmp256Asic_%.2i_%.2i_%.2i",m,r,c);
+		sprintf(title,"Pulse Width Vs Sample Bin #");
+		hPulseWidthSameVsSmp256Asic[m][r][c] = new TH2F(name,title,256,0,256,300,0,30.);
+	
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseWidthDiffVsSmp256Asic_%.2i_%.2i_%.2i",m,r,c);
+		sprintf(title,"Pulse Width Vs Sample Bin #");
+		hPulseWidthDiffVsSmp256Asic[m][r][c] = new TH2F(name,title,256,0,256,300,0,30.);
+	}
+
+	for(int m = 0 ; m < NMODS ; m++ )
+  	for(int r = 0 ; r < NROWS ; r++ )
+  	for(int c = 0 ; c < NCOLS ; c++ )
+  	for(int ch = 0 ; ch < NCHS ; ch++ ){
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseHeightCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
+		sprintf(title,"Pulse Heights");
+		hPulseHeightCh[m][r][c][ch] = new TH1F(name,title,200,-50,1950.);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseTimeCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
+		sprintf(title,"Pulse Times");
+		hPulseTimeCh[m][r][c][ch] = new TH1F(name,title,200,windowLow,windowHigh);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseBaseCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
+		sprintf(title,"Baselines");
+		hPulseBaseCh[m][r][c][ch] = new TH1F(name,title,200,-100.,100.);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseWidthSameWinCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
+		sprintf(title,"Pulse Widths");
+		hPulseWidthSameWinCh[m][r][c][ch] = new TH1F(name,title,300,-150,150.);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hPulseWidthDiffWinCh_%.2i_%.2i_%.2i_%.2i",m,r,c,ch);
+		sprintf(title,"Pulse Widths");
+		hPulseWidthDiffWinCh[m][r][c][ch] = new TH1F(name,title,300,-150,150.);
 	}
 }
 
@@ -215,17 +243,69 @@ int writeOutputFile(){
 
 	hPulseHeightAll->Write();
 	hPulseTimeAll->Write();
+	hNHit->Write();
 	hPulseWidthAll->Write();
 	hPulseWidthSameWinAll->Write();
 	hPulseWidthDiffWinAll->Write();
+
+	hNumPulsePMTArray->Write();
+	hDarkNoiseRatePMTArray->Write();
+	hLaserRatePMTArray->Write();
 
 	for(int m = 0 ; m < 4 ; m++ )
   		hNumPulsesMod[m]->Write();
   	for(int m = 0 ; m < 4 ; m++ )
   		hNumLaserPulsesMod[m]->Write();
 	for(int m = 0 ; m < 4 ; m++ )
-    	hDarkNoiseRateMod[m]->Write();
+  		hNumNonLaserPulsesMod[m]->Write();
 
+	outputFile->mkdir("hPulseHeightAsic");
+	outputFile->cd("hPulseHeightAsic");
+	for(int m = 0 ; m < NMODS ; m++ )
+	for(int r = 0 ; r < NROWS ; r++ )	
+	for(int c = 0 ; c < NCOLS ; c++ ){
+		if(  hPulseHeightAsic[m][r][c]->GetEntries() > 0 )
+	    		hPulseHeightAsic[m][r][c]->Write();
+    	}
+
+    	outputFile->mkdir("hPulseWidthAsic");
+    	outputFile->cd("hPulseWidthAsic");
+    	for(int m = 0 ; m < NMODS ; m++ )
+    	for(int r = 0 ; r < NROWS ; r++ )
+    	for(int c = 0 ; c < NCOLS ; c++ )
+	{
+	    if(  hPulseWidthSameWinAsic[m][r][c]->GetEntries() > 0 )
+	        hPulseWidthSameWinAsic[m][r][c]->Write();
+	    if(  hPulseWidthDiffWinAsic[m][r][c]->GetEntries() > 0 )
+		hPulseWidthDiffWinAsic[m][r][c]->Write();
+	}
+
+    	outputFile->mkdir("hPulseHeightVsSmp256Asic");
+    	outputFile->cd("hPulseHeightVsSmp256Asic");
+    	for(int m = 0 ; m < NMODS ; m++ )
+    	for(int r = 0 ; r < NROWS ; r++ )
+    	for(int c = 0 ; c < NCOLS ; c++ )
+		if(  hPulseHeightVsSmp256Asic[m][r][c]->GetEntries() > 0 )
+	    		hPulseHeightVsSmp256Asic[m][r][c]->Write();
+
+	outputFile->mkdir("hPulseWidthVsSmp256Asic");
+    	outputFile->cd("hPulseWidthVsSmp256Asic");
+    	for(int m = 0 ; m < NMODS ; m++ )
+    	for(int r = 0 ; r < NROWS ; r++ )
+    	for(int c = 0 ; c < NCOLS ; c++ ){
+		if(  hPulseWidthSameVsSmp256Asic[m][r][c]->GetEntries() > 0 )
+	    		hPulseWidthSameVsSmp256Asic[m][r][c]->Write();
+		if(  hPulseWidthDiffVsSmp256Asic[m][r][c]->GetEntries() > 0 )
+	    		hPulseWidthDiffVsSmp256Asic[m][r][c]->Write();
+	}
+
+	outputFile->mkdir("hPulseWidthVsHeightAsic");
+    	outputFile->cd("hPulseWidthVsHeightAsic");
+    	for(int m = 0 ; m < NMODS ; m++ )
+    	for(int r = 0 ; r < NROWS ; r++ )
+    	for(int c = 0 ; c < NCOLS ; c++ )
+		if(  hPulseWidthVsHeightAsic[m][r][c]->GetEntries() > 0 )
+	    		hPulseWidthVsHeightAsic[m][r][c]->Write();
 
 	outputFile->mkdir("hPulseHeightCh");
 	outputFile->cd("hPulseHeightCh");
@@ -268,36 +348,7 @@ int writeOutputFile(){
 		if(  hPulseWidthDiffWinCh[m][r][c][ch]->GetEntries() > 0 )
 			hPulseWidthDiffWinCh[m][r][c][ch]->Write();
 	}
-
-	outputFile->mkdir("hPulseHeightAsic");
-	outputFile->cd("hPulseHeightAsic");
-	for(int m = 0 ; m < NMODS ; m++ )
-	for(int r = 0 ; r < NROWS ; r++ )	
-	for(int c = 0 ; c < NCOLS ; c++ ){
-		if(  hPulseHeightAsic[m][r][c]->GetEntries() > 0 )
-	    		hPulseHeightAsic[m][r][c]->Write();
-    	}
-
-    	outputFile->mkdir("hPulseWidthAsic");
-    	outputFile->cd("hPulseWidthAsic");
-    	for(int m = 0 ; m < NMODS ; m++ )
-    	for(int r = 0 ; r < NROWS ; r++ )
-    	for(int c = 0 ; c < NCOLS ; c++ )
-	{
-	    if(  hPulseWidthSameWinAsic[m][r][c]->GetEntries() > 0 )
-	        hPulseWidthSameWinAsic[m][r][c]->Write();
-	    if(  hPulseWidthDiffWinAsic[m][r][c]->GetEntries() > 0 )
-		hPulseWidthDiffWinAsic[m][r][c]->Write();
-	}
-
-    	outputFile->mkdir("hPulseHeightVsSmp256Asic");
-    	outputFile->cd("hPulseHeightVsSmp256Asic");
-    	for(int m = 0 ; m < NMODS ; m++ )
-    	for(int r = 0 ; r < NROWS ; r++ )
-    	for(int c = 0 ; c < NCOLS ; c++ )
-		if(  hPulseHeightVsSmp256Asic[m][r][c]->GetEntries() > 0 )
-	    		hPulseHeightVsSmp256Asic[m][r][c]->Write();
-
+	
 	outputFile->Close();
 	return 1;
 }
@@ -315,7 +366,8 @@ int getDistributions(topDataClass *data){
   	for(Long64_t entry(0); entry<nEntries; ++entry) {
     		data->tr_top->GetEntry(entry);
 
-		numEvents++;
+		//number of hits count
+		int nWindowHits = 0;
 
 		//loop over all the hits in the event, store accepted pulses
     		for( int i = 0 ; i < data->nhit ; i++ ){
@@ -330,6 +382,21 @@ int getDistributions(topDataClass *data){
 			if( asicMod < 0 || asicMod >= NMODS || asicRow < 0 || asicRow >= NROWS || asicCol < 0 || asicCol >= NCOLS || asicCh < 0 || asicCh >= NCHS )
 				continue;
 
+			//represent pulse position on 8 x 64 grid representing PMT array front surface
+			int boardStackPos = asicMod;
+			if( asicMod == 0 )
+				boardStackPos = 3;
+			if( asicMod == 1 )
+				boardStackPos = 2;
+			if( asicMod == 2 )
+				boardStackPos = 1;
+			if( asicMod == 3 )
+				boardStackPos = 0;
+			
+			int xIndex = 16*boardStackPos + 4*asicCol + 3 - asicCh/2;
+			int yIndex = 2*(3 - asicRow) + 1 - asicCh % 2;
+			hNumPulsePMTArray->Fill( xIndex, yIndex);
+
 			//get pulse times
 			double pulseTime = data->measurePulseTimeTreeEntry(i,1);
 			double pulseHeight = data->adc0_mcp[i];
@@ -343,39 +410,57 @@ int getDistributions(topDataClass *data){
 			if( smpFallPos < smpPos )
 				pulseWidth = smpFallPos + 128 - smpPos;
 			double baseline = data->base_mcp[i];
+			int smp256Bin = data->getSmp256Bin( data->firstWindow[i], data->smp0_mcp[i] );
 
 			hPulseHeightAll->Fill(pulseHeight);
 			hPulseTimeAll->Fill(pulseTime);
-			hPulseWidthAll->Fill(smpFallPos - smpPos );
+			hPulseWidthAll->Fill(pulseWidth);
+
+			hPulseHeightAsic[asicMod][asicRow][asicCol]->Fill(pulseHeight);
+			hPulseHeightVsSmp256Asic[asicMod][asicRow][asicCol]->Fill( smp256Bin , pulseHeight);
 
 			hPulseHeightCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseHeight);
-			hPulseHeightAsic[asicMod][asicRow][asicCol]->Fill(pulseHeight);
 			hPulseBaseCh[asicMod][asicRow][asicCol][asicCh]->Fill(baseline);
 			hPulseTimeCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseTime);
+			if( smpFallPos > smpPos )
+				hPulseWidthVsHeightAsic[asicMod][asicRow][asicCol]->Fill(pulseHeight,pulseWidth);
+
+			hNumPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
+			if( pulseTime > windowLow -200 && pulseTime < windowHigh -200 ){
+				hNumNonLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
+			}
+			if( pulseTime > windowLow && pulseTime < windowHigh  ){
+				hNumLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
+				nWindowHits++;
+			}
+
+			//restrict pulse width measurements to larger pulses
+			if(pulseHeight < 250. || pulseHeight > 850.)
+				continue;
+
 			if( smpFallPos > smpPos ){
 				hPulseWidthSameWinAll->Fill(pulseWidth);
-				hPulseWidthSameWinCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseWidth);
 				hPulseWidthSameWinAsic[asicMod][asicRow][asicCol]->Fill(pulseWidth);
+				hPulseWidthSameWinCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseWidth);
+				hPulseWidthSameVsSmp256Asic[asicMod][asicRow][asicCol]->Fill(smp256Bin,pulseWidth);
 			}
 			else{
 				hPulseWidthDiffWinAll->Fill(pulseWidth);
-				hPulseWidthDiffWinCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseWidth);
 				hPulseWidthDiffWinAsic[asicMod][asicRow][asicCol]->Fill(pulseWidth);
+				hPulseWidthDiffWinCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseWidth);
+				hPulseWidthDiffVsSmp256Asic[asicMod][asicRow][asicCol]->Fill(smp256Bin,pulseWidth);
 			}
+		}//end loop over hits
 
-			hNumPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
-			if( pulseTime > 1010. && pulseTime < 1060.  )
-				hNumLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
-
-			hPulseHeightVsSmp256Asic[asicMod][asicRow][asicCol]->Fill( data->getSmp256Bin( data->firstWindow[i], data->smp0_mcp[i] ) , pulseHeight);
-		}
+		//fill overall event summary distributions
+		hNHit->Fill(nWindowHits);
 	}
 
 	return 1;
 }
 
 int printInfo(){
-    std::cout << std::fixed;
+	std::cout << std::fixed;
 	std::cout.precision(5);
 	std::cout << "Pulse Heights" << std::endl;
   	for(int m = 0 ; m < 4 ; m++ ){
@@ -417,20 +502,39 @@ int printInfo(){
 		//int PMTnum = ASIC_2_BIIpmt(m, r, c);
 		//int PMTChNum = ASICch_2_BIIch(r, ch);
 		double num = hNumPulsesMod[m]->GetBinContent( 1 + ch + 8*c , 1 + r );
+		double numNonLaser = hNumNonLaserPulsesMod[m]->GetBinContent( 1 + ch + 8*c , 1 + r );
 		double numLaser = hNumLaserPulsesMod[m]->GetBinContent( 1 + ch + 8*c , 1 + r );
 		if( num <= 0. && numLaser <= 0.) continue;
-		double rate = 0;
+		double darkRate = 0;
+		double darkRatekHz = 0;
 		double laserRate = 0;
 		if( numEvents > 0 ){
 			//rate = num/(double(numEvents)*double(numWins)*23.586E-9)/1000.;
-			rate = num/(double(numEvents)*double(numWins)*23.586E-9)/1000.;
-			laserRate =numLaser/double(numEvents);
+			darkRate = num/double(numEvents);
+			darkRatekHz = num/(double(numEvents)*double(numWins)*23.586E-9)/1000.;
+			laserRate =(numLaser-numNonLaser)/double(numEvents);
+			if(laserRate < 0)
+				laserRate = 0;
 		}
-		hDarkNoiseRateMod[m]->SetBinContent( 1 + ch + 8*c , 1 + r , rate );
+
+		int boardStackPos = m;
+		if( m == 0 )
+			boardStackPos = 3;
+		if( m == 1 )
+			boardStackPos = 2;
+		if( m == 2 )
+			boardStackPos = 1;
+		if( m == 3 )
+			boardStackPos = 0;
+		int xIndex = 16*boardStackPos + 4*c + 3 - ch/2;
+		int yIndex = 2*(3 - r) + 1 - ch % 2;
+		hDarkNoiseRatePMTArray->SetBinContent( 1 + xIndex , 1 + yIndex , darkRatekHz );
+		hLaserRatePMTArray->SetBinContent( 1 + xIndex , 1 + yIndex , laserRate );
+
 		std::cout << " Mod " << m << "\tRow " << r << "\tCol " << c << "\tCh " << ch;
 		std::cout << "\t# Hits " << num << "\t# Laser Hits " << numLaser;
-		std::cout << "\tRate [kHz] " << rate;
-		std::cout << "\tLaser Window Rate [per event] " << laserRate;
+		std::cout << "\tRate [kHz] " << darkRatekHz;
+		std::cout << "\tLaser Rate [per event] " << laserRate;
 		std::cout << std::endl;
   	}}}}//end print out
 
