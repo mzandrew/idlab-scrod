@@ -1,4 +1,4 @@
-Instructions - June 22, 2014
+Instructions - July 7, 2014
 
 This set of programs is intended to provide a simple way to process IRS3 RevC/D carrier data quickly. It should be straightforward to modify and test different methods. It is not intended to replace TOPCAF, and should not be developed further. There are three types of data:
 
@@ -9,27 +9,16 @@ This set of programs is intended to provide a simple way to process IRS3 RevC/D 
 Setting up analysis programs:
 -commands assume working directory is IRSAnalysis
 
-1) Compile basic data parser program: 
+1) Compile programs:
 g++ -o parseIRS3BCopperTriggerData src/parseIRS3BCopperTriggerData.cxx `root-config --cflags --glibs`
-
-2) Compile sample pedestal value measurement program:
 g++ -o makePedestalFile src/makePedestalFile.cpp `root-config --cflags --glibs`
-
-3) Modify and recompile CAMAC conversion program:
 g++ -o ConvertCAMAC_CRTSetup src/ConvertCAMAC_CRTSetup.cc `root-config --cflags --glibs`
--may need to modify the program with the current crate controller ID #, #define HEADER 0x00ccXXXX
-
-4) Compile ROI data parser program:
 g++ -o parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac src/parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac.cxx `root-config --cflags --glibs`
-
-5) Compile summary tree creator: 
 g++ -o RecTOProot_dev6 src/RecTOProot_dev6.cc `root-config --cflags --glibs`
-
-6) Compile simple summary distributions program
 g++ -o topDataClass_simpleDistributions src/topDataClass_simpleDistributions.cpp `root-config --cflags --glibs`
-
-7) Compile simple analysis program
 g++ -o topDataClass_doAnalysis src/topDataClass_doAnalysis.cpp `root-config --cflags --glibs`
+
+-Note: may need to modify the "ConvertCAMAC_CRTSetup" program with the current crate controller ID #, #define HEADER 0x00ccXXXX
 
 Processing Data:
 
@@ -47,15 +36,17 @@ Processing Data:
 -parse the ROI data, apply pedestal correction, integrate CAMAC data:
 ./parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac <raw ROI data file> <pedestal file name> <processed CAMAC file name>
 -script processIRSData.sh automates this procedure, usage:
-./processIRSData.sh <IRSAnalysis executable location> <data file> <pedestal tree file> <camac tree file>
+./processIRSData.sh <data file> <pedestal tree file> <camac tree file>
 -script processIRSDataNoCmc.sh automates this procedure, no CAMAC data required
 -script processIRSDataNoPedNoCmc.sh automates this procedure, no CAMAC/pedestal data required
 
 3) Produce the summary tree file
 -run the summary tree conversion program:
 ./RecTOProot_dev6 <ROI waveform data tree file> <desired output file name>
+-this step is included automatically in the processIRSData.sh and related scripts
 
 Analyzing the Summary Tree
 
 1) Run the simple summary distribution program
 ./topDataClass_simpleDistributions <summary tree file>
+-this step is included automatically in the processIRSData.sh and related scripts
