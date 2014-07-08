@@ -14,7 +14,9 @@ inline Int_t convertScrodIdToElectronicsModuleNumber(Int_t scrodId) {
   if (66 == scrodId%256) {return 1;}
   if (67 == scrodId%256) {return 2;}
   if (68 == scrodId%256) {return 3;}
-  std::cout << "Warning: convertScrodIdToElectronicsModuleNumber could not find SCROD ID, returning default value of 255" << std::endl;
+  if (65 == scrodId%256) {return 3;} //added for CRT setup July 7, 2014
+  if (13 == scrodId%256) {return 3;} //added for CRT setup July 7, 2014
+  std::cout << "Warning: convertScrodIdToElectronicsModuleNumber could not find SCROD ID " << scrodId << " returning default value of 255" << std::endl;
   return 255;
   //return -1;
 }
@@ -23,8 +25,8 @@ inline Int_t convertElectronicsModuleNumberToScrodId(Int_t electronicsModuleNumb
   if (0==electronicsModuleNumber) {return 59;}
   if (1==electronicsModuleNumber) {return 66;}
   if (2==electronicsModuleNumber) {return 67;}
-  if (3==electronicsModuleNumber) {return 68;}
-  std::cout << "Warning: convertScrodIdToElectronicsModuleNumber could not find electronicsModuleNumber, returning default value of 0" << std::endl;
+  if (3==electronicsModuleNumber) {return 65;} //added for CRT setup July 7, 2014
+  std::cout << "Warning: convertScrodIdToElectronicsModuleNumber could not find electronicsModuleNumber " << electronicsModuleNumber << " returning default value of 0" << std::endl;
   return 0;
   //return -1;
 }
