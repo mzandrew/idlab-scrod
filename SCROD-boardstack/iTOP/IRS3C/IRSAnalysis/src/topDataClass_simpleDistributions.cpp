@@ -42,6 +42,8 @@ TFile* outputFile;
 
 //histograms
 TH1F *hPulseHeightAll;
+TH1F *hPulseHeightLaser;
+TH1F *hPulseHeightCosmic;
 TH1F *hPulseTimeAll;
 TH1F *hPulseWidthAll;
 TH1F *hPulseWidthSameWinAll;
@@ -130,7 +132,9 @@ int main(int argc, char* argv[]){
 
 //define histograms
 int initializeGlobalHistograms(){
-	hPulseHeightAll = new TH1F("hPulseHeightAll","Pulse Height Distribution",1000,-50,1950.);
+	hPulseHeightAll = new TH1F("hPulseHeightAll","Pulse Height Distribution - All",1000,-50,1950.);
+	hPulseHeightCosmic = new TH1F("hPulseHeightCosmic","Pulse Height Distribution - Cosmics",1000,-50,1950.);
+	hPulseHeightLaser = new TH1F("hPulseHeightLaser","Pulse Height Distribution - Laser",1000,-50,1950.);
   	hPulseTimeAll = new TH1F("hPulseTimeAll","Pulse Time Distribution",10000,-64*64*1./2.7515,64*64*1./2.7515);
 	hPulseWidthAll = new TH1F("hPulseWidthAll","Pulse Width Distribution",3000,-150,150.);
 	hPulseWidthSameWinAll = new TH1F("hPulseWidthSameWinAll","Pulse Width Same Window Distribution",3000,-150,150.);
@@ -258,6 +262,8 @@ int writeOutputFile(){
 	outputFile->cd();
 
 	hPulseHeightAll->Write();
+	hPulseHeightCosmic->Write();
+	hPulseHeightLaser->Write();
 	hPulseTimeAll->Write();
 	hNHitAll->Write();
 	hNHitCosmic->Write();
@@ -459,12 +465,14 @@ int getDistributions(topDataClass *data){
 			if( pulseTime > windowLowCosmic && pulseTime < windowHighCosmic   ){
 			        hNumCosmicPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
 				nCosmicHits++;
+				hPulseHeightCosmic->Fill(pulseHeight);
 			}
 			//looking just in laser time range
 			if( pulseTime > windowLow && pulseTime < windowHigh  ){
 				hNumLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
 				nWindowHits++;
 				nLaserHits++;
+				hPulseHeightLaser->Fill(pulseHeight);
 			}
 
 			//restrict pulse width measurements to larger pulses
