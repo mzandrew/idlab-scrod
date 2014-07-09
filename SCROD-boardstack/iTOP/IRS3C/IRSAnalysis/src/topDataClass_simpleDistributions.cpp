@@ -33,6 +33,10 @@ double windowTime = 1115.;
 double windowLow = windowTime - 10.;
 double windowHigh = windowTime + 10.;
 
+//hardcoded constants relevant to cosmic data
+double windowLowCosmic = 800.;
+double windowHighCosmic = windowLow ;
+
 //output file pointer
 TFile* outputFile;
 
@@ -42,8 +46,11 @@ TH1F *hPulseTimeAll;
 TH1F *hPulseWidthAll;
 TH1F *hPulseWidthSameWinAll;
 TH1F *hPulseWidthDiffWinAll;
-TH1F *hNHit;
+TH1F *hNHitCosmic;
+TH1F *hNHitLaser;
+TH1F *hNHitAll;
 TH2F *hNumPulsesMod[4];
+TH2F *hNumCosmicPulsesMod[4];
 TH2F *hNumNonLaserPulsesMod[4];
 TH2F *hNumLaserPulsesMod[4];
 TH2F *hLaserRatePMTArray;
@@ -128,7 +135,10 @@ int initializeGlobalHistograms(){
 	hPulseWidthAll = new TH1F("hPulseWidthAll","Pulse Width Distribution",3000,-150,150.);
 	hPulseWidthSameWinAll = new TH1F("hPulseWidthSameWinAll","Pulse Width Same Window Distribution",3000,-150,150.);
 	hPulseWidthDiffWinAll = new TH1F("hPulseWidthDiffWinAll","Pulse Width Different Window Distribution",3000,-150,150.);
-	hNHit = new TH1F("hNHit","Number of Hits per Event",200,0.,200.);
+	//	hNHit = new TH1F("hNHit","Number of Hits per Event",200,0.,200.);
+	hNHitAll = new TH1F("hNHitAll","Number of Hits (all) per Event",512,0.,512.);
+	hNHitCosmic = new TH1F("hNHitCosmic","Number of Cosmic Hits per Event",512,0.,512.);
+	hNHitLaser = new TH1F("hNHitLaser","Number of Laser Hits per Event",10,0.,10.);
 
 	hNumPulsePMTArray = new TH2F("hNumPulsePMTArray","Number of Pulses - Looking Towards PMTs from Quartz",64,0,64,8,0,8);
 	hDarkNoiseRatePMTArray = new TH2F("hDarkNoiseRatePMTArray","Dark Noise Rate (kHz) - Looking Towards PMTs from Quartz",64,0,64,8,0,8);
@@ -148,6 +158,12 @@ int initializeGlobalHistograms(){
 		sprintf(name,"hNumNonLaserPulsesMod_%.2i",m);
 		sprintf(title,"Number of Non-Laser Pulses Module %.2i ASIC ROW # vs 8 x COL # + CH #",m);
   		hNumNonLaserPulsesMod[m] = new TH2F(name,title,4*8,0,4*8,4,0,4);
+
+		memset(name,0,sizeof(char)*100 );
+		memset(title,0,sizeof(char)*200 );
+		sprintf(name,"hNumCosmicPulsesMod_%.2i",m);
+		sprintf(title,"Number of Cosmic Pulses Module %.2i ASIC ROW # vs 8 x COL # + CH #",m);
+  		hNumCosmicPulsesMod[m] = new TH2F(name,title,4*8,0,4*8,4,0,4);
 
 		memset(name,0,sizeof(char)*100 );
 		memset(title,0,sizeof(char)*200 );
@@ -243,7 +259,10 @@ int writeOutputFile(){
 
 	hPulseHeightAll->Write();
 	hPulseTimeAll->Write();
-	hNHit->Write();
+	hNHitAll->Write();
+	hNHitCosmic->Write();
+	hNHitLaser->Write();
+	//	hNHit->Write();
 	hPulseWidthAll->Write();
 	hPulseWidthSameWinAll->Write();
 	hPulseWidthDiffWinAll->Write();
@@ -256,6 +275,8 @@ int writeOutputFile(){
   		hNumPulsesMod[m]->Write();
   	for(int m = 0 ; m < 4 ; m++ )
   		hNumLaserPulsesMod[m]->Write();
+	for(int m = 0 ; m < 4 ; m++ )
+  		hNumCosmicPulsesMod[m]->Write();
 	for(int m = 0 ; m < 4 ; m++ )
   		hNumNonLaserPulsesMod[m]->Write();
 
@@ -368,6 +389,9 @@ int getDistributions(topDataClass *data){
 
 		//number of hits count
 		int nWindowHits = 0;
+		int nLaserHits = 0;
+		int nCosmicHits = 0;
+		int nAllHits = 0;
 
 		//loop over all the hits in the event, store accepted pulses
     		for( int i = 0 ; i < data->nhit ; i++ ){
@@ -424,14 +448,23 @@ int getDistributions(topDataClass *data){
 			hPulseTimeCh[asicMod][asicRow][asicCol][asicCh]->Fill(pulseTime);
 			if( smpFallPos > smpPos )
 				hPulseWidthVsHeightAsic[asicMod][asicRow][asicCol]->Fill(pulseHeight,pulseWidth);
-
+			//looking at all hits with reasonable times
 			hNumPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
+				nAllHits++;
+       			//not clear this is at all correct...seems to include laser interval in range
 			if( pulseTime > windowLow -200 && pulseTime < windowHigh -200 ){
-				hNumNonLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
+      				hNumNonLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
 			}
+			//looking in cosmic ray time range
+			if( pulseTime > windowLowCosmic && pulseTime < windowHighCosmic   ){
+			        hNumCosmicPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
+				nCosmicHits++;
+			}
+			//looking just in laser time range
 			if( pulseTime > windowLow && pulseTime < windowHigh  ){
 				hNumLaserPulsesMod[asicMod]->Fill(8*asicCol + asicCh, asicRow );
 				nWindowHits++;
+				nLaserHits++;
 			}
 
 			//restrict pulse width measurements to larger pulses
@@ -453,7 +486,10 @@ int getDistributions(topDataClass *data){
 		}//end loop over hits
 
 		//fill overall event summary distributions
-		hNHit->Fill(nWindowHits);
+		hNHitAll->Fill(nAllHits);
+		hNHitLaser->Fill(nLaserHits);
+		hNHitCosmic->Fill(nCosmicHits);
+		//		hNHit->Fill(nWindowHits);
 	}
 
 	return 1;
