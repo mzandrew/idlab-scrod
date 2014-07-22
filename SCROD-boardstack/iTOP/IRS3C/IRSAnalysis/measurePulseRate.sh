@@ -4,8 +4,8 @@
 BINDIR=./
 
 #set COPPER board working and data directories
-WORKDIR=/home/copper/crt_data/20140624_coldstart/
-DATADIR=/export/home/copper/crt_data/20140624_coldstart/data/
+WORKDIR=/home/copper/crt_data/20140708/
+DATADIR=/export/home/copper/crt_data/20140708/data/
 NUMEVENTS=2000
 
 #Create script to send to COPPER for taking hardware triggers

@@ -17,6 +17,7 @@ g++ -o parseIRS3BCopperTriggerData_ROIBasedOutput_FullCamac src/parseIRS3BCopper
 g++ -o RecTOProot_dev6 src/RecTOProot_dev6.cc `root-config --cflags --glibs`
 g++ -o topDataClass_simpleDistributions src/topDataClass_simpleDistributions.cpp `root-config --cflags --glibs`
 g++ -o topDataClass_doAnalysis src/topDataClass_doAnalysis.cpp `root-config --cflags --glibs`
+g++ -o topDataClass_adjustVadjN src/topDataClass_adjustVadjN.cpp `root-config --cflags --glibs`
 
 -Note: may need to modify the "ConvertCAMAC_CRTSetup" program with the current crate controller ID #, #define HEADER 0x00ccXXXX
 
