@@ -23,6 +23,6 @@ DATAFILE=$( ls -t | head -n1 | grep output_topcrt | grep root )
 ${BINDIR}RecTOProot_dev6 ${DATAFILE} "summary_"${DATAFILE}
 
 #Run simple summary distributions program
-${BINDIR}topDataClass_simpleDistributions "summary_"${DATAFILE} 1000
+#${BINDIR}topDataClass_simpleDistributions "summary_"${DATAFILE} 1000
 
 exit 0
