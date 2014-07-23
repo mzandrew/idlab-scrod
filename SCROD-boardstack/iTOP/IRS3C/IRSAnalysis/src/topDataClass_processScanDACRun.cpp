@@ -80,6 +80,8 @@ Float_t treeTimeResSmpMean;
 Float_t treeHeightMean;
 Float_t treeHeightRMS;
 Float_t treeFailRate;
+Float_t treeWidthSame;
+Float_t treeWidthDiff;
 Float_t treeTimeOffset;
 
 int main(int argc, char* argv[]){
@@ -268,7 +270,9 @@ int initializeGlobalHistograms(){
 	MetaDataTree->Branch("heightMean", &treeHeightMean, "treeHeightMean/F");
 	MetaDataTree->Branch("heightRMS", &treeHeightRMS, "treeHeightRMS/F");
 	MetaDataTree->Branch("failRate", &treeFailRate, "treeFailRate/F");
-	MetaDataTree->Branch("timeOffset", &treeTimeOffset, "treeTimeOffset/F");    
+	MetaDataTree->Branch("widthSame", &treeWidthSame, "treeWidthSame/F");
+	MetaDataTree->Branch("widthDiff", &treeWidthDiff, "treeWidthDiff/F");
+	MetaDataTree->Branch("timeOffset", &treeTimeOffset, "treeTimeOffset/F");
 }
 
 int writeOutputFile(){
@@ -561,9 +565,9 @@ int processDistributions(){
 			treeFailRate = double(hNumPulseBad[m][r][c][ch])/double(total);
 
 		//Time Offsets
-		double meanSame = hPulseWidthSameWinCh[m][r][c][ch]->GetMean(1);
-		double meanDiff = hPulseWidthDiffWinCh[m][r][c][ch]->GetMean(1);
-		treeTimeOffset = meanSame - meanDiff;
+		treeWidthSame = hPulseWidthSameWinCh[m][r][c][ch]->GetMean(1);
+		treeWidthDiff = hPulseWidthDiffWinCh[m][r][c][ch]->GetMean(1);
+		treeTimeOffset = treeWidthSame - treeWidthDiff;
 
 		MetaDataTree->Fill();
 	}
