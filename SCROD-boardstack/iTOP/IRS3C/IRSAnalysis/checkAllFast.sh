@@ -7,7 +7,7 @@ BINDIR=./
 CURDIR=$(pwd)
 WORKDIR=/home/copper/crt_data/20140708/
 DATADIR=/export/home/copper/crt_data/20140708/data/
-NUMEVENTS=1000
+NUMEVENTS=10000
 
 PEDTREE=$1
 echo "Checking system, using pedestal file " ${PEDTREE}
@@ -53,6 +53,10 @@ cat copperCommands_pedhwt.sh | ssh 192.168.1.203
 DATAFILE=$( ls -t ${DATADIR} | head -n2 | grep cal | grep dat )
 echo $DATAFILE
 
+#Get hardware trigger file name
+CMCFILE=$( ls -t ${DATADIR} | head -n3 | grep hwt | grep cmc )
+echo $CMCFILE
+
 #process pedestal file - create pedestal tree file in local directory
 #./processPedestalData.sh ${DATADIR}${PEDFILE}
 
@@ -61,16 +65,17 @@ echo $DATAFILE
 #echo ${PEDTREE}
 
 #process data file with pedestal file
-./processIRSDataNoCmc.sh ${DATADIR}${DATAFILE} ${PEDTREE}
+./processIRSData.sh ${DATADIR}${DATAFILE} ${PEDTREE} ${DATADIR}${CMCFILE}
 
 #get summary tree file name
 TREEFILE=$( ls -t | head -n3 | grep summary )
+echo "Summary tree file : " ${TREEFILE}
 
 #delete old script
-rm copperCommands_adjustVadjNValues.sh
+#rm copperCommands_adjustVadjNValues.sh
 
 #run analysis program on summary tree file
-${BINDIR}topDataClass_adjustVadjN ${TREEFILE}
+#${BINDIR}topDataClass_adjustVadjN ${TREEFILE}
 
 #get VadjN update script
 #cat copperCommands_adjustVadjNValues.sh | ssh 192.168.1.203

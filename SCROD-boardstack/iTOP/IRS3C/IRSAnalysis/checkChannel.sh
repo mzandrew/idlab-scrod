@@ -66,7 +66,8 @@ sleep 1
 #sleep 1
 
 #get summary tree file name
-#TREEFILE=$( ls -t | head -n3 | grep summary )
+TREEFILE=$( ls -t | head -n3 | grep summary )
+echo "Summary tree file : " ${TREEFILE}
 
 #echo ${TREEFILE}
 
