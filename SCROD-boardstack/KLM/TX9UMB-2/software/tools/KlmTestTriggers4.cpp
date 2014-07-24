@@ -54,13 +54,13 @@ int main(int argc, char** argv)
 	const int NCards=10;int Cards[NCards]={0,1,2,3,4,5,6,7,8,9};
 	//const int NCards=1;int Cards[NCards]={9};
 
-	//const int Nhval=6;int hval[Nhval]={0,50,100,150,200,255};
-	const int Nhval=5;int hval[Nhval]={1,50,100,50,1};
+	const int Nhval=7;int hval[Nhval]={25,50,60,70,80,90,100};
+	//const int Nhval=5;int hval[Nhval]={1,50,100,50,1};
 	//const int Nhval=4;int hval[Nhval]={1,10,50,100};
 	//const int Nhval=6;int hval[Nhval]={10,20,40,60,80,100};
-	//const int Nhval=30;int hval[Nhval]; for (int i=0;i<Nhval;i++) hval[i]=i*3;
+//	const int Nhval=30;int hval[Nhval]; for (int i=0;i<Nhval;i++) hval[i]=i*3;
 
-	int step_treshold=10;
+	int step_treshold=5;
 	//init all trigger thresholds to 0
 	for(int chno = 0 ; chno< 16 ; chno++)
 	{
