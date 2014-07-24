@@ -1,0 +1,2 @@
+vhdtdtfi -lib work ../src/SamplingLgc.vhd -prj scrod-boardstack-new-daq-interface -o SamplingLgc.spl -module SamplingLgc -template C:/Xilinx/13.2/ISE_DS/ISE//data/splfile.tft -deleteonerror 
+spl2sym -intstyle ise -family spartan6 SamplingLgc.spl C:/Users/isar/Documents/code2/TX9UMB-2/ise-project/SamplingLgc.sym 

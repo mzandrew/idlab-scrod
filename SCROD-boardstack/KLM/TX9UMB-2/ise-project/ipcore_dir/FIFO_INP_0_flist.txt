@@ -1,0 +1,24 @@
+# Output products list for <FIFO_INP_0>
+FIFO_INP_0.asy
+FIFO_INP_0.gise
+FIFO_INP_0.ngc
+FIFO_INP_0.sym
+FIFO_INP_0.vhd
+FIFO_INP_0.vho
+FIFO_INP_0.xco
+FIFO_INP_0.xise
+FIFO_INP_0_flist.txt
+FIFO_INP_0_ste\example_design\FIFO_INP_0_top.ucf
+FIFO_INP_0_ste\example_design\FIFO_INP_0_top.vhd
+FIFO_INP_0_ste\example_design\FIFO_INP_0_top.xdc
+FIFO_INP_0_ste\implement\implement.bat
+FIFO_INP_0_ste\implement\implement.sh
+FIFO_INP_0_ste\implement\planAhead_rdn.bat
+FIFO_INP_0_ste\implement\planAhead_rdn.sh
+FIFO_INP_0_ste\implement\planAhead_rdn.tcl
+FIFO_INP_0_ste\implement\xst.prj
+FIFO_INP_0_ste\implement\xst.scr
+FIFO_INP_0_xmdf.tcl
+_xmsgs\pn_parser.xmsgs
+fifo_generator_ug175.pdf
+fifo_generator_v8_2_readme.txt

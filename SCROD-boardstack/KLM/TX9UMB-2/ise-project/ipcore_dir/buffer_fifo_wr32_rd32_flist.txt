@@ -1,0 +1,24 @@
+# Output products list for <buffer_fifo_wr32_rd32>
+_xmsgs\pn_parser.xmsgs
+buffer_fifo_wr32_rd32.asy
+buffer_fifo_wr32_rd32.gise
+buffer_fifo_wr32_rd32.ngc
+buffer_fifo_wr32_rd32.sym
+buffer_fifo_wr32_rd32.vhd
+buffer_fifo_wr32_rd32.vho
+buffer_fifo_wr32_rd32.xco
+buffer_fifo_wr32_rd32.xise
+buffer_fifo_wr32_rd32_flist.txt
+buffer_fifo_wr32_rd32_ste\example_design\buffer_fifo_wr32_rd32_top.ucf
+buffer_fifo_wr32_rd32_ste\example_design\buffer_fifo_wr32_rd32_top.vhd
+buffer_fifo_wr32_rd32_ste\example_design\buffer_fifo_wr32_rd32_top.xdc
+buffer_fifo_wr32_rd32_ste\implement\implement.bat
+buffer_fifo_wr32_rd32_ste\implement\implement.sh
+buffer_fifo_wr32_rd32_ste\implement\planAhead_rdn.bat
+buffer_fifo_wr32_rd32_ste\implement\planAhead_rdn.sh
+buffer_fifo_wr32_rd32_ste\implement\planAhead_rdn.tcl
+buffer_fifo_wr32_rd32_ste\implement\xst.prj
+buffer_fifo_wr32_rd32_ste\implement\xst.scr
+buffer_fifo_wr32_rd32_xmdf.tcl
+fifo_generator_ug175.pdf
+fifo_generator_v8_2_readme.txt

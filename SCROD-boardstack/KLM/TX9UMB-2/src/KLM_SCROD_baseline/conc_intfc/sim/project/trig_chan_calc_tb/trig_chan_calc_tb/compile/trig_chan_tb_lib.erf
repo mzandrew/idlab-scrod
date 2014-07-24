@@ -1,0 +1,4 @@
+MESSAGE "File: source\trig_chan_calc_tb.vhd" 
+MESSAGE "Compile Entity "trig_chan_calc_tb"" 
+MESSAGE "Compile Architecture "behave" of Entity "trig_chan_calc_tb"" 
+SUCCESS "Compile success 0 Errors 0 Warnings  Analysis time :  0.1 [s]" 

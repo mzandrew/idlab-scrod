@@ -1,0 +1,13 @@
+1673
+~E 1 "./../../source/tdc.vhd" 30 tdc
+~A 1 "./../../source/tdc.vhd" 46 behave
+~E 1 "./../../source/tdc_channel.vhd" 33 tdc_channel
+~A 1 "./../../source/tdc_channel.vhd" 50 behave
+~E 1 "./../../source/tdc_fifo.vhd" 26 tdc_fifo
+~A 1 "./../../source/tdc_fifo.vhd" 38 behave
+~A 1 "./../../source/tdc_fifo.vhd" 48 fwft_arch0
+~A 1 "./../../source/tdc_fifo.vhd" 183 fwft_arch1
+~A 1 "./../../source/tdc_fifo.vhd" 355 fwft_arch2
+~A 1 "./../../source/tdc_fifo.vhd" 469 std_arch
+~E 1 "./../source/tdc_tb.vhd" 26 tdc_tb
+~A 1 "./../source/tdc_tb.vhd" 27 behave
