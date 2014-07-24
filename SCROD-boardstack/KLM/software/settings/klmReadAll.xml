@@ -1,0 +1,419 @@
+<?xml version="1.0" ?>
+<KLM usb='yes'>
+	<module id='44'>
+		<registers>
+			<register stage='pre' address='5' value='128' />
+			<register stage='pre' address='6' value='320' />
+			
+			<register stage='post' address='11' value='1' />
+			<register stage='post' address='20' value='0' />
+			<register stage='post' address='30' value='0' />
+			<register stage='post' address='50' value='0' />
+			<register stage='post' address='44' value='0' />
+			<register stage='post' address='45' value='1' />
+			<register stage='post' address='45' value='0' />
+			<register stage='post' address='51' value='1' /><!--ASIC mask for the readout-->
+			<register stage='post' address='52' value='0' />
+			<register stage='post' address='53' value='8' />
+			<register stage='post' address='54' value='0' />
+			<register stage='post' address='55' value='1' />
+			<register stage='post' address='55' value='0' />
+			<register stage='post' address='56' value='0' />
+			<register stage='post' address='57' value='2' /><!--set # of windows to read-->
+			<register stage='post' address='58' value='0' />
+			<register stage='post' address='72' value='0' />
+		</registers>
+		<asics>
+			<asic slot='0'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+			<asic slot='1'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='2'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='3'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='4'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='5'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='6'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='7'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='8'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+<asic slot='9'>
+				<register address='0' value='1700' />
+				<register address='1' value='1700' />
+				<register address='2' value='1700' />
+				<register address='3' value='1700' />
+				<register address='4' value='1700' />
+				<register address='5' value='1700' />
+				<register address='6' value='1700' />
+				<register address='7' value='1700' />
+				<register address='8' value='1700' />
+				<register address='9' value='1700' />
+				<register address='10' value='1700' />
+				<register address='11' value='1700' />
+				<register address='12' value='1700' />
+				<register address='13' value='1700' />
+				<register address='14' value='1700' />
+				<register address='15' value='1700' />
+				<register address='16' value='1300' />
+				<register address='17' value='1300' />
+				<register address='18' value='900' />
+				<register address='19' value='1600' />
+				<register address='20' value='1800' />
+				<register address='21' value='700' />
+				<register address='37' value='1400' />
+				<register address='38' value='1400' />
+				<register address='39' value='0' />
+				<register address='40' value='1400' />
+				<register address='41' value='1300' />
+				<register address='42' value='2400' />
+				<register address='43' value='0' />
+				<register address='44' value='985' />
+				<register address='45' value='2000' />
+				<register address='46' value='2050' />
+				<register address='47' value='1500' />
+				<register address='48' value='2300' />
+				<register address='49' value='800' />
+				<register address='50' value='1400' />
+				<register address='51' value='3400' />
+			</asic>
+		</asics>
+	</module>
+</KLM>
