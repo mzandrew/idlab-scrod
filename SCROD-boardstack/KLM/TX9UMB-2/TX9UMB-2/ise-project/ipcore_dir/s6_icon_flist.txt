@@ -1,0 +1,13 @@
+# Output products list for <s6_icon>
+_xmsgs\pn_parser.xmsgs
+s6_icon.asy
+s6_icon.gise
+s6_icon.ngc
+s6_icon.sym
+s6_icon.vhd
+s6_icon.vho
+s6_icon.xco
+s6_icon.xise
+s6_icon_flist.txt
+s6_icon_readme.txt
+s6_icon_xmdf.tcl

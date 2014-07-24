@@ -1,0 +1,130 @@
+# ELBREAD: Elaboration process.
+# ELBREAD: Elaboration time 0.0 [s].
+cd C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\time_order\sim\
+vlib time_order_lib "./library/time_order_lib.lib"
+# Warning: Library time_order_lib already exists
+# 
+# #TDC Files
+vcom -work time_order_lib .\..\..\tdc\source\tdc_pkg.vhd
+# Compile...
+# File: ..\..\tdc\source\tdc_pkg.vhd
+# Compile Package "tdc_pkg"
+# Compile Package Body "tdc_pkg"
+# Compile success 0 Errors 0 Warnings  Analysis time :  0.1 [s]
+vcom -work time_order_lib .\..\..\tdc\source\tdc_fifo.vhd
+# Compile...
+# File: ..\..\tdc\source\tdc_fifo.vhd
+# Compile Entity "tdc_fifo"
+# Compile Architecture "fwft_arch0" of Entity "tdc_fifo"
+# Compile Architecture "fwft_arch1" of Entity "tdc_fifo"
+# Compile Architecture "fwft_arch2" of Entity "tdc_fifo"
+# Compile Architecture "std_arch" of Entity "tdc_fifo"
+# Compile success 0 Errors 0 Warnings  Analysis time :  0.1 [s]
+vcom -work time_order_lib .\..\..\tdc\source\tdc_channel.vhd
+# Compile...
+# File: ..\..\tdc\source\tdc_channel.vhd
+# Compile Entity "tdc_channel"
+# Compile Architecture "behave" of Entity "tdc_channel"
+# Compile success 0 Errors 0 Warnings  Analysis time :  0.2 [s]
+vcom -work time_order_lib .\..\..\tdc\source\tdc.vhd
+# Compile...
+# File: ..\..\tdc\source\tdc.vhd
+# Compile Entity "tdc"
+# Compile Architecture "behave" of Entity "tdc"
+# Compile success 0 Errors 0 Warnings  Analysis time :  0.2 [s]
+
+vcom -work time_order_lib .\..\source\time_order_pkg.vhd
+# Compile...
+# File: ..\source\time_order_pkg.vhd
+# Compile Package "time_order_pkg"
+# Compile Package Body "time_order_pkg"
+# Compile success 0 Errors 0 Warnings  Analysis time :  62.0 [ms]
+vcom -work time_order_lib .\..\source\tom_2_to_1.vhd
+# Compile...
+# File: ..\source\tom_2_to_1.vhd
+# Compile Entity "tom_2_to_1"
+# Compile Architecture "behave" of Entity "tom_2_to_1"
+# Compile success 0 Errors 0 Warnings  Analysis time :  63.0 [ms]
+vcom -work time_order_lib .\..\source\tom_3_to_1.vhd
+# Compile...
+# File: ..\source\tom_3_to_1.vhd
+# Compile Entity "tom_3_to_1"
+# Compile Architecture "behave" of Entity "tom_3_to_1"
+# Compile success 0 Errors 0 Warnings  Analysis time :  62.0 [ms]
+vcom -work time_order_lib .\..\source\tom_4_to_1.vhd
+# Compile...
+# File: ..\source\tom_4_to_1.vhd
+# Compile Entity "tom_4_to_1"
+# Compile Architecture "behave" of Entity "tom_4_to_1"
+# Compile success 0 Errors 0 Warnings  Analysis time :  63.0 [ms]
+vcom -work time_order_lib .\..\source\tom_10_to_1.vhd
+# Compile...
+# File: ..\source\tom_10_to_1.vhd
+# Compile Entity "tom_10_to_1"
+# Compile Architecture "behave" of Entity "tom_10_to_1"
+# Compile success 0 Errors 0 Warnings  Analysis time :  47.0 [ms]
+vcom -work time_order_lib .\..\source\time_order.vhd
+# Compile...
+# File: ..\source\time_order.vhd
+# Compile Entity "time_order"
+# Compile Architecture "behave" of Entity "time_order"
+# Compile success 0 Errors 0 Warnings  Analysis time :  62.0 [ms]
+vcom -work time_order_lib .\source\tdc_stim.vhd
+# Compile...
+# File: source\tdc_stim.vhd
+# Compile Entity "tdc_stim"
+# Compile Architecture "behave" of Entity "tdc_stim"
+# Compile success 0 Errors 0 Warnings  Analysis time :  47.0 [ms]
+vcom -work time_order_lib .\source\time_order_tb.vhd
+# Compile...
+# File: source\time_order_tb.vhd
+# Compile Entity "time_order_tb"
+# Compile Architecture "behave" of Entity "time_order_tb"
+# Compile success 0 Errors 0 Warnings  Analysis time :  0.2 [s]
+
+vsim time_order_tb -t 1ps -ieee_nowarn
+# ELBREAD: Elaboration process.
+# ELBREAD: Elaboration time 0.2 [s].
+# vsim: Stack memory: 256MB
+# vsim: Retval memory: 512MB
+# KERNEL: Main thread initiated.
+# KERNEL: Kernel process initialization phase.
+# KERNEL: Time resolution set to 1ps.
+# ELAB2: Elaboration final pass...
+# ELAB2: Create instances ...
+# ELAB2: Create instances complete.
+# ELAB2: Elaboration final pass complete - time: 0.1 [s].
+# KERNEL: Kernel process initialization done.
+# Allocation: Simulator allocated 8823 kB (elbread=3075 elab2=5619 kernel=128 sdf=0)
+# KERNEL: ASDB file was created in location c:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\time_order\sim\project\time_order_tb\time_order_tb\src\wave.asdb
+#  3:05 PM, Wednesday, July 16, 2014
+#  Simulation has been initialized
+#  Selected Top-Level: time_order_tb (behave)
+
+transcript off
+# #-------------------------------------------------------------
+# #-------------------------------------------------------------
+# 
+# #-------------------------------------------------------------
+# 19 signal(s) traced.
+# Waveform file 'untitled.awc' connected to 'c:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/KLM_SCROD/time_order/sim/project/time_order_tb/time_order_tb/src/wave.asdb'.
+# #-------------------------------------------------------------
+# No signals matching
+# 
+# #-------------------------------------------------------------
+# 26 signal(s) traced.
+# #-------------------------------------------------------------
+# 
+# #-------------------------------------------------------------
+# 15 signal(s) traced.
+# #-------------------------------------------------------------
+# 
+# #-------------------------------------------------------------
+# 23 signal(s) traced.
+# #-------------------------------------------------------------
+# #-------------------------------------------
+# 23 signal(s) traced.
+
+run 20 us;
+# KERNEL: stopped at time: 20 us
+#  Simulation has been stopped
