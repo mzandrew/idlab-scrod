@@ -1,0 +1,54 @@
+# ELBREAD: Elaboration process.
+# ELBREAD: Elaboration time 0.0 [s].
+# Warning: Library tdc_fifo_lib already exists
+# Compile...
+# File: ..\source\tdc_fifo.vhd
+# Compile Entity "tdc_fifo"
+# Compile Architecture "fwft_arch0" of Entity "tdc_fifo"
+# Compile Architecture "fwft_arch1" of Entity "tdc_fifo"
+# Compile Architecture "fwft_arch2" of Entity "tdc_fifo"
+# Compile Architecture "std_arch" of Entity "tdc_fifo"
+# Compile success 0 Errors 0 Warnings  Analysis time :  0.1 [s]
+# Compile...
+# File: source\tdc_fifo_tb.vhd
+# Compile Entity "tdc_fifo_tb"
+# Compile Architecture "behave" of Entity "tdc_fifo_tb"
+# Compile success 0 Errors 0 Warnings  Analysis time :  78.0 [ms]
+# ELBREAD: Elaboration process.
+# ELBREAD: Elaboration time 0.2 [s].
+# vsim: Stack memory: 256MB
+# vsim: Retval memory: 512MB
+# KERNEL: Main thread initiated.
+# KERNEL: Kernel process initialization phase.
+# KERNEL: Time resolution set to 10ps.
+# ELAB2: Elaboration final pass...
+# ELAB2: Create instances ...
+# ELAB2: Create instances complete.
+# ELAB2: Elaboration final pass complete - time: 0.0 [s].
+# KERNEL: Kernel process initialization done.
+# Allocation: Simulator allocated 6260 kB (elbread=1023 elab2=5137 kernel=98 sdf=0)
+# KERNEL: ASDB file was created in location c:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\tdc\sim\project\tdc_fifo_tb\tdc_fifo_tb\src\wave.asdb
+#  4:44 PM, Tuesday, July 15, 2014
+#  Simulation has been initialized
+#  Selected Top-Level: tdc_fifo_tb (behave)
+# #-------------------------------------------------------------
+# #-------------------------------------------------------------
+# #-------------------------------------------------------------
+# 20 signal(s) traced.
+# Waveform file 'untitled.awc' connected to 'c:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/KLM_SCROD/tdc/sim/project/tdc_fifo_tb/tdc_fifo_tb/src/wave.asdb'.
+# #-------------------------------------------------------------
+# No signals matching
+# No signals matching
+# No signals matching
+# No signals matching
+# No signals matching
+# No signals matching
+# No signals matching
+# #-------------------------------------------
+# 19 signal(s) traced.
+
+run 500 ns;
+# EXECUTION:: ERROR  : FIFO input and output do not match
+# EXECUTION:: Time: 0 ps,  Iteration: 0,  Instance: /tdc_fifo_tb,  Process: line__102.
+# KERNEL: stopped at time: 500 ns
+#  Simulation has been stopped
