@@ -1,0 +1,298 @@
+Active-HDL 9.2.2499.sp1.36.4586  2014-07-16 16:48:59
+
+Elaboration top modules:
+Architecture                  behave(klm_aurora_tb)
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Entity                      | Architecture | Library       | Info | Compiler Version                | Compilation Options
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+klm_aurora_tb               | behave       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+klm_aurora_intfc            | mapped       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+FRAME_GEN                   | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+FRAME_CHECK                 | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+klm_aurora                  | mapped       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+STANDARD_CC_MODULE          | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+AURORA_LANE                 | mapped       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+GTP_WRAPPER                 | behavioral   | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+GLOBAL_LOGIC                | mapped       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+TX_LL                       | mapped       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+RX_LL                       | mapped       | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+LANE_INIT_SM                | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+CHBOND_COUNT_DEC            | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+SYM_GEN                     | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+SYM_DEC                     | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+ERR_DETECT                  | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+fdr                         | fdr_v        | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+AURORA_TILE                 | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+gtpa1_dual                  | gtpa1_dual_v | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+CHANNEL_INIT_SM             | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+IDLE_AND_VER_GEN            | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+CHANNEL_ERR_DETECT          | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+fd                          | fd_v         | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+srl16                       | srl16_v      | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+TX_LL_DATAPATH              | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+TX_LL_CONTROL               | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+RX_LL_PDU_DATAPATH          | rtl          | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Verilog Module                             | Library       | Info | Compiler Version                | Compilation Options
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+GTPA1_DUAL_WRAP                            | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+B_GTPA1_DUAL                               | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_94ad951690db86166f4695e083b1c782 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_c6dfb57e2bc2a4fa0683dedce5cf0659 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_4272191011b9c748f752004b509ba380 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f2b228f531bfa9330abcd308d4efc435 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_4537269f7d3449d61e9db8edfef13eec | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_6825b597f1a5bc8e4925e444c13409f2 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3a1ecee38038b918806612e1f4f3c30d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_415c9925b0db86fb3d37b2e132085b14 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_0300bea8a785ff1b155b2b239e065dfe | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_04c6a3039ca8e3893b0c8d96ec8a1f69 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_52ea69a132151b8077357b94e391b13b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9f99255eb7bb035edfff4e21f06858ef | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_6cb7851ca81ebf6604faf44bafc16dc7 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_171195783442cbda9042e5b64a3c2799 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_89d64304796e84ee277eb468ca2aa57d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cd015cabef82faa9d31d88379719466b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_c17375f4ada673fa84a2724e29c2ca33 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_41e803f5331ce72395716936b9dec9bf | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b9c05d6f4fecceaa737177927f170872 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_65e9fbffdacc69a0bb56e95d5ca524db | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_348fdd56fed1735fff6ec08c2437bfdb | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_826032808111a4c1dcc5de8eaa869de9 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_55fc7adefe2117ab16a2443d78d73d45 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cd9b0e9055281592ba3ed5d29b74ed53 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b6cb9c52b752e132520d5ba770b6e3e9 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b915f784092decace4fcb6e64b21e1b6 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_4a9ce68842787d2226d3a69673d42ec7 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_6cb14c5e469083d7d81505b2f1857c84 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e5c031149382feb896d3fe977683b804 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_a51ddbeb1069375549cad7336ca46e7f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_54a8e95e5c8d388bde8a50284cd80bab | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9ac115d9ae1342915a68a6bf50c8b8a6 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_09b79a5ddb05919229108f9ab542441b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2f2c4ffb678466a139697427211d4a8a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b516ec956c8b4b9e30ca45e9e3b9755a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_39e2f38ac9f551cc643e6d5f9b33e1a8 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_8233008f478c8e741e682c7bd3a8529e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7bee24a91633d91e17dd69be0d51c435 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3bdcc76c9ea90ddb57143c3828bdcc12 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_801a9b87dfbd34e6fae3663d678bc9fd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_484130e3da175eb8b44e598233ec0151 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9f7961475bb56c22781b53b687e09e8e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ec034a8c92b7f075f3c17cc5235c7269 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_347f4a08765b7472141e29dfaba3dd32 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ce485e1f5a8e4bf6a44d76d6589da5eb | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_081802f1c752a3a2822960ab6f4be64e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2e258e365c021bfd92693478b1534522 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_46eef127210fb83a7ef00ec043d17fd5 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_01b3bc13fa648c3cab7ac25f3f11fe8f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_5386138420b0a0cc43965a7ebefd2190 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_c4eaec6505839dede7f6b268f6a97b1a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b8490af1c2b72ab9df1b19b97edd9e87 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e4bf34bffbe1657d83097477504bbecd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_af18416d9bbbdf4f4e2b20f044bb12ea | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ff1deb230e4b8da352ab4be1db6de98a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b145ca2120d7a836a494608ca4d3eb7c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ed22c7af6474d8785b58ed4bd1197042 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f25432f2012d3817b7e45fdcfc17118e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_489221c9f94d2d1b28e29688212c41e6 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_25309c4ef5a8fb3e987188977ce0118d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f26aeb8407e5124f9806d4bf13c6c929 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f31a21b7f4f0345d54d631e226f9f747 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_67fa440d5e2eaedf2db340d767ad64b0 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b1c0e44ecfc4462f9d2349100b4684a7 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_266bed82a622393862fb233e54a39300 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_70d3b672b0c643ec156913133d36973a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_34d4fd84f9666a40f992ab524e18930e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_06327a5180f2655c40aa08ce8f34e63e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_dd5ae9ebe638fa77393237e58c20a010 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_8e97d266e98fcaca95690714fe168bb3 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9ed3c32134388e3806c8f611fdd2fb2a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b545bcb74e0ca75626b4a597e3de33f5 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_264d23f1ff067ab8d5a0b27504b0974a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3481bfde3f33b807b31fcd287e7d8b45 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_24a976f6681626a9cd61c9b3a5a5b476 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_eb2cc920f2ecb050d5c6a5985f841c50 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f1ec17167377773810e4383eb8b96bcb | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_26d657f29537e8797d66ea5f8b585975 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_de0cee475d7775dc5eefcc70ae6b6b8f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_a9ee68d6b7b76ac5d703c24d59d1addd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_5328bb17ac8ed107660a7cf09266d70c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_8fb08213387cb19e2d1a190a07c55e9d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_1935e024955586b82acb65690d468786 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_8e7cb1494f222c37024f50fe757c2ecd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_dfd5a3130d6f55d89f0cc89d8f37c855 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_4fff8ca1681f0dfea65d2bcb52612532 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f3eca53059f12ba3465516ab37c1f351 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cdbaca5f104d6a6c06f00c38f96d457e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_643d4e978e471d954263c89cd25c1795 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3e5cb3d4bae38ac9119aef7bab9c3da9 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_fada2cb8d57c76ec42a76840c3550add | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b036b9007c3f7b0283db25eff81c86ae | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2f8029073c01fc7695801e4d30ea7ee9 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2c25b19df85054ece95abc71cfeb01c7 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_03598fa59ead61b0a5de438b00d34ff8 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cbc9a0966b0962bd6061c26587e8be33 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_532c27db589c2f5832ee8fe651b871a0 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_6509e033e3e6b41c62df3267647f8d4b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7fcc1dce573e29abeaff08de06c5d0fe | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e8733db4d97de7cb06597435b70161bb | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_08d81848e871fa4aa5f95aa14f2b3b4d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7e3ebcb5f056404efb53bd9f55484377 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_73d66403c17f3d9f8a1ec7358d1142c8 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_bb27559115ca36a17e2e98f964d35b53 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_0f69d26f0ccbe071a4232f26efedffb1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_d7dbdc79f1db0085bff571c83d56cbdf | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7b5ea4696f2d608afd950be75cf81a7f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_5f15a1542bf256c8933204877e6aaff8 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f2248a45d8cc24be716cedf960cc6845 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e053c5a121a73d3125bd8b147e395d27 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_0eb9c820b60ec8a0ad18017ffd3fef1e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_29db50e5f981fe0475447037da7a5259 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_054c501aaac2c2a1b0bbd70653535ee2 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9000e7b1e8c09f7705c474b509d59653 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_210d3f62790d8e2c5c8380cbe7903405 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_448ceaf8a04a3f18b6db0020897e1923 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_85d57e71ec95ae28ba0a58908211614e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ec1de547a6c132cba4dc86f559096894 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f502da4d90e0443812e2a3dac9e0e80f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_0951a60823c2a2e3d1b0bc30400c5b69 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b0d57708b5a2eee8f49f2df8cc6b3a68 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_658fae10e5eff17a7a07e813a73c013c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_dbda2daa577777b0fa87dec3e7f7a139 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_908dad8af645bc3deb88d10902e0d7a1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9520e838e03239403fb17b63fa91df35 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2b8bfe78c10524189019db68f344d437 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_13f53f758182a7be77b6aba7c5e134a9 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cde0c042dc9454dd2aceaf1e85613682 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3a7983973a1c0c7a7fcb92e62ebf55c7 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_da665d80357b13d1e7b65ef423b35028 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_8ad48b375820e87ba16a071862f20ac1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f0a00eeaff296156ba6d14dbcd6dc7de | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_d64caa5d001aad0f167aed8f5905dfcd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_36161e7dd049d1de4994e253bbe460e6 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_d4734e4ea2b816aaba7ef393abfd312f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_feb2c4292741055248b6a1c96d148a79 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3118cf4a1e339ff5693c158cc26aeaa4 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_c23d6351ed04111802c4d22ecf222b3b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cf01af59343fea7a08085fde29317510 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_0e63931d5a7eff3fcd6320274b9885d5 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9801dd4d07ea9fe74d0594f237b29a69 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7af816ef7a1530b71f4fe1a316f6128d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2960f3a2524502c1f87159b8089f7a30 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_a9f256d3a80582167ca28ce6259cd818 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_49b2e9d126379ec9255cca8d02e67719 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_68f21582b111eb0d1994674fe6007d92 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_89d1bbd3b6c84a0b51a4f8e49c42a0e5 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_03268bae4e9505020c24da9b70f18e50 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_51d5c7a803d45bcf74cecf3404823c00 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_74e6acc4a13be2d655448cdb7c5e5a4b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_906bf4509109cbe4bcb5706e2fd4f18c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_1a712c9d92d5702b0dbc0bdc90f746b8 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_d40b6caa76d9d1375c1e06df7cd3745d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f908cc97aae2a6655ca44a56743a79de | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ee28874b25435a5f91173e9d8606cde8 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3ffbdbc8d31b65b0557a657bfd62d894 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_992e2936befff8ed7cc32b48c4fdf287 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_ea60229b0efd437641dbc72aad49d4dd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_4c545bc892d4684a39de454530a43787 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_1c4fbee4dea4043ec471a8569567c9fa | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3343e37c7a7d86fef3c1c41982becabe | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f35380c632848592d0abc43e8f98bc61 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_9396f7117b87ebdb70641a464b0a51cc | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_56775d9195fb27a025515da60c60621f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3a243736ca608502132b280e1fda4919 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_500578e569dd3376cd459cb9e4ba248b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7558dd6f0e4cabd93060e6fa68ca99cd | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_cf19ac95a4ebfab3b255677dcd04b538 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_36a7bcbfe649de3a367178f330813e21 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_95860fee40b7addd49d9b5a292458db1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_70e9c6e434bfc4bfe721146b32348cd1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e9f8dc2898860b18113ea86f8f321b66 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_78c1b84d1fa101c2abac082167ad8fb4 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_d6454a0b5bcc2d71ab42d40581a22c0a | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_44c24fbb5123bef76cd3ba6266619773 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_57986315e04ad4904c88cb7285e74922 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_34548995e8b9bfbbf34eb907a0cd6934 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_74a720bdbedc8082ac5f90b8c69805b1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b48cb250b18e08a2635f0cb98ae6891f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_84c9f49dd7cfefc63291a91ffedd7145 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_a19354176a8899d851001d0ec79f39eb | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f94e69566bdb64bcfa54d492c5991188 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_3bbe11f8c495919dca5dc23ad9a34dd1 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e1df6e1defbe8bfbe63f02442b29ae1e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_5b87215e81b74009b2138cc32b895c38 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_5c14b6708b05d18cab5b822f389acc06 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_bc918af2fa447e02a8f14e8d8f29dc97 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_118021b521518be151e45c71aaab3182 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_c2799b68471abbea30d5fde4a2a9ec58 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_bbc5b19257fdfe733d1988d957b7abe6 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_1dbcfe44947eb973d4c6102b3bf5a7cc | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_c59f5dfc29bb4c9fec586452b4d970c4 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_00013ca2d1e2189204dbeb21945bf69c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_4995ba4a73539ab91e9e318681545575 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_1cd586c1b1f96ee6b97c5932af589e9d | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_595d19fb8de6384941f840bf613bfd42 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2b2d93e1a155c4be8b01b3a251391767 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b8aa53779cc41d520388a81391318035 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_e0b6b5dd70a310d4de8e8bd5230c333e | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_7dbe00c264402b5b009705f814e625f7 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_2a115d36439905b91a0d6f2d47258fb3 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_81ca592429c1c3c04c04d53ba8e2448f | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_598b2e24fa7db903f83c0281dd465554 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_b19220fb98dbd5819bceff5449649f25 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_abb658a4ab4343313d652295a5d49495 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_f9931322e8668e9fecd197945986fade | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_16c3149995686bf2637ce2c9b26928e4 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_6a70d1d679d50bb7aa9d03b2d4d6957b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_596ae4bb6009f1935e4703cfce97698b | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_81aa3b9c4988aaad7cd5a484687439ef | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_0165b93a5359060d6f50c2ad5ff8ec73 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_bc06d2a593eb79c83867677935aeaf6c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+UDP                                        | Library       | Info | Compiler Version                | Compilation Options
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+protected_93cde5cd151554847fd079ac92e1e00c | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_d6f83add3d4a99a3a3b3c999b81d2f42 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_50d8baeeafb167bb8165a36f59566647 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+protected_5bbcd3bf056e29d49c4278086c2c4017 | secureip      |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx -sim_feature_tag X_SECUREIP -v2k5
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+VHDL Package                               | Library       | Info | Compiler Version                | Compilation Options
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+standard                                   | std           |      |                                 | <unavailable>
+TEXTIO                                     | std           |      | 9.2.2499.sp1.36.4586  (Windows) |  -2008
+std_logic_1164                             | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) |  -2008
+std_logic_misc                             | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) |  -2008
+NUMERIC_STD                                | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) |  -2008
+std_logic_arith                            | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) | 
+STD_LOGIC_UNSIGNED                         | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) | 
+VCOMPONENTS                                | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+VITAL_Timing                               | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) | 
+AURORA_PKG                                 | klm_aurora_tb |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+VITAL_Primitives                           | ieee          |      | 9.2.2499.sp1.36.4586  (Windows) | 
+VPKG                                       | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Library                                    | Comment
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ieee                                       | Standard IEEE packages library
+klm_aurora_tb                              | None
+secureip                                   | XILINX ISE 14.6, SECUREIP LIBRARY
+std                                        | Standard VHDL library
+unisim                                     | XILINX ISE 14.6, UNISIM VHDL LIBRARY
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Simulation Options: vsim klm_aurora_tb -t 1ps -ieee_nowarn
+
+
+The performance of simulation is reduced. Version PE

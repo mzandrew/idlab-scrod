@@ -1,0 +1,14 @@
+# Output products list for <s6_vio>
+_xmsgs\pn_parser.xmsgs
+s6_vio.asy
+s6_vio.cdc
+s6_vio.gise
+s6_vio.ngc
+s6_vio.sym
+s6_vio.vhd
+s6_vio.vho
+s6_vio.xco
+s6_vio.xise
+s6_vio_flist.txt
+s6_vio_readme.txt
+s6_vio_xmdf.tcl

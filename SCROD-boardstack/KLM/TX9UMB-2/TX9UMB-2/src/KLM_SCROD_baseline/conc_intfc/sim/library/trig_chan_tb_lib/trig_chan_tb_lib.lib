@@ -1,0 +1,37 @@
+timestamp=1405543331688
+
+[trig_chan_calc]
+A/behave=21|./../../../source/trig_chan_calc.vhd|61|1*607392
+BinI32/behave=3*34072
+I=0*1151
+I/behave=0*51292
+M=11|0|va7|1405437782775|./../../../source/trig_chan_calc.vhd|0*442*0x520457577ad9ce0d2eaa8fdab67da71e2aede062|0*1050*0xab32bc1a2daf049573e14469f634e0e6
+M/behave=21|0|va7|1405543331389|./../../../source/trig_chan_calc.vhd|0*47924*0x015a3958a18a5997928e972d9486bbfee23257f9|0*51181*0x9883a4debb77c3d3c4860cd1e2edf83c
+R=./../../../source/trig_chan_calc.vhd|40
+Version=9.2.2499.sp1.36.4586  (Windows)|00000004789cd34d494a0700030f015b
+Version/behave=9.2.2499.sp1.36.4586  (Windows)|00000004789cd34d494a0700030f015b
+
+[trig_chan_calc_tb]
+A/behave=21|./../../source/trig_chan_calc_tb.vhd|25|1*621314
+BinI32/behave=3*36306
+I=0*37185
+I/behave=0*56690
+M=11|0|va7|1405449717879|./../../source/trig_chan_calc_tb.vhd|0*36822*0xff37fc2fb27a9fb1281ca0e4bb6802e9123e780e|0*37081*0xab32bc1a2daf049573e14469f634e0e6
+M/behave=21|0|va7|1405543331639|./../../source/trig_chan_calc_tb.vhd|0*54295*0xc97a3f28eb0e90541649bbae143c0af3b82f7acd|0*56576*0x9883a4debb77c3d3c4860cd1e2edf83c
+R=./../../source/trig_chan_calc_tb.vhd|21
+Version=9.2.2499.sp1.36.4586  (Windows)|00000004789cd34d494a0700030f015b
+Version/behave=9.2.2499.sp1.36.4586  (Windows)|00000004789cd34d494a0700030f015b
+
+[~A]
+ModifyID=350
+Version=73
+
+[~MFT]
+0=129|0trig_chan_tb_lib.mgf|56690|48543
+1=113|1trig_chan_tb_lib.mgf|621314|607392
+3=29|3trig_chan_tb_lib.mgf|36306|34072
+
+[~U]
+trig_chan_calc=11|0*0|
+trig_chan_calc_tb=11|0*36725|
+
