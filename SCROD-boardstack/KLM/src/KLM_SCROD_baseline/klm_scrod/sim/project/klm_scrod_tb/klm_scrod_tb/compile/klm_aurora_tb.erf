@@ -1,2 +1,0 @@
-ERROR VLM_0021: "The working library "klm_aurora_tb" not found in the installation." "source\klm_scrod_tb.vhd" 0 0
-FAILURE "Compile failure 1 Errors 0 Warnings  Analysis time :  0.0 [ms]" 
