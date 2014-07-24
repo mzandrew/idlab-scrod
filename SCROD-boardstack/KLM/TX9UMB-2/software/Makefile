@@ -1,7 +1,7 @@
 COMPILE_FLAGS = -g -gdwarf-2 -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -I.
 LINK_OPTIONS = -L/usr/lib/i386-linux-gnu -lusb-1.0 -lpthread
 
-APPS = bin/KlmRegisterWrite bin/KlmRegisterRead bin/KlmAsicWrite bin/KlmConfigure bin/KlmToFile bin/KlmTestTriggers bin/KlmTestTriggersFineTune bin/KlmDACstep01 bin/KlmTestTriggers3 bin/KlmTestTriggers4 bin/KlmTestHVDACSingleChannelTriggers bin/KlmTestReadMPPCcurrents01 bin/KlmTestReadTemperature01
+APPS = bin/KlmRegisterWrite bin/KlmRegisterRead bin/KlmAsicWrite bin/KlmConfigure bin/KlmToFile bin/KlmTestTriggers bin/KlmTestTriggersFineTune bin/KlmDACstep01 bin/KlmTestTriggers3 bin/KlmTestTriggers4 bin/KlmTestHVDACSingleChannelTriggers bin/KlmTestReadMPPCcurrents01 bin/KlmTestReadTemperature01 bin/KlmTestSetHVDACs
 OBJECT_FILES = base/KlmSystem.o base/DetectorInterface.o base/UsbInterface.o base/ScrodPacket.o base/KlmModule.o base/tinyxml2.o base/KlmConsumer.o base/KlmFile.o base/CopperInterface.o
 
 all : $(APPS)
@@ -37,7 +37,7 @@ bin/KlmTestTriggers4 : tools/KlmTestTriggers4.o $(OBJECT_FILES) ; g++ $^ $(LINK_
 bin/KlmTestHVDACSingleChannelTriggers : tools/KlmTestHVDACSingleChannelTriggers.o $(OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
 bin/KlmTestReadMPPCcurrents01 : tools/KlmTestReadMPPCcurrents01.o $(OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
 bin/KlmTestReadTemperature01 : tools/KlmTestReadTemperature01.o $(OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
-
+bin/KlmTestSetHVDACs : tools/KlmTestSetHVDACs.o $(OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
 
 clean: 
 	-rm -rf base/*.o bin/* tools/*.o
