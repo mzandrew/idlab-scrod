@@ -1,5 +1,0 @@
-350
-~E 1 "./../../../source/trig_chan_calc.vhd" 40 trig_chan_calc
-~A 1 "./../../../source/trig_chan_calc.vhd" 61 behave
-~E 1 "./../../source/trig_chan_calc_tb.vhd" 21 trig_chan_calc_tb
-~A 1 "./../../source/trig_chan_calc_tb.vhd" 25 behave

@@ -1,8 +1,0 @@
-INTSTYLE=ise
-INFILE=C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\klm_scrod\chipscope\klm_scrod_b2tt\klm_scrod.ncd
-OUTFILE=C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\klm_scrod\chipscope\klm_scrod_b2tt\klm_scrod.bit
-FAMILY=Spartan6
-PART=xc6slx150t-3fgg676
-WORKINGDIR=C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\klm_scrod\chipscope\klm_scrod_b2tt
-LICENSE=ISE
-USER_INFO=174556579_175793186_210557339_501
