@@ -900,6 +900,52 @@ begin
 		WR2_ENA(i) 		<= internal_WR_ENA;
 	end generate;
 
+
+	--sampling logic - specifically SSPIN/SSTIN + write address control
+	--ripped old sampling ligic which was designed for T6 and replaced with TX
+--	u_SamplingLgc : entity work.SamplingLgicTX
+--   Port map (
+--		clk 			=> internal_CLOCK_8xSST_BUFG,
+--		rst 			=> '0',
+--		Enable 		=> internal_SMP_START,
+--		SamplSpeed 	=> '0',
+--		Test_sampling => '0',
+--		Test_setup		=> '0';
+--		stop 			=> internal_SMP_STOP,
+--		samp_wr_ena => '1',
+--		
+--		cur_COL_l => MAIN_CNT_out(
+--		
+--		
+--		IDLE_status => internal_SMP_IDLE_STATUS,
+--		MAIN_CNT_out => internal_SMP_MAIN_CNT,
+--		sspin_out 	=> open,--internal_SSPIN,
+--		sstin_out 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
+--		wr_advclk_out 	=> internal_WR_ADVCLK,
+--		wr_addrclr_out => internal_WR_ADDRCLR,
+--		wr_strb_out => internal_WR_STRB,
+--		wr_ena_out 	=> open--internal_WR_ENA
+--	);
+--	internal_SMP_START <= internal_CMDREG_SMP_START;
+--	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
+--							 internal_CMDREG_SMP_STOP;
+--	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
+--	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
+--	
+--	--SamplingLgc signals just get fanned out identically to each daughter card
+--	gen_SamplingLgcSignals : for i in 0 to 9 generate
+--		--SSPIN(i) 		<= internal_SSPIN;
+----		SSTIN(i) 		<= internal_CLOCK_8xSST_BUFG;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
+--		SSTIN_N(i) 		<= internal_SSTIN;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
+--		SSTIN_P(i) 		<= not(internal_SSTIN);-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
+----		WR_ADVCLK(i) 	<= internal_WR_ADVCLK;
+----		WR_STRB(i) 		<= internal_WR_STRB;
+----		WR_ENA(i) 		<= internal_WR_ENA;
+--		WR1_ENA(i) 		<= internal_WR_ENA;
+--		WR2_ENA(i) 		<= internal_WR_ENA;
+--	end generate;
+
+
 -- IM: 6/12/14 Save this for later when LVDS problem on PCB is fixed- they need to be routed to the correct bank
 --gen_sstin : for i in 0 to 9 generate
 -- OBUFDS_inst : OBUFDS
@@ -913,7 +959,7 @@ begin
 --end generate;
 
 	--digitizing logic
-	u_DigitizingLgc: entity work.DigitizingLgc PORT MAP(
+	u_DigitizingLgc: entity work.DigitizingLgcTX PORT MAP(
 		clk 				=> internal_CLOCK_50MHz_BUFG,
 		IDLE_status 	=> internal_DIG_IDLE_status,
 		StartDig 		=> internal_DIG_STARTDIG,
