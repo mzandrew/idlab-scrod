@@ -259,6 +259,7 @@ begin
 		S  => internal_TOGGLE_DAQ_TO_FIBER
 	);
 	
+	
 	--The following two lines assumed the USER CLOCK can be reused.  
 	--This avoids consuming BUFG resources, and so far seems to be okay (as of 2012-11-22).
 	internal_FIFO_OUT_0_READ_CLOCK <= internal_FIFO_CLOCK;

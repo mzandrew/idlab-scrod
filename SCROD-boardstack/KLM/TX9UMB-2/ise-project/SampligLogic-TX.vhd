@@ -53,7 +53,7 @@
 -------------------------------------------------------------------------------
 Library work;
 use work.all;
-use work.Target2Package.all;
+--use work.Target2Package.all;
 
 Library ieee;
 use ieee.std_logic_1164.all;
@@ -72,11 +72,12 @@ entity SamplingLgicTX is
 		 Test_setup			  : in std_logic_vector (31 downto 0);
 			 stop	 			      : in   std_logic;  -- hold operation
 			 samp_wr_ena     : in std_logic;  -- if suspend write to the next buffer
-			 cur_COL_l			  : out  std_logic_vector(5 downto 0);
-			 cur_ROW_l			  : out  std_logic_vector(2 downto 0);
-			 cur_SMP_l			  : out  std_logic_vector(4 downto 0);
-			 cur_COL			    : out  std_logic_vector(5 downto 0);
-			 cur_ROW			    : out  std_logic_vector(2 downto 0);
+			 MAIN_CNT			: out std_logic_vector(10 downto 0); --(10 downto 5) is col, (4 downto 2) is row, (1 downto 0) & "000" is smp
+--			 cur_COL_l			  : out  std_logic_vector(5 downto 0);
+--			 cur_ROW_l			  : out  std_logic_vector(2 downto 0);
+--			 cur_SMP_l			  : out  std_logic_vector(4 downto 0);
+--			 cur_COL			    : out  std_logic_vector(5 downto 0);
+--			 cur_ROW			    : out  std_logic_vector(2 downto 0);
 		 sst_int          : out   std_logic;
        sstclk           : out   std_logic;
        wr_addrclr       : out   std_logic;
@@ -108,7 +109,7 @@ type state_type is
 
 signal next_state					: state_type;
 
-	signal MAIN_CNT		: std_logic_vector(10 downto 0);
+	signal MAIN_CNT_i		: std_logic_vector(10 downto 0);
 	signal DEl_CNT		    : std_logic_vector(3 downto 0);
 	signal ClearDelCnt   : std_logic_vector(17 downto 0);
 
@@ -130,13 +131,7 @@ signal next_state					: state_type;
 begin
 --------------------------------------------------------------------------------
 
-
-cur_COL_l <= MAIN_CNT(10 downto 5);
-cur_ROW_l <= MAIN_CNT(4 downto 2);
-cur_SMP_l <= MAIN_CNT(1 downto 0) & "000";
-
-cur_COL    <= MAIN_CNT(10 downto 5);
-cur_ROW    <= MAIN_CNT(4 downto 2);
+MAIN_CNT<=MAIN_CNT_i;
 		
 -- to  delay everything by one clock to properly handle samp_wr_ena
 process(clk,rst)
@@ -165,7 +160,7 @@ end process;
 process(Clk,rst)
 begin
 if (rst = '1') then
-  MAIN_CNT <= (Others => '0');
+  MAIN_CNT_i <= (Others => '0');
   DEl_CNT <= (Others => '0');
   sst_int_i               <= '0';
   sst_cnt             <= (Others => '0');
@@ -188,7 +183,7 @@ elsif (Clk'event and Clk = '1') then
 	
   Case next_state is
   When Idle =>
-    MAIN_CNT <= (Others => '0');
+    MAIN_CNT_i <= (Others => '0');
 	 DEl_CNT <= (Others => '0');
 	 sst_int_i               <= '0';
 	 sst_cnt             <= (Others => '0');
@@ -204,7 +199,7 @@ elsif (Clk'event and Clk = '1') then
 
   When Sampling6 =>   -- sstin low for 32 ns,sspin_i0 stay for 8ns high
 	 DEl_CNT <= (Others => '0');
-	 MAIN_CNT <= MAIN_CNT + '1';
+	 MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 sst_int_i               <= '0';
 	 sst_cnt             <= sst_cnt + '1';
 --    wr_addrclr           <= '0';
@@ -217,7 +212,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling7 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= (Others => '0');
 	 sst_int_i               <= '0';
 	 sst_cnt             <= sst_cnt + '1';
@@ -230,7 +225,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling8 =>     -- start sspin_i0 high for 16ns
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= DEl_CNT + '1';
 	 sst_int_i               <= '1';
 	 sst_cnt             <= sst_cnt + '1';
@@ -245,7 +240,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling9 =>
-	 MAIN_CNT <= MAIN_CNT + '1';
+	 MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= (Others => '0');
 	 sst_int_i               <= '1';
 	 sst_cnt             <= sst_cnt + '1';
@@ -258,7 +253,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling10 =>   -- 
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= (Others => '0');
 	 sst_int_i               <= '1';
 	 sst_cnt             <= sst_cnt + '1';
@@ -271,7 +266,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling11 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= (Others => '0');
 	 sst_int_i               <= '1';
 	 sst_cnt             <= sst_cnt + '1';
@@ -284,7 +279,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling12 =>     -- start sspin_i0 high for 16ns
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= DEl_CNT + '1';
 	 sst_int_i               <= '0';
 	 sst_cnt             <= sst_cnt + '1';
@@ -299,7 +294,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 
   When Sampling13 =>
-    MAIN_CNT <= MAIN_CNT + '1';
+    MAIN_CNT_i <= MAIN_CNT_i + '1';
 	 DEl_CNT <= (Others => '0');
 	 sst_int_i               <= '0';
 	 sst_cnt             <= sst_cnt + '1';
@@ -312,7 +307,7 @@ elsif (Clk'event and Clk = '1') then
     end if;
 	 
   When Others =>
-  MAIN_CNT <= (Others => '0');
+  MAIN_CNT_i <= (Others => '0');
   DEl_CNT <= (Others => '0');
   sst_int_i               <= '0';
   sst_cnt             <= (Others => '0');

@@ -62,7 +62,8 @@ COMPONENT daq_fifo
     dout : OUT STD_LOGIC_VECTOR(17 DOWNTO 0);
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
-    empty : OUT STD_LOGIC
+    empty : OUT STD_LOGIC;
+    almost_empty : OUT STD_LOGIC
   );
 END COMPONENT;
 -- COMP_TAG_END ------ End COMPONENT Declaration ------------
@@ -81,7 +82,8 @@ your_instance_name : daq_fifo
     dout => dout,
     full => full,
     almost_full => almost_full,
-    empty => empty
+    empty => empty,
+    almost_empty => almost_empty
   );
 -- INST_TAG_END ------ End INSTANTIATION Template ------------
 

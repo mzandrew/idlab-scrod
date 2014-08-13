@@ -316,6 +316,7 @@ architecture xilinx of daq_fifo_top is
   PORT (
            CLK                       : IN  std_logic;
            ALMOST_FULL               : OUT std_logic;
+           ALMOST_EMPTY              : OUT std_logic;
            SRST                      : IN  std_logic;
            WR_EN 		     : IN  std_logic;
            RD_EN                     : IN  std_logic;
@@ -332,6 +333,7 @@ begin
     port map (
            CLK                       => CLK_i,
            ALMOST_FULL               => ALMOST_FULL,
+           ALMOST_EMPTY              => ALMOST_EMPTY,
            SRST                      => SRST,
            WR_EN 		     => WR_EN,
            RD_EN                     => RD_EN,
