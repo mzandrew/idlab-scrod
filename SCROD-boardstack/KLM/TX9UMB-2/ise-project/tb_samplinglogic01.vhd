@@ -72,7 +72,7 @@ ARCHITECTURE behavior OF tb_samplinglogic01 IS
    signal wr_ena_out : std_logic;
 
    -- Clock period definitions
-   constant clk_period : time := 10 ns;
+   constant clk_period : time := 16 ns; --input clock is SSTx8 which is 62.5MHz
  
 BEGIN
  

@@ -18,8 +18,8 @@ entity clock_generation is
 		RJ45_ACK_N        : out std_logic;			  
 		RJ45_TRG_P        : in  std_logic;
 		RJ45_TRG_N        : in  std_logic;			  			  
-		RJ45_RSV_P        : in std_logic;
-		RJ45_RSV_N        : in std_logic;
+		RJ45_RSV_P        : out std_logic;
+		RJ45_RSV_N        : out std_logic;
 		RJ45_CLK_P        : in  std_logic;
 		RJ45_CLK_N        : in  std_logic;
 		--Trigger outputs from FTSW

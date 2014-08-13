@@ -24,12 +24,16 @@ library UNISIM;
 use UNISIM.VComponents.all;
 use work.readout_definitions.all;
     use work.tdc_pkg.all;
-
+   use work.time_order_pkg.all;
+    use work.conc_intfc_pkg.all;
+    use work.klm_scrod_pkg.all;
 --use work.asic_definitions_irs2_carrier_revA.all;
 --use work.CarrierRevA_DAC_definitions.all;
 
 entity scrod_top is
-	Port(
+	   generic(
+    NUM_GTS                     : integer := 2);
+	 Port(
 		BOARD_CLOCKP                : in  STD_LOGIC;
 		BOARD_CLOCKN                : in  STD_LOGIC;
 		LEDS                        : out STD_LOGIC_VECTOR(15 downto 0);
@@ -38,12 +42,29 @@ entity scrod_top is
 		RJ45_ACK_N                  : out std_logic;			  
 		RJ45_TRG_P                  : in std_logic;
 		RJ45_TRG_N                  : in std_logic;			  			  
-		RJ45_RSV_P                  : in std_logic;-- should be output 
-		RJ45_RSV_N                  : in std_logic;
+		RJ45_RSV_P                  : out std_logic;-- should be output 
+		RJ45_RSV_N                  : out std_logic;
 		RJ45_CLK_P                  : in std_logic;
 		RJ45_CLK_N                  : in std_logic;
 		---------Jumper for choosing FTSW clock------
 		MONITOR_INPUT               : in  std_logic_vector(0 downto 0);
+		
+		--------------------------------------
+		----------SFP-------------------------
+		--------------------------------------
+	   mgttxfault                  : in std_logic_vector(1 to NUM_GTS);
+		mgtmod0                     : in std_logic_vector(1 to NUM_GTS);
+		mgtlos                      : in std_logic_vector(1 to NUM_GTS);
+		mgttxdis                    : out std_logic_vector(1 to NUM_GTS);
+		mgtmod2                     : out std_logic_vector(1 to NUM_GTS);
+		mgtmod1                     : out std_logic_vector(1 to NUM_GTS);
+		mgtrxp                      : in std_logic;
+		mgtrxn                      : in std_logic;
+		mgttxp                      : out std_logic;
+		mgttxn                      : out std_logic;
+		status_fake                 : out std_logic;
+		control_fake                : out std_logic;
+		
 		
 		----------------------------------------------
 		------------Fiberoptic Pins-------------------
@@ -286,6 +307,9 @@ architecture Behavioral of scrod_top is
 	signal internal_TRIGCOUNT_scaler : TARGET6_TRIGGER_SCALERS;
 	signal internal_READ_ENABLE_TIMER : std_logic_vector (9 downto 0);
 	signal internal_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here
+	signal internal_TXDCTRIG16 : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
+	signal internal_TXDCTRIG_buf : tb_vec_type;-- All triger bits from all ASICs are here
+	signal internal_TXDCTRIG16_buf : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
 	
 	--ASIC DAC CONTROL
 	signal internal_DAC_CONTROL_UPDATE : std_logic := '0';
@@ -448,19 +472,64 @@ begin
 	EX_TRIGGER1 <= internal_READ_ENABLE_TIMER(9);
 --   EX_TRIGGER1 <= TDC_MON_TIMING(9);
 --  EX_TRIGGER2 <= internal_DAC_CONTROL_SCLK;
---   internal_TXDCTRIG(0)(0) <=TDC1_TRG(0);
+
+   internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
+   internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
+   internal_TXDCTRIG(3)(1) <=TDC3_TRG(0); internal_TXDCTRIG(3)(2) <=TDC3_TRG(1);internal_TXDCTRIG(3)(3) <=TDC3_TRG(2);internal_TXDCTRIG(3)(4) <=TDC3_TRG(3);internal_TXDCTRIG(3)(5) <=TDC_MON_TIMING(2);
+   internal_TXDCTRIG(4)(1) <=TDC4_TRG(0); internal_TXDCTRIG(4)(2) <=TDC4_TRG(1);internal_TXDCTRIG(4)(3) <=TDC4_TRG(2);internal_TXDCTRIG(4)(4) <=TDC4_TRG(3);internal_TXDCTRIG(4)(5) <=TDC_MON_TIMING(3);
+   internal_TXDCTRIG(5)(1) <=TDC5_TRG(0); internal_TXDCTRIG(5)(2) <=TDC5_TRG(1);internal_TXDCTRIG(5)(3) <=TDC5_TRG(2);internal_TXDCTRIG(5)(4) <=TDC5_TRG(3);internal_TXDCTRIG(5)(5) <=TDC_MON_TIMING(4);
+   internal_TXDCTRIG(6)(1) <=TDC6_TRG(0); internal_TXDCTRIG(6)(2) <=TDC6_TRG(1);internal_TXDCTRIG(6)(3) <=TDC6_TRG(2);internal_TXDCTRIG(6)(4) <=TDC6_TRG(3);internal_TXDCTRIG(6)(5) <=TDC_MON_TIMING(5);
+   internal_TXDCTRIG(7)(1) <=TDC7_TRG(0); internal_TXDCTRIG(7)(2) <=TDC7_TRG(1);internal_TXDCTRIG(7)(3) <=TDC7_TRG(2);internal_TXDCTRIG(7)(4) <=TDC7_TRG(3);internal_TXDCTRIG(7)(5) <=TDC_MON_TIMING(6);
+   internal_TXDCTRIG(8)(1) <=TDC8_TRG(0); internal_TXDCTRIG(8)(2) <=TDC8_TRG(1);internal_TXDCTRIG(8)(3) <=TDC8_TRG(2);internal_TXDCTRIG(8)(4) <=TDC8_TRG(3);internal_TXDCTRIG(8)(5) <=TDC_MON_TIMING(7);
+   internal_TXDCTRIG(9)(1) <=TDC9_TRG(0); internal_TXDCTRIG(9)(2) <=TDC9_TRG(1);internal_TXDCTRIG(9)(3) <=TDC9_TRG(2);internal_TXDCTRIG(9)(4) <=TDC9_TRG(3);internal_TXDCTRIG(9)(5) <=TDC_MON_TIMING(8);
+   internal_TXDCTRIG(10)(1)<=TDC10_TRG(0); internal_TXDCTRIG(10)(2) <=TDC10_TRG(1);internal_TXDCTRIG(10)(3) <=TDC10_TRG(2);internal_TXDCTRIG(10)(4) <=TDC10_TRG(3);internal_TXDCTRIG(10)(5) <=TDC_MON_TIMING(9);
+                                                                                                                                                                                                     
+																																																																	  
+	internal_TXDCTRIG16(1)<=TDC1_TRG_16;
+	internal_TXDCTRIG16(2)<=TDC2_TRG_16;
+	internal_TXDCTRIG16(3)<=TDC3_TRG_16;
+	internal_TXDCTRIG16(4)<=TDC4_TRG_16;
+	internal_TXDCTRIG16(5)<=TDC5_TRG_16;
+	internal_TXDCTRIG16(6)<=TDC6_TRG_16;
+	internal_TXDCTRIG16(7)<=TDC7_TRG_16;
+	internal_TXDCTRIG16(8)<=TDC8_TRG_16;
+	internal_TXDCTRIG16(9)<=TDC9_TRG_16;	
+	internal_TXDCTRIG16(10)<=TDC10_TRG_16;
 	
-	internal_TRIGGER_ASIC(0) <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
-	internal_TRIGGER_ASIC(1) <= TDC2_TRG_16 OR TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3);
-	internal_TRIGGER_ASIC(2) <= TDC3_TRG_16 OR TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3);
-	internal_TRIGGER_ASIC(3) <= TDC4_TRG_16 OR TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3);
-	internal_TRIGGER_ASIC(4) <= TDC5_TRG_16 OR TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3);
-	internal_TRIGGER_ASIC(5) <= TDC6_TRG_16 OR TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3);
-	internal_TRIGGER_ASIC(6) <= TDC7_TRG_16 OR TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3);
-	internal_TRIGGER_ASIC(7) <= TDC8_TRG_16 OR TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
-	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
-	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
-	--internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
+	 asic_IBUF2_GEN : 
+    for I in 1 to 10 generate
+        atb_IBUF2_GEN : 
+        for J in 5 downto 1 generate
+            atb_IBUF2 : IBUF
+            port map(
+                O               => internal_TXDCTRIG_buf(I)(J),
+                I               => internal_TXDCTRIG(I)(J)
+            );
+        end generate;
+        atb16_IBUF2 : IBUF
+        port map(
+                O               => internal_TXDCTRIG16_buf(I),
+                I               => internal_TXDCTRIG16(I)
+        );             
+    end generate;   
+	 
+	
+	
+	asic_trig_GGEN: for I in 1 to 10 generate
+	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4);
+end generate;
+
+--	internal_TRIGGER_ASIC(0) <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
+--	internal_TRIGGER_ASIC(1) <= TDC2_TRG_16 OR TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3);
+--	internal_TRIGGER_ASIC(2) <= TDC3_TRG_16 OR TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3);
+--	internal_TRIGGER_ASIC(3) <= TDC4_TRG_16 OR TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3);
+--	internal_TRIGGER_ASIC(4) <= TDC5_TRG_16 OR TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3);
+--	internal_TRIGGER_ASIC(5) <= TDC6_TRG_16 OR TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3);
+--	internal_TRIGGER_ASIC(6) <= TDC7_TRG_16 OR TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3);
+--	internal_TRIGGER_ASIC(7) <= TDC8_TRG_16 OR TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
+--	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
+--	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
+--	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
 	internal_TRIGGER_ALL <= (internal_TRIGGER_ASIC(0) --AND internal_TRIGGER_ASIC_control_word(0)
 	)
 		OR ( internal_TRIGGER_ASIC(1) --AND internal_TRIGGER_ASIC_control_word(1)
@@ -585,11 +654,11 @@ begin
 ---------KLM_SCROD: interface for Trigger using FTSW-----------
 ---------------------------------------------------------------
 
---	klm_scrod_trig_interface : entity work.KLM_SCROD;
+--	klm_scrod_trig_interface : entity work.KLM_SCROD
 --		port map ( 
-	
-			
-			   -- TTD/FTSW interface
+--	
+--			
+----			    TTD/FTSW interface
 --    ttdclkp  => RJ45_CLK_P,
 --    ttdclkn  => RJ45_CLK_N,
 --    ttdtrgp  => RJ45_TRG_P,
@@ -597,27 +666,26 @@ begin
 --    ttdrsvp  => RJ45_RSV_P,  
 --    ttdrsvn  => RJ45_RSV_N,
 --    ttdackp  => RJ45_ACK_P,
---    ttdackn  => RJ45_ACK_N
-    -- ASIC Interface
---    target_tb                   : in tb_vec_type; 
---    target_tb16                 : in std_logic_vector(1 to TDC_NUM_CHAN); 
+--    ttdackn  => RJ45_ACK_N,
+------     ASIC Interface
+--    target_tb  => internal_TXDCTRIG_buf,		--                 : in tb_vec_type; 
+--    target_tb16 => internal_TXDCTRIG16_buf,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
 --    -- SFP interface
---    mgttxfault                  : in std_logic_vector(1 to NUM_GTS);
---    mgtmod0                     : in std_logic_vector(1 to NUM_GTS);
---    mgtlos                      : in std_logic_vector(1 to NUM_GTS);
---    mgttxdis                    : out std_logic_vector(1 to NUM_GTS);
---    mgtmod2                     : out std_logic_vector(1 to NUM_GTS);
---    mgtmod1                     : out std_logic_vector(1 to NUM_GTS);
---    mgtrxp                      : in std_logic;
---    mgtrxn                      : in std_logic;
---    mgttxp                      : out std_logic;
---    mgttxn                      : out std_logic;
---    status_fake                 : out std_logic;
---    control_fake                : out std_logic);
---			
-			
+--    mgttxfault	=>		mgttxfault,  
+--    mgtmod0		=>		mgtmod0,               
+--    mgtlos		=>		mgtlos,                
+--    mgttxdis	=>		mgttxdis,              
+--    mgtmod2   	=>		mgtmod2,               
+--    mgtmod1  	=>		mgtmod1,               
+--    mgtrxp    	=>		mgtrxp,                
+--    mgtrxn   	=>		mgtrxn,                
+--    mgttxp    	=>		mgttxp,                
+--    mgttxn   	=>		mgttxn,                
+--    status_fake =>	status_fake,          
+--    control_fake => 	control_fake         
+--
 --			);
-			
+--			
 
 
 
@@ -882,11 +950,65 @@ begin
 		wr_strb_out => internal_WR_STRB,
 		wr_ena_out 	=> open--internal_WR_ENA
 	);
+
+
+
+--	--sampling logic - specifically SSPIN/SSTIN + write address control
+--	--ripped old sampling ligic which was designed for T6 and replaced with TX
+-- U_SamplingLgc: entity work.SamplingLgicTX
+-- port map (
+--      clk         => internal_CLOCK_8xSST_BUFG,-- this should become 125MHz for TargetX
+--      rst         => '0', --usrClkRst_125,
+--      Enable      => internal_SMP_START, --Enable,
+--		SamplSpeed  => '0', --SamplSpeed,
+--		Test_sampling	 => '0', --Test_sampling,
+--		Test_setup	 => '0', --Test_setup,
+--      stop        =>  internal_SMP_STOP, --stopProc,
+--      samp_wr_ena       => samp_wr_ena,  -- from SampleUpdate
+--      cur_COL_l   => internal_SMP_MAIN_CNT(13 downto 8),
+--      cur_ROW_l   => SamplingCnt(7 downto 5),
+--      cur_SMP_l   => SamplingCnt(4 downto 0),
+--      cur_COL     => cur_COL,
+--      cur_ROW     => cur_ROW,
+--		sst_int     => sst_int,
+--		sstclk      => sstclk,
+--      wr_addrclr  => wr_addrclr,
+--		rst_local	=> rst_local,
+--      wr_ena      => wr_en
+--   );
+--
+
+
+--	u_SamplingLgc : entity work.SamplingLgicTX
+--   Port map (
+--		clk 			=> internal_CLOCK_8xSST_BUFG,
+--		rst 			=> '0',
+--		Enable 		=> internal_SMP_START,
+--		SamplSpeed 	=> '0',
+--		Test_sampling => '0',
+--		Test_setup		=> "00000000000000000000000000000000",
+--		stop 			=> internal_SMP_STOP,
+--		samp_wr_ena => '1',
+--		MAIN_CNT => internal_SMP_MAIN_CNT,
+--		
+----		IDLE_status => internal_SMP_IDLE_STATUS,
+----		sspin_out 	=> open,--internal_SSPIN,
+--		sst_int 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
+--		--wr_advclk_out 	=> internal_WR_ADVCLK,
+--		wr_addrclr => internal_WR_ADDRCLR,
+--		--wr_strb_out => internal_WR_STRB,
+--		wr_ena 	=> open--internal_WR_ENA
+--	);
+--	
+	
+	
+	
 	internal_SMP_START <= internal_CMDREG_SMP_START;
 	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							 internal_CMDREG_SMP_STOP;
 	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
 	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
+	
 	--SamplingLgc signals just get fanned out identically to each daughter card
 	gen_SamplingLgcSignals : for i in 0 to 9 generate
 		--SSPIN(i) 		<= internal_SSPIN;
@@ -899,51 +1021,6 @@ begin
 		WR1_ENA(i) 		<= internal_WR_ENA;
 		WR2_ENA(i) 		<= internal_WR_ENA;
 	end generate;
-
-
-	--sampling logic - specifically SSPIN/SSTIN + write address control
-	--ripped old sampling ligic which was designed for T6 and replaced with TX
---	u_SamplingLgc : entity work.SamplingLgicTX
---   Port map (
---		clk 			=> internal_CLOCK_8xSST_BUFG,
---		rst 			=> '0',
---		Enable 		=> internal_SMP_START,
---		SamplSpeed 	=> '0',
---		Test_sampling => '0',
---		Test_setup		=> '0';
---		stop 			=> internal_SMP_STOP,
---		samp_wr_ena => '1',
---		
---		cur_COL_l => MAIN_CNT_out(
---		
---		
---		IDLE_status => internal_SMP_IDLE_STATUS,
---		MAIN_CNT_out => internal_SMP_MAIN_CNT,
---		sspin_out 	=> open,--internal_SSPIN,
---		sstin_out 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
---		wr_advclk_out 	=> internal_WR_ADVCLK,
---		wr_addrclr_out => internal_WR_ADDRCLR,
---		wr_strb_out => internal_WR_STRB,
---		wr_ena_out 	=> open--internal_WR_ENA
---	);
---	internal_SMP_START <= internal_CMDREG_SMP_START;
---	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
---							 internal_CMDREG_SMP_STOP;
---	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
---	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
---	
---	--SamplingLgc signals just get fanned out identically to each daughter card
---	gen_SamplingLgcSignals : for i in 0 to 9 generate
---		--SSPIN(i) 		<= internal_SSPIN;
-----		SSTIN(i) 		<= internal_CLOCK_8xSST_BUFG;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
---		SSTIN_N(i) 		<= internal_SSTIN;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
---		SSTIN_P(i) 		<= not(internal_SSTIN);-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
-----		WR_ADVCLK(i) 	<= internal_WR_ADVCLK;
-----		WR_STRB(i) 		<= internal_WR_STRB;
-----		WR_ENA(i) 		<= internal_WR_ENA;
---		WR1_ENA(i) 		<= internal_WR_ENA;
---		WR2_ENA(i) 		<= internal_WR_ENA;
---	end generate;
 
 
 -- IM: 6/12/14 Save this for later when LVDS problem on PCB is fixed- they need to be routed to the correct bank
@@ -1037,6 +1114,7 @@ begin
 	--Only specified DC gets serial data signals, uses bit mask
 	gen_SAMPLESEL_ANY_CONTROL: for i in 0 to 9 generate
 		SR_CLOCK(i)			<= internal_SROUT_SR_CLK 			and internal_SROUT_ASIC_CONTROL_WORD(i);
+		--debug trying to force pattern!
 		SAMPLESEL_ANY(i) 	<= internal_SROUT_SAMPLESEL_ANY 	and internal_SROUT_ASIC_CONTROL_WORD(i);
 	end generate;
 	

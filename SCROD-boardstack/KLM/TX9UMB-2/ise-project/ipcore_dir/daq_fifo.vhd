@@ -50,7 +50,8 @@ ENTITY daq_fifo IS
     dout : OUT STD_LOGIC_VECTOR(17 DOWNTO 0);
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
-    empty : OUT STD_LOGIC
+    empty : OUT STD_LOGIC;
+    almost_empty : OUT STD_LOGIC
   );
 END daq_fifo;
 
@@ -66,7 +67,8 @@ COMPONENT wrapped_daq_fifo
     dout : OUT STD_LOGIC_VECTOR(17 DOWNTO 0);
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
-    empty : OUT STD_LOGIC
+    empty : OUT STD_LOGIC;
+    almost_empty : OUT STD_LOGIC
   );
 END COMPONENT;
 
@@ -120,7 +122,7 @@ END COMPONENT;
       c_error_injection_type_wrch => 0,
       c_family => "spartan6",
       c_full_flags_rst_val => 0,
-      c_has_almost_empty => 0,
+      c_has_almost_empty => 1,
       c_has_almost_full => 1,
       c_has_axi_aruser => 0,
       c_has_axi_awuser => 0,
@@ -275,7 +277,8 @@ U0 : wrapped_daq_fifo
     dout => dout,
     full => full,
     almost_full => almost_full,
-    empty => empty
+    empty => empty,
+    almost_empty => almost_empty
   );
 -- synthesis translate_on
 

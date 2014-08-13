@@ -432,17 +432,21 @@ begin
     for I in 1 to 10 generate
         atb_IBUF_GEN : 
         for J in 5 downto 1 generate
-            atb_IBUF : IBUF
-            port map(
-                O               => target_tb_i(I)(J),
-                I               => target_tb(I)(J)
-            );
+		  target_tb_i(I)(J)<=target_tb(I)(J);
+--		  
+--            atb_IBUF : IBUF
+--            port map(
+--                O               => target_tb_i(I)(J),
+--                I               => target_tb(I)(J)
+--            );
         end generate;
-        atb16_IBUF : IBUF
-        port map(
-                O               => target_tb16_i(I),
-                I               => target_tb16(I)
-        );             
+		 target_tb16_i(I)<=target_tb16(I);	  
+--        atb16_IBUF : IBUF
+--        port map(
+--                O               => target_tb16_i(I),
+--                I               => target_tb16(I)
+--        );    
+		  
     end generate;   
     
     mgttxfault_IBUF_GEN :

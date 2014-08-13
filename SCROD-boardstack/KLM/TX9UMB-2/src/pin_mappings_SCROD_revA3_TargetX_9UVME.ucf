@@ -36,16 +36,48 @@ NET LEDS<15> LOC=F19 | IOSTANDARD = LVCMOS33; #LEDS<15>
 ##Jumper to choose between FTSW and local clock##
 #NET MONITOR_INPUT<0>  LOC=J2 | IOSTANDARD = LVCMOS25 | PULLUP; #currently wrong???
 
-####FTSW Pin mappings######
-##FTSW Inputs
-#NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25 | diff_term=true;
+####FTSW Pin mappings######- with KLM_SCROD instantiated
+##FTSW IO -- use LVDS_25 for real usage
+#NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;# | diff_term=true;
+#NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;#  | diff_term=true;
 #NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
 #NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVDS_25 | diff_term=true;
 #NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
 #NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
+#NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVCMOS25;# | diff_term=true;
+#NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVCMOS25;# | diff_term=true;
+
+###FTSW Pin mappings######- without KLM_SCROD instantiated
+#FTSW IO -- use LVDS_25 for real usage
+NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVCMOS25 | diff_term=true;
+NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVCMOS25 | diff_term=true;
+###############################
+##SFP
+###############################
+#NET MGTTXFAULT[1] LOC=G12 | IOSTANDARD=LVCMOS33;
+#NET MGTTXDIS[1]   LOC=E10 | IOSTANDARD=LVCMOS33;
+#NET MGTMOD2[1]    LOC=D13 | IOSTANDARD=LVCMOS33;
+#NET MGTMOD1[1]    LOC=C13 | IOSTANDARD=LVCMOS33;
+#NET MGTMOD0[1]    LOC=A13 | IOSTANDARD=LVCMOS33;
+#NET MGTLOS[1]     LOC=B5  | IOSTANDARD=LVCMOS33;
+#NET MGTTXFAULT[2] LOC=A5  | IOSTANDARD=LVCMOS33;
+#NET MGTTXDIS[2]   LOC=G13 | IOSTANDARD=LVCMOS33;
+#NET MGTMOD2[2]    LOC=A14 | IOSTANDARD=LVCMOS33;
+#NET MGTMOD1[2]    LOC=K12 | IOSTANDARD=LVCMOS33;
+#NET MGTMOD0[2]    LOC=J12 | IOSTANDARD=LVCMOS33;
+#NET MGTLOS[2]     LOC=J13 | IOSTANDARD=LVCMOS33;
+################################
+###Fake
+################################
+#NET STATUS_FAKE   LOC=F16 | IOSTANDARD=LVCMOS33;
+#NET CONTROL_FAKE  LOC=J17 | IOSTANDARD=LVCMOS33;
+##
 
 ####################USB IOs and timing constraints###########################
 NET USB_IFCLK   LOC = "b14" | IOSTANDARD = LVCMOS33; # on SCROD revA2, IFCLK is connected to b14
@@ -98,31 +130,31 @@ NET FIBER_1_TXN LOC=A8;
 NET FIBER_REFCLKP LOC=B10; 
 NET FIBER_REFCLKN LOC=A10; 
 
-#Transceiver signals (3.3 V)
-NET FIBER_0_DISABLE_TRANSCEIVER LOC=E10 | IOSTANDARD = LVCMOS33;
-#NET FIBER_0_LINK_ERR            LOC=    | IOSTANDARD = LVCMOS33; #TX_FAULT G12, TX_DIS E10, MOD0(mod_present_l) A13, LOS_0 B5
-#NET FIBER_0_LINK_UP             LOC=    | IOSTANDARD = LVCMOS33; 
-NET FIBER_1_DISABLE_TRANSCEIVER LOC=G13 | IOSTANDARD = LVCMOS33;
-#NET FIBER_1_LINK_ERR            LOC=    | IOSTANDARD = LVCMOS33; #TX_FAULT A5, TX_DIS G13, MOD0 J12, LOS_1 J13
-#NET FIBER_1_LINK_UP             LOC=    | IOSTANDARD = LVCMOS33;
+##Transceiver signals (3.3 V)
+#NET FIBER_0_DISABLE_TRANSCEIVER LOC=E10 | IOSTANDARD = LVCMOS33;
+##NET FIBER_0_LINK_ERR            LOC=    | IOSTANDARD = LVCMOS33; #TX_FAULT G12, TX_DIS E10, MOD0(mod_present_l) A13, LOS_0 B5
+##NET FIBER_0_LINK_UP             LOC=    | IOSTANDARD = LVCMOS33; 
+#NET FIBER_1_DISABLE_TRANSCEIVER LOC=G13 | IOSTANDARD = LVCMOS33;
+##NET FIBER_1_LINK_ERR            LOC=    | IOSTANDARD = LVCMOS33; #TX_FAULT A5, TX_DIS G13, MOD0 J12, LOS_1 J13
+##NET FIBER_1_LINK_UP             LOC=    | IOSTANDARD = LVCMOS33;
 
 ## UCF generated for xc6slx150t-fgg676-3 device
 # 156.25MHz GTP Reference clock constraint 
-NET "map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane_aurora_interface/GTPD2_left_i" TNM_NET = GT_REFCLK; 
-TIMESPEC TS_GTPD2_LEFT_I = PERIOD "GT_REFCLK" 156.25 MHz HIGH 50%;
+#NET "map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane_aurora_interface/GTPD2_left_i" TNM_NET = GT_REFCLK; 
+#TIMESPEC TS_GTPD2_LEFT_I = PERIOD "GT_REFCLK" 156.25 MHz HIGH 50%;
 
 # User Clock Constraint: Value is selected based on the line rate (3.125 Gbps) and lane width (4-Byte)
-NET "map_readout_interfaces/map_daq_fifo_layer/internal_FIBER_USER_CLOCK" TNM_NET = USER_CLK;
-TIMESPEC TS_USER_CLK_I = PERIOD "USER_CLK" 78.125 MHz HIGH 50%;
+#NET "map_readout_interfaces/map_daq_fifo_layer/internal_FIBER_USER_CLOCK" TNM_NET = USER_CLK;
+#TIMESPEC TS_USER_CLK_I = PERIOD "USER_CLK" 78.125 MHz HIGH 50%;
 NET "map_readout_interfaces/map_daq_fifo_layer/internal_FIFO_CLOCK" TNM_NET = FIFO_CLK;
 TIMESPEC TS_FIFO_CLK_I = PERIOD "FIFO_CLK" 78.125 MHz HIGH 50%;
 
 # Sync Clock Constraint: Value is selected based on the line rate (3.125 Gbps) and lane width (4-Byte)
-NET "map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane_aurora_interface/sync_clk_0_i" TNM_NET = SYNC_CLK;
-TIMESPEC TS_SYNC_CLK_0 = PERIOD "SYNC_CLK" 312.5 MHz HIGH 50%;
+#NET "map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane_aurora_interface/sync_clk_0_i" TNM_NET = SYNC_CLK;
+#TIMESPEC TS_SYNC_CLK_0 = PERIOD "SYNC_CLK" 312.5 MHz HIGH 50%;
 
 #Site specifications.  Only the GTPA dual site is strictly necessary, as far as I know.
-INST map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane_aurora_interface/aurora_module_i/gtp_wrapper_i/gtp_tile_inst/gtpa1_dual_i LOC=GTPA1_DUAL_X0Y1;
+#INST map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane_aurora_interface/aurora_module_i/gtp_wrapper_i/gtp_tile_inst/gtpa1_dual_i LOC=GTPA1_DUAL_X0Y1;
 
 #ASIC Related
 
