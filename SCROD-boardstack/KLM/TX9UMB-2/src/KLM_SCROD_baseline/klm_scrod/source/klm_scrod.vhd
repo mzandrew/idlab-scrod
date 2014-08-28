@@ -201,7 +201,7 @@ architecture behave of klm_scrod is
 
     component klm_aurora_intfc is
     generic(
-        REFSELDYPLL             : std_logic_vector(2 downto 0);
+        REFSELDYPLL             : std_logic_vector(2 downto 0);-- if it is gong to be controlled by logic, tie it to signal so it wont be just a generic
         SIM_GTPRESET_SPEEDUP    : integer);
     port(
         user_clk                : in std_logic;
@@ -628,7 +628,7 @@ begin
     ----------------------------------------------------------------
     aurora_ins : klm_aurora_intfc
     generic map(
-        REFSELDYPLL             => "010",--PLLCLK (bad idea),
+        REFSELDYPLL             => "010",--PLLCLK (bad idea), -- not one of the MGT clocks
         SIM_GTPRESET_SPEEDUP    => 1)
     port map(
         user_clk                => sys_clk_ib,

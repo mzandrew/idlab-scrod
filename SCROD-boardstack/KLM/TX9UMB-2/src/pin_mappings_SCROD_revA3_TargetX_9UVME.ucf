@@ -38,25 +38,25 @@ NET LEDS<15> LOC=F19 | IOSTANDARD = LVCMOS33; #LEDS<15>
 
 ####FTSW Pin mappings######- with KLM_SCROD instantiated
 ##FTSW IO -- use LVDS_25 for real usage
-#NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;# | diff_term=true;
-#NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;#  | diff_term=true;
-#NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
-#NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVCMOS25;# | diff_term=true;
-#NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVCMOS25;# | diff_term=true;
+NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVDS_25;# | diff_term=true;
+NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVDS_25;#  | diff_term=true;
+NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVDS_25 | diff_term=true;
+NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVCMOS25;# | diff_term=true;
+NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVCMOS25;# | diff_term=true;
 
 ###FTSW Pin mappings######- without KLM_SCROD instantiated
 #FTSW IO -- use LVDS_25 for real usage
-NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVCMOS25 | diff_term=true;
-NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_ACK_P		LOC = "ad14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_ACK_N		LOC = "af14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_TRG_P		LOC = "ab14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_TRG_N		LOC = "ac14" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_CLK_P		LOC = "ae13" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_CLK_N		LOC = "af13" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_RSV_P		LOC = "ae15" | IOSTANDARD = LVCMOS25 | diff_term=true;
+#NET RJ45_RSV_N		LOC = "af15" | IOSTANDARD = LVCMOS25 | diff_term=true;
 ###############################
 ##SFP
 ###############################

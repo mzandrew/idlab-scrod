@@ -70,6 +70,8 @@ begin
 		IB => BOARD_CLOCKN,
 		O  => internal_BOARD_CLOCK
 	);	
+	
+	--the following is not used
 	map_board_clock_feedback : bufg
 	port map(
 		I  => internal_BOARD_CLOCK_FB,
@@ -131,6 +133,7 @@ begin
 --		O  => internal_CLOCK_SST,
 --		S  => USE_LOCAL_CLOCK		
 --	);
+
 	map_sst_bufg : bufg port map(
 		I => internal_BOARD_DERIVED_SST,
 		O => internal_CLOCK_SST
@@ -150,10 +153,10 @@ begin
 		CLK_SST          => internal_CLOCK_SST,
 		-- Clock out ports
 		CLK_50MHz_BUFG   => internal_CLOCK_50MHz_BUFG,
-		CLK_4MHz_BUFG    => internal_CLOCK_4MHz_BUFG,
+		CLK_4MHz_BUFG    =>open,-- internal_CLOCK_4MHz_BUFG,
 		CLK_SSTx8_BUFG   => CLOCK_SSTx8_BUFG,
-		CLK_SSP_BUFG     => internal_CLOCK_SSP_BUFG,
-		CLK_WR_STRB_BUFG => internal_CLOCK_WRITE_STROBE_BUFG,
+		CLK_SSP_BUFG     => open,--internal_CLOCK_SSP_BUFG,
+		CLK_WR_STRB_BUFG =>open,-- internal_CLOCK_WRITE_STROBE_BUFG,
 		-- Status and control signals
 		LOCKED    => open
 	);
@@ -173,25 +176,33 @@ begin
 		CLOCK_ENABLE_OUT => I2C_CLOCK_ENABLE
 	);
 	
+	map_4MHz_clock_enable : entity work.clock_enable_generator
+	generic map (
+		DIVIDE_RATIO => 12
+	)
+	port map (
+		CLOCK_IN         => internal_CLOCK_50MHz_BUFG,
+		CLOCK_ENABLE_OUT => internal_CLOCK_4MHz_BUFG
+	);
 	------------------------------------------------------------
 	--Map out the ASIC control signals that are on clock nets --
 	------------------------------------------------------------
-	gen_sst_to_asic : for i in 0 to ASICS_PER_ROW-1 generate
-		map_sst_to_col : ODDR2
-			generic map(
-				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
-				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
-				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
-			port map (
-				Q  => ASIC_SST(i),        -- 1-bit output data
-				C0 => internal_CLOCK_SST,      -- 1-bit clock input
-				C1 => not(internal_CLOCK_SST), -- 1-bit clock input
-				CE => '1',                     -- 1-bit clock enable input
-				D0 => '1',                     -- 1-bit data input (associated with C0)
-				D1 => '0',                     -- 1-bit data input (associated with C1)
-				R  => '0',                     -- 1-bit reset input
-				S  => '0'                      -- 1-bit set input
-		);
+--	gen_sst_to_asic : for i in 0 to ASICS_PER_ROW-1 generate
+--		map_sst_to_col : ODDR2
+--			generic map(
+--				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+--				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+--				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+--			port map (
+--				Q  => ASIC_SST(i),        -- 1-bit output data
+--				C0 => internal_CLOCK_SST,      -- 1-bit clock input
+--				C1 => not(internal_CLOCK_SST), -- 1-bit clock input
+--				CE => '1',                     -- 1-bit clock enable input
+--				D0 => '1',                     -- 1-bit data input (associated with C0)
+--				D1 => '0',                     -- 1-bit data input (associated with C1)
+--				R  => '0',                     -- 1-bit reset input
+--				S  => '0'                      -- 1-bit set input
+--		);
 --		map_ssp_to_col : ODDR2 --GV 6/9/14: not needed any more- its created inside the ASICs
 --			generic map(
 --				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
@@ -207,40 +218,40 @@ begin
 --				R  => '0',                     -- 1-bit reset input
 --				S  => '0'                      -- 1-bit set input
 --		);		
-		map_wr_strb_to_col : ODDR2
-			generic map(
-				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
-				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
-				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
-			port map (
-				Q  => ASIC_WR_STRB(i),        -- 1-bit output data
-				C0 => internal_CLOCK_WRITE_STROBE_BUFG,      -- 1-bit clock input
-				C1 => not(internal_CLOCK_WRITE_STROBE_BUFG), -- 1-bit clock input
-				CE => '1',                     -- 1-bit clock enable input
-				D0 => '1',                     -- 1-bit data input (associated with C0)
-				D1 => '0',                     -- 1-bit data input (associated with C1)
-				R  => '0',                     -- 1-bit reset input
-				S  => '0'                      -- 1-bit set input
-		);		
-	end generate;
-	map_oddr2_wr_addr_lsb : ODDR2
-		generic map(
-			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
-			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
-			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
-		port map (
-			Q  => ASIC_WR_ADDR_LSB,        -- 1-bit output data
-			C0 => internal_CLOCK_SST,      -- 1-bit clock input
-			C1 => not(internal_CLOCK_SST), -- 1-bit clock input
-			CE => '1',                     -- 1-bit clock enable input
-			D0 => '1',                     -- 1-bit data input (associated with C0)
-			D1 => '0',                     -- 1-bit data input (associated with C1)
-			R  => '0',                     -- 1-bit reset input
-			S  => '0'                      -- 1-bit set input
-	);	
-	--Drive a non-ODDR version of this signal out so we can use it within FPGA
-	--(mainly needed for the trigger memory)
-	ASIC_WR_ADDR_LSB_RAW <= internal_BOARD_DERIVED_SST;
+--		map_wr_strb_to_col : ODDR2
+--			generic map(
+--				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+--				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+--				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+--			port map (
+--				Q  => ASIC_WR_STRB(i),        -- 1-bit output data
+--				C0 => internal_CLOCK_WRITE_STROBE_BUFG,      -- 1-bit clock input
+--				C1 => not(internal_CLOCK_WRITE_STROBE_BUFG), -- 1-bit clock input
+--				CE => '1',                     -- 1-bit clock enable input
+--				D0 => '1',                     -- 1-bit data input (associated with C0)
+--				D1 => '0',                     -- 1-bit data input (associated with C1)
+--				R  => '0',                     -- 1-bit reset input
+--				S  => '0'                      -- 1-bit set input
+--		);		
+--	end generate;
+--	map_oddr2_wr_addr_lsb : ODDR2
+--		generic map(
+--			DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+--			INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+--			SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+--		port map (
+--			Q  => ASIC_WR_ADDR_LSB,        -- 1-bit output data
+--			C0 => internal_CLOCK_SST,      -- 1-bit clock input
+--			C1 => not(internal_CLOCK_SST), -- 1-bit clock input
+--			CE => '1',                     -- 1-bit clock enable input
+--			D0 => '1',                     -- 1-bit data input (associated with C0)
+--			D1 => '0',                     -- 1-bit data input (associated with C1)
+--			R  => '0',                     -- 1-bit reset input
+--			S  => '0'                      -- 1-bit set input
+--	);	
+--	--Drive a non-ODDR version of this signal out so we can use it within FPGA
+--	--(mainly needed for the trigger memory)
+--	ASIC_WR_ADDR_LSB_RAW <= internal_BOARD_DERIVED_SST;
 
 end Behavioral;
 

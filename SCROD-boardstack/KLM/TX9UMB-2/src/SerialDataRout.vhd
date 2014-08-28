@@ -18,6 +18,7 @@ entity SerialDataRout is
 		  EVENT_NUM			 : in   std_logic_vector(31 downto 0);
 		  WIN_ADDR			 : in   std_logic_vector(8 downto 0);
 		  ASIC_NUM 		    : in   std_logic_vector(3 downto 0);
+		  force_test_pattern : in   std_logic;
 		  
 		  IDLE_status				 : out  std_logic;
 		  busy				 : out  std_logic;
@@ -64,6 +65,7 @@ architecture Behavioral of SerialDataRout is
 	WaitAddr,	    -- Wait for address to settle, need docs to finilize
 	WaitLoad,	    -- Wait for load cmd to settle, need docs to finilize
 	WaitLoad1,	    -- Wait for load cmd to settle relatively to clk, need docs to finilize
+	WaitLoad1a,
 	WaitLoad2,	    -- Wait for load cmd to settle relatively to clk, need docs to finilize
 	clkHigh,	    -- Clock high, now at 62.5 MHz ,can investigate later at higher speed
 	clkHighHold,
@@ -73,30 +75,30 @@ architecture Behavioral of SerialDataRout is
 	StoreDataEnd,
 	CheckWindowEnd
 	);
-	signal next_state					: sr_state_type := Idle;
-	signal		internal_start : std_logic := '0';
-	signal	  internal_start_reg : std_logic_vector(1 downto 0) := (others=>'0');
-   signal     internal_start_srout : std_logic := '0';
-	signal internal_busy : std_logic := '0';
-	signal internal_srout_busy : std_logic := '0';
-	signal     sr_clk_i  	     : std_logic := '0';
-	signal     Ev_CNT     	   : std_logic_vector(4 downto 0) := (others=>'0');
-	signal     BIT_CNT     	   : std_logic_vector(4 downto 0) := (others=>'0');
-	signal     sr_clk_d        : std_logic := '0';
-	signal	start_fifo	:	STD_LOGIC := '0';
-	signal	FifoDone		:	STD_LOGIC := '0';
-	signal	FifoCount	:	STD_LOGIC_VECTOR(7 downto 0) := (others=>'0');
-	signal	SAMP_DONE_out : STD_LOGIC := '0';
-	signal   rd_cs_s     : STD_LOGIC_VECTOR( 5 downto 0) := (others=>'0');
-	signal   rd_rs_s     : STD_LOGIC_VECTOR(2 downto 0) := (others=>'0');
+	signal next_state						: sr_state_type := Idle;
+	signal internal_start 				: std_logic := '0';
+	signal internal_start_reg 			: std_logic_vector(1 downto 0) := (others=>'0');
+   signal internal_start_srout 		: std_logic := '0';
+	signal internal_busy 				: std_logic := '0';
+	signal internal_srout_busy 		: std_logic := '0';
+	signal sr_clk_i  	     				: std_logic := '0';
+	signal Ev_CNT     	  				: std_logic_vector(4 downto 0) := (others=>'0');
+	signal BIT_CNT     	 			  	: std_logic_vector(4 downto 0) := (others=>'0');
+	signal sr_clk_d        				: std_logic := '0';
+	signal start_fifo						:	STD_LOGIC := '0';
+	signal FifoDone						:	STD_LOGIC := '0';
+	signal FifoCount						:	STD_LOGIC_VECTOR(7 downto 0) := (others=>'0');
+	signal SAMP_DONE_out 				: STD_LOGIC := '0';
+	signal rd_cs_s     					: STD_LOGIC_VECTOR(5 downto 0) := (others=>'0');
+	signal rd_rs_s     					: STD_LOGIC_VECTOR(2 downto 0) := (others=>'0');
 	
-	signal   internal_samplesel : std_logic_vector(5 downto 0) := (others=>'0');
-	signal   internal_idle : STD_LOGIC := '0';
+	signal internal_samplesel : std_logic_vector(5 downto 0) := (others=>'0');
+	signal internal_idle : STD_LOGIC := '0';
 	
 	signal chan_data : STD_LOGIC_VECTOR(3 downto 0) := (others=>'0');
 	signal internal_fifo_wr_din : STD_LOGIC_VECTOR(31 downto 0) := (others=>'0');
---------------------------------------------------------------------------------
 
+----------------------------------------
 begin
 
 sr_clk <= sr_clk_i;
@@ -258,7 +260,7 @@ if (Clk'event and Clk = '1') then
    When WaitAddr =>
     sr_clk_i  	       <= '0';
     sr_sel  	       <= '0';
-    smplsi_any       <= '1';
+    smplsi_any       <= not force_test_pattern; -- <='0' inorder to force test pattern;
     SAMP_DONE_out        <= '0';
 	 --start_fifo 		<= '0';
 	 fifo_wr_en			<= '0';
@@ -273,7 +275,7 @@ if (Clk'event and Clk = '1') then
 	--turn sr_sel on, wait to settle
    When WaitLoad =>
 	 sr_sel  	       <= '1';
-    smplsi_any       <= '1';
+    smplsi_any       <= not force_test_pattern; -- <='0' inorder to force test pattern;
     SAMP_DONE_out        <= '0';
     if (Ev_CNT < LOAD_TIME) then
       Ev_CNT <= Ev_CNT + '1';
@@ -288,7 +290,7 @@ if (Clk'event and Clk = '1') then
 	--turn sr_clk_i on, wait to settle
 	--turn off sr_sel and sr_clk_i on transition
    When WaitLoad1 =>
-    smplsi_any       <= '1';
+    smplsi_any       <= not force_test_pattern; -- <='0' inorder to force test pattern;
     SAMP_DONE_out        <= '0';
     if (Ev_CNT < LOAD_TIME1) then
       Ev_CNT <= Ev_CNT + '1';
@@ -297,14 +299,15 @@ if (Clk'event and Clk = '1') then
       next_state 	<= WaitLoad1;
     else
       Ev_CNT           <= (others=>'0');
-      sr_sel  	       <= '0';
+      sr_sel  	       <= '1';
 		sr_clk_i  	       <= '0';
       next_state 	<= WaitLoad2;
     end if;
+
 	 
 	--turn off sr_sel and sr_clk_i on transition
    When WaitLoad2 =>
-    smplsi_any       <= '1';
+    smplsi_any       <= not force_test_pattern; -- <='0' inorder to force test pattern;
     SAMP_DONE_out        <= '0';
 	 sr_sel  	       <= '0';
 	 sr_clk_i  	       <= '0';

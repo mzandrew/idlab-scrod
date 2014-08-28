@@ -32,7 +32,7 @@ use UNISIM.VComponents.all;
 
 entity daq_fifo_layer is
 	Generic (
-		INCLUDE_AURORA : integer :=   1;
+		INCLUDE_AURORA : integer :=   0;
 		INCLUDE_USB    : integer :=   1
 	);
 	Port ( 
@@ -498,6 +498,7 @@ begin
 		internal_FIBER_0_LINK_ERR <= internal_FIBER_0_HARD_ERR or internal_FIBER_0_SOFT_ERR;
 		internal_FIBER_1_LINK_ERR <= internal_FIBER_1_HARD_ERR or internal_FIBER_1_SOFT_ERR;
 		--Instantiate the Aurora interfaces
+		--Delete it out of here
 		map_two_lane_aurora_interface : entity work.two_lane_aurora_interface
 		generic map(
 			USE_CHIPSCOPE          => 0,
