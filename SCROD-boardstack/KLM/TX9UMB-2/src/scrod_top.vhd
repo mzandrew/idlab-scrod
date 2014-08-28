@@ -128,7 +128,7 @@ entity scrod_top is
 		BUSA_SAMPLESEL_S				 : out STD_LOGIC_VECTOR(4 downto 0);
 		BUSA_SR_CLEAR					 : out STD_LOGIC;
 		BUSA_SR_SEL						 : out STD_LOGIC;
-		BUSA_DO							 : in STD_LOGIC_VECTOR(15 downto 0);
+		BUSA_DO							 : inout STD_LOGIC_VECTOR(15 downto 0);
 		
 		--Bus B Specific Signals
 --		BUSB_REGCLR						 : out STD_LOGIC;
@@ -385,6 +385,7 @@ architecture Behavioral of scrod_top is
 	signal internal_DIG_IDLE_status 		: std_logic := '0';
 	signal internal_DIG_RD_ENA 			: std_logic := '0';
 	signal internal_DIG_CLR 				: std_logic := '0';
+
 	signal internal_DIG_RD_ROWSEL_S 		: STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 	signal internal_DIG_RD_COLSEL_S 		: STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
 	signal internal_DIG_START 				: STD_LOGIC := '0';
@@ -395,15 +396,19 @@ architecture Behavioral of scrod_top is
 	signal internal_SROUT_IDLE_status 	: std_logic := '0';
 	signal internal_SROUT_SAMP_DONE 		: std_logic := '0';
 	signal internal_SROUT_SR_CLR 			: std_logic := '0';
+
 	signal internal_SROUT_SR_CLK 			: std_logic := '0';
 	signal internal_SROUT_SR_SEL 			: std_logic := '0';
+
 	signal internal_SROUT_SAMPLESEL 		: std_logic_vector(4 downto 0) := (others => '0');
 	signal internal_SROUT_SAMPLESEL_ANY : std_logic := '0';
+
 	signal internal_SROUT_FIFO_WR_CLK   : std_logic := '0';
 	signal internal_SROUT_FIFO_WR_EN    : std_logic := '0';
 	signal internal_SROUT_FIFO_DATA_OUT : std_logic_vector(31 downto 0) := (others => '0');
 	signal internal_SROUT_dout 			: std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_SROUT_ASIC_CONTROL_WORD : std_logic_vector(9 downto 0) := (others => '0');
+	signal internal_CMDREG_SROUT_TPG : std_logic := '0';
 	
 	--WAVEFORM DATA FIFO
 	signal internal_WAVEFORM_FIFO_RST 	: std_logic := '0';
@@ -431,6 +436,17 @@ architecture Behavioral of scrod_top is
 	signal i_dac_update_extended : std_logic;
 	signal i_hv_sck_dac : std_logic;
 	signal i_hv_din_dac : std_logic;
+
+	signal internal_TDC_MON_TIMING_buf : std_logic_vector(9 downto 0);
+
+	signal internal_CMDREG_RAMADDR : std_logic_vector (20 downto 0);
+	signal internal_CMDREG_RAMDATAWR :std_logic_vector(15 downto 0);
+	signal internal_CMDREG_RAMUPDATE :std_logic;
+	signal internal_CMDREG_RAMDATARD :std_logic_vector(15 downto 0);
+	signal internal_CMDREG_RAMRW :std_logic;
+	signal internal_BUS_RAM_RS_A :std_logic_vector (10 downto 0);
+	signal internal_RAM_ADDR : std_logic_vector (20 downto 0);
+
 
 	--Waveform FIFO component
 	COMPONENT waveform_fifo_wr32_rd32
@@ -463,15 +479,41 @@ architecture Behavioral of scrod_top is
 	);
 	END COMPONENT;
 	
+	
+--	 COMPONENT SRAMiface1
+--    PORT(
+--         clk : IN  std_logic;
+--         addr : IN  std_logic_vector(20 downto 0);
+--         dw : IN  std_logic_vector(15 downto 0);
+--         dr : OUT  std_logic_vector(15 downto 0);
+--         rw : IN  std_logic;
+--         update : IN  std_logic;
+--         busy : OUT  std_logic;
+--         A : OUT  std_logic_vector(20 downto 0);
+--         IO : INOUT  std_logic_vector(15 downto 0);
+--         BYTEb : OUT  std_logic;
+--         BHEb : OUT  std_logic;
+--         WEb : OUT  std_logic;
+--         CE2 : OUT  std_logic;
+--         CE1b : OUT  std_logic;
+--         OEb : OUT  std_logic;
+--         BLEb : OUT  std_logic
+--        );
+--    END COMPONENT;
+--    
+	
 begin
 
+
+
+	
 	--Overall Signal Routing
 	--debug/diag route:
    --EX_TRIGGER1 <= internal_TRIGGER_ALL;
-   EX_TRIGGER2 <= internal_TRIGGER_ASIC(9);
-	EX_TRIGGER1 <= internal_READ_ENABLE_TIMER(9);
---   EX_TRIGGER1 <= TDC_MON_TIMING(9);
---  EX_TRIGGER2 <= internal_DAC_CONTROL_SCLK;
+ --  EX_TRIGGER2 <= internal_TRIGGER_ASIC(9);
+--	EX_TRIGGER1 <= internal_READ_ENABLE_TIMER(9);
+   EX_TRIGGER1 <= internal_TXDCTRIG_buf(10)(5);
+	EX_TRIGGER2 <= SHOUT(9);
 
    internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
    internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
@@ -511,6 +553,7 @@ begin
                 O               => internal_TXDCTRIG16_buf(I),
                 I               => internal_TXDCTRIG16(I)
         );             
+                
     end generate;   
 	 
 	
@@ -551,6 +594,32 @@ end generate;
 		OR ( internal_TRIGGER_ASIC(9) --AND internal_TRIGGER_ASIC_control_word(9) 
 		);
 	
+	
+--		BUS_RAM_RS_A <= internal_RAM_ADDR(10 downto 0);
+--	BUSA_SAMPLESEL_S <= internal_RAM_ADDR(15 downto 11);
+--	BUSB_SAMPLESEL_S <= internal_RAM_ADDR(20 downto 16);
+
+	--sram interface
+--	  uut_sram1: SRAMiface1 PORT MAP (
+--          clk => internal_CLOCK_4MHz_BUFG,
+--          addr => internal_CMDREG_RAMADDR,
+--          dw => internal_CMDREG_RAMDATAWR,
+--          dr => internal_CMDREG_RAMDATARD,
+--          rw => internal_CMDREG_RAMRW,
+--          update => internal_CMDREG_RAMUPDATE,
+--          busy => open,
+--          A => internal_RAM_ADDR,
+--          IO => BUSA_DO,
+--          BYTEb => open,
+--          BHEb => open,
+--          WEb => RAM1_WE,
+--          CE2 => RAM1_CE2,
+--          CE1b => RAM1_CE1,
+--          OEb => RAM1_OE,
+--          BLEb => open
+--        );
+
+	
 	--Clock generation
 	map_clock_generation : entity work.clock_generation
 	port map ( 
@@ -576,7 +645,7 @@ end generate;
 		--ASIC control clocks
 		--IM/GSV: Modify to it will run LVDS:
 		CLOCK_SSTx8_BUFG  => internal_CLOCK_8xSST_BUFG,
-		CLOCK_SST_BUFG    => internal_CLOCK_SST_BUFG,
+		--CLOCK_SST_BUFG    => internal_CLOCK_SST_BUFG,-- not used 8/26/14, IM
 		--ASIC output clocks
 		ASIC_SST          => open,
 		ASIC_SSP          => open,
@@ -654,38 +723,38 @@ end generate;
 ---------KLM_SCROD: interface for Trigger using FTSW-----------
 ---------------------------------------------------------------
 
---	klm_scrod_trig_interface : entity work.KLM_SCROD
---		port map ( 
---	
---			
-----			    TTD/FTSW interface
---    ttdclkp  => RJ45_CLK_P,
---    ttdclkn  => RJ45_CLK_N,
---    ttdtrgp  => RJ45_TRG_P,
---    ttdtrgn  => RJ45_TRG_N,    
---    ttdrsvp  => RJ45_RSV_P,  
---    ttdrsvn  => RJ45_RSV_N,
---    ttdackp  => RJ45_ACK_P,
---    ttdackn  => RJ45_ACK_N,
-------     ASIC Interface
---    target_tb  => internal_TXDCTRIG_buf,		--                 : in tb_vec_type; 
---    target_tb16 => internal_TXDCTRIG16_buf,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
---    -- SFP interface
---    mgttxfault	=>		mgttxfault,  
---    mgtmod0		=>		mgtmod0,               
---    mgtlos		=>		mgtlos,                
---    mgttxdis	=>		mgttxdis,              
---    mgtmod2   	=>		mgtmod2,               
---    mgtmod1  	=>		mgtmod1,               
---    mgtrxp    	=>		mgtrxp,                
---    mgtrxn   	=>		mgtrxn,                
---    mgttxp    	=>		mgttxp,                
---    mgttxn   	=>		mgttxn,                
---    status_fake =>	status_fake,          
---    control_fake => 	control_fake         
---
---			);
---			
+	klm_scrod_trig_interface : entity work.KLM_SCROD
+		port map ( 
+	
+			
+--			    TTD/FTSW interface
+    ttdclkp  => RJ45_CLK_P,
+    ttdclkn  => RJ45_CLK_N,
+    ttdtrgp  => RJ45_TRG_P,
+    ttdtrgn  => RJ45_TRG_N,    
+    ttdrsvp  => RJ45_RSV_P,  
+    ttdrsvn  => RJ45_RSV_N,
+    ttdackp  => RJ45_ACK_P,
+    ttdackn  => RJ45_ACK_N,
+----     ASIC Interface
+    target_tb  => internal_TXDCTRIG_buf,		--                 : in tb_vec_type; 
+    target_tb16 => internal_TXDCTRIG16_buf,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
+    -- SFP interface
+    mgttxfault	=>		mgttxfault,  
+    mgtmod0		=>		mgtmod0,               
+    mgtlos		=>		mgtlos,                
+    mgttxdis	=>		mgttxdis,              
+    mgtmod2   	=>		mgtmod2,               
+    mgtmod1  	=>		mgtmod1,               
+    mgtrxp    	=>		mgtrxp,                
+    mgtrxn   	=>		mgtrxn,                
+    mgttxp    	=>		mgttxp,                
+    mgttxn   	=>		mgttxn,                
+    status_fake =>	status_fake,          
+    control_fake => 	control_fake         
+
+			);
+			
 
 
 
@@ -717,6 +786,14 @@ end generate;
 	
 	--Serial Readout Signals
 	internal_CMDREG_SROUT_START <=  internal_OUTPUT_REGISTERS(30)(0);
+	internal_CMDREG_SROUT_TPG <= internal_OUTPUT_REGISTERS(31)(0); --'1': force test pattern to output. '0': regular operation
+	--RAM TEST:
+	internal_CMDREG_RAMADDR(15 downto 0) <=internal_OUTPUT_REGISTERS(32);
+	internal_CMDREG_RAMADDR(20 downto 16) <=internal_OUTPUT_REGISTERS(33)(4 downto 0);
+	internal_CMDREG_RAMDATAWR <=internal_OUTPUT_REGISTERS(34);
+	internal_CMDREG_RAMUPDATE <=internal_OUTPUT_REGISTERS(35)(0);
+	internal_CMDREG_RAMRW<=internal_OUTPUT_REGISTERS(36)(0);
+	
 	
 	--Event builder signals
 	internal_CMDREG_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
@@ -748,7 +825,9 @@ end generate;
 	internal_INPUT_REGISTERS(N_GPR + 22)(0) <= internal_enOutput;
 	TDC_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(3 downto 0);--channel within a daughtercard
 	TOP_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(7 downto 4);-- Daughter Card Number
-	
+
+	internal_INPUT_REGISTERS(N_GPR+23)<=internal_CMDREG_RAMDATARD ;
+
 	
 	
 	-- HV dac signals
@@ -1053,7 +1132,7 @@ end generate;
 	                 internal_CMDREG_DIG_RD_ROWSEL_S;
 	BUSA_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
 	                 internal_CMDREG_DIG_RD_COLSEL_S;				
-	BUSA_CLR 			<= internal_DIG_CLR;
+	BUSA_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
 --	BUSA_START 			<= internal_DIG_RAMP;
 	BUSA_RAMP 			<= internal_DIG_RAMP;
 	BUSB_RD_ENA			<= internal_DIG_RD_ENA;
@@ -1061,7 +1140,7 @@ end generate;
 	                 internal_CMDREG_DIG_RD_ROWSEL_S;
 	BUSB_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
 	                 internal_CMDREG_DIG_RD_COLSEL_S;
-	BUSB_CLR 			<= internal_DIG_CLR;
+	BUSB_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
 --	BUSB_START 			<= internal_DIG_RAMP;
 	BUSB_RAMP 			<= internal_DIG_RAMP;	
 	
@@ -1071,6 +1150,8 @@ end generate;
 		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
 		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
 		ASIC_NUM 	=> internal_READCTRL_ASIC_NUM,
+		force_test_pattern =>internal_CMDREG_SROUT_TPG,
+		
 		IDLE_status => internal_SROUT_IDLE_status,
 		busy 			=> open,
 		samp_done 	=> open,
@@ -1088,11 +1169,11 @@ end generate;
 							internal_CMDREG_SROUT_START;
 	--make serial readout bus signals identical
 	BUSA_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
-	BUSA_SR_CLEAR 		<= internal_SROUT_SR_CLR;
-	BUSA_SR_SEL			<= internal_SROUT_SR_SEL;
 	BUSB_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
-	BUSB_SR_CLEAR 		<=  internal_SROUT_SR_CLR;
-	BUSB_SR_SEL			<= internal_SROUT_SR_SEL;
+	BUSA_SR_SEL <= internal_SROUT_SR_SEL;
+	BUSB_SR_SEL <= internal_SROUT_SR_SEL;
+	BUSA_SR_CLEAR<= internal_SROUT_SR_CLR;
+	BUSB_SR_CLEAR<= internal_SROUT_SR_CLR;
 	
 	--Serial readout DO signal switches between buses based on internal_READCTRL_ASIC_NUM signal
 	internal_SROUT_dout <= BUSA_DO when (internal_READCTRL_ASIC_NUM < x"6") else
@@ -1113,8 +1194,7 @@ end generate;
 	
 	--Only specified DC gets serial data signals, uses bit mask
 	gen_SAMPLESEL_ANY_CONTROL: for i in 0 to 9 generate
-		SR_CLOCK(i)			<= internal_SROUT_SR_CLK 			and internal_SROUT_ASIC_CONTROL_WORD(i);
-		--debug trying to force pattern!
+		SR_CLOCK(i)			<= internal_SROUT_SR_CLK			and internal_SROUT_ASIC_CONTROL_WORD(i);
 		SAMPLESEL_ANY(i) 	<= internal_SROUT_SAMPLESEL_ANY 	and internal_SROUT_ASIC_CONTROL_WORD(i);
 	end generate;
 	
@@ -1131,6 +1211,10 @@ end generate;
 		empty => internal_WAVEFORM_FIFO_EMPTY,
 		valid => internal_WAVEFORM_FIFO_DATA_VALID
    );
+
+	
+	
+	
 	
 	--Module reads out from waveform FIFO and places ASIC window-sized packets into buffer FIFO
 	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP(
