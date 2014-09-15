@@ -22,7 +22,14 @@
   <sourceproject xmlns="http://www.xilinx.com/XMLSchema" xil_pn:fileType="FILE_XISE" xil_pn:name="scrod-boardstack-new-daq-interface.xise"/>
 
   <files xmlns="http://www.xilinx.com/XMLSchema">
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="ReadoutControl.prj"/>
+    <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="ReadoutControl.stx"/>
+    <file xil_pn:fileType="FILE_XST" xil_pn:name="ReadoutControl.xst"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="SamplingLgc.prj"/>
+    <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="SamplingLgc.stx"/>
     <file xil_pn:fileType="FILE_SYMBOL" xil_pn:name="SamplingLgc.sym" xil_pn:origination="imported"/>
+    <file xil_pn:fileType="FILE_XST" xil_pn:name="SamplingLgc.xst"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="SamplingLgc_stx_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="SerialDataRout_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="_ngo"/>
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/bitgen.xmsgs"/>
@@ -31,6 +38,8 @@
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/par.xmsgs"/>
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/trce.xmsgs"/>
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="clock_enable_generator_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="clock_enable_generator_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
     <file xil_pn:fileType="FILE_ASY" xil_pn:name="ipcore_dir/FIFO_INP_0.asy" xil_pn:origination="imported"/>
     <file xil_pn:fileType="FILE_SYMBOL" xil_pn:name="ipcore_dir/FIFO_INP_0.sym" xil_pn:origination="imported"/>
@@ -94,6 +103,7 @@
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_BITGEN_REPORT" xil_pn:name="scrod_top.ut" xil_pn:subbranch="FPGAConfiguration"/>
     <file xil_pn:fileType="FILE_XPI" xil_pn:name="scrod_top.xpi"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="scrod_top.xst"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="scrod_top_beh.prj"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="scrod_top_envsettings.html"/>
     <file xil_pn:fileType="FILE_LOG" xil_pn:name="scrod_top_fpga_editor.log"/>
     <file xil_pn:fileType="FILE_NCD" xil_pn:name="scrod_top_guide.ncd" xil_pn:origination="imported"/>
@@ -111,14 +121,23 @@
     <file xil_pn:fileType="FILE_WEBTALK" xil_pn:name="scrod_top_usage.xml"/>
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="scrod_top_xst.xrpt"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_T6DACctrl01_isim_beh.exe"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_clock_enable_generator_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_clock_enable_generator_stx_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_digitizinglogic01_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_readoutControl01_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_readoutControl01_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_readoutControl01_isim_beh.wdb"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_readoutControl01_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_samplinglogic01_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_samplinglogic01_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_samplinglogic01_isim_beh.wdb"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_samplinglogic_new01_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_samplinglogic_new01_stx_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_samplinglogic_new2_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_samplinglogic_new2_stx_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_serialrout01_isim_beh.exe"/>
-    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_sram01_beh.prj"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_serialrout01_stx_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_sram01_isim_beh.exe"/>
-    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_sram01_isim_beh.wdb"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_testpatgen01_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_testpatgen01_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_SYMBOL" xil_pn:name="test1.sym" xil_pn:origination="imported"/>
@@ -130,17 +149,13 @@
   </files>
 
   <transforms xmlns="http://www.xilinx.com/XMLSchema">
-    <transform xil_pn:end_ts="1409019519" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1409019519">
+    <transform xil_pn:end_ts="1410575547" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1410575547">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1409019520" xil_pn:in_ck="-8162556873762340003" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1409019519">
+    <transform xil_pn:end_ts="1410575568" xil_pn:in_ck="7527274036356635833" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1410575568">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="../src/DigitizingLgc.vhd"/>
       <outfile xil_pn:name="../src/DigitizingLgcTX.vhd"/>
       <outfile xil_pn:name="../src/GreyCodeRepair.vhd"/>
@@ -223,6 +238,7 @@
       <outfile xil_pn:name="../src/aurora_interfaces/gt/aurora_interface_0_tile.vhd"/>
       <outfile xil_pn:name="../src/aurora_interfaces/gt/aurora_interface_0_transceiver_wrapper.vhd"/>
       <outfile xil_pn:name="../src/aurora_interfaces/two_lane_aurora_interface.vhd"/>
+      <outfile xil_pn:name="../src/clocking/clock_gen.vhd"/>
       <outfile xil_pn:name="../src/clocking/clock_generation.vhd"/>
       <outfile xil_pn:name="../src/daq_fifo_layer.vhd"/>
       <outfile xil_pn:name="../src/detect_usb.vhd"/>
@@ -235,6 +251,7 @@
       <outfile xil_pn:name="../src/readout_definitions.vhd"/>
       <outfile xil_pn:name="../src/readout_interface.vhd"/>
       <outfile xil_pn:name="../src/scrod_top.vhd"/>
+      <outfile xil_pn:name="../src/tb_clock_enable_generator.vhd"/>
       <outfile xil_pn:name="../src/tb_sram01.vhd"/>
       <outfile xil_pn:name="../src/usb_interfaces/USB_IFCLK_XC3S400.v"/>
       <outfile xil_pn:name="../src/usb_interfaces/usb_init.v"/>
@@ -248,7 +265,9 @@
       <outfile xil_pn:name="TestPatternGen01.vhd"/>
       <outfile xil_pn:name="tb_T6DACctrl01.vhd"/>
       <outfile xil_pn:name="tb_digitizinglogic01.vhd"/>
-      <outfile xil_pn:name="tb_samplinglogic01.vhd"/>
+      <outfile xil_pn:name="tb_readoutControl01.vhd"/>
+      <outfile xil_pn:name="tb_samplinglogic_new01.vhd"/>
+      <outfile xil_pn:name="tb_samplinglogic_new2.vhd"/>
       <outfile xil_pn:name="tb_serialrout01.vhd"/>
       <outfile xil_pn:name="tb_testpatgen01.vhd"/>
       <outfile xil_pn:name="tb_trigger_scaler_single_channel_w_timing_gen02.vhd"/>
@@ -256,214 +275,15 @@
       <outfile xil_pn:name="tb_u_Target6_DAC_CONTROL.vhd"/>
       <outfile xil_pn:name="ub_trigger_scaler_single_channel01.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1409019520" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="481492308787755519" xil_pn:start_ts="1409019520">
+    <transform xil_pn:end_ts="1410575547" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="3184527313716029281" xil_pn:start_ts="1410575547">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1409019520" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-203610365085881219" xil_pn:start_ts="1409019520">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="InputAdded"/>
-      <status xil_pn:value="InputRemoved"/>
-    </transform>
-    <transform xil_pn:end_ts="1409019521" xil_pn:in_ck="5146591441339647772" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-2367952710465759327" xil_pn:start_ts="1409019520">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_INP_0.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_INP_0.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_0.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_0.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_1.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_1.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/buffer_fifo_wr32_rd32.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/buffer_fifo_wr32_rd32.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen/example_design/clockgen_exdes.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen_asic_A.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen_asic_A/example_design/clockgen_asic_A_exdes.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/fifo_wr16_rd32.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/fifo_wr16_rd32.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/fifo_wr32_rd16.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/fifo_wr32_rd16.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/s6_icon.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/s6_icon.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/s6_vio.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/s6_vio.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.ngc"/>
-      <outfile xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.vhd"/>
-    </transform>
-    <transform xil_pn:end_ts="1409019521" xil_pn:in_ck="-7796410276003107029" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1409019521">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="../src/DigitizingLgc.vhd"/>
-      <outfile xil_pn:name="../src/DigitizingLgcTX.vhd"/>
-      <outfile xil_pn:name="../src/GreyCodeRepair.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_8b10b.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_clk_s6.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_ddr_s6.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_decode.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_encode.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_fifo_s6.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_symbols.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/conc_intfc.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/conc_intfc_pkg.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/trig_chan_calc.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/aurora_lane.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/aurora_tile.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/channel_err_detect.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/channel_init_sm.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/chbond_count_dec.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/err_detect.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/global_logic.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/idle_and_ver_gen.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/klm_aurora.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/klm_aurora_intfc.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/lane_init_sm.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/rx_ll.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/rx_ll_pdu_datapath.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/standard_cc_module.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/sym_dec.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/sym_gen.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/transceiver_wrapper.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/tx_ll.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/tx_ll_control.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/tx_ll_datapath.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/frame_gen.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/klm_scrod.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/klm_scrod_pkg.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/run_ctrl.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/sfp_stat_ctrl.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/timing_ctrl.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/timing_ctrl_pkg.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc_channel.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc_fifo.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc_pkg.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/time_order.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/time_order_pkg.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_10_to_1.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_2_to_1.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_3_to_1.vhd"/>
-      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_4_to_1.vhd"/>
-      <outfile xil_pn:name="../src/OutputBufferControl.vhd"/>
-      <outfile xil_pn:name="../src/ReadoutControl.vhd"/>
-      <outfile xil_pn:name="../src/SRAMiface1.vhd"/>
-      <outfile xil_pn:name="../src/SamplingLgc.vhd"/>
-      <outfile xil_pn:name="../src/SerialDataRout.vhd"/>
-      <outfile xil_pn:name="../src/TARGET6_DAC_CONTROL.vhd"/>
-      <outfile xil_pn:name="../src/TDC_MPPC_DAC.vhd"/>
-      <outfile xil_pn:name="../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"/>
-      <outfile xil_pn:name="../src/asic_interfaces/event_builder.vhd"/>
-      <outfile xil_pn:name="../src/asic_interfaces/trigger_scalers.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/aurora_interface_0.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_aurora_lane_4byte.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_aurora_pkg.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_axi_to_ll.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_channel_err_detect.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_channel_init_sm.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_chbond_count_dec_4byte.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_err_detect_4byte.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_global_logic.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_idle_and_ver_gen.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_lane_init_sm_4byte.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_ll_to_axi.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_rx_stream.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_sym_dec_4byte.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_sym_gen_4byte.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_tx_stream.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/cc_manager/aurora_interface_0_standard_cc_module.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/clock_module/aurora_interface_0_clock_module.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/gt/aurora_interface_0_tile.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/gt/aurora_interface_0_transceiver_wrapper.vhd"/>
-      <outfile xil_pn:name="../src/aurora_interfaces/two_lane_aurora_interface.vhd"/>
-      <outfile xil_pn:name="../src/clocking/clock_generation.vhd"/>
-      <outfile xil_pn:name="../src/daq_fifo_layer.vhd"/>
-      <outfile xil_pn:name="../src/detect_usb.vhd"/>
-      <outfile xil_pn:name="../src/edge_detect.vhd"/>
-      <outfile xil_pn:name="../src/mppc_dacs.vhd"/>
-      <outfile xil_pn:name="../src/peripherals/Module_ADC_MCP3221_I2C_new.vhd"/>
-      <outfile xil_pn:name="../src/picoblaze/command_interpreter/command_interpreter.vhd"/>
-      <outfile xil_pn:name="../src/picoblaze/kcpsm6.vhd"/>
-      <outfile xil_pn:name="../src/pulse_transition.vhd"/>
-      <outfile xil_pn:name="../src/readout_definitions.vhd"/>
-      <outfile xil_pn:name="../src/readout_interface.vhd"/>
-      <outfile xil_pn:name="../src/scrod_top.vhd"/>
-      <outfile xil_pn:name="../src/tb_sram01.vhd"/>
-      <outfile xil_pn:name="../src/usb_interfaces/USB_IFCLK_XC3S400.v"/>
-      <outfile xil_pn:name="../src/usb_interfaces/usb_init.v"/>
-      <outfile xil_pn:name="../src/usb_interfaces/usb_slave_fifo_interface.v"/>
-      <outfile xil_pn:name="../src/usb_interfaces/usb_slave_fifo_interface_io.v"/>
-      <outfile xil_pn:name="../src/usb_interfaces/usb_top.v"/>
-      <outfile xil_pn:name="../src/utilities/clock_enable_generator.vhd"/>
-      <outfile xil_pn:name="../src/utilities/edge_to_pulse_converter.vhd"/>
-      <outfile xil_pn:name="../src/utilities/utilities.vhd"/>
-      <outfile xil_pn:name="SampligLogic-TX.vhd"/>
-      <outfile xil_pn:name="TestPatternGen01.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_INP_0.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_0.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_1.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/buffer_fifo_wr32_rd32.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen/example_design/clockgen_exdes.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen_asic_A.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/clockgen_asic_A/example_design/clockgen_asic_A_exdes.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/fifo_wr16_rd32.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/fifo_wr32_rd16.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/s6_icon.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/s6_vio.vhd"/>
-      <outfile xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.vhd"/>
-      <outfile xil_pn:name="tb_T6DACctrl01.vhd"/>
-      <outfile xil_pn:name="tb_digitizinglogic01.vhd"/>
-      <outfile xil_pn:name="tb_samplinglogic01.vhd"/>
-      <outfile xil_pn:name="tb_serialrout01.vhd"/>
-      <outfile xil_pn:name="tb_testpatgen01.vhd"/>
-      <outfile xil_pn:name="tb_trigger_scaler_single_channel_w_timing_gen02.vhd"/>
-      <outfile xil_pn:name="tb_triggerscalers02.vhd"/>
-      <outfile xil_pn:name="tb_u_Target6_DAC_CONTROL.vhd"/>
-      <outfile xil_pn:name="ub_trigger_scaler_single_channel01.vhd"/>
-    </transform>
-    <transform xil_pn:end_ts="1409019523" xil_pn:in_ck="-6700653758946761989" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-6788518829760869634" xil_pn:start_ts="1409019521">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="fuse.log"/>
-      <outfile xil_pn:name="isim"/>
-      <outfile xil_pn:name="isim.log"/>
-      <outfile xil_pn:name="tb_sram01_beh.prj"/>
-      <outfile xil_pn:name="tb_sram01_isim_beh.exe"/>
-      <outfile xil_pn:name="xilinxsim.ini"/>
-    </transform>
-    <transform xil_pn:end_ts="1409019523" xil_pn:in_ck="2260171500109169277" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-7283625966517711157" xil_pn:start_ts="1409019523">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="isim.cmd"/>
-      <outfile xil_pn:name="isim.log"/>
-      <outfile xil_pn:name="tb_sram01_isim_beh.wdb"/>
-    </transform>
-    <transform xil_pn:end_ts="1409088514" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1409088514">
+    <transform xil_pn:end_ts="1410575548" xil_pn:in_ck="167600980870493" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-8511367896359985697" xil_pn:start_ts="1410575547">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1409258577" xil_pn:in_ck="167600980870493" xil_pn:name="TRAN_schematicsToHdl" xil_pn:prop_ck="5733029163959490222" xil_pn:start_ts="1409258574">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1409088519" xil_pn:in_ck="5146591441339647772" xil_pn:name="TRAN_regenerateCores" xil_pn:prop_ck="-2367952710465759327" xil_pn:start_ts="1409088514">
+    <transform xil_pn:end_ts="1410575550" xil_pn:in_ck="5360224095386744283" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-2367952710465759327" xil_pn:start_ts="1410575548">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="ipcore_dir/FIFO_INP_0.ngc"/>
@@ -493,113 +313,166 @@
       <outfile xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.ngc"/>
       <outfile xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1409088519" xil_pn:in_ck="5639320559175118655" xil_pn:name="TRAN_SubProjectAbstractToPreProxy" xil_pn:start_ts="1409088519">
+    <transform xil_pn:end_ts="1410575569" xil_pn:in_ck="5930676328728094500" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1410575568">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../src/DigitizingLgc.vhd"/>
+      <outfile xil_pn:name="../src/DigitizingLgcTX.vhd"/>
+      <outfile xil_pn:name="../src/GreyCodeRepair.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_8b10b.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_clk_s6.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_ddr_s6.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_decode.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_encode.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_fifo_s6.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_symbols.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/conc_intfc.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/conc_intfc_pkg.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/trig_chan_calc.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/aurora_lane.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/aurora_tile.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/channel_err_detect.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/channel_init_sm.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/chbond_count_dec.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/err_detect.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/global_logic.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/idle_and_ver_gen.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/klm_aurora.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/klm_aurora_intfc.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/lane_init_sm.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/rx_ll.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/rx_ll_pdu_datapath.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/standard_cc_module.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/sym_dec.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/sym_gen.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/transceiver_wrapper.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/tx_ll.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/tx_ll_control.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/tx_ll_datapath.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/frame_gen.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/klm_scrod.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/klm_scrod_pkg.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/run_ctrl.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/sfp_stat_ctrl.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/timing_ctrl.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/timing_ctrl_pkg.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc_channel.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc_fifo.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/tdc/source/tdc_pkg.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/time_order.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/time_order_pkg.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_10_to_1.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_2_to_1.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_3_to_1.vhd"/>
+      <outfile xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/tom_4_to_1.vhd"/>
+      <outfile xil_pn:name="../src/OutputBufferControl.vhd"/>
+      <outfile xil_pn:name="../src/ReadoutControl.vhd"/>
+      <outfile xil_pn:name="../src/SRAMiface1.vhd"/>
+      <outfile xil_pn:name="../src/SamplingLgc.vhd"/>
+      <outfile xil_pn:name="../src/SerialDataRout.vhd"/>
+      <outfile xil_pn:name="../src/TARGET6_DAC_CONTROL.vhd"/>
+      <outfile xil_pn:name="../src/TDC_MPPC_DAC.vhd"/>
+      <outfile xil_pn:name="../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"/>
+      <outfile xil_pn:name="../src/asic_interfaces/event_builder.vhd"/>
+      <outfile xil_pn:name="../src/asic_interfaces/trigger_scalers.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/aurora_interface_0.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_aurora_lane_4byte.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_aurora_pkg.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_axi_to_ll.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_channel_err_detect.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_channel_init_sm.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_chbond_count_dec_4byte.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_err_detect_4byte.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_global_logic.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_idle_and_ver_gen.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_lane_init_sm_4byte.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_ll_to_axi.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_rx_stream.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_sym_dec_4byte.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_sym_gen_4byte.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/base_resources/aurora_interface_0_tx_stream.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/cc_manager/aurora_interface_0_standard_cc_module.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/clock_module/aurora_interface_0_clock_module.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/gt/aurora_interface_0_tile.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/gt/aurora_interface_0_transceiver_wrapper.vhd"/>
+      <outfile xil_pn:name="../src/aurora_interfaces/two_lane_aurora_interface.vhd"/>
+      <outfile xil_pn:name="../src/clocking/clock_gen.vhd"/>
+      <outfile xil_pn:name="../src/clocking/clock_generation.vhd"/>
+      <outfile xil_pn:name="../src/daq_fifo_layer.vhd"/>
+      <outfile xil_pn:name="../src/detect_usb.vhd"/>
+      <outfile xil_pn:name="../src/edge_detect.vhd"/>
+      <outfile xil_pn:name="../src/mppc_dacs.vhd"/>
+      <outfile xil_pn:name="../src/peripherals/Module_ADC_MCP3221_I2C_new.vhd"/>
+      <outfile xil_pn:name="../src/picoblaze/command_interpreter/command_interpreter.vhd"/>
+      <outfile xil_pn:name="../src/picoblaze/kcpsm6.vhd"/>
+      <outfile xil_pn:name="../src/pulse_transition.vhd"/>
+      <outfile xil_pn:name="../src/readout_definitions.vhd"/>
+      <outfile xil_pn:name="../src/readout_interface.vhd"/>
+      <outfile xil_pn:name="../src/scrod_top.vhd"/>
+      <outfile xil_pn:name="../src/tb_clock_enable_generator.vhd"/>
+      <outfile xil_pn:name="../src/tb_sram01.vhd"/>
+      <outfile xil_pn:name="../src/usb_interfaces/USB_IFCLK_XC3S400.v"/>
+      <outfile xil_pn:name="../src/usb_interfaces/usb_init.v"/>
+      <outfile xil_pn:name="../src/usb_interfaces/usb_slave_fifo_interface.v"/>
+      <outfile xil_pn:name="../src/usb_interfaces/usb_slave_fifo_interface_io.v"/>
+      <outfile xil_pn:name="../src/usb_interfaces/usb_top.v"/>
+      <outfile xil_pn:name="../src/utilities/clock_enable_generator.vhd"/>
+      <outfile xil_pn:name="../src/utilities/edge_to_pulse_converter.vhd"/>
+      <outfile xil_pn:name="../src/utilities/utilities.vhd"/>
+      <outfile xil_pn:name="SampligLogic-TX.vhd"/>
+      <outfile xil_pn:name="TestPatternGen01.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/FIFO_INP_0.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_0.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/FIFO_OUT_1.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/buffer_fifo_wr32_rd32.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/daq_fifo.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/fifo_wr16_rd32.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/fifo_wr32_rd16.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/s6_icon.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/s6_vio.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/trig_fifo.vhd"/>
+      <outfile xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.vhd"/>
+      <outfile xil_pn:name="tb_T6DACctrl01.vhd"/>
+      <outfile xil_pn:name="tb_digitizinglogic01.vhd"/>
+      <outfile xil_pn:name="tb_readoutControl01.vhd"/>
+      <outfile xil_pn:name="tb_samplinglogic_new01.vhd"/>
+      <outfile xil_pn:name="tb_samplinglogic_new2.vhd"/>
+      <outfile xil_pn:name="tb_serialrout01.vhd"/>
+      <outfile xil_pn:name="tb_testpatgen01.vhd"/>
+      <outfile xil_pn:name="tb_trigger_scaler_single_channel_w_timing_gen02.vhd"/>
+      <outfile xil_pn:name="tb_triggerscalers02.vhd"/>
+      <outfile xil_pn:name="tb_u_Target6_DAC_CONTROL.vhd"/>
+      <outfile xil_pn:name="ub_trigger_scaler_single_channel01.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1409088519" xil_pn:name="TRAN_xawsTohdl" xil_pn:prop_ck="-8460645561387350928" xil_pn:start_ts="1409088519">
+    <transform xil_pn:end_ts="1410575576" xil_pn:in_ck="-6604757800013603474" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="7247275274829996226" xil_pn:start_ts="1410575569">
       <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1409088519" xil_pn:in_ck="5639320559175118655" xil_pn:name="TRAN_SubProjectPreToStructuralProxy" xil_pn:prop_ck="-563469029221826088" xil_pn:start_ts="1409088519">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1409088519" xil_pn:name="TRAN_platgen" xil_pn:prop_ck="-7812223212229432853" xil_pn:start_ts="1409088519">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1409196101" xil_pn:in_ck="-5490658147953941868" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="7897413124190968431" xil_pn:start_ts="1409195982">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForOutputs"/>
       <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
-      <outfile xil_pn:name="scrod_top.lso"/>
-      <outfile xil_pn:name="scrod_top.ngc"/>
-      <outfile xil_pn:name="scrod_top.ngr"/>
-      <outfile xil_pn:name="scrod_top.prj"/>
-      <outfile xil_pn:name="scrod_top.stx"/>
-      <outfile xil_pn:name="scrod_top.syr"/>
-      <outfile xil_pn:name="scrod_top.xst"/>
-      <outfile xil_pn:name="scrod_top_xst.xrpt"/>
-      <outfile xil_pn:name="webtalk_pn.xml"/>
-      <outfile xil_pn:name="xst"/>
+      <outfile xil_pn:name="fuse.log"/>
+      <outfile xil_pn:name="isim"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="tb_readoutControl01_beh.prj"/>
+      <outfile xil_pn:name="tb_readoutControl01_isim_beh.exe"/>
+      <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1409085743" xil_pn:in_ck="-8196870290214669590" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="-1047251638670223707" xil_pn:start_ts="1409085743">
+    <transform xil_pn:end_ts="1410649326" xil_pn:in_ck="9020437764675102809" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-3820287203313430427" xil_pn:start_ts="1410649326">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="isim.cmd"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="tb_readoutControl01_isim_beh.wdb"/>
+    </transform>
+    <transform xil_pn:end_ts="1410572531" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1410572531">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1409258601" xil_pn:in_ck="-929497979487716566" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="9035977821936796588" xil_pn:start_ts="1409258577">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="WarningsGenerated"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <outfile xil_pn:name="_ngo"/>
-      <outfile xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
-      <outfile xil_pn:name="scrod_top.bld"/>
-      <outfile xil_pn:name="scrod_top.ngd"/>
-      <outfile xil_pn:name="scrod_top_ngdbuild.xrpt"/>
-    </transform>
-    <transform xil_pn:end_ts="1409258898" xil_pn:in_ck="5696453993623290804" xil_pn:name="TRANEXT_map_spartan6" xil_pn:prop_ck="346394261158932323" xil_pn:start_ts="1409258601">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="WarningsGenerated"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="_xmsgs/map.xmsgs"/>
-      <outfile xil_pn:name="scrod_top.pcf"/>
-      <outfile xil_pn:name="scrod_top_map.map"/>
-      <outfile xil_pn:name="scrod_top_map.mrp"/>
-      <outfile xil_pn:name="scrod_top_map.ncd"/>
-      <outfile xil_pn:name="scrod_top_map.ngm"/>
-      <outfile xil_pn:name="scrod_top_map.xrpt"/>
-      <outfile xil_pn:name="scrod_top_summary.xml"/>
-      <outfile xil_pn:name="scrod_top_usage.xml"/>
-    </transform>
-    <transform xil_pn:end_ts="1409259210" xil_pn:in_ck="-3751356024836256563" xil_pn:name="TRANEXT_par_spartan6" xil_pn:prop_ck="-6187254786680531539" xil_pn:start_ts="1409258898">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="WarningsGenerated"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <outfile xil_pn:name="_xmsgs/par.xmsgs"/>
-      <outfile xil_pn:name="scrod_top.ncd"/>
-      <outfile xil_pn:name="scrod_top.pad"/>
-      <outfile xil_pn:name="scrod_top.par"/>
-      <outfile xil_pn:name="scrod_top.ptwx"/>
-      <outfile xil_pn:name="scrod_top.unroutes"/>
-      <outfile xil_pn:name="scrod_top.xpi"/>
-      <outfile xil_pn:name="scrod_top_pad.csv"/>
-      <outfile xil_pn:name="scrod_top_pad.txt"/>
-      <outfile xil_pn:name="scrod_top_par.xrpt"/>
-    </transform>
-    <transform xil_pn:end_ts="1409259270" xil_pn:in_ck="-5923325523361259056" xil_pn:name="TRANEXT_bitFile_spartan6" xil_pn:prop_ck="-4873576752889880239" xil_pn:start_ts="1409259210">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="WarningsGenerated"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <outfile xil_pn:name="_xmsgs/bitgen.xmsgs"/>
-      <outfile xil_pn:name="scrod_top.bgn"/>
-      <outfile xil_pn:name="scrod_top.bit"/>
-      <outfile xil_pn:name="scrod_top.drc"/>
-      <outfile xil_pn:name="scrod_top.ut"/>
-      <outfile xil_pn:name="webtalk.log"/>
-      <outfile xil_pn:name="webtalk_pn.xml"/>
-    </transform>
-    <transform xil_pn:end_ts="1409259210" xil_pn:in_ck="5696453993623290672" xil_pn:name="TRAN_postRouteTrce" xil_pn:prop_ck="445577401284416185" xil_pn:start_ts="1409259185">
+    <transform xil_pn:end_ts="1410647321" xil_pn:in_ck="-8196870290214669590" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="-1047251638670223707" xil_pn:start_ts="1410647321">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <outfile xil_pn:name="_xmsgs/trce.xmsgs"/>
-      <outfile xil_pn:name="scrod_top.twr"/>
-      <outfile xil_pn:name="scrod_top.twx"/>
-    </transform>
-    <transform xil_pn:end_ts="1406925473" xil_pn:in_ck="-5923325523361258924" xil_pn:name="TRAN_postXlateSimModel" xil_pn:prop_ck="-5731277729850205647" xil_pn:start_ts="1406925462">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="WarningsGenerated"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="InputRemoved"/>
-      <status xil_pn:value="OutputRemoved"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
     </transform>
   </transforms>
 

@@ -60,6 +60,8 @@ architecture Behavioral of clock_generation is
 	--
 	signal internal_CLOCK_4MHz_BUFG     : std_logic;
 	signal internal_CLOCK_50MHz_BUFG    : std_logic;
+	signal internal_CLOCK_SSTx8_BUFG    : std_logic;
+
 begin
 	------------------------------------------------------
 	--            Board derived clocking                --
@@ -152,15 +154,18 @@ begin
 		-- Clock in ports
 		CLK_SST          => internal_CLOCK_SST,
 		-- Clock out ports
-		CLK_50MHz_BUFG   => internal_CLOCK_50MHz_BUFG,
+		CLK_50MHz_BUFG   => open,--internal_CLOCK_50MHz_BUFG,run everything with the 62.5MHz clock, experiment: IM 8/29/14
 		CLK_4MHz_BUFG    =>open,-- internal_CLOCK_4MHz_BUFG,
-		CLK_SSTx8_BUFG   => CLOCK_SSTx8_BUFG,
+		CLK_SSTx8_BUFG   => internal_CLOCK_SSTx8_BUFG,
 		CLK_SSP_BUFG     => open,--internal_CLOCK_SSP_BUFG,
 		CLK_WR_STRB_BUFG =>open,-- internal_CLOCK_WRITE_STROBE_BUFG,
 		-- Status and control signals
 		LOCKED    => open
 	);
-	CLOCK_50MHz_BUFG <= internal_CLOCK_50MHz_BUFG;
+	CLOCK_50MHz_BUFG<=internal_CLOCK_SSTx8_BUFG ;-- run everything with the 62.5MHz clock, experiment: IM 8/29/14
+	CLOCK_SSTx8_BUFG<=internal_CLOCK_SSTx8_BUFG;
+	--CLOCK_50MHz_BUFG <= internal_CLOCK_50MHz_BUFG;
+
 	CLOCK_4MHz_BUFG  <= internal_CLOCK_4MHz_BUFG;
    CLOCK_SST_BUFG   <= internal_CLOCK_SST;
 	

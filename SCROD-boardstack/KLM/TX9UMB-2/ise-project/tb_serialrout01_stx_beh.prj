@@ -1,0 +1,2 @@
+vhdl isim_temp "../src/SerialDataRout.vhd"
+vhdl isim_temp "tb_serialrout01.vhd"

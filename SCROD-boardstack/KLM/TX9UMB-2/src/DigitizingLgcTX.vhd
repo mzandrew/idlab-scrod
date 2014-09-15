@@ -46,7 +46,7 @@ entity DigitizingLgcTX is
         clk		 			     	: in   std_logic;
 		  IDLE_status				: out  std_logic;
         StartDig	 		   	: in   std_logic;  -- capture trigger data
-		  ramp_length		 		: in std_logic_vector (11 downto 0);
+		  ramp_length		 		: in std_logic_vector (12 downto 0);
         rd_ena           		: out   std_logic; --enable read out??
         clr              		: out   std_logic;
 		  startramp	   			: out   std_logic	--ramp enable signal
@@ -72,9 +72,9 @@ signal clr_out 		: std_logic := '0';
 signal startramp_out : std_logic := '0';
 signal internal_IDLE_status : std_logic := '0';
 
-signal ramp_start : std_logic_vector (11 downto 0);
-signal RDEN_LENGTH : std_logic_vector(11 downto 0);
-signal RAMP_CNT    : std_logic_vector(10 downto 0) := "00000000000";
+signal ramp_start : std_logic_vector (12 downto 0);
+signal RDEN_LENGTH : std_logic_vector(12 downto 0);
+signal RAMP_CNT    : std_logic_vector(12 downto 0) := "0000000000000";
 
 --------------------------------------------------------------------------------
 begin
@@ -87,9 +87,9 @@ IDLE_status <= internal_IDLE_status;
 
 --hardcoded versions of constants
 --time delay between receipt of "Start" and setting rd_en high
-ramp_start <= "000000010000";
+ramp_start <= "0000000010000";
 --time rd_en is held high before setting ramp, start high
-RDEN_LENGTH <= "000000100000";
+RDEN_LENGTH <= "0000000100000";
 
 --latch stop to local clock domain
 process(Clk)
@@ -121,7 +121,7 @@ if (Clk'event and Clk = '1') then
 	 rd_ena_out         <= '0';  -- making guess on how transfer initiated
 	 startramp_out        <= '0';
 	 internal_IDLE_status <= '0';
-    if (RAMP_CNT(9 downto 0) < ramp_start) then  -- to delay ramp
+    if (RAMP_CNT(12 downto 0) < ramp_start) then  -- to delay ramp
       RAMP_CNT <= RAMP_CNT + '1';
       next_state 	<= WaitAddress;
     else
@@ -133,7 +133,7 @@ if (Clk'event and Clk = '1') then
     clr_out              <= '0';
 	 rd_ena_out         <= '1';  -- latches column , row read address?
 	 startramp_out        <= '0';
-    if (RAMP_CNT(10 downto 0) < RDEN_LENGTH) then
+    if (RAMP_CNT(12 downto 0) < RDEN_LENGTH) then
       RAMP_CNT <= RAMP_CNT + '1';
       next_state 	<= WaitRead;
     else
@@ -145,7 +145,7 @@ if (Clk'event and Clk = '1') then
     clr_out              <= '0';
 	 rd_ena_out         <= '1';
 	 startramp_out        <= '1';
-    if (RAMP_CNT(10 downto 0) < ramp_length(10 downto 0)) then  -- to generate ramp
+    if (RAMP_CNT(12 downto 0) < ramp_length(12 downto 0)) then  -- to generate ramp
       RAMP_CNT <= RAMP_CNT + '1';
       next_state 	<= WConvert;
     else
@@ -156,7 +156,7 @@ if (Clk'event and Clk = '1') then
   When CheckDone => 
 	 clr_out              <= '0';
     rd_ena_out         <= '1';
-	 startramp_out        <= '1';
+	 startramp_out        <= '0';
     RAMP_CNT         <= (others=>'0');
 	 internal_IDLE_status <= '1';
     if(StartDig_in = '0') then  -- done

@@ -1,0 +1,7 @@
+vhdl work "../src/SerialDataRout.vhd"
+vhdl work "../src/SamplingLgc.vhd"
+vhdl work "../src/ReadoutControl.vhd"
+vhdl work "../src/DigitizingLgcTX.vhd"
+vhdl work "tb_readoutControl01.vhd"
+vhdl work "ipcore_dir/clockgen/example_design/clockgen_exdes.vhd"
+vhdl work "ipcore_dir/clockgen_asic_A/example_design/clockgen_asic_A_exdes.vhd"

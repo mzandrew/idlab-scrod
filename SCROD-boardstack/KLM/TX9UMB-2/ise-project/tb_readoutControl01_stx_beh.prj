@@ -1,0 +1,5 @@
+vhdl isim_temp "../src/SerialDataRout.vhd"
+vhdl isim_temp "../src/SamplingLgc.vhd"
+vhdl isim_temp "../src/ReadoutControl.vhd"
+vhdl isim_temp "../src/DigitizingLgcTX.vhd"
+vhdl isim_temp "tb_readoutControl01.vhd"

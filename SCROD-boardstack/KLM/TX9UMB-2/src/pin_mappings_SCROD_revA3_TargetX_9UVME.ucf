@@ -12,8 +12,11 @@
 #General SCROD clocking
 NET BOARD_CLOCKP LOC=U25;
 NET BOARD_CLOCKN LOC=U26;
-NET "map_clock_generation/internal_BOARD_CLOCK" TNM_NET = BOARD_CLOCK;
+NET "map_clock_gen/internal_BOARD_CLOCK" TNM_NET = BOARD_CLOCK;
 TIMESPEC "TS_BOARD_CLOCK" = PERIOD "BOARD_CLOCK" 4 ns HIGH 50%;
+
+PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug
+PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug2
 
 #Diagnostics on LEDs (3.3 V)
 NET LEDS<0>  LOC=F18 | IOSTANDARD = LVCMOS33; #LEDS<0>
