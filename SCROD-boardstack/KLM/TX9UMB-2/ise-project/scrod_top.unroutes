@@ -1,0 +1,43 @@
+Release 13.2 - par O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+
+Sat Sep 13 12:35:33 2014
+
+All signals are completely routed.
+
+WARNING:ParHelpers:361 - There are 31 loadless signals in this design. This design will cause Bitgen to issue DRC
+   warnings.
+
+   TDC_DONE<0>_IBUF
+   TDC_DONE<1>_IBUF
+   TDC_DONE<2>_IBUF
+   TDC_DONE<3>_IBUF
+   TDC_DONE<4>_IBUF
+   TDC_DONE<5>_IBUF
+   TDC_DONE<6>_IBUF
+   TDC_DONE<7>_IBUF
+   TDC_DONE<8>_IBUF
+   TDC_DONE<9>_IBUF
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[10].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[10].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[1].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[1].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[2].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[2].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[3].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[3].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[4].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[4].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[5].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[5].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[6].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[6].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[7].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[7].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[8].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[8].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[9].tdc_ch_ins/fifo_ins/Mram_dpram_t1_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/tdc_ins/TDC_CH_GEN[9].tdc_ch_ins/fifo_ins/Mram_dpram_t2_RAMD_D1_O
+   klm_scrod_trig_interface/conc_intfc_ins/trg_fifo_full
+
+

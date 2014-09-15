@@ -55,6 +55,7 @@ entity ReadoutControl is
 			  READOUT_CONTINUE : in STD_LOGIC;
 			  RESET_EVENT_NUM : in STD_LOGIC;
 			  LATCH_SMP_MAIN_CNT : out STD_LOGIC_VECTOR(8 downto 0);
+			  dig_win_start		: out STD_LOGIC_VECTOR(8 downto 0);-- goes to the sampling logic to kill the write enable while writing over the digitization window
 			  LATCH_DONE : out STD_LOGIC;
 			  ASIC_NUM : out STD_LOGIC_VECTOR(3 downto 0);
 			  busy_status : out STD_LOGIC;
@@ -142,6 +143,7 @@ signal internal_READOUT_CONTINUE : std_logic := '0';
 signal internal_ASIC_SROUT_ENABLE_BITS : std_logic_vector(9 downto 0) := "1111111111";
 signal internal_EVENT_NUM : UNSIGNED(31 downto 0) := x"00000000";
 signal internal_READOUT_DONE : std_logic := '0';
+signal internal_dig_win_start : unsigned(8 downto 0) := (others=>'0');
 
 begin
 
@@ -158,6 +160,7 @@ LATCH_DONE <= internal_LATCH_DONE;
 ASIC_NUM <= std_logic_vector(to_unsigned(internal_asic_cnt,ASIC_NUM'length));
 EVENT_NUM <= std_logic_vector(internal_EVENT_NUM);
 READOUT_DONE <= internal_READOUT_DONE;
+dig_win_start <= std_logic_vector(internal_dig_win_start);
 
 --latch trigger and related signals to SAMPLING clock domain
 process(smp_clk)
@@ -288,16 +291,9 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
-			next_trig_state <= WAIT_SAMPLING_IDLE;	
+		internal_dig_win_start <= internal_LATCH_SMP_MAIN_CNT - internal_dig_offset;
+		next_trig_state <= DIG_WINDOW_LOOP;	
 
-	--wait for sampling idle signal
-	When WAIT_SAMPLING_IDLE =>
-	if( internal_SMP_IDLE_status = '0' ) then 
-		next_trig_state <= WAIT_SAMPLING_IDLE;
-	else
-		next_trig_state <= DIG_WINDOW_LOOP;
-	end if;
-	
 	--multi-window readout loop here, decide to digitize window or end readout
 	When DIG_WINDOW_LOOP =>
 		internal_smp_stop <= '1';
@@ -308,6 +304,8 @@ if (clk'event and clk = '1') then
 		--internal_busy_status <= '0';
 		internal_asic_cnt <= 0;
 		internal_SMP_MAIN_CNT <= internal_LATCH_SMP_MAIN_CNT + internal_win_cnt - internal_dig_offset;
+		internal_dig_win_start <= internal_LATCH_SMP_MAIN_CNT - internal_dig_offset;
+
 		if( internal_win_cnt < internal_win_num_to_read ) then
 			internal_win_cnt <= internal_win_cnt + 1; --update # of windows digitized counter
 			next_trig_state <= WAIT_DIG_ADDR; --read out window specified by internal_SMP_MAIN_CNT

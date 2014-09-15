@@ -8,316 +8,139 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity SamplingLgc is
    port (
-			clk		 			   : in    std_logic;  --expect input clock to be 8xSST
-			start	 			      : in    std_logic;  -- start sampling, asserted once
-			stop	 			      : in    std_logic;  -- hold operation
-			IDLE_status				: out   std_logic := '1'; --sampling idle
-			MAIN_CNT_out			: out   std_logic_vector(8 downto 0); --COL & ROW write address
-			sspin_out            : out   std_logic; --SCA control signals
+			clk		 			   : in    std_logic;  --expect input clock to be 8xSST = 62.5 MHz
+			reset	    		      : in    std_logic;  -- reset chip counters, it will reset the main counter and tells the TX chip to do so
+			dig_win_start			: in   std_logic_vector(8 downto 0); --COL & ROW of start of the wr ena low (wr disable)- this area is to be protected from being written on
+			dig_win_n				: in   std_logic_vector(8 downto 0); --number of windows to keep wr_ena low 
+			dig_win_ena				: in   std_logic; -- enable the write disable window
+			
+			MAIN_CNT_out			: out   std_logic_vector(8 downto 0); --COL & ROW write address- we just need this to keep track of the last sample taken
 			sstin_out            : out   std_logic; --SCA control signals
-			wr_advclk_out        : out   std_logic; --Write Address Increment Clock 
-			wr_addrclr_out       : out   std_logic; --Clear Write Address Counter
-			wr_strb_out          : out   std_logic; --Pulse to transfer samples to store
-			wr_ena_out           : out   std_logic --Enable Write procedure
+			wr_addrclr_out			: out   std_logic;-- write address clear: when asserted, it will reset the row and col on the TX chip
+			wr1_ena					: out   std_logic; --Enable Write 1 procedure
+			wr2_ena              : out   std_logic  --Enable Write 2 procedure
 	);
 end SamplingLgc;
 
 architecture Behavioral of SamplingLgc is
 
---state machine drives sampling logic signals directly, loops between Sampling0-7 unless stopped
+--Theory of operation for TargetX (IM:9/5/2014): 
+--clk period is 16 ns. clk/2 length is 8 ns
+-- sstin_out is always present with a 64 ns period:
+-- clk: 					10101010 10101010		each bit is 8 ns
+-- sstin_out:			11110000 11110000
+-- main counter++:	01000100 01000100	  (as per TX simulations)
+-- main counter++:	00100010 00100010	  (as per this implementation)
+--when start is asseted, main counter is reset and sampling starts by enabling wr1_ena and wr_2 ena. 
+--main counter is increased on everyother falling edge of the input clock
+--
+
+--state machine drives sampling logic signals directly
 type state_type is
 	(
-	Idle,					--Initial State
-	SamplingIdle,		-- Idling until command stop deasserted
-	SamplingStart0,	--Sampling cycle start
-	SamplingStart1,	
-	SamplingStart2,	
-	SamplingStart3,	
-	SamplingStart4,	
-	SamplingStart5,	
-	SamplingStart6,	
-	SamplingStart7,	
-   Sampling0,			--start of normal sampling
-   Sampling1,		
-   Sampling2,		
-	Sampling3,	  
-	Sampling4,	  
-	Sampling5,	  
-	Sampling6,
-	Sampling7,			--loops back to Sampling0 unless stop is high
-	SamplingGoToIdle --Intermediate state between Sampling7 and SamplingIdle if stop
+	resetting,					--Initial State, however sstin_out is always running 
+	sampling,					--main counter is ++ and wr_ena is active
+	freerun			--main counter is ++ and wr_ena is not active
 	);
 
-	signal next_state		: state_type := Idle;
-	
+	signal next_state		: state_type := resetting;
+	signal stop_in : std_logic :='0';
 	--vector stores current write address
 	signal MAIN_CNT		: UNSIGNED(8 downto 0) := "000000000";
 	
 	--output connecting signals
-	signal sspin     : std_logic := '0'; --SCA control signals
 	signal sstin     : std_logic := '0'; --SCA control signals
-	signal wr_advclk : std_logic := '0'; --Write Address Increment Clock 
-	signal wr_addrclr : std_logic := '1'; --Clear Write Address Counter
-	signal wr_strb   : std_logic := '0'; --Pulse to transfer samples to store
+	signal wr_addrclr : std_logic := '0'; --Clear Write Address Counter
 	signal wr_ena    : std_logic := '0'; --Enable Write procedure
-
+	signal clk_cntr : std_logic_vector(1 downto 0):=(others=>'0');-- counter 
+	signal started_cntr : integer:=0;-- counter
    --sampling module control signals
-	signal start_in : std_logic := '0';
-	signal stop_in : std_logic := '0';
+	signal reset_i : std_logic := '0';
+	--signal dig_win_cntr : std_logic_vector(4 downto 0):=(others=>'0');-- counter
+	signal dig_win_start_i : integer:=0;--(8 downto 0):=(others=>'0');
+	signal dig_win_n_i : integer:=0;--std_logic_vector(8 downto 0):=(others=>'0');
+	signal dig_win_end_i : integer:=0;--std_logic_vector(8 downto 0):=(others=>'0');
+	signal dig_win_ena_i : std_logic;
+	signal dig_win_wrap_i : std_logic;
+	signal dig_win_end2_i : integer:=0;--std_logic_vector(8 downto 0):=(others=>'0');
+
+
 --------------------------------------------------------------------------------
 begin
 
 --usual sampling signals
 --MAIN_CNT_out <= MAIN_CNT; --output full counter
 MAIN_CNT_out <= std_logic_vector(MAIN_CNT(8 downto 0)); --output only row + colum sections
-sspin_out <= sspin;
 sstin_out <= sstin;
-wr_advclk_out <= wr_advclk;
 wr_addrclr_out <= wr_addrclr;
-wr_strb_out <= wr_strb;
-wr_ena_out <= wr_ena;
+wr1_ena <= wr_ena;
+wr2_ena <= wr_ena;
 
---latch stop to local clock domain
+--latch start/stop to local clock domain
 process(clk)
 begin
-if (clk'event and clk = '1') then
-	stop_in <= stop;
-	start_in <= start;
-end if;
+if (rising_edge(clk)) then
+	reset_i<= reset;
+	dig_win_start_i<=to_integer(unsigned(dig_win_start));
+	dig_win_n_i    <=to_integer(unsigned(dig_win_n    ));
+	dig_win_end_i  <=  (dig_win_start_i+ dig_win_n_i); -- this needs to be modulo 9 bits	
+	dig_win_wrap_i<=to_unsigned(dig_win_end_i,10)(9);
+	dig_win_end2_i<=to_integer(to_unsigned(dig_win_end_i,10)(8 downto 0));
+	dig_win_ena_i<=dig_win_ena;
+	end if;
 end process;
 
---process(Clk,rst)
-process(Clk)
+process(clk)
 begin
-if (Clk'event and Clk = '1') then
-  Case next_state is
+if (rising_edge(clk)) then
+ clk_cntr<=std_logic_vector(unsigned(clk_cntr)+1);
+ sstin<=clk_cntr(1);
+ 
+ if (reset_i='1') then
+ next_state<=resetting;
+ end if;
   
-  --stay Idle until start goes high, only needs to happen once
-  When Idle =>
-    MAIN_CNT <= (Others => '0');
-    sspin          <= '0';
-    sstin          <= '0';
-    wr_advclk      <= '0';
-	 wr_addrclr     <= '1';    
-    wr_strb        <= '0';
-	 wr_ena         <= '0';
-	 IDLE_status 	 <= '1';
-    if ( start_in = '1') then  --begin sampling
-		next_state <= SamplingIdle;
-    else								 --stay Idle
-      next_state <= Idle;
-    end if;
-
-  --Sampling Idle state, stay here as long as stop signal is held high
-  When SamplingIdle =>
-    sspin          <= '0';
-    sstin          <= '0';
-    wr_advclk      <= '0';
-	 wr_addrclr     <= '1';
-    wr_strb        <= '0';
-	 wr_ena         <= '0';
-	 IDLE_status    <= '1';
-    if ( stop_in = '0') then   --start normal sampling, reset MAIN_CNT
-		MAIN_CNT     <= (Others => '0');
-		next_state <= SamplingStart0;
-    else								 --stay Idle until STOP goes low, keep MAIN_CNT constant
-		MAIN_CNT     <= MAIN_CNT;
-      next_state <= SamplingIdle;
-    end if;
+ if ((dig_win_wrap_i='0' and ( MAIN_CNT > dig_win_start_i and MAIN_CNT < dig_win_end2_i )) or
+	  (dig_win_wrap_i='1' and ( MAIN_CNT > dig_win_start_i or  MAIN_CNT < dig_win_end2_i ))
+ ) then -- if no carry over is present
+  wr_ena<=not dig_win_ena;
   
-  --Beging preliminary sampling sequence
-  When SamplingStart0 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin          <= '1';
-    sstin          <= '0';
-    wr_advclk      <= '0';    
-	 wr_addrclr     <= '0';
-	 wr_strb        <= '0';
-	 wr_ena         <= '1';
-	 IDLE_status    <= '0';
-		next_state <= SamplingStart1;
-
-  When SamplingStart1 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin          <= '1';
-    sstin          <= '1';
-    wr_advclk      <= '0';
-    wr_addrclr     <= '0';
-    wr_strb        <= '0';
-    wr_ena         <= '1';
-		next_state <= SamplingStart2;
-
-  When SamplingStart2 =>   
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '1';
-    sstin             <= '1';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= SamplingStart3;	
-
-  When SamplingStart3 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '1';
-    sstin             <= '1';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-		next_state 	<= SamplingStart4;	
-
-  When SamplingStart4 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '0';
-    sstin             <= '1';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= SamplingStart5;
-
-  When SamplingStart5 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= SamplingStart6;	
+  else
+  wr_ena<='1';
+ 
+ end if;
+ 
+ 
+ Case next_state is
   
-  When SamplingStart6 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= SamplingStart7;
-  
-  --end of preliminary sampling sequence, go to Sampling0 (start of normal sampling)
-  When SamplingStart7 =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-		next_state <= Sampling0;
-
-  --start of normal sampling, Sampling7 loops back here	 
-  When Sampling0 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin          <= '1';
-    sstin          <= '0';
-    wr_advclk      <= '0';
-	 wr_addrclr     <= '0';
-	 wr_strb        <= '0';
-    wr_ena         <= '1';
-	 IDLE_status    <= '0';
-		next_state <= Sampling1;
-
-  When Sampling1 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin          <= '1';
-    sstin          <= '1';
-    wr_advclk      <= '0';
-    wr_addrclr     <= '0';
-    wr_strb        <= '0';
-    wr_ena         <= '1';
-		next_state <= Sampling2;
-
-  When Sampling2 =>   
-    MAIN_CNT <= MAIN_CNT ;
-    sspin             <= '1';
-    sstin             <= '1';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= Sampling3;	
-
-  When Sampling3 =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '1';
-    sstin             <= '1';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-		next_state 	<= Sampling4;	
-
-  When Sampling4 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '0';
-    sstin             <= '1';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= Sampling5;
-
-  When Sampling5 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '0';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= Sampling6;	
-  
-  When Sampling6 =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '0';
-    wr_ena            <= '1';
-		next_state 	<= Sampling7;
-  
-  --loop back to Sampling0, allow stop signal to interrupt sampling
-  When Sampling7 =>
-    MAIN_CNT <= MAIN_CNT + 1;
-    sspin             <= '0';
-    sstin             <= '0';
-    wr_advclk         <= '1';
-    wr_addrclr        <= '0';
-    wr_strb           <= '1';
-    wr_ena            <= '1';
-	 if ( stop_in = '0') then  --normal sampling
-		next_state <= Sampling0;
-    else								--stop sampling and go to Idle state
-      next_state <= SamplingGoToIdle;
-    end if;
+  --resetting, state, stay here for a few cycles
+  When resetting =>
+	 --keep wr_addrclr high for afew clock cycles.
+	 wr_addrclr<='1';
+	 started_cntr<=started_cntr+1;
+	 if (started_cntr=4) then 
+	 started_cntr<=0;
+	 clk_cntr<="00";
+	 wr_addrclr<='0';
+	 MAIN_CNT<=(others=>'0');
+	 next_state<=sampling;
+	 else
+	 next_state<=resetting;
+   end if;
 	 
-  --If going to SamplingIdle, can hold signal high one additional clock cycle
-  When SamplingGoToIdle =>
-    MAIN_CNT <= MAIN_CNT;
-    sspin          <= '0';
-    sstin          <= '0';
-    wr_advclk      <= '1';    
-	 wr_addrclr     <= '0';
-	 wr_strb        <= '0';
-	 wr_ena         <= '1';
-	 IDLE_status    <= '0';
-      next_state <= SamplingIdle;
-	 
+	--Sampling
+  When sampling =>
+   --wr_ena<='1';
+	if (clk_cntr="01" or clk_cntr="11") then 
+		MAIN_CNT<=MAIN_CNT+1;
+	end if;
+	
   When Others =>
   MAIN_CNT <= (Others => '0');
-  sspin             <= '0';
-  sstin             <= '0';
-  wr_advclk         <= '0';
-  wr_addrclr        <= '1';
-  wr_strb           <= '0';
-  wr_ena            <= '0';
-	next_state <= SamplingIdle;
+	next_state <= resetting;
   end Case;
 end if;
 end process;
+
 
 end Behavioral;

@@ -237,11 +237,10 @@ end scrod_top;
 
 architecture Behavioral of scrod_top is
 	signal internal_BOARD_CLOCK      : std_logic;
-	signal internal_CLOCK_50MHz_BUFG : std_logic;
-	signal internal_CLOCK_4MHz_BUFG  : std_logic;
-	signal internal_CLOCK_ENABLE_I2C : std_logic;
-	signal internal_CLOCK_SST_BUFG   : std_logic;
-	signal internal_CLOCK_8xSST_BUFG : std_logic;
+	signal internal_CLOCK_FPGA_LOGIC : std_logic;
+	signal internal_CLOCK_MPPC_DAC  : std_logic;
+	signal internal_CLOCK_ASIC_CTRL : std_logic;
+	
 	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);
 	signal internal_CLOCK_8xSST_OBUFDS_P : std_logic_vector(9 downto 0);
 
@@ -344,6 +343,7 @@ architecture Behavioral of scrod_top is
 	signal internal_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 	signal internal_READCTRL_EVENT_NUM : std_logic_vector(31 downto 0) := x"00000000";
 	signal internal_READCTRL_READOUT_DONE : std_logic := '0';
+	signal internal_READCTRL_dig_win_start : std_logic_vector(8 downto 0) := (others => '0');
 	
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
 	signal internal_CMDREG_SOFTWARE_TRIGGER_VETO : std_logic := '0';
@@ -367,6 +367,7 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_EVTBUILD_PACKET_BUILDER_BUSY : std_logic := '0';
 	signal internal_CMDREG_READCTRL_toggle_manual : std_logic := '0';
 	signal internal_CMDREG_READCTRL_RESET_EVENT_NUM : std_logic := '0';
+	signal internal_CMDREG_readctrl_ramp_length : std_logic_vector(15 downto 0) :=(others => '0');
 
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_START 				: std_logic := '0';
@@ -512,8 +513,8 @@ begin
    --EX_TRIGGER1 <= internal_TRIGGER_ALL;
  --  EX_TRIGGER2 <= internal_TRIGGER_ASIC(9);
 --	EX_TRIGGER1 <= internal_READ_ENABLE_TIMER(9);
-   EX_TRIGGER1 <= internal_TXDCTRIG_buf(10)(5);
-	EX_TRIGGER2 <= SHOUT(9);
+   EX_TRIGGER1 <= not internal_READCTRL_busy_status;--internal_TXDCTRIG_buf(10)(5);
+	EX_TRIGGER2 <= internal_READCTRL_trigger;--SHOUT(9);
 
    internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
    internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
@@ -601,7 +602,7 @@ end generate;
 
 	--sram interface
 --	  uut_sram1: SRAMiface1 PORT MAP (
---          clk => internal_CLOCK_4MHz_BUFG,
+--          clk => internal_CLOCK_MPPC_DAC,
 --          addr => internal_CMDREG_RAMADDR,
 --          dw => internal_CMDREG_RAMDATAWR,
 --          dr => internal_CMDREG_RAMDATARD,
@@ -621,45 +622,30 @@ end generate;
 
 	
 	--Clock generation
-	map_clock_generation : entity work.clock_generation
+	map_clock_gen : entity work.clock_gen
 	port map ( 
 		--Raw boad clock input
 		BOARD_CLOCKP      => BOARD_CLOCKP,
 		BOARD_CLOCKN      => BOARD_CLOCKN,
 		--FTSW inputs
-		RJ45_ACK_P        => RJ45_ACK_P,
-		RJ45_ACK_N        => RJ45_ACK_N,			  
-		RJ45_TRG_P        => RJ45_TRG_P,
-		RJ45_TRG_N        => RJ45_TRG_N,			  			  
-		RJ45_RSV_P        => RJ45_RSV_P,
-		RJ45_RSV_N        => RJ45_RSV_N,
-		RJ45_CLK_P        => RJ45_CLK_P,
-		RJ45_CLK_N        => RJ45_CLK_N,
+		
 		--Trigger outputs from FTSW
 		FTSW_TRIGGER      => open,
 		--Select signal between the two
 		USE_LOCAL_CLOCK   => MONITOR_INPUT(0),
 		--General output clocks
-		CLOCK_50MHz_BUFG  => internal_CLOCK_50MHz_BUFG,
-		CLOCK_4MHz_BUFG   => internal_CLOCK_4MHz_BUFG,
+		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
+		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
 		--ASIC control clocks
 		--IM/GSV: Modify to it will run LVDS:
-		CLOCK_SSTx8_BUFG  => internal_CLOCK_8xSST_BUFG,
-		--CLOCK_SST_BUFG    => internal_CLOCK_SST_BUFG,-- not used 8/26/14, IM
-		--ASIC output clocks
-		ASIC_SST          => open,
-		ASIC_SSP          => open,
-		ASIC_WR_STRB      => open,
-		ASIC_WR_ADDR_LSB  => open,
-		ASIC_WR_ADDR_LSB_RAW => open,
-		--Output clock enable for I2C things
-		I2C_CLOCK_ENABLE  => internal_CLOCK_ENABLE_I2C
+		CLOCK_ASIC_CTRL  => internal_CLOCK_ASIC_CTRL
+		
 	);  
 
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
 	port map ( 
-		CLOCK                        => internal_CLOCK_50MHz_BUFG,
+		CLOCK                        => internal_CLOCK_FPGA_LOGIC,
 
 		OUTPUT_REGISTERS             => internal_OUTPUT_REGISTERS,
 		INPUT_REGISTERS              => internal_INPUT_REGISTERS,
@@ -813,7 +799,8 @@ end generate;
 	internal_CMDREG_READCTRL_win_num_to_read <= internal_OUTPUT_REGISTERS(57)(8 downto 0);
 	internal_CMDREG_READCTRL_readout_continue <= internal_OUTPUT_REGISTERS(58)(0);
 	internal_CMDREG_READCTRL_RESET_EVENT_NUM <= internal_OUTPUT_REGISTERS(59)(0);
-	
+	internal_CMDREG_READCTRL_ramp_length <= internal_OUTPUT_REGISTERS(61);
+
 	--Internal current readout ADC connecitons:
 	internal_CurrentADC_reset	<= internal_OUTPUT_REGISTERS(63)(0);
 	internal_runADC	<= internal_OUTPUT_REGISTERS(63)(1);
@@ -875,12 +862,15 @@ end generate;
 	internal_INPUT_REGISTERS(N_GPR + 18 ) <= internal_TRIGCOUNT_scaler(8)(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 19 ) <= internal_TRIGCOUNT_scaler(9)(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
+	
+	internal_INPUT_REGISTERS(N_GPR + 30) <= "0000000" & internal_READCTRL_dig_win_start; -- digitizatoin window start
+	
 
    --ASIC control processes
 	
 	--TARGET6 DAC Control
 	u_TARGET6_DAC_CONTROL: entity work.TARGET6_DAC_CONTROL PORT MAP(
-			CLK 				=> internal_CLOCK_50MHz_BUFG,
+			CLK 				=> internal_CLOCK_FPGA_LOGIC,
 			LOAD_PERIOD 	=> internal_DAC_CONTROL_LOAD_PERIOD,
 			LATCH_PERIOD 	=> internal_DAC_CONTROL_LATCH_PERIOD,
 			UPDATE 			=> internal_DAC_CONTROL_UPDATE,
@@ -899,8 +889,8 @@ end generate;
 				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
 			port map (
 				Q  => WL_CLK_N(i),        -- 1-bit output data
-				C0 => not(internal_CLOCK_50MHz_BUFG),      -- 1-bit clock input
-				C1 => internal_CLOCK_50MHz_BUFG, -- 1-bit clock input
+				C0 => not(internal_CLOCK_FPGA_LOGIC),      -- 1-bit clock input
+				C1 => internal_CLOCK_FPGA_LOGIC, -- 1-bit clock input
 				CE => '1',                     -- 1-bit clock enable input
 				D0 => '1',                     -- 1-bit data input (associated with C0)
 				D1 => '0',                     -- 1-bit data input (associated with C1)
@@ -915,8 +905,8 @@ end generate;
 				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
 			port map (
 				Q  => WL_CLK_P(i),        -- 1-bit output data
-				C0 => internal_CLOCK_50MHz_BUFG,      -- 1-bit clock input
-				C1 => not(internal_CLOCK_50MHz_BUFG), -- 1-bit clock input
+				C0 => internal_CLOCK_FPGA_LOGIC,      -- 1-bit clock input
+				C1 => not(internal_CLOCK_FPGA_LOGIC), -- 1-bit clock input
 				CE => '1',                     -- 1-bit clock enable input
 				D0 => '1',                     -- 1-bit data input (associated with C0)
 				D1 => '0',                     -- 1-bit data input (associated with C1)
@@ -931,8 +921,8 @@ end generate;
 --				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
 --			port map (
 --				Q  => SSTIN_N(i),        -- 1-bit output data
---				C0 => not(internal_CLOCK_50MHz_BUFG),      -- 1-bit clock input
---				C1 => internal_CLOCK_50MHz_BUFG, -- 1-bit clock input
+--				C0 => not(internal_CLOCK_FPGA_LOGIC),      -- 1-bit clock input
+--				C1 => internal_CLOCK_FPGA_LOGIC, -- 1-bit clock input
 --				CE => '1',                     -- 1-bit clock enable input
 --				D0 => '1',                     -- 1-bit data input (associated with C0)
 --				D1 => '0',                     -- 1-bit data input (associated with C1)
@@ -947,8 +937,8 @@ end generate;
 --				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
 --			port map (
 --				Q  => SSTIN_P(i),        -- 1-bit output data
---				C0 => internal_CLOCK_50MHz_BUFG,      -- 1-bit clock input
---				C1 => not(internal_CLOCK_50MHz_BUFG), -- 1-bit clock input
+--				C0 => internal_CLOCK_FPGA_LOGIC,      -- 1-bit clock input
+--				C1 => not(internal_CLOCK_FPGA_LOGIC), -- 1-bit clock input
 --				CE => '1',                     -- 1-bit clock enable input
 --				D0 => '1',                     -- 1-bit data input (associated with C0)
 --				D1 => '0',                     -- 1-bit data input (associated with C1)
@@ -971,8 +961,8 @@ end generate;
 	
 	--Control the sampling, digitization and serial resout processes following trigger
 	u_ReadoutControl: entity work.ReadoutControl PORT MAP(
-		clk 					=> internal_CLOCK_50MHz_BUFG,
-		smp_clk 				=> internal_CLOCK_8xSST_BUFG,
+		clk 					=> internal_CLOCK_FPGA_LOGIC,
+		smp_clk 				=> internal_CLOCK_ASIC_CTRL,
 		trigger 				=> internal_READCTRL_trigger,
 		trig_delay 			=> internal_READCTRL_trig_delay,
 		dig_offset 			=> internal_READCTRL_dig_offset,
@@ -985,6 +975,7 @@ end generate;
 		fifo_empty 			=> internal_WAVEFORM_FIFO_EMPTY,
 		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
 		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
+		dig_win_start			=> internal_READCTRL_dig_win_start,
 		LATCH_DONE 			=> internal_READCTRL_LATCH_DONE,
 		READOUT_RESET 		=> internal_READCTRL_readout_reset,
 		READOUT_CONTINUE 	=> internal_READCTRL_readout_continue,
@@ -1017,26 +1008,28 @@ end generate;
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
-		clk 			=> internal_CLOCK_8xSST_BUFG,
-		start 		=> internal_SMP_START,
-		stop 			=> internal_SMP_STOP,
-		IDLE_status => internal_SMP_IDLE_STATUS,
+		clk 			=> internal_CLOCK_ASIC_CTRL,
+		reset => '0',
+		dig_win_start => internal_READCTRL_dig_win_start,
+		dig_win_n => internal_READCTRL_win_num_to_read,-- "00100",
+      dig_win_ena => not internal_DIG_IDLE_status,--internal_READCTRL_busy_status,
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
-		sspin_out 	=> open,--internal_SSPIN,
 		sstin_out 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
-		wr_advclk_out 	=> internal_WR_ADVCLK,
 		wr_addrclr_out => internal_WR_ADDRCLR,
-		wr_strb_out => internal_WR_STRB,
-		wr_ena_out 	=> open--internal_WR_ENA
+		wr1_ena 	=> open,--internal_WR_ENA,
+		wr2_ena 	=> open
 	);
-
+	
+internal_WR_ENA<= not internal_READCTRL_trigger;-- debug
+		  
+internal_SMP_IDLE_STATUS<='0';
 
 
 --	--sampling logic - specifically SSPIN/SSTIN + write address control
 --	--ripped old sampling ligic which was designed for T6 and replaced with TX
 -- U_SamplingLgc: entity work.SamplingLgicTX
 -- port map (
---      clk         => internal_CLOCK_8xSST_BUFG,-- this should become 125MHz for TargetX
+--      clk         => internal_CLOCK_ASIC_CTRL,-- this should become 125MHz for TargetX
 --      rst         => '0', --usrClkRst_125,
 --      Enable      => internal_SMP_START, --Enable,
 --		SamplSpeed  => '0', --SamplSpeed,
@@ -1060,7 +1053,7 @@ end generate;
 
 --	u_SamplingLgc : entity work.SamplingLgicTX
 --   Port map (
---		clk 			=> internal_CLOCK_8xSST_BUFG,
+--		clk 			=> internal_CLOCK_ASIC_CTRL,
 --		rst 			=> '0',
 --		Enable 		=> internal_SMP_START,
 --		SamplSpeed 	=> '0',
@@ -1091,12 +1084,9 @@ end generate;
 	--SamplingLgc signals just get fanned out identically to each daughter card
 	gen_SamplingLgcSignals : for i in 0 to 9 generate
 		--SSPIN(i) 		<= internal_SSPIN;
---		SSTIN(i) 		<= internal_CLOCK_8xSST_BUFG;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
+--		SSTIN(i) 		<= internal_CLOCK_ASIC_CTRL;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
 		SSTIN_N(i) 		<= internal_SSTIN;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
 		SSTIN_P(i) 		<= not(internal_SSTIN);-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
---		WR_ADVCLK(i) 	<= internal_WR_ADVCLK;
---		WR_STRB(i) 		<= internal_WR_STRB;
---		WR_ENA(i) 		<= internal_WR_ENA;
 		WR1_ENA(i) 		<= internal_WR_ENA;
 		WR2_ENA(i) 		<= internal_WR_ENA;
 	end generate;
@@ -1110,16 +1100,16 @@ end generate;
 --   port map (
 --      O => internal_CLOCK_8xSST_OBUFDS_P(i),     -- Diff_p output (connect directly to top-level port)
 --      OB => internal_CLOCK_8xSST_OBUFDS_N(i),   -- Diff_n output (connect directly to top-level port)
---      I => internal_CLOCK_8xSST_BUFG      -- Buffer input 
+--      I => internal_CLOCK_ASIC_CTRL      -- Buffer input 
 --   );
 --end generate;
 
 	--digitizing logic
 	u_DigitizingLgc: entity work.DigitizingLgcTX PORT MAP(
-		clk 				=> internal_CLOCK_50MHz_BUFG,
+		clk 				=> internal_CLOCK_FPGA_LOGIC,
 		IDLE_status 	=> internal_DIG_IDLE_status,
 		StartDig 		=> internal_DIG_STARTDIG,
-		ramp_length 	=> X"400",
+		ramp_length 	=> internal_CMDREG_READCTRL_ramp_length(12 downto 0),
 		rd_ena 			=> internal_DIG_RD_ENA,
 		clr 				=> internal_DIG_CLR,
 		startramp 		=> internal_DIG_RAMP
@@ -1145,7 +1135,7 @@ end generate;
 	BUSB_RAMP 			<= internal_DIG_RAMP;	
 	
 	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
-		clk 			=> internal_CLOCK_50MHz_BUFG,
+		clk 			=> internal_CLOCK_FPGA_LOGIC,
 		start		 	=> internal_SROUT_START,
 		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
 		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
@@ -1218,7 +1208,7 @@ end generate;
 	
 	--Module reads out from waveform FIFO and places ASIC window-sized packets into buffer FIFO
 	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP(
-		clk => internal_CLOCK_50MHz_BUFG,
+		clk => internal_CLOCK_FPGA_LOGIC,
 		REQUEST_PACKET 				=> internal_READCTRL_readout_continue,
 		EVTBUILD_DONE					=> internal_EVTBUILD_DONE_SENDING_EVENT,
 		WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
@@ -1289,7 +1279,7 @@ end generate;
 		u_trigger_scaler_single_channel_w_timing_gen: entity work.trigger_scaler_single_channel_w_timing_gen Port Map ( --IM 6/5/14: now using the combined trigger scaler timing gen block inctead
 
 			SIGNAL_TO_COUNT => internal_TRIGGER_ASIC(i),
-			CLOCK           => internal_CLOCK_50MHz_BUFG,
+			CLOCK           => internal_CLOCK_FPGA_LOGIC,
 			READ_ENABLE_IN     => internal_TRIGCOUNT_ena,
 			RESET_COUNTER   => internal_TRIGCOUNT_rst,
 			READ_ENABLE_TIMER => internal_READ_ENABLE_TIMER(i),
@@ -1302,7 +1292,7 @@ end generate;
 ---------------------------
 	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
 	port map(
-		clock			 => internal_CLOCK_50MHz_BUFG,
+		clock			 => internal_CLOCK_FPGA_LOGIC,
 		reset			=>	internal_CurrentADC_reset,
 		
 		sda	=> SDA_MON,--internal_SDA,
@@ -1321,7 +1311,7 @@ end generate;
 	inst_mpps_dacs : entity work.mppc_dacs
 	Port map(
 		------------CLOCK-----------------
-		CLOCK			 => internal_CLOCK_4MHz_BUFG,
+		CLOCK			 => internal_CLOCK_MPPC_DAC,
 		------------DAC PARAMETERS--------
 		DAC_NUMBER   => i_dac_number,
 		DAC_ADDR     => i_dac_addr,
@@ -1343,9 +1333,9 @@ end generate;
 		CLOCK_RATIO  => 20
 	)
 	Port map(
-		CLOCK_IN     => internal_CLOCK_50MHz_BUFG,
+		CLOCK_IN     => internal_CLOCK_FPGA_LOGIC,
 		D_IN         => i_dac_update,
-		CLOCK_OUT    => internal_CLOCK_4MHz_BUFG,
+		CLOCK_OUT    => internal_CLOCK_MPPC_DAC,
 		D_OUT        => i_dac_update_extended
 	);
 

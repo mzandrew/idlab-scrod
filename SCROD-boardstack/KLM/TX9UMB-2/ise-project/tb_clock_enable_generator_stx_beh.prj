@@ -1,0 +1,2 @@
+vhdl isim_temp "../src/utilities/clock_enable_generator.vhd"
+vhdl isim_temp "../src/tb_clock_enable_generator.vhd"

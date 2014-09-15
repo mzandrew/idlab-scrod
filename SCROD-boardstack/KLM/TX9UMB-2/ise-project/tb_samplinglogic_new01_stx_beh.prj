@@ -1,0 +1,2 @@
+vhdl isim_temp "../src/SamplingLgc.vhd"
+vhdl isim_temp "tb_samplinglogic_new01.vhd"
