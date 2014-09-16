@@ -5,40 +5,10 @@
      behavior or data corruption.  It is strongly advised that
      users do not edit the contents of this file. -->
 <messages>
-<msg type="info" file="sim" num="0" delta="new" >Generating component instance &apos;<arg fmt="%s" index="1">ethercon</arg>&apos; of &apos;<arg fmt="%s" index="2">xilinx.com:ip:gig_eth_pcs_pma:11.1</arg>&apos; from &apos;<arg fmt="%s" index="3">C:\Xilinx\13.2\ISE_DS\ISE\coregen\ip\xilinx\network\com\xilinx\ip\gig_eth_pcs_pma_v11_1\component.xml</arg>&apos;.
+<msg type="info" file="sim" num="172" delta="new" >Generating IP...
 </msg>
 
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">VHDL simulation file type &apos;Behavioral&apos; is not valid for this core. Overriding with simulation file type &apos;Structural&apos;.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">VHDL simulation file type &apos;Behavioral&apos; is not valid for this core. Overriding with simulation file type &apos;Structural&apos;.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">VHDL simulation file type &apos;Behavioral&apos; is not valid for this core. Overriding with simulation file type &apos;Structural&apos;.</arg>
-</msg>
-
-<msg type="info" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">Pre-processing HDL files for &apos;ethercon&apos;...</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">BlackBox generator run option &apos;-iobuf&apos; found multiple times. Only the first occurence is considered.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">BlackBox generator run option &apos;-p&apos; found multiple times. Only the first occurence is considered.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">VHDL simulation file type &apos;Behavioral&apos; is not valid for this core. Overriding with simulation file type &apos;Structural&apos;.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">VHDL simulation file type &apos;Behavioral&apos; is not valid for this core. Overriding with simulation file type &apos;Structural&apos;.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">VHDL simulation file type &apos;Behavioral&apos; is not valid for this core. Overriding with simulation file type &apos;Structural&apos;.</arg>
-</msg>
-
-<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">Overwriting existing file C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/ipcore_dir/tmp/_cg/ethercon/doc/gig_eth_pcs_pma_ds264.pdf with file from view xilinx_documentation</arg>
-</msg>
-
-<msg type="info" file="sim" num="0" delta="new" >Finished FLIST file generation.
+<msg type="warning" file="sim" num="100" delta="new" >The Simulation File Type &lt;<arg fmt="%s" index="1">Behavioral</arg>&gt; is not valid for this core. Overriding with File Type &lt;<arg fmt="%s" index="2">Structural</arg>&gt;.
 </msg>
 
 </messages>
