@@ -39,7 +39,7 @@ int currentEventNumber;
 #define POINTS_PER_WAVEFORM    32
 #define MEMORY_DEPTH           512
 #define NASICS                 10
-#define NCHS                   1 //only 1 channel is being parsed
+#define NCHS                   numCHAN //only 1 channel is being parsed
 const Int_t MaxROI(400);
 TTree *tree;
 Int_t eventNum;

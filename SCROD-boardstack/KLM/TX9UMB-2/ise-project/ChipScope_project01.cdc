@@ -1,5 +1,5 @@
 #ChipScope Core Inserter Project File Version 3.0
-#Sat Sep 13 11:58:38 HST 2014
+#Mon Sep 15 16:43:01 HST 2014
 Project.device.designInputFile=C\:\\Users\\isar\\Documents\\code4\\TX9UMB-2\\ise-project\\scrod_top.ngc
 Project.device.designOutputFile=C\:\\Users\\isar\\Documents\\code4\\TX9UMB-2\\ise-project\\scrod_top_csp.ngc
 Project.device.deviceFamily=18
@@ -48,7 +48,7 @@ Project.unit<0>.dataChannel<6>=u_SerialDataRout internal_samplesel<5>
 Project.unit<0>.dataChannel<7>=u_SerialDataRout internal_samplesel<4>
 Project.unit<0>.dataChannel<8>=u_SerialDataRout internal_samplesel<3>
 Project.unit<0>.dataChannel<9>=u_SerialDataRout internal_samplesel<2>
-Project.unit<0>.dataDepth=16384
+Project.unit<0>.dataDepth=8192
 Project.unit<0>.dataEqualsTrigger=false
 Project.unit<0>.dataPortWidth=32
 Project.unit<0>.enableGaps=false

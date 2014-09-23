@@ -84,7 +84,8 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 16, regValReadback); //set # of windows to read: internal_READCTRL_win_num_to_read
+	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read: internal_READCTRL_win_num_to_read
+	control->registerWriteReadback(board_id, 62, 0x8000 | 120, regValReadback); //force start digitization start window to be the fixed value
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
 	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
 	control->registerWrite(board_id, 61, 0xD00, regValReadback); //ramp length- working on 40us ish

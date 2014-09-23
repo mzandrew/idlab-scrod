@@ -5,10 +5,25 @@
      behavior or data corruption.  It is strongly advised that
      users do not edit the contents of this file. -->
 <messages>
-<msg type="info" file="sim" num="172" delta="new" >Generating IP...
+<msg type="info" file="sim" num="172" delta="old" >Generating IP...
 </msg>
 
-<msg type="warning" file="sim" num="100" delta="new" >The Simulation File Type &lt;<arg fmt="%s" index="1">Behavioral</arg>&gt; is not valid for this core. Overriding with File Type &lt;<arg fmt="%s" index="2">Structural</arg>&gt;.
+<msg type="warning" file="sim" num="100" delta="old" >The Simulation File Type &lt;<arg fmt="%s" index="1">Behavioral</arg>&gt; is not valid for this core. Overriding with File Type &lt;<arg fmt="%s" index="2">Structural</arg>&gt;.
+</msg>
+
+<msg type="info" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">Pre-processing HDL files for &apos;ether2&apos;...</arg>
+</msg>
+
+<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">BlackBox generator run option &apos;-iobuf&apos; found multiple times. Only the first occurence is considered.</arg>
+</msg>
+
+<msg type="warning" file="sim" num="0" delta="new" ><arg fmt="%s" index="1">Overwriting existing file C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/ipcore_dir/tmp/_cg/ether2/doc/pg051-tri-mode-eth-mac.pdf with file from view xilinx_documentation</arg>
+</msg>
+
+<msg type="info" file="sim" num="949" delta="new" >Finished generation of ASY schematic symbol.
+</msg>
+
+<msg type="info" file="sim" num="948" delta="new" >Finished FLIST file generation.
 </msg>
 
 </messages>
