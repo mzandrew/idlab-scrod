@@ -16,11 +16,16 @@ package readout_definitions is
 	--General purpose registers (GPR) are outputs from this block, and are also
 	--routed back to the inputs 
 	constant N_GPR : integer := 256;
+	constant N_STAT_REG : integer := 160;
+	constant N_MPPCADC_REG : integer := 160;
+
+	type STATREG is array (N_STAT_REG-1 downto 0) of std_logic_vector(15 downto 0);
+
 	--Read registers (RR) are inputs to the command interpreter
 	--The first N_GPR of these are directly connected to the general
 	--purpose registers to allow readback of any values.
 	--This means N_RR should be >= N_GPR.
-	constant N_RR  : integer := 365;
+	constant N_RR  : integer := 465;
 	--Widths of both of these types of registers are set to 16 bits.
 	type GPR is array(N_GPR-1 downto 0) of std_logic_vector(15 downto 0);
 	type RR is array(N_RR-1 downto 0) of std_logic_vector(15 downto 0);

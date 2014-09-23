@@ -22,6 +22,7 @@ entity clock_gen is
 		--General output clocks
 		CLOCK_FPGA_LOGIC  : out STD_LOGIC; -- around 50 to 62 MHz
 		CLOCK_MPPC_DAC   : out STD_LOGIC; -- around 4 or 5MHz for MPPC DAC read writes
+		CLOCK_MPPC_ADC :out std_logic;
 		--ASIC control clocks
 		CLOCK_ASIC_CTRL  : out STD_LOGIC --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
 	);
@@ -81,6 +82,14 @@ begin
 		CLOCK_ENABLE_OUT => CLOCK_MPPC_DAC
 	);
 	
+	map_MPPC_ADC_clock_enable : entity work.clock_enable_generator
+	generic map (
+		DIVIDE_RATIO => 6
+	)
+	port map (
+		CLOCK_IN         => internal_BOARD_CLOCK,
+		CLOCK_ENABLE_OUT => CLOCK_MPPC_ADC
+	);
 	
 
 end Behavioral;

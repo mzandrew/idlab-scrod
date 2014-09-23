@@ -1,1 +1,4 @@
-work	"../src/SamplingLgc.vhd"
+work	"../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
+work	"../src/peripherals/Module_ADC_MCP3221_I2C_new.vhd"
+work	"../src/readout_definitions.vhd"
+work	"../src/update_status_regs.vhd"

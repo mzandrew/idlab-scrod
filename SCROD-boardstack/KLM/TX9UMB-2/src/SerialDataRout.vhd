@@ -9,6 +9,7 @@ use work.all;
 Library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
+use work.readout_definitions.all;
 
 
 entity SerialDataRout is

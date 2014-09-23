@@ -208,7 +208,7 @@ entity scrod_top is
 		--New Stuff for TargetX:
 		--RAM:
 		BUS_RAM_RS_A						: out STD_LOGIC_VECTOR(10 downto 0);                       
-		RAM1_CE1							 	: out STD_LOGIC :='1';                                         
+		RAM1_CE1							 	: out STD_LOGIC := '1';                                         
 		RAM1_CE2							   : out STD_LOGIC := '0';                           
 		RAM1_OE				            : out std_logic := '1';                       
 		RAM1_WE				            : out std_logic := '1';                         
@@ -240,13 +240,15 @@ architecture Behavioral of scrod_top is
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_MPPC_DAC  : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
-	
+	signal internal_CLOCK_MPPC_ADC  : std_logic;
+
 	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);
 	signal internal_CLOCK_8xSST_OBUFDS_P : std_logic_vector(9 downto 0);
 
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
 	signal i_register_update         : RWT;
+	signal internal_STATREG_REGISTERS		: STATREG;
 	
 	--Trigger readout
 	signal internal_SOFTWARE_TRIGGER : std_logic;
@@ -368,6 +370,9 @@ architecture Behavioral of scrod_top is
 	signal internal_CMDREG_READCTRL_toggle_manual : std_logic := '0';
 	signal internal_CMDREG_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 	signal internal_CMDREG_readctrl_ramp_length : std_logic_vector(15 downto 0) :=(others => '0');
+	signal internal_cmdreg_readctrl_use_fixed_dig_start_win : std_logic_vector(15 downto 0):=(others => '0');
+	
+	signal internal_CMDREG_SW_STATUS_READ : std_logic;
 
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_START 				: std_logic := '0';
@@ -428,6 +433,7 @@ architecture Behavioral of scrod_top is
 	signal internal_runADC						: std_logic;
 	signal internal_enOutput					: std_logic;
 	signal internal_ADCOutput 					: std_logic_vector(11 downto 0);
+	signal internal_AMUX_S						: std_logic_vector(7 downto 0);
 	
 	-- MPPC DAC
 	signal i_dac_number : std_logic_vector(3 downto 0);
@@ -448,7 +454,21 @@ architecture Behavioral of scrod_top is
 	signal internal_BUS_RAM_RS_A :std_logic_vector (10 downto 0);
 	signal internal_RAM_ADDR : std_logic_vector (20 downto 0);
 
+	signal internal_CMDREG_UPDATE_STATUS_REGS : std_logic;
 
+--module for updating MPPC bias and temp status regs
+    COMPONENT update_status_regs
+    PORT(
+         clk : IN  std_logic;
+         update : IN  std_logic;
+         status_regs : OUT  STATREG;
+         busy : OUT  std_logic;
+         AMUX : OUT  std_logic_vector(7 downto 0);
+         SDA_MON : INOUT  std_logic;
+         SCL_MON : OUT  std_logic
+        );
+    END COMPONENT;
+	 
 	--Waveform FIFO component
 	COMPONENT waveform_fifo_wr32_rd32
 	PORT (
@@ -636,6 +656,7 @@ end generate;
 		--General output clocks
 		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
 		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
+		CLOCK_MPPC_ADC   => internal_CLOCK_MPPC_ADC,
 		--ASIC control clocks
 		--IM/GSV: Modify to it will run LVDS:
 		CLOCK_ASIC_CTRL  => internal_CLOCK_ASIC_CTRL
@@ -779,6 +800,8 @@ end generate;
 	internal_CMDREG_RAMDATAWR <=internal_OUTPUT_REGISTERS(34);
 	internal_CMDREG_RAMUPDATE <=internal_OUTPUT_REGISTERS(35)(0);
 	internal_CMDREG_RAMRW<=internal_OUTPUT_REGISTERS(36)(0);
+	---status regs: automaticly generated and fed to conc. or read via software?
+	internal_CMDREG_SW_STATUS_READ<=internal_OUTPUT_REGISTERS(37)(0); -- '0': SW status read connections disabled, '1': SW status read is enabled
 	
 	
 	--Event builder signals
@@ -800,18 +823,20 @@ end generate;
 	internal_CMDREG_READCTRL_readout_continue <= internal_OUTPUT_REGISTERS(58)(0);
 	internal_CMDREG_READCTRL_RESET_EVENT_NUM <= internal_OUTPUT_REGISTERS(59)(0);
 	internal_CMDREG_READCTRL_ramp_length <= internal_OUTPUT_REGISTERS(61);
+	internal_CMDREG_READCTRL_use_fixed_dig_start_win<=internal_OUTPUT_REGISTERS(62);-- bit 15: '1'=> use fixed start win and (8 downto 0) is the fixed start win
 
 	--Internal current readout ADC connecitons:
-	internal_CurrentADC_reset	<= internal_OUTPUT_REGISTERS(63)(0);
-	internal_runADC	<= internal_OUTPUT_REGISTERS(63)(1);
+--	internal_CurrentADC_reset	<= intenal_STATREG_CurrentADC_reset;--internal_OUTPUT_REGISTERS(63)(0) when internal_CMDREG_SW_STATUS_READ ='1' else '0' ;
+--	internal_runADC	<= intenal_STATREG_runADC;--internal_OUTPUT_REGISTERS(63)(1);
+	internal_CMDREG_UPDATE_STATUS_REGS <=internal_OUTPUT_REGISTERS(63)(0);
 	--internal_SDA  <=SDA_MON;
-	SCL_MON <=internal_SCL;
+	--SCL_MON <=internal_SCL;
 --	internal_enOutput	<= internal_OUTPUT_REGISTERS(63)(2);
 --	internal_ADCOutput 	<= internal_OUTPUT_REGISTERS(64)(11 downto 0);
-	internal_INPUT_REGISTERS(N_GPR + 21)(11 downto 0) <= internal_ADCOutput(11 downto 0);
+	--internal_INPUT_REGISTERS(N_GPR + 21)(11 downto 0) <= internal_ADCOutput(11 downto 0);--no need any more
 	internal_INPUT_REGISTERS(N_GPR + 22)(0) <= internal_enOutput;
-	TDC_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(3 downto 0);--channel within a daughtercard
-	TOP_AMUX_S   <= internal_OUTPUT_REGISTERS(62)(7 downto 4);-- Daughter Card Number
+	TDC_AMUX_S   <= internal_AMUX_S(3 downto 0);--internal_NCH_AMUX_S;--internal_OUTPUT_REGISTERS(62)(3 downto 0);--channel within a daughtercard
+	TOP_AMUX_S   <= internal_AMUX_S(7 downto 4);--internal_NDC_AMUX_S;--internal_OUTPUT_REGISTERS(62)(7 downto 4);-- Daughter Card Number
 
 	internal_INPUT_REGISTERS(N_GPR+23)<=internal_CMDREG_RAMDATARD ;
 
@@ -864,6 +889,36 @@ end generate;
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
 	
 	internal_INPUT_REGISTERS(N_GPR + 30) <= "0000000" & internal_READCTRL_dig_win_start; -- digitizatoin window start
+	
+	-- Status Regs:
+	gen_STAT_REG_INREG: for i in 0 to N_STAT_REG-1 generate
+		gen_BIT2: for j in 0 to 15 generate
+			map_BUF_RR2 : BUF 
+			port map( 
+				I => internal_STATREG_REGISTERS(i)(j), 
+				O => internal_INPUT_REGISTERS(N_GPR + i+40)(j) 
+			);
+		end generate;
+	end generate;
+	
+--	gen_STAT_REG_INREG: for i in 0 to N_STAT_REG-1 generate
+--				internal_INPUT_REGISTERS(N_GPR + i+40)<=x"ABCD"; 
+--	end generate;
+--	--internal_INPUT_REGISTERS(N_GPR + 40) <= 
+
+--status reg update module	
+	   uut: update_status_regs PORT MAP (
+          clk => internal_CLOCK_FPGA_LOGIC,
+          update => internal_CMDREG_UPDATE_STATUS_REGS,
+          status_regs => internal_STATREG_REGISTERS,
+          busy => open,
+          AMUX => internal_AMUX_S,
+          SDA_MON => SDA_MON,
+          SCL_MON => SCL_MON
+        );
+
+
+	
 	
 
    --ASIC control processes
@@ -980,6 +1035,7 @@ end generate;
 		READOUT_RESET 		=> internal_READCTRL_readout_reset,
 		READOUT_CONTINUE 	=> internal_READCTRL_readout_continue,
 		RESET_EVENT_NUM 	=> internal_READCTRL_RESET_EVENT_NUM,
+		use_fixed_dig_start_win=>internal_CMDREG_READCTRL_use_fixed_dig_start_win,
 		ASIC_NUM 			=> internal_READCTRL_ASIC_NUM,
 		busy_status 		=> internal_READCTRL_busy_status,
 		smp_stop 			=> internal_READCTRL_smp_stop,
@@ -1287,22 +1343,22 @@ internal_SMP_IDLE_STATUS<='0';
 		);
 	end generate;
 
----------------------------
--- MPPC Current measurement ADC: MPC3221
----------------------------
-	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
-	port map(
-		clock			 => internal_CLOCK_FPGA_LOGIC,
-		reset			=>	internal_CurrentADC_reset,
-		
-		sda	=> SDA_MON,--internal_SDA,
-		scl	=> internal_SCL,
-		 
-		runADC		=> internal_runADC,
-		enOutput		=> internal_enOutput,
-		ADCOutput	=> internal_ADCOutput
-
-	);
+-----------------------------
+---- MPPC Current measurement ADC: MPC3221
+-----------------------------
+--	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
+--	port map(
+--		clock			 => internal_CLOCK_MPPC_DAC,--internal_CLOCK_FPGA_LOGIC,
+--		reset			=>	internal_CurrentADC_reset,
+--		
+--		sda	=> SDA_MON,--internal_SDA,
+--		scl	=> internal_SCL,
+--		 
+--		runADC		=> internal_runADC,
+--		enOutput		=> internal_enOutput,
+--		ADCOutput	=> internal_ADCOutput
+--
+--	);
 
 
 	--------------

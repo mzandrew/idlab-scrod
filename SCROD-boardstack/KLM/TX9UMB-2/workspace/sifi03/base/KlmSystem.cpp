@@ -103,6 +103,7 @@ void KlmSystem::initialize(std::ostream& output, char* configuration)
 		std::vector<module_id>::iterator x;
 		for(x = ids.begin(); x != ids.end(); x++)
 		{
+			cout<<*x<<",";
 			dev = UsbInterface::USB().getDevice(*x);
 			if(!dev)
 			{

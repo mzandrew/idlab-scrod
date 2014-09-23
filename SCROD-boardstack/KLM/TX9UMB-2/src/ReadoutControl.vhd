@@ -54,6 +54,7 @@ entity ReadoutControl is
 			  READOUT_RESET  : in  STD_LOGIC;
 			  READOUT_CONTINUE : in STD_LOGIC;
 			  RESET_EVENT_NUM : in STD_LOGIC;
+			  use_fixed_dig_start_win : in std_logic_vector(15 downto 0);
 			  LATCH_SMP_MAIN_CNT : out STD_LOGIC_VECTOR(8 downto 0);
 			  dig_win_start		: out STD_LOGIC_VECTOR(8 downto 0);-- goes to the sampling logic to kill the write enable while writing over the digitization window
 			  LATCH_DONE : out STD_LOGIC;
@@ -197,7 +198,11 @@ Case next_SmpClk_state is
 			AND internal_SmpClk_SROUT_IDLE_status = '1' AND internal_SmpClk_fifo_empty = '1' AND internal_SmpClk_EVTBUILD_DONE_SENDING_EVENT = '0' 
 			AND internal_SmpClk_READOUT_RESET = '0' ) then 
 			--latch the SMP_MAIN_CNT at time of trigger, include a configurable digitzation window offset
-			internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT); --SMP_MAIN_CNT is on smp_clk domain
+			if use_fixed_dig_start_win(15)='0' then
+			internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT);
+				else
+					internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(use_fixed_dig_start_win(8 downto 0)); --SMP_MAIN_CNT is on smp_clk domain
+			end if;
 			next_SmpClk_state <= WaitReset;
 		else
 			next_SmpClk_state <= Idle;
