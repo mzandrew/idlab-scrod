@@ -304,8 +304,8 @@ architecture Behavioral of scrod_top is
 	signal internal_TRIGCOUNT_ena : std_logic := '0';
 	signal internal_TRIGCOUNT_rst : std_logic := '0';
 	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 16;
-	type TARGET6_TRIGGER_SCALERS is array(9 downto 0) of std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);	
-	signal internal_TRIGCOUNT_scaler : TARGET6_TRIGGER_SCALERS;
+	type TARGETX_TRIGGER_SCALERS is array(9 downto 0) of std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);	
+	signal internal_TRIGCOUNT_scaler : TARGETX_TRIGGER_SCALERS;
 	signal internal_READ_ENABLE_TIMER : std_logic_vector (9 downto 0);
 	signal internal_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here
 	signal internal_TXDCTRIG16 : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
@@ -921,20 +921,7 @@ end generate;
 	
 	
 
-   --ASIC control processes
-	
-	--TARGET6 DAC Control
-	u_TARGET6_DAC_CONTROL: entity work.TARGET6_DAC_CONTROL PORT MAP(
-			CLK 				=> internal_CLOCK_FPGA_LOGIC,
-			LOAD_PERIOD 	=> internal_DAC_CONTROL_LOAD_PERIOD,
-			LATCH_PERIOD 	=> internal_DAC_CONTROL_LATCH_PERIOD,
-			UPDATE 			=> internal_DAC_CONTROL_UPDATE,
-			REG_DATA 		=> internal_DAC_CONTROL_REG_DATA,
-			SIN 				=> internal_DAC_CONTROL_SIN,
-			SCLK 				=> internal_DAC_CONTROL_SCLK,
-			PCLK 				=> internal_DAC_CONTROL_PCLK
-   );
-	--end generate;
+ 
 
 	gen_wl_clk_to_asic : for i in 0 to 9 generate
 		map_wlclkn : ODDR2
@@ -1007,9 +994,25 @@ end generate;
 --	BUSB_REGCLR <= '0';
 --	BUSA_SCLK <= internal_DAC_CONTROL_SCLK;
 --	BUSB_SCLK <= internal_DAC_CONTROL_SCLK;
+	
+	  --ASIC control processes
+	
+	--TARGETX DAC Control
+	u_TARGETX_DAC_CONTROL: entity work.TARGETX_DAC_CONTROL PORT MAP(
+			CLK 				=> internal_CLOCK_FPGA_LOGIC,
+			LOAD_PERIOD 	=> internal_DAC_CONTROL_LOAD_PERIOD,
+			LATCH_PERIOD 	=> internal_DAC_CONTROL_LATCH_PERIOD,
+			UPDATE 			=> internal_DAC_CONTROL_UPDATE,
+			REG_DATA 		=> internal_DAC_CONTROL_REG_DATA,
+			busy				=>open,
+			SIN 				=> internal_DAC_CONTROL_SIN,
+			SCLK 				=> internal_DAC_CONTROL_SCLK,
+			PCLK 				=> internal_DAC_CONTROL_PCLK
+   );
+	--end generate;
 	--Only specified DC gets serial data signals, uses bit mask
 	gen_DAC_CONTROL: for i in 0 to 9 generate
-		SIN(i) <= internal_DAC_CONTROL_SIN and internal_DAC_CONTROL_TDCNUM(i);
+		SIN(i)  <= internal_DAC_CONTROL_SIN  and internal_DAC_CONTROL_TDCNUM(i);
 		PCLK(i) <= internal_DAC_CONTROL_PCLK and internal_DAC_CONTROL_TDCNUM(i);
 		SCLK(i) <= internal_DAC_CONTROL_SCLK and internal_DAC_CONTROL_TDCNUM(i);
 	end generate;

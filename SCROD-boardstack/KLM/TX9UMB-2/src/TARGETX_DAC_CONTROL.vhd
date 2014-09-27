@@ -4,7 +4,7 @@
 -- 
 -- Create Date:    14:40:31 10/25/2013 
 -- Design Name: 
--- Module Name:    TARGET6_DAC_CONTROL - Behavioral 
+-- Module Name:    TARGETX_DAC_CONTROL - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
@@ -14,7 +14,7 @@
 --
 -- Revision:   
 -- Revision 0.01 - File Created
--- Revision 0.02: -added a 'busy' pin such that calling process can wait until it is over, 25/09/14- IM  
+-- Revision 0.02: -added a 'busy' pin such that calling process can wait until the work is over, 25/09/14- IM  
 -- Additional Comments: 
 
 ----------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity TARGET6_DAC_CONTROL is
+entity TARGETX_DAC_CONTROL is
     generic (
 		constant REGISTER_WIDTH : integer := 19-- needs to change, change the name of the file to TargetX DAC control this is actually 19 now
 	 );
@@ -39,13 +39,14 @@ entity TARGET6_DAC_CONTROL is
 			  LATCH_PERIOD : in  STD_LOGIC_VECTOR(15 downto 0);
 			  UPDATE : in  STD_LOGIC;
 			  REG_DATA : in  STD_LOGIC_VECTOR(18 downto 0);
-           
+           busy		: out std_logic;
+			  
 			  SIN : out  STD_LOGIC;
            SCLK : out  STD_LOGIC;
            PCLK : out  STD_LOGIC);
-end TARGET6_DAC_CONTROL;
+end TARGETX_DAC_CONTROL;
 
-architecture Behavioral of TARGET6_DAC_CONTROL is
+architecture Behavioral of TARGETX_DAC_CONTROL is
 
    --STATES
    type state_type is (
@@ -127,7 +128,7 @@ begin
 	                    '0';
  
    --process to load DACs to ASIC
-	DAC_REGISTER_UPDATE_TARGET6 : PROCESS(CLK)
+	DAC_REGISTER_UPDATE_TARGETX : PROCESS(CLK)
 	BEGIN
 		------------------------------------------------------------
 		IF RISING_EDGE(CLK) THEN
@@ -138,6 +139,7 @@ begin
 					SCLK_i <= '0';
 					PCLK_i <= '0';
 					cnt 		<= 0;
+					busy<='0';
 					ENABLE_COUNTER <= '0';
 					if UPDATE_START = '1' then
 						STATE <= LOAD_DAC_LOW_SET0;
@@ -150,6 +152,7 @@ begin
 					SCLK_i <= '0';
 					ENABLE_COUNTER <= '0';
 					STATE <= LOAD_DAC_LOW_WAIT0;
+					busy<='1';
 				
 				WHEN LOAD_DAC_LOW_WAIT0 =>
 					SCLK_i <= '0';
@@ -352,7 +355,7 @@ begin
 			------------------------------------------------------------
 		END IF;
 		------------------------------------------------------------
-	END PROCESS DAC_REGISTER_UPDATE_TARGET6;
+	END PROCESS DAC_REGISTER_UPDATE_TARGETX;
 
 end Behavioral;
 

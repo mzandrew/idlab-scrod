@@ -1,1 +1,1 @@
--intstyle "ise" -incremental -lib "secureip" -o "C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/tb_update_status_reg01_isim_beh.exe" -prj "C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/tb_update_status_reg01_beh.prj" "work.tb_update_status_reg01" 
+-intstyle "ise" -incremental -lib "secureip" -o "C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/tb_klm_runctrl_01_isim_beh.exe" -prj "C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/tb_klm_runctrl_01_beh.prj" "tb_klm_runctrl_01" 
