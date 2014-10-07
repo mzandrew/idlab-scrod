@@ -1,0 +1,2117 @@
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97064 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73512 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 69096 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 69352 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68584 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73256 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68776 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 96808 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68840 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73512 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97064 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 69160 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73512 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 69032 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97064 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68776 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73512 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68520 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97384 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 69224 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73128 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97512 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 72552 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 69096 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68584 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68712 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68904 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97064 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73512 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68968 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 69096 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 69096 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus u_SerialDataRout/internal_fifo_wr_din<29
+   : 0> on block scrod_top is not reconstructed, because there are some missing
+   bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_lane_init_sm_4byte_i/counter2_r<15 : 0> on block scrod_top
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_spa_r<6 : 2> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_sp_r<7 : 0> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_aurora_lane_4byte_0_i/au
+   rora_interface_0_sym_dec_4byte_i/rx_pad_d_r<3 : 1> on block scrod_top is not
+   reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_0_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/aurora_module_i/aurora_interface_1_global_logic_i/channel_i
+   nit_sm_i/v_count_r<15 : 0> on block scrod_top is not reconstructed, because
+   there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_1_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   map_readout_interfaces/map_daq_fifo_layer/synthesize_with_aurora.map_two_lane
+   _aurora_interface/standard_cc_module_0_i/prepare_count_r<9 : 4> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus
+   u_SerialDataRout/next_state[3]_X_67_o_wide_mux_60_OUT<24 : 0> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 97000 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 73256 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68904 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 69352 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68776 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68392 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus internal_fifo_wr_din[29 : 0] on block
+   SerialDataRout is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus next_state[3]_X_139_o_wide_mux_60_OUT[24
+   : 0] on block SerialDataRout is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM_NO1 is not reconstructed, because there
+   are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_scp_d_r[3 : 0] on block SYM_DEC is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus prev_beat_spa_d_r[2 : 0] on block
+   SYM_DEC is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus sig_dbg<21 : 0> on block b2tt_fifo is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus buf_payload[111]_sta_crc8[7]_xor_4_OUT[5
+   : 0] on block b2tt_enoctet is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus payload[111]_payload[111]_mux_18_OUT<111
+   : 0> on block b2tt_enpacket is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus trg_fifo_di<16 : 0> on block conc_intfc
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus GND_322_o_PWR_252_o_mux_0_OUT<16 : 0> on
+   block conc_intfc is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_OUTPUT_REGISTERS<15 : 0> on
+   block scrod_top is not reconstructed, because there are some missing bus
+   signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 115432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design trig_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to trig_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file trig_fifo.edif ...
+ngc2edif: Total memory usage is 68008 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design daq_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to daq_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file daq_fifo.edif ...
+ngc2edif: Total memory usage is 67432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 67496 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 67432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68008 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 67688 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 67752 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 67432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 72488 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus internal_fifo_wr_din[29 : 0] on block
+   SerialDataRout is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus next_state[3]_X_139_o_wide_mux_60_OUT[24
+   : 0] on block SerialDataRout is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM_NO1 is not reconstructed, because there
+   are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_scp_d_r[3 : 0] on block SYM_DEC is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus prev_beat_spa_d_r[2 : 0] on block
+   SYM_DEC is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus sig_dbg<21 : 0> on block b2tt_fifo is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus buf_payload[111]_sta_crc8[7]_xor_4_OUT[5
+   : 0] on block b2tt_enoctet is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus payload[111]_payload[111]_mux_18_OUT<111
+   : 0> on block b2tt_enpacket is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus trg_fifo_di<16 : 0> on block conc_intfc
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus GND_322_o_PWR_252_o_mux_0_OUT<16 : 0> on
+   block conc_intfc is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_OUTPUT_REGISTERS<15 : 0> on
+   block scrod_top is not reconstructed, because there are some missing bus
+   signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 115432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design trig_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to trig_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file trig_fifo.edif ...
+ngc2edif: Total memory usage is 67560 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design daq_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to daq_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file daq_fifo.edif ...
+ngc2edif: Total memory usage is 67432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68200 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 67688 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 68136 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 67560 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 67432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 67432 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 72424 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus internal_fifo_wr_din<29 : 0> on block
+   SerialDataRout is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus
+   next_state[3]_PWR_572_o_wide_mux_60_OUT<24 : 0> on block SerialDataRout is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM_NO1 is not reconstructed, because there
+   are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_scp_d_r[3 : 0] on block SYM_DEC is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus prev_beat_spa_d_r[2 : 0] on block
+   SYM_DEC is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus sig_dbg<21 : 0> on block b2tt_fifo is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus buf_payload[111]_sta_crc8[7]_xor_4_OUT[5
+   : 0] on block b2tt_enoctet is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus payload[111]_payload[111]_mux_18_OUT<91
+   : 0> on block b2tt_enpacket is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus trg_fifo_di<16 : 0> on block conc_intfc
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus GND_289_o_PWR_234_o_mux_0_OUT<16 : 0> on
+   block conc_intfc is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_OUTPUT_REGISTERS<15 : 0> on
+   block scrod_top is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_TXDCTRIG_buf<5 : 1> on block
+   scrod_top is not reconstructed, because there are some missing bus signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 115440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68208 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 68400 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design trig_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to trig_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file trig_fifo.edif ...
+ngc2edif: Total memory usage is 68144 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design daq_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to daq_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file daq_fifo.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 72560 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus started_cntr<10 : 0> on block
+   SamplingLgc is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus internal_fifo_wr_din<29 : 0> on block
+   SerialDataRout is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus
+   next_state[3]_PWR_571_o_wide_mux_60_OUT<24 : 0> on block SerialDataRout is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM_NO1 is not reconstructed, because there
+   are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_scp_d_r[3 : 0] on block SYM_DEC is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus prev_beat_spa_d_r[2 : 0] on block
+   SYM_DEC is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus sig_dbg<21 : 0> on block b2tt_fifo is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus buf_payload[111]_sta_crc8[7]_xor_4_OUT[5
+   : 0] on block b2tt_enoctet is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus payload[111]_payload[111]_mux_18_OUT<91
+   : 0> on block b2tt_enpacket is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus trg_fifo_di<16 : 0> on block conc_intfc
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus GND_288_o_PWR_233_o_mux_0_OUT<16 : 0> on
+   block conc_intfc is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_OUTPUT_REGISTERS<15 : 0> on
+   block scrod_top is not reconstructed, because there are some missing bus
+   signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 115184 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design buffer_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to buffer_fifo_wr32_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file buffer_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 68400 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_0.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_OUT_1.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_OUT_1.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_OUT_1.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design FIFO_INP_0.ngc ...
+WARNING:NetListWriters:298 - No output is written to FIFO_INP_0.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file FIFO_INP_0.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr16_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr16_rd32.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr16_rd32.edif ...
+ngc2edif: Total memory usage is 67440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design fifo_wr32_rd16.ngc ...
+WARNING:NetListWriters:298 - No output is written to fifo_wr32_rd16.xncf,
+   ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file fifo_wr32_rd16.edif ...
+ngc2edif: Total memory usage is 68144 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design trig_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to trig_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file trig_fifo.edif ...
+ngc2edif: Total memory usage is 68464 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design daq_fifo.ngc ...
+WARNING:NetListWriters:298 - No output is written to daq_fifo.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file daq_fifo.edif ...
+ngc2edif: Total memory usage is 67760 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design waveform_fifo_wr32_rd32.ngc ...
+WARNING:NetListWriters:298 - No output is written to
+   waveform_fifo_wr32_rd32.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+  finished :Prep
+Writing EDIF netlist file waveform_fifo_wr32_rd32.edif ...
+ngc2edif: Total memory usage is 72368 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus internal_fifo_wr_din<29 : 0> on block
+   SerialDataRout is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus
+   next_state[3]_PWR_570_o_wide_mux_60_OUT<24 : 0> on block SerialDataRout is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus ramp_start<9 : 1> on block
+   DigitizingLgcTX is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM_NO1 is not reconstructed, because there
+   are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_scp_d_r[3 : 0] on block SYM_DEC is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus prev_beat_spa_d_r[2 : 0] on block
+   SYM_DEC is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus sig_dbg<21 : 0> on block b2tt_fifo is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus buf_payload[111]_sta_crc8[7]_xor_4_OUT[5
+   : 0] on block b2tt_enoctet is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus payload[111]_payload[111]_mux_18_OUT<91
+   : 0> on block b2tt_enpacket is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus trg_fifo_di<16 : 0> on block conc_intfc
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus GND_288_o_PWR_233_o_mux_0_OUT<16 : 0> on
+   block conc_intfc is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_OUTPUT_REGISTERS<15 : 0> on
+   block scrod_top is not reconstructed, because there are some missing bus
+   signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 115440 kilobytes
+
+Release 13.2 - ngc2edif O.61xd (nt64)
+Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+Reading design scrod_top.ngc ...
+WARNING:NetListWriters:298 - No output is written to scrod_top.xncf, ignored.
+Processing design ...
+   Preping design's networks ...
+   Preping design's macros ...
+WARNING:NetListWriters:306 - Signal bus internal_fifo_wr_din<29 : 0> on block
+   SerialDataRout is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus
+   next_state[3]_PWR_570_o_wide_mux_60_OUT<24 : 0> on block SerialDataRout is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus ramp_start<9 : 1> on block
+   DigitizingLgcTX is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM_NO1 is not reconstructed, because there
+   are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus v_count_r<15 : 0> on block
+   aurora_interface_0_CHANNEL_INIT_SM is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE_NO1 is not reconstructed, because there are
+   some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_pad_d_r[3 : 1] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_sp_r[7 : 0] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_spa_r[6 : 2] on block
+   aurora_interface_0_SYM_DEC_4BYTE is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus rx_scp_d_r[3 : 0] on block SYM_DEC is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus prev_beat_spa_d_r[2 : 0] on block
+   SYM_DEC is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus sig_dbg<21 : 0> on block b2tt_fifo is
+   not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus buf_payload[111]_sta_crc8[7]_xor_4_OUT[5
+   : 0] on block b2tt_enoctet is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus payload[111]_payload[111]_mux_18_OUT<91
+   : 0> on block b2tt_enpacket is not reconstructed, because there are some
+   missing bus signals.
+WARNING:NetListWriters:306 - Signal bus trg_fifo_di<16 : 0> on block conc_intfc
+   is not reconstructed, because there are some missing bus signals.
+WARNING:NetListWriters:306 - Signal bus GND_288_o_PWR_233_o_mux_0_OUT<16 : 0> on
+   block conc_intfc is not reconstructed, because there are some missing bus
+   signals.
+WARNING:NetListWriters:306 - Signal bus internal_OUTPUT_REGISTERS<15 : 0> on
+   block scrod_top is not reconstructed, because there are some missing bus
+   signals.
+  finished :Prep
+Writing EDIF netlist file scrod_top.edif ...
+ngc2edif: Total memory usage is 115504 kilobytes
+

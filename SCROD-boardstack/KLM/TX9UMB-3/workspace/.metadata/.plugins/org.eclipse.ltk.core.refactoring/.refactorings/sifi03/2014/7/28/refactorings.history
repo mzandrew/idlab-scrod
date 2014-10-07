@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;sifi03/tools/KlmTestReadTemperature01&apos; to &apos;KlmTestReadTemperature01.cpp&apos;" description="Rename resource &apos;KlmTestReadTemperature01&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="tools/KlmTestReadTemperature01" name="KlmTestReadTemperature01.cpp" stamp="1404847213670" updateReferences="true"/>
+</session>

@@ -1,0 +1,4 @@
+#Wed Aug 13 14:09:35 HST 2014
+__DEFAULT__=false
+org.eclipse.help.ui.localSearch.master=true
+expression=Import Existing Code

@@ -1,0 +1,6 @@
+20:44:54 **** Clean-only build of configuration Default for project sifi03 ****
+make clean 
+rm -rf base/*.o bin/* tools/*.o
+
+20:44:54 Build Finished (took 130ms)
+

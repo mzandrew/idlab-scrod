@@ -1,0 +1,9 @@
+vhdl work ../example_design/sync_block.vhd
+vhdl work ../example_design/reset_sync.vhd
+vhdl work ../example_design/transceiver/s6_gtpwizard_tile.vhd
+vhdl work ../example_design/transceiver/s6_gtpwizard.vhd
+vhdl work ../example_design/transceiver/transceiver_A.vhd
+vhdl work ../example_design/tx_elastic_buffer.vhd
+vhdl work ../example_design/ethercon_block.vhd
+vhdl work ../example_design/ethercon_example_design.vhd
+

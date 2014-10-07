@@ -1,0 +1,12 @@
+[Version]
+Version=9.2
+[Designs]
+tdc_fifo_tb=.\tdc_fifo_tb\tdc_fifo_tb.adf
+[Browser]
+sort=order
+mode=none
+[Order]
+order=1
+macro=
+[Expand]
+tdc_fifo_tb=1
