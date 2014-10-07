@@ -32,7 +32,13 @@ use work.readout_definitions.all;
 
 entity scrod_top is
 	   generic(
-    NUM_GTS                     : integer := 2);
+    NUM_GTS                     : integer := 2;
+	 -- uncomment one of these lines only to comiple with the given configuration
+--	 Code_Config						: string :="SA4_MBA_DCA_RB_I", --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
+	 Code_Config						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
+--	 Code_Config						: string :="SA4_MBB_DCA_RB", 	 --SCROD A4, MB B, TXDC A, RHIC B
+	 
+	 );
 	 Port(
 		BOARD_CLOCKP                : in  STD_LOGIC;
 		BOARD_CLOCKN                : in  STD_LOGIC;
@@ -116,14 +122,11 @@ entity scrod_top is
 		
 		--BUS A Specific Signals
 		BUS_REGCLR						 : out STD_LOGIC;
---		BUSA_REGCLR						 : out STD_LOGIC;
---		BUSA_SCLK						 : out STD_LOGIC;
 		BUSA_WR_ADDRCLR				 : out STD_LOGIC;
 		BUSA_RD_ENA						 : out STD_LOGIC;
 		BUSA_RD_ROWSEL_S				 : out STD_LOGIC_VECTOR(2 downto 0);
 		BUSA_RD_COLSEL_S				 : out STD_LOGIC_VECTOR(5 downto 0);
 		BUSA_CLR							 : out STD_LOGIC;
---		BUSA_START						 : out STD_LOGIC;
 		BUSA_RAMP						 : out STD_LOGIC;
 		BUSA_SAMPLESEL_S				 : out STD_LOGIC_VECTOR(4 downto 0);
 		BUSA_SR_CLEAR					 : out STD_LOGIC;
@@ -131,14 +134,11 @@ entity scrod_top is
 		BUSA_DO							 : inout STD_LOGIC_VECTOR(15 downto 0);
 		
 		--Bus B Specific Signals
---		BUSB_REGCLR						 : out STD_LOGIC;
---		BUSB_SCLK						 : out STD_LOGIC;
 		BUSB_WR_ADDRCLR				 : out STD_LOGIC;
 		BUSB_RD_ENA						 : out STD_LOGIC;
 		BUSB_RD_ROWSEL_S				 : out STD_LOGIC_VECTOR(2 downto 0);
 		BUSB_RD_COLSEL_S				 : out STD_LOGIC_VECTOR(5 downto 0);
 		BUSB_CLR							 : out STD_LOGIC;
---		BUSB_START						 : out STD_LOGIC;
 		BUSB_RAMP						 : out STD_LOGIC;
 		BUSB_SAMPLESEL_S				 : out STD_LOGIC_VECTOR(4 downto 0);
 		BUSB_SR_CLEAR					 : out STD_LOGIC;
@@ -150,12 +150,6 @@ entity scrod_top is
 		PCLK								 : out STD_LOGIC_VECTOR(9 downto 0);
 		SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0);
 		
-		--Sampling Signals
---		SSTIN								 : out STD_LOGIC_VECTOR(9 downto 0);
---		SSPIN								 : out STD_LOGIC_VECTOR(9 downto 0);
---		WR_STRB 							 : out STD_LOGIC_VECTOR(9 downto 0);
---		WR_ADVCLK 						 : out STD_LOGIC_VECTOR(9 downto 0);
---		WR_ENA 						 	 : out STD_LOGIC_VECTOR(9 downto 0);
 		
 		--Digitization Signals
 		
@@ -212,6 +206,7 @@ entity scrod_top is
 		RAM1_CE2							   : out STD_LOGIC := '0';                           
 		RAM1_OE				            : out std_logic := '1';                       
 		RAM1_WE				            : out std_logic := '1';                         
+
 		RAM2_CE1				            : out STD_LOGIC := '1';                     
 		RAM2_CE2				            : out STD_LOGIC := '0';                       
 		RAM2_OE				            : out std_logic := '1';		
@@ -223,7 +218,6 @@ entity scrod_top is
 		WR1_ENA								: out STD_LOGIC_VECTOR(9 downto 0);
 		WR2_ENA								: out STD_LOGIC_VECTOR(9 downto 0);
 
---		BUS_REGCLR						: in STD_LOGIC;
 		SSTIN_N								 : out STD_LOGIC_VECTOR(9 downto 0);
 		SSTIN_P								 : out STD_LOGIC_VECTOR(9 downto 0);
 		

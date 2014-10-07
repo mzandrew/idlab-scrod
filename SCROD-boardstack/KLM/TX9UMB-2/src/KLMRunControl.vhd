@@ -56,11 +56,14 @@ entity KLMRunControl is
 
 port (
         clk		 		: in   std_logic;
-        --wr		  		: in   std_logic;  -- wr='1' and rising edge of wr_clk=> add input to FIFO 
-		  -- this will eventually start the FSM for run control stream- read from FIFO and fill the first N words then send the rest to the pedestal RAM 
+        runcl_src_ready_n	: in   std_logic;  -- wr='1' and rising edge of wr_clk=> add input to FIFO-- connect to  RCL_SRC_RDY_N coming from the LL interface of the conc interface
+		runcl_sof_n	: in std_logic; --start the process- reset the counters and ... connect to SOF from conc.= start of frame. Local Link.
+		 
+		 -- this will eventually start the FSM for run control stream- read from FIFO and fill the first N words then send the rest to the pedestal RAM 
 		  din   			: in 	std_logic_vector(15 downto 0);-- input stream, coming from the conc interface ouput
 		  --fifo_wr_clk	: in std_logic;
-		  start			: in std_logic; --start the process- reset the counters and ...
+
+		  runcl_dst_ready_n	: out std_logic; --LL signaling
 		  
 		  busy			: out std_logic; -- busy working 
 		  error			: out std_logic; --error
@@ -131,7 +134,10 @@ signal DAC_CONTROL_REG_DATA_i:std_logic_vector(18 downto 0);
 signal TDCNUM:std_logic_vector(9 downto 0);
 signal asic_num:std_logic_vector(3 downto 0);
 signal out_regs_i :  GPR; -- buffer for registers that will control the SCROD- in TOP module, this will replace the readout interface output
-
+signal runcl_src_ready_n_i: std_logic:='1';
+signal runcl_dst_ready_n_i: std_logic:='1';
+signal runcl_sof_n_i: std_logic:='1';
+signal input_is_runreg: std_logic:='0';
 
 type fifo2reg_state is
 	(
@@ -228,8 +234,13 @@ process (clk) is --latch on start input
 begin
 
 if (rising_edge(clk)) then
+
+	runcl_src_ready_n_i<=runcl_src_ready_n;
+	runcl_dst_ready_n<=runcl_dst_ready_n_i;
+	runcl_sof_n_i<=runcl_sof_n;
+
 	start_i(1)<=start_i(0);	
-	start_i(0)<=start;
+	start_i(0)<=runcl_sof_n_i;
 	din_i5<=din;
 	din_i4<=din_i5;
 	din_i3<=din_i4;
@@ -241,7 +252,11 @@ end if;
 
 end process;
 
-process(clk,start) is --determine to write to FIFO or ram what
+wr_en_i<=(not runcl_dst_ready_n_i) and (not runcl_src_ready_n_i) and input_is_runreg;
+
+
+
+process(clk) is --determine to write to FIFO or ram what
 begin
 
 if (rising_edge(clk)) then
@@ -252,11 +267,13 @@ When Idle_wr2fifo =>
  if (start_i/="01") then 
 	busy_i<='0';
 	next_w2fifo_ram_st<=Idle_wr2fifo;
+	runcl_dst_ready_n_i<='1';
 	else
 	busy_i<='1';
 	ram_addr<=(others=>'0');
 	cntr_runreg<=0;
-	rst_fifo_i<='1';
+	input_is_runreg<='1';
+	rst_fifo_i<='1';-- reset fifo and also needs to wait a few cycles for fifo to properly reset
 	next_w2fifo_ram_st<=fifo_rst1;
  end if;
 
@@ -271,19 +288,29 @@ When fifo_rst3 =>
 	next_w2fifo_ram_st<=fifo_rst4;
 
 When fifo_rst4 =>
-	wr_en_i<='1';
+	runcl_dst_ready_n_i<='0';
+	--wr_en_i<='1';
 	next_w2fifo_ram_st<=fifo_wr;
 
 When fifo_wr =>
-	wr_en_i<='1';
+--	wr_en_i<='1';
+
+	if(runcl_src_ready_n_i='0') then -- fifo wr_ena just clocked 
+	
 	cntr_runreg<=cntr_runreg+1;
 	if (cntr_runreg<Nrunctrl*2) then 
 		next_w2fifo_ram_st<=fifo_wr;
 	else 
-		wr_en_i<='0';	
-		next_w2fifo_ram_st<=ram_wr;
+--		wr_en_i<='0';
+	input_is_runreg<='0';-- done writing to FIFO, the rest will go to ram
+	next_w2fifo_ram_st<=ram_wr;
+		
 	end if;
-
+	else
+		next_w2fifo_ram_st<=fifo_wr;-- just wait for data to come from the src
+	
+ end if;
+ 
 When ram_wr =>
 	if (to_integer(unsigned(ram_addr))<Nramvals) then --needs work
 		next_w2fifo_ram_st<=ram_wr;

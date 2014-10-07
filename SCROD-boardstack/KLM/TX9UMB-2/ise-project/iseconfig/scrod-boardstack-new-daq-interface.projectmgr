@@ -7,7 +7,6 @@
    <ItemView engineview="SynthesisOnly" guiview="Source" compilemode="AutoCompile" >
       <ClosedNodes>
          <ClosedNodesVersion>2</ClosedNodesVersion>
-         <ClosedNode>/KLMRunControl - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|KLMRunControl.vhd</ClosedNode>
          <ClosedNode>/clock_generation - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|clocking|clock_generation.vhd</ClosedNode>
          <ClosedNode>/klm_scrod - behave C:|Users|isar|Documents|code2|TX9UMB-2|src|KLM_SCROD_baseline|klm_scrod|source|klm_scrod.vhd/aurora_ins - klm_aurora_intfc - MAPPED</ClosedNode>
          <ClosedNode>/klm_scrod - behave C:|Users|isar|Documents|code2|TX9UMB-2|src|KLM_SCROD_baseline|klm_scrod|source|klm_scrod.vhd/b2tt_ins - b2tt - implementation</ClosedNode>
@@ -30,10 +29,10 @@
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code2|TX9UMB|src|scrod_top.vhd/u_trigger_scaler_single_channel_w_timing_gen - trigger_scaler_single_channel_w_timing_gen - Behavioral</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/inst_mpps_dacs - mppc_dacs - Behavioral</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/inst_pulse_extent - pulse_transition - Behavioral</ClosedNode>
-         <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/aurora_ins - klm_aurora_intfc - MAPPED</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/aurora_ins - klm_aurora_intfc - MAPPED/klm_aurora_ins - klm_aurora - MAPPED</ClosedNode>
-         <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/b2tt_ins - b2tt - implementation</ClosedNode>
+         <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/b2tt_ins - b2tt - implementation/map_decode - b2tt_decode - implementation</ClosedNode>
+         <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/b2tt_ins - b2tt - implementation/map_encode - b2tt_encode - implementation</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/conc_intfc_ins - conc_intfc - behave</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/conc_intfc_ins - conc_intfc - behave/tmodr_ins - time_order - behave/rpc_tom_ins - tom_10_to_1 - behave/tom_3_to_1_11 - tom_3_to_1 - behave</ClosedNode>
          <ClosedNode>/scrod_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|scrod_top.vhd/klm_scrod_trig_interface - klm_scrod - behave/conc_intfc_ins - conc_intfc - behave/tmodr_ins - time_order - behave/rpc_tom_ins - tom_10_to_1 - behave/tom_3_to_1_12 - tom_3_to_1 - behave</ClosedNode>
@@ -52,13 +51,13 @@
          <ClosedNode>/trigger_scaler_top - Behavioral C:|Users|isar|Documents|code4|TX9UMB-2|src|asic_interfaces|trigger_scalers.vhd</ClosedNode>
       </ClosedNodes>
       <SelectedItems>
-         <SelectedItem>scrod_top - Behavioral (C:/Users/isar/Documents/code4/TX9UMB-2/src/scrod_top.vhd)</SelectedItem>
+         <SelectedItem>u_runctrl_fifo - runctrl_fifo_wr16_rd32 (C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/ipcore_dir/runctrl_fifo_wr16_rd32.xco)</SelectedItem>
       </SelectedItems>
       <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
       <ViewHeaderState orientation="horizontal" >000000ff000000000000000100000001000000000000000000000000000000000202000000010000000100000064000002be000000020000000000000000000000000200000064ffffffff000000810000000300000002000002be0000000100000003000000000000000100000003</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >true</UserChangedColumnWidths>
-      <CurrentItem>scrod_top - Behavioral (C:/Users/isar/Documents/code4/TX9UMB-2/src/scrod_top.vhd)</CurrentItem>
+      <CurrentItem>u_runctrl_fifo - runctrl_fifo_wr16_rd32 (C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/ipcore_dir/runctrl_fifo_wr16_rd32.xco)</CurrentItem>
    </ItemView>
    <ItemView engineview="SynthesisOnly" sourcetype="DESUT_VHDL_ARCHITECTURE" guiview="Process" >
       <ClosedNodes>
@@ -70,13 +69,13 @@
          <ClosedNode>User Constraints</ClosedNode>
       </ClosedNodes>
       <SelectedItems>
-         <SelectedItem>Generate Programming File</SelectedItem>
+         <SelectedItem></SelectedItem>
       </SelectedItems>
-      <ScrollbarPosition orientation="vertical" >9</ScrollbarPosition>
+      <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
-      <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000186000000010000000100000000000000000000000064ffffffff000000810000000000000001000001860000000100000000</ViewHeaderState>
+      <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000196000000010000000100000000000000000000000064ffffffff000000810000000000000001000001960000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
-      <CurrentItem>Generate Programming File</CurrentItem>
+      <CurrentItem></CurrentItem>
    </ItemView>
    <ItemView guiview="File" >
       <ClosedNodes>
@@ -85,7 +84,7 @@
       <SelectedItems>
          <SelectedItem>TDC_MPPC_DAC.vhd</SelectedItem>
       </SelectedItems>
-      <ScrollbarPosition orientation="vertical" >84</ScrollbarPosition>
+      <ScrollbarPosition orientation="vertical" >93</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
       <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000000000000010000000000000000000000000000000000000391000000040101000100000000000000000000000064ffffffff000000810000000000000004000001120000000100000000000000d70000000100000000000000660000000100000000000001420000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
@@ -98,9 +97,9 @@
       <SelectedItems>
          <SelectedItem>readout_definitions.vhd</SelectedItem>
       </SelectedItems>
-      <ScrollbarPosition orientation="vertical" >36</ScrollbarPosition>
+      <ScrollbarPosition orientation="vertical" >66</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
-      <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000000000000010000000000000000000000000000000000000186000000010001000100000000000000000000000064ffffffff000000810000000000000001000001860000000100000000</ViewHeaderState>
+      <ViewHeaderState orientation="horizontal" >000000ff000000000000000100000000000000000100000000000000000000000000000000000000f9000000010001000100000000000000000000000064ffffffff000000810000000000000001000000f90000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
       <CurrentItem>readout_definitions.vhd</CurrentItem>
    </ItemView>
@@ -109,13 +108,13 @@
          <ClosedNodesVersion>1</ClosedNodesVersion>
       </ClosedNodes>
       <SelectedItems>
-         <SelectedItem></SelectedItem>
+         <SelectedItem/>
       </SelectedItems>
       <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
       <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000196000000010000000100000000000000000000000064ffffffff000000810000000000000001000001960000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
-      <CurrentItem></CurrentItem>
+      <CurrentItem/>
    </ItemView>
    <SourceProcessView>000000ff0000000000000002000001e6000000cd01000000050100000002</SourceProcessView>
    <CurrentView>Implementation</CurrentView>
@@ -197,26 +196,26 @@
          <ClosedNode>Design Utilities/Compile HDL Simulation Libraries</ClosedNode>
       </ClosedNodes>
       <SelectedItems>
-         <SelectedItem></SelectedItem>
+         <SelectedItem/>
       </SelectedItems>
       <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
       <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000196000000010000000100000000000000000000000064ffffffff000000810000000000000001000001960000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
-      <CurrentItem></CurrentItem>
+      <CurrentItem/>
    </ItemView>
    <ItemView engineview="BehavioralSim" sourcetype="DESUT_VHDL_ARCHITECTURE" guiview="Process" >
       <ClosedNodes>
          <ClosedNodesVersion>1</ClosedNodesVersion>
       </ClosedNodes>
       <SelectedItems>
-         <SelectedItem></SelectedItem>
+         <SelectedItem/>
       </SelectedItems>
       <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
       <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000196000000010000000100000000000000000000000064ffffffff000000810000000000000001000001960000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
-      <CurrentItem></CurrentItem>
+      <CurrentItem/>
    </ItemView>
    <ItemView engineview="PostMapSim" guiview="Source" compilemode="AutoCompile" >
       <ClosedNodes>
@@ -314,7 +313,7 @@
       </SelectedItems>
       <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
-      <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000196000000010000000100000000000000000000000064ffffffff000000810000000000000001000001960000000100000000</ViewHeaderState>
+      <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000186000000010000000100000000000000000000000064ffffffff000000810000000000000001000001860000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
       <CurrentItem></CurrentItem>
    </ItemView>
@@ -400,12 +399,12 @@
          <ClosedNodesVersion>1</ClosedNodesVersion>
       </ClosedNodes>
       <SelectedItems>
-         <SelectedItem></SelectedItem>
+         <SelectedItem/>
       </SelectedItems>
       <ScrollbarPosition orientation="vertical" >0</ScrollbarPosition>
       <ScrollbarPosition orientation="horizontal" >0</ScrollbarPosition>
       <ViewHeaderState orientation="horizontal" >000000ff00000000000000010000000100000000000000000000000000000000000000000000000196000000010000000100000000000000000000000064ffffffff000000810000000000000001000001960000000100000000</ViewHeaderState>
       <UserChangedColumnWidths orientation="horizontal" >false</UserChangedColumnWidths>
-      <CurrentItem></CurrentItem>
+      <CurrentItem/>
    </ItemView>
 </Project>
