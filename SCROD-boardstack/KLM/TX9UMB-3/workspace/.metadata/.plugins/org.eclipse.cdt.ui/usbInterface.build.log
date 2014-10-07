@@ -1,0 +1,6 @@
+12:27:34 **** Incremental Build of configuration Build (GNU) for project usbInterface ****
+make all 
+make: Nothing to be done for `all'.
+
+12:27:35 Build Finished (took 109ms)
+

@@ -1,0 +1,5 @@
+work	"../src/KLMRunControl.vhd"
+work	"../src/TARGETX_DAC_CONTROL.vhd"
+work	"../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
+work	"../src/readout_definitions.vhd"
+work	"ipcore_dir/runctrl_fifo_wr16_rd32.vhd"

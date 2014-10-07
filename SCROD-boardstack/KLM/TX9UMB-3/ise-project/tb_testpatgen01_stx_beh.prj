@@ -1,0 +1,2 @@
+vhdl isim_temp "TestPatternGen01.vhd"
+vhdl isim_temp "tb_testpatgen01.vhd"

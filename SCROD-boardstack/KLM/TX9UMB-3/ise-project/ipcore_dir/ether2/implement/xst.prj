@@ -1,0 +1,28 @@
+vhdl work ..\example_design\fifo\ether2_tx_client_fifo.vhd
+vhdl work ..\example_design\fifo\ether2_rx_client_fifo.vhd
+vhdl work ..\example_design\fifo\ether2_ten_100_1g_eth_fifo.vhd
+vhdl work ..\example_design\common\ether2_reset_sync.vhd
+vhdl work ..\example_design\common\ether2_sync_block.vhd
+vhdl work ..\example_design\pat_gen\ether2_address_swap.vhd
+vhdl work ..\example_design\pat_gen\ether2_axi_mux.vhd
+vhdl work ..\example_design\pat_gen\ether2_axi_pat_gen.vhd
+vhdl work ..\example_design\pat_gen\ether2_axi_pat_check.vhd
+vhdl work ..\example_design\pat_gen\ether2_axi_pipe.vhd
+vhdl work ..\example_design\pat_gen\ether2_basic_pat_gen.vhd
+vhdl work ..\example_design\physical\ether2_gmii_if.vhd
+vhdl work ..\example_design\statistics\ether2_vector_decode.vhd
+vhdl work ..\example_design\axi_lite\ether2_axi_lite_sm.vhd
+vhdl work ..\example_design\axi_ipif\ether2_ipif_pkg.vhd
+vhdl work ..\example_design\axi_ipif\ether2_counter_f.vhd
+vhdl work ..\example_design\axi_ipif\ether2_pselect_f.vhd 
+
+vhdl work ..\example_design\axi_ipif\ether2_address_decoder.vhd
+vhdl work ..\example_design\axi_ipif\ether2_slave_attachment.vhd
+vhdl work ..\example_design\axi_ipif\ether2_axi_lite_ipif.vhd
+
+vhdl work ..\example_design\axi_ipif\ether2_axi4_lite_ipif_wrapper.vhd
+
+vhdl work ..\example_design\ether2_clk_wiz.vhd
+vhdl work ..\example_design\ether2_block.vhd
+vhdl work ..\example_design\ether2_fifo_block.vhd
+vhdl work ..\example_design\ether2_example_design.vhd

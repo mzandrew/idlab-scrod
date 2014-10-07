@@ -1,0 +1,2 @@
+ERROR VLM_0021: "The working library "time_sim_tb" not found in the installation." "..\source\tdc_pkg.vhd" 0 0
+FAILURE "Compile failure 1 Errors 0 Warnings  Analysis time :  0.0 [ms]" 

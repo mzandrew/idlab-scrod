@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project>
+	<configuration id="org.eclipse.linuxtools.cdt.autotools.core.toolChain.1266067" name="Build (GNU)">
+		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
+			<provider id="org.eclipse.cdt.managedbuilder.core.GCCBuildCommandParser">
+				<language id="org.eclipse.cdt.core.g++">
+					<resource project-relative-path="src/target6Control_takeAndPlotData.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_takeData.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_testTrigger.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/parseTarget6Data2.cxx">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Data_viewWaveformTree.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/io_interface.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/idl_usb.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_test.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_RAMtest01.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/parseTarget6Data_DecodeTPG.cxx">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_writeDefaultDacRegs.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_readReg.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/parseTarget6Data.cxx">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_writeDacReg.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/generic.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_writeReg.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/parseTarget6Data3.cxx">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Data_makeHitTree.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/target6ControlClass.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Data_measurePedestals.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/packet_interface.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/target6DataClass.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+				</language>
+			</provider>
+		</extension>
+	</configuration>
+</project>

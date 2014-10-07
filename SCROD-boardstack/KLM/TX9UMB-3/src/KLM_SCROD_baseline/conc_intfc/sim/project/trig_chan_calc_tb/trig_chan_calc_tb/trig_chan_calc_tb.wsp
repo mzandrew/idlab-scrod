@@ -1,0 +1,37 @@
+[CACHESIMPLE|Aldec.SymbolsCommands.7]
+trig_chan_calc_tb=1
+Built-in symbols=0
+
+[COMPILESTATUS|.\..\..\..\script\trig_chan_calc_tb.do]
+FileTimeLow=30384438
+Status=Modified
+
+[CACHEDOC|Aldec.Hde.HdePlugIn.7|.\..\..\source\trig_chan_calc_tb.vhd|]
+CurrentLine=0
+CurrentColumn=0
+Bookmarks=-1
+BookmarksLength=3
+CurrentFontSize=-13
+Frame=0
+
+[COMPILESTATUS|.\..\..\..\script\waves.do]
+FileTimeLow=30384438
+Status=Modified
+
+[CACHEDOC|Aldec.Hde.HdePlugIn.7|.\..\..\script\trig_chan_calc_tb.do|]
+CurrentLine=12
+CurrentColumn=0
+Bookmarks=-1
+BookmarksLength=3
+CurrentFontSize=-13
+Frame=0
+
+[General]
+CurrentVersion=103
+
+[CACHEDOC|Aldec.Project.Generic.7|.\trig_chan_calc_tb\trig_chan_calc_tb.adf|]
+Path=/trig_chan_calc_tb
+
+[Gui config]
+RunFor=100 ns
+
