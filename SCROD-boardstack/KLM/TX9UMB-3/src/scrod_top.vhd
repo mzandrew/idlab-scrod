@@ -32,11 +32,11 @@ use work.readout_definitions.all;
 
 entity scrod_top is
 	   generic(
-    NUM_GTS                     : integer := 2;
+    NUM_GTS                     : integer := 1;
 	 -- uncomment one of these lines only to comiple with the given configuration
---	 Code_Config						: string :="SA4_MBA_DCA_RB_I", --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
-	 Code_Config						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
---	 Code_Config						: string :="SA4_MBB_DCA_RB", 	 --SCROD A4, MB B, TXDC A, RHIC B
+	 HW_CONF						: string :="SA4_MBA_DCA_RB_I" --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
+--	 HW_CONF						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
+--	 HW_CONF						: string :="SA4_MBB_DCA_RB", 	 --SCROD A4, MB B, TXDC A, RHIC B
 	 
 	 );
 	 Port(
@@ -114,7 +114,7 @@ entity scrod_top is
 		
 		--MB Specific Signals
 		EX_TRIGGER1						 : out STD_LOGIC;
-		EX_TRIGGER2						 : out STD_LOGIC;
+--		EX_TRIGGER2						 : out STD_LOGIC;
 		
 		--Global Bus Signals
 		
@@ -131,7 +131,7 @@ entity scrod_top is
 		BUSA_SAMPLESEL_S				 : out STD_LOGIC_VECTOR(4 downto 0);
 		BUSA_SR_CLEAR					 : out STD_LOGIC;
 		BUSA_SR_SEL						 : out STD_LOGIC;
-		BUSA_DO							 : inout STD_LOGIC_VECTOR(15 downto 0);
+		BUSA_DO							 : in STD_LOGIC_VECTOR(15 downto 0);
 		
 		--Bus B Specific Signals
 		BUSB_WR_ADDRCLR				 : out STD_LOGIC;
@@ -201,17 +201,13 @@ entity scrod_top is
 		
 		--New Stuff for TargetX:
 		--RAM:
-		BUS_RAM_RS_A						: out STD_LOGIC_VECTOR(10 downto 0);                       
+--		RAM_A									: out STD_LOGIC_VECTOR(21 downto 0);-- RAM address line         
+		RAM_IO								: inout STD_LOGIC_VECTOR(7 downto 0);-- RAM IO data line     
 		RAM1_CE1							 	: out STD_LOGIC := '1';                                         
 		RAM1_CE2							   : out STD_LOGIC := '0';                           
 		RAM1_OE				            : out std_logic := '1';                       
 		RAM1_WE				            : out std_logic := '1';                         
-
-		RAM2_CE1				            : out STD_LOGIC := '1';                     
-		RAM2_CE2				            : out STD_LOGIC := '0';                       
-		RAM2_OE				            : out std_logic := '1';		
-		RAM2_WE				            : out std_logic := '1';                       
-
+	            
 		SCLK								: out STD_LOGIC_VECTOR(9 downto 0);
 		WL_CLK_N								: out STD_LOGIC_VECTOR(9 downto 0);
 		WL_CLK_P								: out STD_LOGIC_VECTOR(9 downto 0);
@@ -528,7 +524,7 @@ begin
  --  EX_TRIGGER2 <= internal_TRIGGER_ASIC(9);
 --	EX_TRIGGER1 <= internal_READ_ENABLE_TIMER(9);
    EX_TRIGGER1 <= not internal_READCTRL_busy_status;--internal_TXDCTRIG_buf(10)(5);
-	EX_TRIGGER2 <= internal_READCTRL_trigger;--SHOUT(9);
+--	EX_TRIGGER2 <= internal_READCTRL_trigger;--SHOUT(9);
 
    internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
    internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
@@ -637,6 +633,9 @@ end generate;
 	
 	--Clock generation
 	map_clock_gen : entity work.clock_gen
+	generic map (
+		HW_CONF => HW_CONF
+	)
 	port map ( 
 		--Raw boad clock input
 		BOARD_CLOCKP      => BOARD_CLOCKP,
@@ -684,23 +683,47 @@ end generate;
 		--WAVEFORM_FIFO_READ_ENABLE    => open,
 		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
 		--WAVEFORM_PACKET_BUILDER_VETO => open,
-
+--
 		FIBER_0_RXP                  => FIBER_0_RXP,
 		FIBER_0_RXN                  => FIBER_0_RXN,
-		FIBER_1_RXP                  => FIBER_1_RXP,
+	   FIBER_1_RXP                  => FIBER_1_RXP,
 		FIBER_1_RXN                  => FIBER_1_RXN,
 		FIBER_0_TXP                  => FIBER_0_TXP,
 		FIBER_0_TXN                  => FIBER_0_TXN,
 		FIBER_1_TXP                  => FIBER_1_TXP,
 		FIBER_1_TXN                  => FIBER_1_TXN,
 		FIBER_REFCLKP                => FIBER_REFCLKP,
-		FIBER_REFCLKN                => FIBER_REFCLKN,
-		FIBER_0_DISABLE_TRANSCEIVER  => FIBER_0_DISABLE_TRANSCEIVER,
-		FIBER_1_DISABLE_TRANSCEIVER  => FIBER_1_DISABLE_TRANSCEIVER,
-		FIBER_0_LINK_UP              => FIBER_0_LINK_UP,
-		FIBER_1_LINK_UP              => FIBER_1_LINK_UP,
-		FIBER_0_LINK_ERR             => FIBER_0_LINK_ERR,
-		FIBER_1_LINK_ERR             => FIBER_1_LINK_ERR,
+   	FIBER_REFCLKN                => FIBER_REFCLKN,
+--		FIBER_0_DISABLE_TRANSCEIVER  => FIBER_0_DISABLE_TRANSCEIVER,
+--		FIBER_1_DISABLE_TRANSCEIVER  => FIBER_1_DISABLE_TRANSCEIVER,
+--		FIBER_0_LINK_UP              => FIBER_0_LINK_UP,
+--		FIBER_1_LINK_UP              => FIBER_1_LINK_UP,
+--		FIBER_0_LINK_ERR             => FIBER_0_LINK_ERR,
+--		FIBER_1_LINK_ERR             => FIBER_1_LINK_ERR,
+--
+
+--		FIBER_0_RXP                  => '0',
+--		FIBER_0_RXN                  => '0',
+--		FIBER_1_RXP                  => '0',
+--		FIBER_1_RXN                  => '0',
+--		FIBER_0_TXP                  => open,
+--		FIBER_0_TXN                  => open,
+--		FIBER_1_TXP                  =>  open,
+--		FIBER_1_TXN                  =>  open,
+--		FIBER_REFCLKP                =>  '0',
+--		FIBER_REFCLKN                =>  '0',
+		FIBER_0_DISABLE_TRANSCEIVER  =>  open,
+		FIBER_1_DISABLE_TRANSCEIVER  =>  open,
+		FIBER_0_LINK_UP              =>  open,
+		FIBER_1_LINK_UP              =>  open,
+		FIBER_0_LINK_ERR             =>  open,
+		FIBER_1_LINK_ERR             =>  open,
+                                         
+
+
+
+
+
 
 		USB_IFCLK                    => USB_IFCLK,
 		USB_CTL0                     => USB_CTL0,
@@ -725,6 +748,7 @@ end generate;
 ---------------------------------------------------------------
 
 	klm_scrod_trig_interface : entity work.KLM_SCROD
+	generic map(NUM_GTS=>1)
 		port map ( 
 	
 			
@@ -1127,7 +1151,7 @@ internal_SMP_IDLE_STATUS<='0';
 --	
 	
 	
-	
+	 
 	internal_SMP_START <= internal_CMDREG_SMP_START;
 	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
 							 internal_CMDREG_SMP_STOP;
