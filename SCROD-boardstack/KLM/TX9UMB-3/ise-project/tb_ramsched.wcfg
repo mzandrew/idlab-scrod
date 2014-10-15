@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_sramsched02_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="tb_sramsched02" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="18" />
+   <wvobject fp_name="/tb_sramsched02/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/ain" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ain[3:0]</obj_property>
+      <obj_property name="ObjectShortName">ain[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/dwin" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dwin[3:0]</obj_property>
+      <obj_property name="ObjectShortName">dwin[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/rw" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rw[3:0]</obj_property>
+      <obj_property name="ObjectShortName">rw[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/update_req" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">update_req[3:0]</obj_property>
+      <obj_property name="ObjectShortName">update_req[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/io" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">io[7:0]</obj_property>
+      <obj_property name="ObjectShortName">io[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/drout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">drout[3:0]</obj_property>
+      <obj_property name="ObjectShortName">drout[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/busy" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">busy[3:0]</obj_property>
+      <obj_property name="ObjectShortName">busy[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">a[21:0]</obj_property>
+      <obj_property name="ObjectShortName">a[21:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/web" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">web</obj_property>
+      <obj_property name="ObjectShortName">web</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/ce2" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ce2</obj_property>
+      <obj_property name="ObjectShortName">ce2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/ce1b" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ce1b</obj_property>
+      <obj_property name="ObjectShortName">ce1b</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/oeb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">oeb</obj_property>
+      <obj_property name="ObjectShortName">oeb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_period</obj_property>
+      <obj_property name="ObjectShortName">clk_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/uut/update_req_i0" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">update_req_i0[3:0]</obj_property>
+      <obj_property name="ObjectShortName">update_req_i0[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/uut/update_req_i1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">update_req_i1[3:0]</obj_property>
+      <obj_property name="ObjectShortName">update_req_i1[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/uut/update_req_edg" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">update_req_edg[3:0]</obj_property>
+      <obj_property name="ObjectShortName">update_req_edg[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_sramsched02/uut/update_req_edg_new" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">update_req_edg_new</obj_property>
+      <obj_property name="ObjectShortName">update_req_edg_new</obj_property>
+   </wvobject>
+</wave_config>
