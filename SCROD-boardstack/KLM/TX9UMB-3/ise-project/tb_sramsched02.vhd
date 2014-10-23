@@ -116,17 +116,25 @@ BEGIN
    begin		
       -- hold reset state for 100 ns.
       wait for 100 ns;	
+		Ain(3)<="000000"& x"A3A3";
+		Ain(2)<="000000"& x"A2A2";
+		Ain(1)<="000000"& x"A1A1";
+		Ain(0)<="000000"& x"A0A0";
 
       wait for clk_period*10;
-		update_req<="0100";
+		--Ain(3)<="00000"& x"A3A3";
+		update_req<="0000";
 		
 		wait for 100 ns;	
-		update_req<="0110";		
+		update_req<="0111";		
 		
+		wait for 100 ns;	
+		update_req<="0001";
+
 		wait for 100 ns;	
 		update_req<="1111";
 
-		wait for 100 ns;	
+		wait for 2000 ns;	
 		update_req<="0010";
 
       -- insert stimulus here 

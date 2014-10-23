@@ -1,4 +1,1 @@
-work	"../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
-work	"../src/peripherals/SRAMiface2.vhd"
-work	"../src/readout_definitions.vhd"
-work	"SRAMscheduler.vhd"
+work	"../src/WaveformDemuxPedsubDSP.vhd"

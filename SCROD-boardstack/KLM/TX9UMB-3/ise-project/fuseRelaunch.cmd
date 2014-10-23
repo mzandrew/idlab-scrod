@@ -1,1 +1,1 @@
--intstyle "ise" -incremental -lib "secureip" -o "C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_sramsched02_isim_beh.exe" -prj "C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_sramsched02_beh.prj" "work.tb_sramsched02" 
+-intstyle "ise" -incremental -lib "secureip" -o "C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readoutControl01_isim_beh.exe" -prj "C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readoutControl01_beh.prj" "work.tb_readoutControl01" 

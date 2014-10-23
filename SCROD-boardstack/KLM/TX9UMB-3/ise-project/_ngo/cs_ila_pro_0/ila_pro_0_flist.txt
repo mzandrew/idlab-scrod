@@ -2,6 +2,7 @@
 ila_pro_0.cdc
 ila_pro_0.gise
 ila_pro_0.ngc
+ila_pro_0.ucf
 ila_pro_0.vhd
 ila_pro_0.vho
 ila_pro_0.xco

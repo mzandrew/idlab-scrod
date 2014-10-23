@@ -58,7 +58,7 @@ package asic_definitions_irs2_carrier_revA is
 	subtype ASIC_WRITE_STROBE_C is std_logic_vector(ASICS_PER_ROW-1 downto 0);
 	-------------Digitization related------------------------
 	subtype ASIC_START_C is std_logic_vector(ASICS_PER_ROW-1 downto 0);
-	constant SAMPLES_PER_WINDOW : integer := 64;
+	constant SAMPLES_PER_WINDOW : integer := 32; -- this used to be 64, changed to 32: IM 10/16/2014
 	constant WAVEFORMS_PER_PACKET : integer := 1;
 	-------------Readout related-----------------------------
 	type ASIC_DATA_C is array(ASICS_PER_ROW-1 downto 0) of std_logic_vector(11 downto 0);

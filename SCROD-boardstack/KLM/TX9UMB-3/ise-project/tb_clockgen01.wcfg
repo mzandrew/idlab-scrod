@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_clock_enable_generator_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="std_logic_1164" />
+            <top_module name="tb_clock_enable_generator" />
+            <top_module name="textio" />
+            <top_module name="vcomponents" />
+            <top_module name="vital_primitives" />
+            <top_module name="vital_timing" />
+            <top_module name="vpkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="6" />
+   <wvobject fp_name="/tb_clock_enable_generator/clock_in" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clock_in</obj_property>
+      <obj_property name="ObjectShortName">clock_in</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_clock_enable_generator/clock_enable_out" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clock_enable_out</obj_property>
+      <obj_property name="ObjectShortName">clock_enable_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_clock_enable_generator/clock_in_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clock_in_period</obj_property>
+      <obj_property name="ObjectShortName">clock_in_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_clock_enable_generator/uut/internal_counter" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_counter[9:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_counter[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_clock_enable_generator/uut/internal_counter_reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_counter_reset</obj_property>
+      <obj_property name="ObjectShortName">internal_counter_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_clock_enable_generator/uut/divide_ratio" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">divide_ratio</obj_property>
+      <obj_property name="ObjectShortName">divide_ratio</obj_property>
+   </wvobject>
+</wave_config>

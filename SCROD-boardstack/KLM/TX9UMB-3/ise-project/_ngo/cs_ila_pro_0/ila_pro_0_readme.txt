@@ -1,5 +1,5 @@
 The following files were generated for 'ila_pro_0' in directory
-C:\Users\isar\Documents\code4\TX9UMB-2\ise-project\_ngo\cs_ila_pro_0\
+C:\Users\isar\Documents\code4\TX9UMB-3\ise-project\_ngo\cs_ila_pro_0\
 
 XCO file generator:
    Generate an XCO file for compatibility with legacy flows.
@@ -11,6 +11,7 @@ Creates an implementation netlist:
 
    * ila_pro_0.cdc
    * ila_pro_0.ngc
+   * ila_pro_0.ucf
    * ila_pro_0.vhd
    * ila_pro_0.vho
 
@@ -31,7 +32,7 @@ Generate ISE subproject:
    * ila_pro_0.xise
 
 Deliver Readme:
-   Text file indicating the files generated and how they are used.
+   Readme file for the IP.
 
    * ila_pro_0_readme.txt
 
