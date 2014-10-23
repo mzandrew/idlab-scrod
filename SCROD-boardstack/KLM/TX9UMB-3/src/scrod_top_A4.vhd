@@ -35,6 +35,7 @@ entity scrod_top_A4 is
     NUM_GTS                     : integer := 1;
 	 -- uncomment one of these lines only to comiple with the given configuration
 	 HW_CONF						: string :="SA4_MBA_DCA_RB_I" --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
+--	 HW_CONF						: string :="SA4_MBSF_TX" --SCROD A4, MB SciFi, TX SificDC 
 --	 HW_CONF						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
 --	 HW_CONF						: string :="SA4_MBB_DCA_RB", 	 --SCROD A4, MB B, TXDC A, RHIC B
 	 
@@ -91,29 +92,13 @@ entity scrod_top_A4 is
 		FIBER_1_LINK_UP             : out STD_LOGIC;
 		FIBER_0_LINK_ERR            : out STD_LOGIC;
 		FIBER_1_LINK_ERR            : out STD_LOGIC;
-		---------------------------------------------
-		------------------USB pins-------------------
-		---------------------------------------------
-		USB_IFCLK                   : in  STD_LOGIC;
-		USB_CTL0                    : in  STD_LOGIC;
-		USB_CTL1                    : in  STD_LOGIC;
-		USB_CTL2                    : in  STD_LOGIC;
-		USB_FDD                     : inout STD_LOGIC_VECTOR(15 downto 0);
-		USB_PA0                     : out STD_LOGIC;
-		USB_PA1                     : out STD_LOGIC;
-		USB_PA2                     : out STD_LOGIC;
-		USB_PA3                     : out STD_LOGIC;
-		USB_PA4                     : out STD_LOGIC;
-		USB_PA5                     : out STD_LOGIC;
-		USB_PA6                     : out STD_LOGIC;
-		USB_PA7                     : in  STD_LOGIC;
-		USB_RDY0                    : out STD_LOGIC;
-		USB_RDY1                    : out STD_LOGIC;
-		USB_WAKEUP                  : in  STD_LOGIC;
-		USB_CLKOUT		             : in  STD_LOGIC;
+	
 		
 		--MB Specific Signals
-		EX_TRIGGER1						 : out STD_LOGIC;
+		
+		EX_TRIGGER1_MB					 : out std_logic;
+		EX_TRIGGER2_MB					 : in std_logic;
+		EX_TRIGGER_SCROD	   		 : out STD_LOGIC;
 --		EX_TRIGGER2						 : out STD_LOGIC;
 		
 		--Global Bus Signals
@@ -163,10 +148,7 @@ entity scrod_top_A4 is
 
 		BUSB_SCK_DAC		          : out STD_LOGIC;
 		BUSB_DIN_DAC		          : out STD_LOGIC;
-		TDC_CS_DAC                  : out STD_LOGIC_VECTOR(9 downto 0);
---		HV_DISABLE                  : out STD_LOGIC;
-		TDC_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
-		TOP_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
+	
 		
 		--TRIGGER SIGNALS
 		TDC1_TRG_16						 : in STD_LOGIC;
@@ -198,6 +180,54 @@ entity scrod_top_A4 is
 		
 		TDC10_TRG_16					 : in STD_LOGIC;
 		TDC10_TRG						 : in STD_LOGIC_VECTOR(3 downto 0);
+		--- SciFi Tracker only: (comment out for KLM MB compile)
+----		GPIO								: in std_logic_vector(23 downto 0);
+--		FPGA_GCLK_N						: in std_logic_vector(0 downto 0);
+--		FPGA_GCLK_P						: in std_logic_vector(0 downto 0);
+--		FPGA_GCLK_CTRL					: in std_logic;
+----		HVDAC_CS							: out std_logic;
+----		HVDAC_SCK						: out std_logic;
+----		HVDAC_SDI						: out std_logic;
+----		N5VEN								: out std_logic;
+----		P2V5EN							: out std_logic;
+----		P5VAEN							: out std_logic;
+----		HVEN								: out std_logic;
+--		
+--		BUSA_DED_WR_ADDRCLR 			: out std_logic_vector(4 downto 0);
+--		BUSB_DED_WR_ADDRCLR 			: out std_logic_vector(4 downto 0);
+--		
+--		TDC_CS1_DAC						: out std_logic_vector(9 downto 0);
+--		TDC_CS2_DAC						: out std_logic_vector(9 downto 0);
+		-- Uncomment for TX KLM MB, keep commented for SciFi
+		TDC_CS_DAC                  : out STD_LOGIC_VECTOR(9 downto 0);
+----		HV_DISABLE                  : out STD_LOGIC;
+		TDC_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
+		TOP_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
+		---------------------------------------------
+		------------------USB pins-------------------
+		---------------------------------------------
+		USB_IFCLK                   : in  STD_LOGIC;
+		USB_CTL0                    : in  STD_LOGIC;
+		USB_CTL1                    : in  STD_LOGIC;
+		USB_CTL2                    : in  STD_LOGIC;
+		USB_FDD                     : inout STD_LOGIC_VECTOR(15 downto 0);
+		USB_PA0                     : out STD_LOGIC;
+		USB_PA1                     : out STD_LOGIC;
+		USB_PA2                     : out STD_LOGIC;
+		USB_PA3                     : out STD_LOGIC;
+		USB_PA4                     : out STD_LOGIC;
+		USB_PA5                     : out STD_LOGIC;
+		USB_PA6                     : out STD_LOGIC;
+		USB_PA7                     : in  STD_LOGIC;
+		USB_RDY0                    : out STD_LOGIC;
+		USB_RDY1                    : out STD_LOGIC;
+		USB_WAKEUP                  : in  STD_LOGIC;
+		USB_CLKOUT		             : in  STD_LOGIC;
+
+
+		---- end of SciFi Related ports
+
+		
 		
 		--New Stuff for TargetX:
 		--RAM:
@@ -226,11 +256,15 @@ entity scrod_top_A4 is
 end scrod_top_A4;
 
 architecture Behavioral of scrod_top_A4 is
-	signal internal_BOARD_CLOCK      : std_logic;
+	signal internal_BOARD_CLOCK_OUT      : std_logic;
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_MPPC_DAC  : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
+	signal internal_CLOCK_ASIC_CTRL_WILK : std_logic;
+
 	signal internal_CLOCK_MPPC_ADC  : std_logic;
+	
+	signal WL_CLK_tmp	:std_logic_vector(9 downto 0);
 
 	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);
 	signal internal_CLOCK_8xSST_OBUFDS_P : std_logic_vector(9 downto 0);
@@ -286,7 +320,14 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_EVTBUILD_PACKET_BUILDER_VETO : std_logic := '0';
 	signal internal_EVTBUILD_START_BUILDING_EVENT : std_logic := '0';
 	signal internal_EVTBUILD_DONE_SENDING_EVENT : std_logic := '0';
+	--External Trig Control:
 	
+		
+	signal internal_EX_TRIGGER1_MB	: std_logic;
+	signal internal_EX_TRIGGER2_MB   : std_logic;
+	signal internal_EX_TRIGGER_SCROD	: STD_LOGIC;
+		
+		
 	--ASIC TRIGGER CONTROL
 	signal internal_TRIGGER_ALL : std_logic := '0';
 	signal internal_TRIGGER_ASIC : std_logic_vector(9 downto 0) := "0000000000";
@@ -311,6 +352,7 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_DAC_CONTROL_PCLK : std_logic := '0';
 	signal internal_DAC_CONTROL_LOAD_PERIOD : std_logic_vector(15 downto 0)  := (others => '0');
 	signal internal_DAC_CONTROL_LATCH_PERIOD : std_logic_vector(15 downto 0)  := (others => '0');
+	signal internal_TDC_CS_DAC : std_logic_vector(9 downto 0);
 	signal internal_WL_CLK_N						: std_logic := '0';
 
 	--READOUT CONTROL
@@ -337,11 +379,10 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_READCTRL_READOUT_DONE : std_logic := '0';
 	signal internal_READCTRL_dig_win_start : std_logic_vector(8 downto 0) := (others => '0');
 	
+	signal internal_CMDREG_RESET_SAMPLIG_LOGIC :std_logic :='0';
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
 	signal internal_CMDREG_SOFTWARE_TRIGGER_VETO : std_logic := '0';
 	signal internal_CMDREG_HARDWARE_TRIGGER_ENABLE : std_logic := '0';
-	signal internal_CMDREG_SMP_START : std_logic := '0';
-	signal internal_CMDREG_SMP_STOP : std_logic := '0';
 	signal internal_CMDREG_READCTRL_trig_delay : std_logic_vector(11 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_dig_offset : std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_win_num_to_read : std_logic_vector(8 downto 0) := (others => '0');
@@ -357,7 +398,6 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_EVTBUILD_MAKE_READY : std_logic := '0';
 	signal internal_CMDREG_EVTBUILD_DONE_SENDING_EVENT : std_logic := '0';
 	signal internal_CMDREG_EVTBUILD_PACKET_BUILDER_BUSY : std_logic := '0';
-	signal internal_CMDREG_READCTRL_toggle_manual : std_logic := '0';
 	signal internal_CMDREG_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 	signal internal_CMDREG_readctrl_ramp_length : std_logic_vector(15 downto 0) :=(others => '0');
 	signal internal_cmdreg_readctrl_use_fixed_dig_start_win : std_logic_vector(15 downto 0):=(others => '0');
@@ -365,9 +405,6 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_SW_STATUS_READ : std_logic;
 
 	--ASIC SAMPLING CONTROL
-	signal internal_SMP_START 				: std_logic := '0';
-	signal internal_SMP_STOP 				: std_logic := '0';
-	signal internal_SMP_IDLE_status 		: std_logic := '0';
 	signal internal_SMP_MAIN_CNT 			: std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_SSTIN 					: std_logic := '0';
 	signal internal_SSPIN 					: std_logic := '0';
@@ -436,15 +473,48 @@ architecture Behavioral of scrod_top_A4 is
 
 	signal internal_TDC_MON_TIMING_buf : std_logic_vector(9 downto 0);
 
-	signal internal_CMDREG_RAMADDR : std_logic_vector (20 downto 0);
-	signal internal_CMDREG_RAMDATAWR :std_logic_vector(15 downto 0);
-	signal internal_CMDREG_RAMUPDATE :std_logic;
-	signal internal_CMDREG_RAMDATARD :std_logic_vector(15 downto 0);
-	signal internal_CMDREG_RAMRW :std_logic;
-	signal internal_RAM_IO :std_logic_vector (7 downto 0);
-	signal internal_RAM_A : std_logic_vector (21 downto 0);
-
 	signal internal_CMDREG_UPDATE_STATUS_REGS : std_logic;
+-----------------SRAM  Signals:
+
+
+	signal internal_CMDREG_RAMADDR : std_logic_vector (21 downto 0);
+	signal internal_CMDREG_RAMDATAWR :std_logic_vector(7 downto 0);
+	signal internal_CMDREG_RAMUPDATE :std_logic;
+	signal internal_CMDREG_RAMDATARD :std_logic_vector(7 downto 0);
+	signal internal_CMDREG_RAMRW :std_logic;
+	signal internal_CMDREG_RAMBUSY :std_logic;
+   signal internal_ram_Ain : AddrArray;--:= (others => '0');
+   signal internal_ram_DWin : DataArray;-- := (others => '0');
+   signal internal_ram_rw : std_logic_vector(NRAMCH-1 downto 0) := (others => '0');
+   signal internal_ram_update : std_logic_vector(NRAMCH-1 downto 0) := (others => '0');
+   signal internal_ram_DRout : DataArray;
+   signal internal_ram_busy : std_logic_vector(NRAMCH-1 downto 0);
+	signal RAM_IOw_i:std_logic_vector(7 downto 0);
+	signal RAM_IOr_i:std_logic_vector(7 downto 0);
+	signal RAM_IO_bs_i:std_logic;
+	
+	
+	
+	
+-----------------------USB:
+signal		internal_USB_IFCLK                   :  STD_LOGIC:='Z';
+signal		internal_USB_CTL0                    :  STD_LOGIC:='Z';
+signal		internal_USB_CTL1                    :  STD_LOGIC:='Z';
+signal		internal_USB_CTL2                    :  STD_LOGIC:='Z';
+signal		internal_USB_FDD                     :  STD_LOGIC_VECTOR(15 downto 0);
+signal		internal_USB_PA0                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA1                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA2                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA3                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA4                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA5                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA6                     :  STD_LOGIC:='Z';
+signal		internal_USB_PA7                     :  STD_LOGIC:='Z';
+signal		internal_USB_RDY0                    :  STD_LOGIC:='Z';
+signal		internal_USB_RDY1                    :  STD_LOGIC:='Z';
+signal		internal_USB_WAKEUP                  :  STD_LOGIC:='Z';
+signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
+
 
 --module for updating MPPC bias and temp status regs
     COMPONENT update_status_regs
@@ -491,38 +561,88 @@ architecture Behavioral of scrod_top_A4 is
 	END COMPONENT;
 	
 	
-COMPONENT SRAMiface2
-	PORT(
-		clk : IN std_logic;
-		addr : IN std_logic_vector(21 downto 0);
-		dw : IN std_logic_vector(7 downto 0);
-		rw : IN std_logic;
-		update : IN std_logic;    
-		IO : INOUT std_logic_vector(7 downto 0);      
-		dr : OUT std_logic_vector(7 downto 0);
-		busy : OUT std_logic;
-		A : OUT std_logic_vector(21 downto 0);
-		WEb : OUT std_logic;
-		CE2 : OUT std_logic;
-		CE1b : OUT std_logic;
-		OEb : OUT std_logic
-		);
-	END COMPONENT;
+	 COMPONENT SRAMscheduler
+    PORT(
+         clk : IN  std_logic;
+         Ain : IN  AddrArray;
+         DWin : IN  DataArray;
+         DRout : OUT  DataArray;
+         rw : IN  std_logic_vector(3 downto 0);
+         update_req : IN  std_logic_vector(3 downto 0);
+         busy : OUT  std_logic_vector(3 downto 0);
+         A : OUT  std_logic_vector(21 downto 0);
+         IOw : OUT  std_logic_vector(7 downto 0);
+         IOr : IN  std_logic_vector(7 downto 0);
+         BS : OUT  std_logic;
+         WEb : OUT  std_logic;
+         CE2 : OUT  std_logic;
+         CE1b : OUT  std_logic;
+         OEb : OUT  std_logic
+        );
+    END COMPONENT;
+	 
+	 COMPONENT WaveformDemuxPedsubDSP
+    PORT(
+         clk : IN  std_logic;
+         asic_no : IN  std_logic_vector(3 downto 0);
+         win_addr_start : IN  std_logic_vector(8 downto 0);
+         sr_start : IN  std_logic;
+			
+			pswfifo_en 			:	out std_logic;
+			pswfifo_clk 		: 	out std_logic;
+			pswfifo_d 			: 	out std_logic_vector(31 downto 0);
+			
+         fifo_en : IN  std_logic;
+         fifo_clk : IN  std_logic;
+         fifo_din : IN  std_logic_vector(31 downto 0);
+         ram_addr : OUT  std_logic_vector(21 downto 0);
+         ram_data : IN  std_logic_vector(7 downto 0);
+         ram_update : OUT  std_logic;
+         ram_busy : IN  std_logic
+        );
+    END COMPONENT;
+
 
 	
 begin
 
+ extrig1_OBUF_inst : OBUF
+   generic map (
+      DRIVE => 12,
+      IOSTANDARD => "DEFAULT",
+      SLEW => "SLOW")
+   port map (
+      O => EX_TRIGGER1_MB,     -- Buffer output (connect directly to top-level port)
+      I => internal_EX_TRIGGER1_MB      -- Buffer input 
+   );
+	
+ extrig2_IBUF_inst : IBUF
+   generic map (
+      IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+      IOSTANDARD => "DEFAULT")
+   port map (
+      O => internal_EX_TRIGGER2_MB,     -- Buffer output
+      I => EX_TRIGGER2_MB      -- Buffer input (connect directly to top-level port)
+   );
+	
+
+internal_TRIGGER_ALL <=internal_EX_TRIGGER2_MB;
+
+internal_EX_TRIGGER1_MB<=internal_TRIGGER_ALL;
+
 
 
 	
+	
 	--Overall Signal Routing
 	--debug/diag route:
-   --EX_TRIGGER1 <= internal_TRIGGER_ALL;
  --  EX_TRIGGER2 <= internal_TRIGGER_ASIC(9);
 --	EX_TRIGGER1 <= internal_READ_ENABLE_TIMER(9);
  --  EX_TRIGGER1 <= not internal_READCTRL_busy_status;--internal_TXDCTRIG_buf(10)(5);
 --	EX_TRIGGER2 <= internal_READCTRL_trigger;--SHOUT(9);
-  EX_TRIGGER1<= internal_clock_asic_ctrl;
+ -- EX_TRIGGER1_MB<= internal_BOARD_CLOCK_OUT;--internal_clock_asic_ctrl;
+--  EX_TRIGGER2_MB<='0';-- internal_clock_asic_ctrl;
+  EX_TRIGGER_SCROD<='0';
 	
    internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
    internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
@@ -582,70 +702,75 @@ end generate;
 --	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
 --	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
 --	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
-	internal_TRIGGER_ALL <= (internal_TRIGGER_ASIC(0) --AND internal_TRIGGER_ASIC_control_word(0)
-	)
-		OR ( internal_TRIGGER_ASIC(1) --AND internal_TRIGGER_ASIC_control_word(1)
-		)
-		OR ( internal_TRIGGER_ASIC(2) --AND internal_TRIGGER_ASIC_control_word(2) 
-		)
-		OR ( internal_TRIGGER_ASIC(3) --AND internal_TRIGGER_ASIC_control_word(3) 
-		)
-		OR ( internal_TRIGGER_ASIC(4) --AND internal_TRIGGER_ASIC_control_word(4) 
-		)
-		OR ( internal_TRIGGER_ASIC(5) --AND internal_TRIGGER_ASIC_control_word(5) 
-		)
-		OR ( internal_TRIGGER_ASIC(6) --AND internal_TRIGGER_ASIC_control_word(6) 
-		)
-		OR ( internal_TRIGGER_ASIC(7) --AND internal_TRIGGER_ASIC_control_word(7) 
-		)
-		OR ( internal_TRIGGER_ASIC(8) --AND internal_TRIGGER_ASIC_control_word(8) 
-		)
-		OR ( internal_TRIGGER_ASIC(9) --AND internal_TRIGGER_ASIC_control_word(9) 
-		);
-	
-	
-	RAM_IO<=internal_RAM_IO;
-	RAM_A <=internal_RAM_A;
-	
-	
---uut_sram2: SRAMiface2 PORT MAP(
---		clk => internal_CLOCK_FPGA_LOGIC,
---		addr => ,
---		dw => ,
---		dr => ,
---		rw => ,
---		update => ,
---		busy => ,
---		A => ,
---		IO => ,
---		WEb => ,
---		CE2 => ,
---		CE1b => ,
---		OEb => 
---	);
 
 
-	--sram interface
---	  uut_sram1: SRAMiface1 PORT MAP (
---          clk => internal_CLOCK_MPPC_DAC,
---          addr => internal_CMDREG_RAMADDR,
---          dw => internal_CMDREG_RAMDATAWR,
---          dr => internal_CMDREG_RAMDATARD,
---          rw => internal_CMDREG_RAMRW,
---          update => internal_CMDREG_RAMUPDATE,
---          busy => open,
---          A => internal_RAM_ADDR,
---          IO => BUSA_DO,
---          BYTEb => open,
---          BHEb => open,
---          WEb => RAM1_WE,
---          CE2 => RAM1_CE2,
---          CE1b => RAM1_CE1,
---          OEb => RAM1_OE,
---          BLEb => open
---        );
+--	internal_TRIGGER_ALL <=EX_TRIGGER2_MB or  (internal_TRIGGER_ASIC(0) --AND internal_TRIGGER_ASIC_control_word(0)
+--	)
+--		OR ( internal_TRIGGER_ASIC(1) --AND internal_TRIGGER_ASIC_control_word(1)
+--		)
+--		OR ( internal_TRIGGER_ASIC(2) --AND internal_TRIGGER_ASIC_control_word(2) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(3) --AND internal_TRIGGER_ASIC_control_word(3) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(4) --AND internal_TRIGGER_ASIC_control_word(4) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(5) --AND internal_TRIGGER_ASIC_control_word(5) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(6) --AND internal_TRIGGER_ASIC_control_word(6) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(7) --AND internal_TRIGGER_ASIC_control_word(7) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(8) --AND internal_TRIGGER_ASIC_control_word(8) 
+--		)
+--		OR ( internal_TRIGGER_ASIC(9) --AND internal_TRIGGER_ASIC_control_word(9) 
+--		);
+--	
 
+
+	--RAM_A <=internal_RAM_A;
+	--RAM_IO<=internal_RAM_IO;
+	--connect ch.0 of SRAM access dedicated to the USB access
+	internal_ram_Ain(0)<=internal_CMDREG_RAMADDR;--
+	internal_ram_DWin(0)<=internal_CMDREG_RAMDATAWR;
+	internal_CMDREG_RAMDATARD<=internal_ram_DRout(0);
+	internal_ram_update(0)<=internal_CMDREG_RAMUPDATE;
+	internal_ram_rw(0)<=internal_CMDREG_RAMRW;
+	internal_CMDREG_RAMBUSY<=internal_ram_busy(0);
 	
+	 uut_pedram: SRAMscheduler PORT MAP (
+          clk => internal_CLOCK_FPGA_LOGIC,
+          Ain => internal_ram_Ain,
+          DWin => internal_ram_DWin,
+          DRout => internal_ram_DRout,
+          rw => internal_ram_rw,
+          update_req => internal_ram_update,
+          busy => internal_ram_busy,
+          A => RAM_A,
+          IOw => RAM_IOw_i,
+          IOr => RAM_IOr_i,
+          BS => RAM_IO_BS_i,
+          WEb => RAM_WEn,
+          CE2 => RAM_CE2,
+          CE1b => RAM_CE1n,
+          OEb => RAM_OEn
+        );
+		  
+ gen_io_buf:  for i in 0 to 7 generate
+   IOBUF_inst : IOBUF
+   generic map (
+      DRIVE => 12,
+      IOSTANDARD => "DEFAULT",
+      SLEW => "SLOW")
+   port map (
+      O => RAM_IOr_i(i),     -- Buffer output
+      IO => RAM_IO(i),   -- Buffer inout port (connect directly to top-level port)
+      I => RAM_IOw_i(i),     -- Buffer input
+      T =>  RAM_IO_BS_i      -- 3-state enable input, high=input, low=output 
+   );
+  
+  end generate;
+
+		  
 	--Clock generation
 	map_clock_gen : entity work.clock_gen
 	generic map (
@@ -655,6 +780,7 @@ end generate;
 		--Raw boad clock input
 		BOARD_CLOCKP      => BOARD_CLOCKP,
 		BOARD_CLOCKN      => BOARD_CLOCKN,
+		BOARD_CLOCK_OUT			=>internal_BOARD_CLOCK_OUT,
 		--FTSW inputs
 		
 		--Trigger outputs from FTSW
@@ -667,6 +793,7 @@ end generate;
 		CLOCK_MPPC_ADC   => internal_CLOCK_MPPC_ADC,
 		--ASIC control clocks
 		--IM/GSV: Modify to it will run LVDS:
+		CLOCK_ASIC_CTRL_WILK=>internal_CLOCK_ASIC_CTRL_WILK,
 		CLOCK_ASIC_CTRL  => internal_CLOCK_ASIC_CTRL
 		
 	);  
@@ -736,28 +863,84 @@ end generate;
                                          
 
 
+--		USB_IFCLK                    =>open,
+--		USB_CTL0                     =>open,
+--		USB_CTL1                     =>open,
+--		USB_CTL2                     =>open,
+--		USB_FDD                      =>open,
+--		USB_PA0                      =>open,
+--		USB_PA1                      =>open,
+--		USB_PA2                      =>open,
+--		USB_PA3                      =>open,
+--		USB_PA4                      =>open,
+--		USB_PA5                      =>open,
+--		USB_PA6                      =>open,
+--		USB_PA7                      =>open,
+--		USB_RDY0                     =>open,
+--		USB_RDY1                     =>open,
+--		USB_WAKEUP                   =>open,
+--		USB_CLKOUT		             =>open
 
 
-
-
-		USB_IFCLK                    => USB_IFCLK,
-		USB_CTL0                     => USB_CTL0,
-		USB_CTL1                     => USB_CTL1,
-		USB_CTL2                     => USB_CTL2,
-		USB_FDD                      => USB_FDD,
-		USB_PA0                      => USB_PA0,
-		USB_PA1                      => USB_PA1,
-		USB_PA2                      => USB_PA2,
-		USB_PA3                      => USB_PA3,
-		USB_PA4                      => USB_PA4,
-		USB_PA5                      => USB_PA5,
-		USB_PA6                      => USB_PA6,
-		USB_PA7                      => USB_PA7,
-		USB_RDY0                     => USB_RDY0,
-		USB_RDY1                     => USB_RDY1,
-		USB_WAKEUP                   => USB_WAKEUP,
-		USB_CLKOUT		              => USB_CLKOUT
+		USB_IFCLK                    =>USB_IFCLK,
+		USB_CTL0                     =>USB_CTL0,
+		USB_CTL1                     =>USB_CTL1,
+		USB_CTL2                     =>USB_CTL2,
+		USB_FDD                      =>USB_FDD,
+		USB_PA0                      =>USB_PA0,
+		USB_PA1                      =>USB_PA1,
+		USB_PA2                      =>USB_PA2,
+		USB_PA3                      =>USB_PA3,
+		USB_PA4                      =>USB_PA4,
+		USB_PA5                      =>USB_PA5,
+		USB_PA6                      =>USB_PA6,
+		USB_PA7                      =>USB_PA7,
+		USB_RDY0                     =>USB_RDY0,
+		USB_RDY1                     =>USB_RDY1,
+		USB_WAKEUP                   =>USB_WAKEUP,
+		USB_CLKOUT		             =>USB_CLKOUT
+--
+--		USB_IFCLK                    =>internal_USB_IFCLK,
+--		USB_CTL0                     =>internal_USB_CTL0,
+--		USB_CTL1                     =>internal_USB_CTL1,
+--		USB_CTL2                     =>internal_USB_CTL2,
+--		USB_FDD                      =>internal_USB_FDD,
+--		USB_PA0                      =>internal_USB_PA0,
+--		USB_PA1                      =>internal_USB_PA1,
+--		USB_PA2                      =>internal_USB_PA2,
+--		USB_PA3                      =>internal_USB_PA3,
+--		USB_PA4                      =>internal_USB_PA4,
+--		USB_PA5                      =>internal_USB_PA5,
+--		USB_PA6                      =>internal_USB_PA6,
+--		USB_PA7                      =>internal_USB_PA7,
+--		USB_RDY0                     =>internal_USB_RDY0,
+--		USB_RDY1                     =>internal_USB_RDY1,
+--		USB_WAKEUP                   =>internal_USB_WAKEUP,
+--		USB_CLKOUT		              =>internal_USB_CLKOUT
+--		
 	);
+	
+--	usb_signal_tp_top: if (HW_CONF="SA4_MBA_DCA_RB_I") generate
+--		USB_IFCLK                    <=internal_USB_IFCLK;
+--		USB_CTL0                     <=internal_USB_CTL0;
+--		USB_CTL1                     <=internal_USB_CTL1;
+--		USB_CTL2                     <=internal_USB_CTL2;
+--		USB_FDD                      <=internal_USB_FDD;
+--		USB_PA0                      <=internal_USB_PA0;
+--		USB_PA1                      <=internal_USB_PA1;
+--		USB_PA2                      <=internal_USB_PA2;
+--		USB_PA3                      <=internal_USB_PA3;
+--		USB_PA4                      <=internal_USB_PA4;
+--		USB_PA5                      <=internal_USB_PA5;
+--		USB_PA6                      <=internal_USB_PA6;
+--		USB_PA7                      <=internal_USB_PA7;
+--		USB_RDY0                     <=internal_USB_RDY0;
+--		USB_RDY1                     <=internal_USB_RDY1;
+--		USB_WAKEUP                   <=internal_USB_WAKEUP;
+--		USB_CLKOUT		             <=internal_USB_CLKOUT;
+--	end generate usb_signal_tp_top;
+--
+--	
 ---------------------------------------------------------------
 ---------KLM_SCROD: interface for Trigger using FTSW-----------
 ---------------------------------------------------------------
@@ -803,7 +986,7 @@ end generate;
 	-------General registers interfaced to DAQ -------
 	--------------------------------------------------
 
-	--LEDS
+	--LEDS (no need for A4?)- it is on Interconnect Board
 	LEDS <= internal_OUTPUT_REGISTERS(0);
 	--LEDS <= internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status & internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS & "000" & internal_SMP_MAIN_CNT;
 	
@@ -816,8 +999,7 @@ end generate;
 	internal_DAC_CONTROL_LATCH_PERIOD <= internal_OUTPUT_REGISTERS(6)(15 downto 0);
 	
 	--Sampling Signals
-	internal_CMDREG_SMP_STOP <= internal_OUTPUT_REGISTERS(10)(0);
-	internal_CMDREG_SMP_START <= internal_OUTPUT_REGISTERS(11)(0);
+	internal_CMDREG_RESET_SAMPLIG_LOGIC <= internal_OUTPUT_REGISTERS(10)(0);
 
 	--Digitization Signals
    internal_CMDREG_DIG_STARTDIG <= internal_OUTPUT_REGISTERS(20)(0);
@@ -827,12 +1009,14 @@ end generate;
 	--Serial Readout Signals
 	internal_CMDREG_SROUT_START <=  internal_OUTPUT_REGISTERS(30)(0);
 	internal_CMDREG_SROUT_TPG <= internal_OUTPUT_REGISTERS(31)(0); --'1': force test pattern to output. '0': regular operation
-	--RAM TEST:
+
+	--RAM Access from USB or anything:
 	internal_CMDREG_RAMADDR(15 downto 0) <=internal_OUTPUT_REGISTERS(32);
-	internal_CMDREG_RAMADDR(20 downto 16) <=internal_OUTPUT_REGISTERS(33)(4 downto 0);
-	internal_CMDREG_RAMDATAWR <=internal_OUTPUT_REGISTERS(34);
+	internal_CMDREG_RAMADDR(21 downto 16) <=internal_OUTPUT_REGISTERS(33)(5 downto 0);
+	internal_CMDREG_RAMDATAWR <=internal_OUTPUT_REGISTERS(34)(7 downto 0);
 	internal_CMDREG_RAMUPDATE <=internal_OUTPUT_REGISTERS(35)(0);
-	internal_CMDREG_RAMRW<=internal_OUTPUT_REGISTERS(36)(0);
+	internal_CMDREG_RAMRW <=internal_OUTPUT_REGISTERS(35)(1);
+
 	---status regs: automaticly generated and fed to conc. or read via software?
 	internal_CMDREG_SW_STATUS_READ<=internal_OUTPUT_REGISTERS(37)(0); -- '0': SW status read connections disabled, '1': SW status read is enabled
 	
@@ -851,7 +1035,6 @@ end generate;
 	internal_CMDREG_READCTRL_trig_delay <= internal_OUTPUT_REGISTERS(53)(11 downto 0);
 	internal_CMDREG_READCTRL_dig_offset <= internal_OUTPUT_REGISTERS(54)(8 downto 0);
 	internal_CMDREG_READCTRL_readout_reset <= internal_OUTPUT_REGISTERS(55)(0);
-	internal_CMDREG_READCTRL_toggle_manual <= internal_OUTPUT_REGISTERS(56)(0);
 	internal_CMDREG_READCTRL_win_num_to_read <= internal_OUTPUT_REGISTERS(57)(8 downto 0);
 	internal_CMDREG_READCTRL_readout_continue <= internal_OUTPUT_REGISTERS(58)(0);
 	internal_CMDREG_READCTRL_RESET_EVENT_NUM <= internal_OUTPUT_REGISTERS(59)(0);
@@ -868,10 +1051,14 @@ end generate;
 --	internal_ADCOutput 	<= internal_OUTPUT_REGISTERS(64)(11 downto 0);
 	--internal_INPUT_REGISTERS(N_GPR + 21)(11 downto 0) <= internal_ADCOutput(11 downto 0);--no need any more
 	internal_INPUT_REGISTERS(N_GPR + 22)(0) <= internal_enOutput;
+
+--uncomment forTX KLM MB operation
 	TDC_AMUX_S   <= internal_AMUX_S(3 downto 0);--internal_NCH_AMUX_S;--internal_OUTPUT_REGISTERS(62)(3 downto 0);--channel within a daughtercard
 	TOP_AMUX_S   <= internal_AMUX_S(7 downto 4);--internal_NDC_AMUX_S;--internal_OUTPUT_REGISTERS(62)(7 downto 4);-- Daughter Card Number
 
-	internal_INPUT_REGISTERS(N_GPR+23)<=internal_CMDREG_RAMDATARD ;
+	internal_INPUT_REGISTERS(N_GPR+23)(7 downto 0)<=internal_CMDREG_RAMDATARD;
+	internal_INPUT_REGISTERS(N_GPR+23)(8)<=internal_CMDREG_RAMBUSY;
+	
 
 	
 	
@@ -906,7 +1093,7 @@ end generate;
 	internal_INPUT_REGISTERS(N_GPR + 4 ) <= "0000000" & internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL;
 	internal_INPUT_REGISTERS(N_GPR + 5 ) <= "0000000" & internal_READCTRL_LATCH_SMP_MAIN_CNT;
 	internal_INPUT_REGISTERS(N_GPR + 6 ) <= "0000000000" & internal_EVTBUILD_MAKE_READY & internal_EVTBUILD_DONE_SENDING_EVENT & internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status 
-										& internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS;
+										& internal_DIG_IDLE_status & '0';
    internal_INPUT_REGISTERS(N_GPR + 7 ) (9 downto 0) <= SHOUT(9 downto 0);
    
 	internal_INPUT_REGISTERS(N_GPR + 10 ) <= internal_TRIGCOUNT_scaler(0)(15 downto 0);
@@ -952,13 +1139,35 @@ end generate;
 
 
 	gen_wl_clk_to_asic : for i in 0 to 9 generate
+--	
+--	map_wlclkp : ODDR2
+--			generic map(
+--				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
+--				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+--				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+--			port map (
+--				Q  => WL_CLK_tmp(i),        -- 1-bit output data
+--				C0 => internal_CLOCK_ASIC_CTRL,      -- 1-bit clock input
+--				C1 => not(internal_CLOCK_ASIC_CTRL), -- 1-bit clock input
+--				CE => '1',                     -- 1-bit clock enable input
+--				D0 => '1',                     -- 1-bit data input (associated with C0)
+--				D1 => '0',                     -- 1-bit data input (associated with C1)
+--				R  => '0',                     -- 1-bit reset input
+--				S  => '0'                      -- 1-bit set input
+--		);
+--	
+	
 	wilk_OBUFDS_inst : OBUFDS
    generic map (
-      IOSTANDARD => "DEFAULT")
+      --IOSTANDARD => "DEFAULT")
+		IOSTANDARD => "LVDS_25")
+
    port map (
       O => WL_CLK_P(i),    			-- Diff_p output (connect directly to top-level port)
       OB => WL_CLK_N(i),   			-- Diff_n output (connect directly to top-level port)
-      I => internal_CLOCK_ASIC_CTRL      	-- Buffer input 
+      I => internal_CLOCK_ASIC_CTRL_WILK      	-- Buffer input 
+ --		I  => WL_CLK_tmp(i)        -- 1-bit output data
+
    );
 	
 	end generate;
@@ -1001,7 +1210,7 @@ end generate;
 		win_num_to_read 	=> internal_READCTRL_win_num_to_read,
 		asic_enable_bits  => internal_READCTRL_asic_enable_bits,
 		SMP_MAIN_CNT 		=> internal_SMP_MAIN_CNT,
-		SMP_IDLE_status 	=> internal_SMP_IDLE_STATUS,
+		SMP_IDLE_status 	=> '0',
 		DIG_IDLE_status 	=> internal_DIG_IDLE_status,
 		SROUT_IDLE_status => internal_SROUT_IDLE_status,
 		fifo_empty 			=> internal_WAVEFORM_FIFO_EMPTY,
@@ -1027,7 +1236,7 @@ end generate;
 	);
 	internal_SOFTWARE_TRIGGER_VETO <= internal_CMDREG_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER_ENABLE <= internal_CMDREG_HARDWARE_TRIGGER_ENABLE;
-	internal_SOFTWARE_TRIGGER <= internal_CMDREG_SOFTWARE_trigger AND NOT internal_SOFTWARE_TRIGGER_VETO;
+	internal_SOFTWARE_TRIGGER <= internal_CMDREG_SOFTWARE_trigger;-- AND NOT internal_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER <= internal_TRIGGER_ALL AND internal_HARDWARE_TRIGGER_ENABLE;
 	internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER;
 	--internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER;
@@ -1038,81 +1247,61 @@ end generate;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
+	--demux and ped sub logic:
+	
+	 u_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
+          clk => internal_CLOCK_FPGA_LOGIC,
+          asic_no => internal_READCTRL_ASIC_NUM,
+          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+          sr_start => internal_READCTRL_LATCH_DONE,--srout_start,
+			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
+			fifo_clk => internal_SROUT_FIFO_WR_CLK,
+			fifo_din => internal_SROUT_FIFO_DATA_OUT,
+
+          ram_addr => internal_ram_Ain(2),
+          ram_data => internal_ram_DRout(2),
+          ram_update => internal_ram_update(2),
+          ram_busy => internal_ram_busy(2)
+        );
+	
+		internal_ram_rw(2)<='0';-- always reading from this channel
+	
+	
+	
+	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
 		clk 			=> internal_CLOCK_ASIC_CTRL,
-		reset => '0',
+		reset => internal_CMDREG_RESET_SAMPLIG_LOGIC,
 		dig_win_start => internal_READCTRL_dig_win_start,
 		dig_win_n => internal_READCTRL_win_num_to_read,-- "00100",
       dig_win_ena => not internal_DIG_IDLE_status,--internal_READCTRL_busy_status,
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
 		sstin_out 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
 		wr_addrclr_out => internal_WR_ADDRCLR,
-		wr1_ena 	=> open,--internal_WR_ENA,
+		wr1_ena 	=>open,-- internal_WR_ENA,
 		wr2_ena 	=> open
 	);
 	
 internal_WR_ENA<= not internal_READCTRL_trigger;-- debug
-		  
-internal_SMP_IDLE_STATUS<='0';
 
-
---	--sampling logic - specifically SSPIN/SSTIN + write address control
---	--ripped old sampling ligic which was designed for T6 and replaced with TX
--- U_SamplingLgc: entity work.SamplingLgicTX
--- port map (
---      clk         => internal_CLOCK_ASIC_CTRL,-- this should become 125MHz for TargetX
---      rst         => '0', --usrClkRst_125,
---      Enable      => internal_SMP_START, --Enable,
---		SamplSpeed  => '0', --SamplSpeed,
---		Test_sampling	 => '0', --Test_sampling,
---		Test_setup	 => '0', --Test_setup,
---      stop        =>  internal_SMP_STOP, --stopProc,
---      samp_wr_ena       => samp_wr_ena,  -- from SampleUpdate
---      cur_COL_l   => internal_SMP_MAIN_CNT(13 downto 8),
---      cur_ROW_l   => SamplingCnt(7 downto 5),
---      cur_SMP_l   => SamplingCnt(4 downto 0),
---      cur_COL     => cur_COL,
---      cur_ROW     => cur_ROW,
---		sst_int     => sst_int,
---		sstclk      => sstclk,
---      wr_addrclr  => wr_addrclr,
---		rst_local	=> rst_local,
---      wr_ena      => wr_en
---   );
---
-
-
---	u_SamplingLgc : entity work.SamplingLgicTX
---   Port map (
---		clk 			=> internal_CLOCK_ASIC_CTRL,
---		rst 			=> '0',
---		Enable 		=> internal_SMP_START,
---		SamplSpeed 	=> '0',
---		Test_sampling => '0',
---		Test_setup		=> "00000000000000000000000000000000",
---		stop 			=> internal_SMP_STOP,
---		samp_wr_ena => '1',
---		MAIN_CNT => internal_SMP_MAIN_CNT,
---		
-----		IDLE_status => internal_SMP_IDLE_STATUS,
-----		sspin_out 	=> open,--internal_SSPIN,
---		sst_int 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
---		--wr_advclk_out 	=> internal_WR_ADVCLK,
---		wr_addrclr => internal_WR_ADDRCLR,
---		--wr_strb_out => internal_WR_STRB,
---		wr_ena 	=> open--internal_WR_ENA
---	);
---	
-	
-	
-	 
-	internal_SMP_START <= internal_CMDREG_SMP_START;
-	internal_SMP_STOP <= internal_READCTRL_smp_stop when internal_CMDREG_READCTRL_toggle_manual = '0' else
-							 internal_CMDREG_SMP_STOP;
 	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
 	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
+
+		
+--create_ded_wr_addrclr: if (HW_CONF="SA4_MBSF_TX") generate
+--	BUSB_DED_WR_ADDRCLR(0)<= internal_WR_ADDRCLR;
+--	BUSB_DED_WR_ADDRCLR(1)<= internal_WR_ADDRCLR;
+--	BUSB_DED_WR_ADDRCLR(2)<= internal_WR_ADDRCLR;
+--	BUSB_DED_WR_ADDRCLR(3)<= internal_WR_ADDRCLR;
+--	BUSB_DED_WR_ADDRCLR(4)<= internal_WR_ADDRCLR;
+--	BUSA_DED_WR_ADDRCLR(0)<= internal_WR_ADDRCLR;
+--	BUSA_DED_WR_ADDRCLR(1)<= internal_WR_ADDRCLR;
+--	BUSA_DED_WR_ADDRCLR(2)<= internal_WR_ADDRCLR;
+--	BUSA_DED_WR_ADDRCLR(3)<= internal_WR_ADDRCLR;
+--	BUSA_DED_WR_ADDRCLR(4)<= internal_WR_ADDRCLR;
+--	end generate;
 	
 	--SamplingLgc signals just get fanned out identically to each daughter card
 	gen_SamplingLgcSignals : for i in 0 to 9 generate
@@ -1129,7 +1318,9 @@ internal_SMP_IDLE_STATUS<='0';
 gen_sstin : for i in 0 to 9 generate
  OBUFDS_inst : OBUFDS
    generic map (
-      IOSTANDARD => "DEFAULT")
+ --     IOSTANDARD => "DEFAULT")
+		IOSTANDARD => "LVDS_25")
+
    port map (
       O => SSTIN_P(i),    			-- Diff_p output (connect directly to top-level port)
       OB => SSTIN_N(i),   			-- Diff_n output (connect directly to top-level port)
@@ -1147,24 +1338,20 @@ end generate;
 		clr 				=> internal_DIG_CLR,
 		startramp 		=> internal_DIG_RAMP
 	);
-	internal_DIG_STARTDIG 	<= internal_READCTRL_dig_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
-							internal_CMDREG_DIG_STARTDIG;
+	internal_DIG_STARTDIG 	<= internal_READCTRL_dig_start;
+	
 	--BUSA and BUSB Digitzation signals are identical
 	BUSA_RD_ENA			<= internal_DIG_RD_ENA;
-	BUSA_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
-	                 internal_CMDREG_DIG_RD_ROWSEL_S;
-	BUSA_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
-	                 internal_CMDREG_DIG_RD_COLSEL_S;				
+	BUSA_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL;
+	
+	BUSA_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL; 
+	
 	BUSA_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
---	BUSA_START 			<= internal_DIG_RAMP;
 	BUSA_RAMP 			<= internal_DIG_RAMP;
 	BUSB_RD_ENA			<= internal_DIG_RD_ENA;
-	BUSB_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
-	                 internal_CMDREG_DIG_RD_ROWSEL_S;
-	BUSB_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL when internal_CMDREG_READCTRL_toggle_manual = '0' else
-	                 internal_CMDREG_DIG_RD_COLSEL_S;
+	BUSB_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL;
+	BUSB_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL;
 	BUSB_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
---	BUSB_START 			<= internal_DIG_RAMP;
 	BUSB_RAMP 			<= internal_DIG_RAMP;	
 	
 	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
@@ -1187,9 +1374,16 @@ end generate;
 		fifo_wr_en 	=> internal_SROUT_FIFO_WR_EN,
 		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
 		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
+		
+--		ram_addr=>internal_ram_Ain(2),
+--		ram_data=>internal_ram_DRout(2),
+--		ram_update=>internal_ram_update(2),
+--		ram_busy=>internal_ram_busy(2)
 	);
-	internal_SROUT_START <= internal_READCTRL_srout_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
-							internal_CMDREG_SROUT_START;
+--	internal_ram_rw(2)<='0'; --only reading from this channel of RAM
+	
+	internal_SROUT_START <= internal_READCTRL_srout_start;
+	
 	--make serial readout bus signals identical
 	BUSA_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
 	BUSB_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
@@ -1299,10 +1493,8 @@ end generate;
 		FIFO_EMPTY					=> internal_READOUT_EMPTY,
 		FIFO_READ_ENABLE 			=> internal_READOUT_READ_ENABLE
 	);
-	internal_EVTBUILD_START_BUILDING_EVENT <= internal_READCTRL_evtbuild_start when internal_CMDREG_READCTRL_toggle_manual = '0' else
-							 internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
-	internal_EVTBUILD_MAKE_READY <= internal_READCTRL_evtbuild_make_ready when internal_CMDREG_READCTRL_toggle_manual = '0' else
-							 internal_CMDREG_EVTBUILD_MAKE_READY;
+	internal_EVTBUILD_START_BUILDING_EVENT <= internal_READCTRL_evtbuild_start;
+	internal_EVTBUILD_MAKE_READY <= internal_READCTRL_evtbuild_make_ready;
 	internal_SCROD_REV_AND_ID_WORD <= x"00" & x"A3" & x"002c";
 	--internal_EVTBUILD_START_BUILDING_EVENT <= internal_CMDREG_EVTBUILD_START_BUILDING_EVENT;
 	--internal_EVTBUILD_MAKE_READY <= internal_CMDREG_EVTBUILD_MAKE_READY;
@@ -1353,9 +1545,17 @@ end generate;
 		------------HW INTERFACE----------
 		SCK_DAC		 => i_hv_sck_dac,
 		DIN_DAC		 => i_hv_din_dac,
-		CS_DAC       => TDC_CS_DAC
+		CS_DAC       => internal_TDC_CS_DAC
 	);
    --TDC_CS_DAC <= "0000000000";
+--gen_tdc_cs_dac_signals1: if (HW_CONF="SA4_MBSF_TX") generate
+--	TDC_CS1_DAC<=internal_TDC_CS_DAC;
+--	TDC_CS2_DAC<=internal_TDC_CS_DAC;
+--end generate;
+gen_tdc_cs_dac_signals2: if (HW_CONF/="SA4_MBSF_TX") generate
+	TDC_CS_DAC<=internal_TDC_CS_DAC;
+end generate;
+
 	BUSA_SCK_DAC <= i_hv_sck_dac;
 	BUSB_SCK_DAC <= i_hv_sck_dac;
 	BUSA_DIN_DAC <= i_hv_din_dac;

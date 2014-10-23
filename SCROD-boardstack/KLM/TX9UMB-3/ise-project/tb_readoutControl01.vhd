@@ -32,6 +32,8 @@ USE ieee.std_logic_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 --USE ieee.numeric_std.ALL;
  
+ use work.readout_definitions.all;
+
 ENTITY tb_readoutControl01 IS
 END tb_readoutControl01;
  
@@ -58,7 +60,8 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
          READOUT_CONTINUE : IN  std_logic;
          RESET_EVENT_NUM : IN  std_logic;
          LATCH_SMP_MAIN_CNT : OUT  std_logic_vector(8 downto 0);
-			dig_win_start : OUT  std_logic_vector(8 downto 0);
+			dig_win_start		: out STD_LOGIC_VECTOR(8 downto 0);-- goes to the sampling logic to kill the write enable while writing over the digitization window
+			use_fixed_dig_start_win : in std_logic_vector(15 downto 0);
          LATCH_DONE : OUT  std_logic;
          ASIC_NUM : OUT  std_logic_vector(3 downto 0);
          busy_status : OUT  std_logic;
@@ -125,15 +128,56 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
          wr2_ena : OUT  std_logic
         );
     END COMPONENT;
-
-
+ 
+ COMPONENT WaveformDemuxPedsubDSP
+    PORT(
+         clk : IN  std_logic;
+         asic_no : IN  std_logic_vector(3 downto 0);
+         win_addr_start : IN  std_logic_vector(8 downto 0);
+         sr_start : IN  std_logic;
+			
+			pswfifo_en 			:	out std_logic;
+			pswfifo_clk 		: 	out std_logic;
+			pswfifo_d 			: 	out std_logic_vector(31 downto 0);
+			
+         fifo_en : IN  std_logic;
+         fifo_clk : IN  std_logic;
+         fifo_din : IN  std_logic_vector(31 downto 0);
+         ram_addr : OUT  std_logic_vector(21 downto 0);
+         ram_data : IN  std_logic_vector(7 downto 0);
+         ram_update : OUT  std_logic;
+         ram_busy : IN  std_logic
+        );
+    END COMPONENT;
+	 
+  COMPONENT SRAMscheduler
+    PORT(
+         clk : IN  std_logic;
+         Ain : IN  AddrArray;
+         DWin : IN  DataArray;
+         DRout : OUT  DataArray;
+         rw : IN  std_logic_vector(3 downto 0);
+         update_req : IN  std_logic_vector(3 downto 0);
+         busy : OUT  std_logic_vector(3 downto 0);
+         A : OUT  std_logic_vector(21 downto 0);
+         IOw : OUT  std_logic_vector(7 downto 0);
+         IOr : IN  std_logic_vector(7 downto 0);
+         bs : OUT  std_logic;
+         WEb : OUT  std_logic;
+         CE2 : OUT  std_logic;
+         CE1b : OUT  std_logic;
+         OEb : OUT  std_logic
+        );
+    END COMPONENT;
+    
+	 
    --Inputs
    signal clk : std_logic := '0';
    signal smp_clk : std_logic := '0';
    signal trigger : std_logic := '0';
    signal trig_delay : std_logic_vector(11 downto 0) := (others => '0');
    signal dig_offset : std_logic_vector(8 downto 0) := "000110100";--(others => '0');
-   signal win_num_to_read : std_logic_vector(8 downto 0) := "000001000";
+   signal win_num_to_read : std_logic_vector(8 downto 0) := "000000100";
    signal asic_enable_bits : std_logic_vector(9 downto 0) := "1000000000";
    signal SMP_MAIN_CNT : std_logic_vector(8 downto 0) := "001000000";
    signal SMP_IDLE_status : std_logic := '0';
@@ -187,6 +231,27 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    --signal EVENT_NUM : std_logic_vector(31 downto 0);
    signal READOUT_DONE : std_logic;
 
+	signal internal_cmdreg_readctrl_use_fixed_dig_start_win : std_logic_vector(15 downto 0):=(others => '0');
+
+
+   signal internal_ram_Ain : AddrArray;--:= (others => '0');
+   signal internal_ram_DWin : DataArray;-- := (others => '0');
+   signal internal_ram_rw : std_logic_vector(NRAMCH-1 downto 0) := (others => '0');
+   signal internal_ram_update : std_logic_vector(NRAMCH-1 downto 0) := (others => '0');
+   signal internal_ram_DRout : DataArray;
+   signal internal_ram_busy : std_logic_vector(NRAMCH-1 downto 0);
+
+   signal IOr : std_logic_vector(7 downto 0);
+   signal IOw : std_logic_vector(7 downto 0);
+	signal ramiobufstate : std_logic;
+   signal A : std_logic_vector(21 downto 0);
+   signal WEb : std_logic;
+   signal CE2 : std_logic;
+   signal CE1b : std_logic;
+   signal OEb : std_logic;
+
+
+
   signal wr_addrclr_out : std_logic;
    signal wr1_ena : std_logic;
    signal wr2_ena : std_logic;
@@ -223,13 +288,13 @@ BEGIN
           SMP_IDLE_status => SMP_IDLE_status,
           DIG_IDLE_status => DIG_IDLE_status,
           SROUT_IDLE_status => SROUT_IDLE_status,
-          fifo_empty => fifo_empty,
+          dig_win_start			=> internal_READCTRL_dig_win_start,fifo_empty => fifo_empty,
           EVTBUILD_DONE_SENDING_EVENT => EVTBUILD_DONE_SENDING_EVENT,
           READOUT_RESET => READOUT_RESET,
           READOUT_CONTINUE => READOUT_CONTINUE,
           RESET_EVENT_NUM => RESET_EVENT_NUM,
           LATCH_SMP_MAIN_CNT => LATCH_SMP_MAIN_CNT,
-			 dig_win_start => internal_READCTRL_dig_win_start,
+			 use_fixed_dig_start_win=>internal_CMDREG_READCTRL_use_fixed_dig_start_win,
           LATCH_DONE => LATCH_DONE,
           ASIC_NUM => ASIC_NUM,
           busy_status => busy_status,
@@ -273,6 +338,38 @@ BEGIN
           fifo_wr_en => fifo_wr_en,
           fifo_wr_clk => fifo_wr_clk,
           fifo_wr_din => fifo_wr_din
+        );
+		  
+		  uut_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
+          clk => clk,
+          asic_no => ASIC_NUM,
+          win_addr_start => WIN_ADDR,
+          sr_start => LATCH_DONE,--srout_start,
+          fifo_en => fifo_wr_en,
+          fifo_clk => fifo_wr_clk,
+          fifo_din => fifo_wr_din,
+          ram_addr => internal_ram_Ain(0),
+          ram_data => internal_ram_DRout(0),
+          ram_update => internal_ram_update(0),
+          ram_busy => internal_ram_busy(0)
+        );
+		  
+		   uut_sramsched: SRAMscheduler PORT MAP (
+          clk => clk,
+          Ain => internal_ram_Ain,
+          DWin => internal_ram_DWin,
+          DRout => internal_ram_DRout,
+          rw => internal_ram_rw,
+          update_req => internal_ram_update,
+          busy => internal_ram_busy,
+          A => A,
+          IOw => IOw,
+          IOr => IOr,
+			 bs=> ramiobufstate,
+          WEb => WEb,
+          CE2 => CE2,
+          CE1b => CE1b,
+          OEb => OEb
         );
 		  
 		  WIN_ADDR<=DIG_RD_COLSEL_S & DIG_RD_ROWSEL_S;

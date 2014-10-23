@@ -5,10 +5,10 @@
 --   ____  ____
 --  /   /\/   /
 -- /___/  \  /    Vendor     : Xilinx
--- \   \   \/     Version    : 13.2
+-- \   \   \/     Version    : 14.7
 --  \   \         Application: XILINX CORE Generator
 --  /   /         Filename   : icon_pro.vhd
--- /___/   /\     Timestamp  : Fri Sep 12 17:13:10 Hawaiian Standard Time 2014
+-- /___/   /\     Timestamp  : Mon Oct 20 14:35:57 Hawaiian Standard Time 2014
 -- \   \  /  \
 --  \___\/\___\
 --

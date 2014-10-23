@@ -19,10 +19,18 @@ package readout_definitions is
 	constant N_STAT_REG : integer := 160;
 	constant N_MPPCADC_REG : integer := 160;
 	constant NRAMCH : integer :=4;
+	constant NWWin : integer :=   4; -- number of waveform windows to be peroccessed in the FPGA
+	constant NSamplesPerWin : integer :=   32; 
+	constant NCHPerTX : integer :=   16; 
+
 	
-	  type AddrArray is array (NRAMCH-1 downto 0) of std_logic_vector(21 downto 0);
+  type AddrArray is array (NRAMCH-1 downto 0) of std_logic_vector(21 downto 0);
   type DataArray is array (NRAMCH-1 downto 0) of std_logic_vector(7 downto 0);
-  type QArray is array (NRAMCH-1 downto 0) of integer;
+  type QArray    is array (NRAMCH+2  downto 0) of integer;
+
+
+  type WaveformArray is array (NWWin*NSamplesPerWin*NCHPerTX-1 downto 0) of integer;
+  type WaveTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(15 downto 0);
 
 	type STATREG is array (N_STAT_REG-1 downto 0) of std_logic_vector(15 downto 0);
 

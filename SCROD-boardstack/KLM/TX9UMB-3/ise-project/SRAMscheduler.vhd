@@ -54,7 +54,9 @@ Port (
 						  
 			--Controls to the SRAM, the scheduler will control who has access to the RAM using a multiplexer  
 			  A : out  STD_LOGIC_VECTOR (21 downto 0);
-           IO : inout  STD_LOGIC_VECTOR (7 downto 0);
+           IOw : out  STD_LOGIC_VECTOR (7 downto 0);
+           IOr : in  STD_LOGIC_VECTOR (7 downto 0);
+			  bs: out std_logic;--buffstate
            WEb : out  STD_LOGIC;
            CE2 : out  STD_LOGIC;
            CE1b : out  STD_LOGIC;
@@ -69,24 +71,30 @@ architecture Behavioral of SRAMscheduler is
 signal busy_i: std_logic_vector(NRAMCH-1 downto 0);
 signal update_req_i1: std_logic_vector(NRAMCH-1 downto 0);
 signal update_req_i0: std_logic_vector(NRAMCH-1 downto 0);
-signal ram_wait_i: std_logic_vector(NRAMCH-1 downto 0);
-signal queue_i		: QArray;
-signal nap : integer :=0; 
-signal curr_ch : integer :=0;
+signal ram_wait_i: std_logic_vector(NRAMCH-1 downto 0):=(others=>'0');
+signal queue_i		: QArray:=(others=>0);
+signal ql_i		: integer :=0; --Queue length (next item will be added to this index) has to be <NRAMCH
+--signal nap : integer :=0; 
+signal curr_ch : integer :=0; --the current ch that is actually connected to the RAM and is controlling it
 signal update_req_edg : std_logic_vector(NRAMCH-1 downto 0);
 signal update_req_edg_new : std_logic;
+signal allch_busy : std_logic:='0';
 
 signal A_i :  AddrArray;
-signal IO_i : DataArray;
+signal IOw_i : DataArray;
+signal IOr_i : DataArray;
+
 signal WEb_i	: STD_LOGIC_vector(NRAMCH-1 downto 0);
 signal CE2_i	: std_logic_vector(NRAMCH-1 downto 0);
 signal CE1b_i	: std_logic_vector(NRAMCH-1 downto 0);
 signal OEb_i	: std_logic_vector(NRAMCH-1 downto 0);
+signal bs_i	: std_logic_vector(NRAMCH-1 downto 0);
 
 
 type state_type is
 	(
 	SrvQ,			-- Idling until there is a '1' edge in any update_req bit, during idle, monitor previous requests and service as needed
+	WaitCheckUpdate,	--Wait 
 	CheckUpdate,	--Check the diff in update request bits and find the requesting channels and add to queue 
    QReq		  -- Queue the request if possible( the specific channel is not busy) and go to the Idle 
 	);
@@ -105,27 +113,43 @@ u_ri: entity work.SRAMiface2 port map
 		dr => DRout(i),
 		rw => rw(i),
 		update => update_req_i0(i),
-		busy => open,--busy_i(i),
+		busy => busy_i(i),
 		ram_busy => ram_wait_i(i),
 		A => A_i(i),
-		IO => IO_i(i),
+		IOw => IOw_i(i),
+		IOr => IOr_i(i),
+		bs=>bs_i(i),--buf state
 		WEb => WEb_i(i),
 		CE2 => CE2_i(i),
 		CE1b => CE1b_i(i),
 		OEb => OEb_i(i)
 );
 
-A<=A_i(i) when (curr_ch=i) else (others=>'0');--?
-IO<=IO_i(i) when (curr_ch=i) else (others=>'0');--?
-WEb<=WEb_i(i) when (curr_ch=i) else '0';--?
-CE2<=CE2_i(i) when (curr_ch=i) else '0';--?
-CE1b<=CE1b_i(i) when (curr_ch=i) else '1';--?
-OEb<=OEb_i(i) when (curr_ch=i) else '0';--?
+--A<=A_i(i) when (curr_ch=i) else (others=>'0');--?
+--IO<=IO_i(i) when (curr_ch=i) else (others=>'0');--?
+--WEb<=WEb_i(i) when (curr_ch=i) else '0';--?
+--CE2<=CE2_i(i) when (curr_ch=i) else '0';--?
+--CE1b<=CE1b_i(i) when (curr_ch=i) else '1';--?
+--OEb<=OEb_i(i) when (curr_ch=i) else '0';--?
 --update_req_edg_new <= update_req_edg_new or update_req_edg(i);
 
 end generate;
 update_req_edg_new <= update_req_edg(0) or update_req_edg(1) or update_req_edg(2) or update_req_edg(3) ;
+curr_ch<=queue_i(0);
+ram_wait_i<="1110" when (curr_ch=0) else
+				"1101" when (curr_ch=1) else
+				"1011" when (curr_ch=2) else
+				"0111" when (curr_ch=3);
 
+A<=A_i(curr_ch);
+IOw<=IOw_i(curr_ch);
+IOr_i(curr_ch)<=IOr;
+WEb<=WEb_i(curr_ch); 
+CE2<=CE2_i(curr_ch); 
+CE1b<=CE1b_i(curr_ch); 
+OEb<=OEb_i(curr_ch); 
+bs<=bs_i(curr_ch);
+busy<=busy_i;
 
 process (clk)
 begin
@@ -134,19 +158,19 @@ if (rising_edge(clk)) then
 update_req_i1<=update_req_i0;
 update_req_i0<=update_req;
 
+
 for i in 0 to NRAMCH-1 loop
 	if (update_req_i1(i)='0' and update_req_i0(i)='1') then
 	update_req_edg(i)<='1';
 	else 
 	update_req_edg(i)<='0';
 	end if;
- 
-
 end loop;
 
 end if;
 
 end process;
+
 
 process (clk)
 begin
@@ -156,31 +180,86 @@ if (rising_edge(clk)) then
 --then add that to the access queue for servicing
 --
 --
+
+
+--	for i in 0 to NRAMCH-1 loop
+--	if (update_req_edg(i)='1' ) then
+--	-- add the ch of the requester to the
+--	if (ql_i<NRAMCH) then 
+--		queue_i(ql_i+i)<=i;
+--		ql_i<=ql_i+1;
+--		else
+--		allch_busy<='1';
+--		--HANDLE ERROR HERE- NEED TO ADD A PIN!
+--	end if;
+--	
+--	else 
+--	end if;
+--	end loop;
+
+allch_busy<='0';-- this needs some work
+
+case update_req_edg is
+
+when "0000" =>
+
+when "0001" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=0;ql_i<=ql_i+1; else allch_busy<='1'; end if;
+when "0010" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=1;ql_i<=ql_i+1; else allch_busy<='1'; end if;
+when "0100" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=2;ql_i<=ql_i+1; else allch_busy<='1'; end if;
+when "1000" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=3;ql_i<=ql_i+1; else allch_busy<='1'; end if;
+when "0011" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=1;ql_i<=ql_i+2; else allch_busy<='1'; end if;
+when "0101" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=2;ql_i<=ql_i+2; else allch_busy<='1'; end if;
+when "1001" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=3;ql_i<=ql_i+2; else allch_busy<='1'; end if;
+when "0110" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=1;queue_i(ql_i+1)<=2;ql_i<=ql_i+2; else allch_busy<='1'; end if;
+when "1100" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=2;queue_i(ql_i+1)<=3;ql_i<=ql_i+2; else allch_busy<='1'; end if;
+when "1010" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=1;queue_i(ql_i+1)<=3;ql_i<=ql_i+2; else allch_busy<='1'; end if;
+when "1110" => if (ql_i+2<NRAMCH) then queue_i(ql_i)<=1;queue_i(ql_i+1)<=2;queue_i(ql_i+2)<=3;ql_i<=ql_i+3; else allch_busy<='1'; end if;
+when "1101" => if (ql_i+2<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=2;queue_i(ql_i+2)<=3;ql_i<=ql_i+3; else allch_busy<='1'; end if;
+when "1011" => if (ql_i+2<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=1;queue_i(ql_i+1)<=3;ql_i<=ql_i+3; else allch_busy<='1'; end if;
+when "0111" => if (ql_i+2<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=1;queue_i(ql_i+2)<=2;ql_i<=ql_i+3; else allch_busy<='1'; end if;
+when "1111" => if (ql_i+3<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=1;queue_i(ql_i+2)<=2;queue_i(ql_i+3)<=3;ql_i<=ql_i+4; else allch_busy<='1'; end if;
+
+
+
+when others =>
+
+end case;
+
+
+
 Case sched_st is
    
 	When SrvQ =>
 	-- code to service exiting queue
 	
 	if (update_req_edg_new='1') then 
-		sched_st<=CheckUpdate;-- there are new update requests, so go and check them and add to queue
+	-- find the all the update requests and queue RAM access accordingly
+
+		sched_st<=WaitCheckUpdate;-- there are new update requests, so go and check them and add to queue
 		else 
-		sched_st<=SrvQ;  -- otherwise just service the queue
+		sched_st<=CheckUpdate;-- there are new update requests, so go and check them and add to queue
+
+		--sched_st<=SrvQ;  -- otherwise just service the queue
 	end if;
+
+	When WaitCheckUpdate =>
+		sched_st<=CheckUpdate;
+
 
 	When CheckUpdate =>
-	-- find the all the update requests and queue RAM access accordingly
-	for i in 0 to NRAMCH-1 loop
-	if (update_req_edg(i)='1' ) then
-	-- add the ch of the requester to the 
-	else 
+	if (busy_i(curr_ch)='0' and ql_i>0) then
+	--done with this channel shift everything one toward index 0 in array
+	queue_i(0)<=queue_i(1);
+	queue_i(1)<=queue_i(2);
+	queue_i(2)<=queue_i(3);
+	ql_i<=ql_i-1;
 	end if;
- 
-
-end loop;
+	
+	sched_st<=SrvQ;
 
 
 	when others =>
-			busy_i<=(others=>'0');
+			--busy_i<=(others=>'0');
 			sched_st<=SrvQ;
 	end case;
 

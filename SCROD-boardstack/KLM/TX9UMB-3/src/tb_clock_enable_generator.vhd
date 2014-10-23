@@ -54,14 +54,14 @@ ARCHITECTURE behavior OF tb_clock_enable_generator IS
    signal CLOCK_ENABLE_OUT : std_logic;
 
    -- Clock period definitions
-   constant CLOCK_IN_period : time := 10 ns;
+   constant CLOCK_IN_period : time := 8 ns;
  
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: entity work.clock_enable_generator 
 	generic map (
-		DIVIDE_RATIO => 6
+		DIVIDE_RATIO => 4
 	)
 	PORT MAP (
           CLOCK_IN => CLOCK_IN,

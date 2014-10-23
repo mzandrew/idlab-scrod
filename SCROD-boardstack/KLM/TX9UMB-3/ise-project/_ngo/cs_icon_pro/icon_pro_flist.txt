@@ -1,6 +1,7 @@
 # Output products list for <icon_pro>
 icon_pro.gise
 icon_pro.ngc
+icon_pro.ucf
 icon_pro.vhd
 icon_pro.vho
 icon_pro.xco

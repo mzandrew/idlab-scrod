@@ -19,6 +19,9 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+Library UNISIM;
+use UNISIM.vcomponents.all;
+
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -46,7 +49,9 @@ entity SRAMiface2 is
 			  
 			--Controls to the SRAM  
 			  A : out  STD_LOGIC_VECTOR (21 downto 0);
-           IO : inout  STD_LOGIC_VECTOR (7 downto 0);
+           IOw : out  STD_LOGIC_VECTOR (7 downto 0);
+           IOr : in  STD_LOGIC_VECTOR (7 downto 0);
+			  bs: out std_logic;-- tristate buf state
            WEb : out  STD_LOGIC;
            CE2 : out  STD_LOGIC;
            CE1b : out  STD_LOGIC;
@@ -63,11 +68,13 @@ type state_type is
 	Idle,			-- Idling until update bit
 	WaitStart,	--wait for ram_busy signal to go '0'
    wStart,		  -- w start 
+	wStart2,
 	wWait_tHZOE,	-- w wait for tHZOE ns
 	wDataout,		  -- w put data on the IO lines
 	wWaitEnd,		  -- w wait for write end tSD ns
 	
 	rStart,
+	rStart2,
 	rWaitDataout,
 	rWaitEnd
 	);
@@ -82,17 +89,21 @@ signal busy_i 	 : std_logic:='0';
 signal ram_busy_i	: std_logic:='0';
 
 signal cnt_tHZOE : integer :=0;
-signal tHZOE : integer :=10; --tHZOE as in datasheet: can take up to max 18 ns for chip to have output into HiZ
+signal tHZOE : integer :=1; --tHZOE as in datasheet: can take up to max 18 ns for chip to have output into HiZ
 signal cnt_tWEND : integer:=0;
-signal tWEND : integer:=10; --wait time for Write operation to finish
+signal tWEND : integer:=4; --wait time for Write operation to finish
 
 signal cnt_tRDOUT: integer :=0;
-signal tRDOUT: integer :=10;
+signal tRDOUT: integer :=4;
 signal cnt_tREND: integer :=0;
-signal tREND: integer :=10;
-
+signal tREND: integer :=1;
+signal bufstate: std_logic:='1';
 
 begin
+
+bs<=bufstate;
+busy<=busy_i;
+
 
 process(clk)
 begin
@@ -100,9 +111,9 @@ begin
 if (rising_edge(clk)) then
 	update_i(1)<=update_i(0);
 	update_i(0)<=update;
-	ram_busy_i<=ram_busy;
-	busy<=busy_i;
-	dr<=dr_i;
+--	ram_busy_i<=ram_busy;
+--	dr<=dr_i;
+--	dw_i<=dw;
 end if;
 
 
@@ -114,15 +125,21 @@ if (rising_edge(clk )) then
 	Case next_state is
    
 	When Idle =>
-	IO<=(others=>'U');
-	A<=(others=>'U');
+	--IO<=(others=>'Z');
+	bufstate<='1';
+	A<=(others=>'0');
 	CE1b<='1';
 	CE2 <='0';
 	WEb <='1';
 	OEb <='1';
 	busy_i<='0';
 	
-	if(update_i ="01") then
+	--if(update_i ="01") then
+	if(update ='1' and update_i(0)='0') then
+		ram_busy_i<=ram_busy;
+		dr<=dr_i;
+		dw_i<=dw;
+	
 		busy_i<='1';
 		rw_i<=rw;
 		addr_i<=addr;
@@ -146,15 +163,21 @@ if (rising_edge(clk )) then
 	
 	When wStart =>
 	A<=addr_i;
+	IOw<=dw_i;
+	--bufstate<='0';--buffer is in output mode
+	next_state<=wStart2;
+
+	
+	When wStart2 =>
 	CE1b<='0';
 	CE2<='1';
-	WEb<='0';
 	OEb<='1';
 	next_state<=wWait_tHZOE;
 	
 	when wWait_tHZOE =>
 	if(cnt_tHZOE=tHZOE) then
 		cnt_tHZOE<=0;
+		WEb<='0';
 		next_state<=wDataout;
 	else
 		cnt_tHZOE<=cnt_tHZOE+1;
@@ -162,12 +185,14 @@ if (rising_edge(clk )) then
 	end if;
 		
 	when wDataout =>
-		IO<=dw_i;
+--		IO<=dw_i;
+		bufstate<='0';--buffer is in output mode
 		next_state<=wWaitEnd;
 
 	when wWaitEnd =>
 	if(cnt_tWEND=tWEND) then
 		cnt_tWEND<=0;
+		bufstate<='1';--buffer back  to input mode
 		next_state<=Idle;
 	else
 		cnt_tWEND<=cnt_tWEND+1;
@@ -177,16 +202,20 @@ if (rising_edge(clk )) then
 		
 	When rStart =>
 	A<=addr_i;
+	next_state<=rStart2;
+
+	When rStart2 =>
 	CE1b<='0';
 	CE2<='1';
 	WEb<='1';
 	OEb<='0';
+	bufstate<='1';--buffer is input mode
 	next_state<=rWaitDataout;
 
 	when rWaitDataout =>
 	if(cnt_tRDOUT=tRDOUT) then
 		cnt_tRDOUT<=0;
-		dr_i<=IO;
+		dr_i<=IOr;
 		next_state<=rWaitEnd;
 	else
 		cnt_tRDOUT<=cnt_tRDOUT+1;
@@ -204,6 +233,7 @@ if (rising_edge(clk )) then
 	
 	when others =>
 			busy_i<='0';
+			bufstate<='1';
 			next_state<=idle;
 	end case;
 	

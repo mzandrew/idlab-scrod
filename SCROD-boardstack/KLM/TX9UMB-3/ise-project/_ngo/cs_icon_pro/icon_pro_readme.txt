@@ -1,5 +1,5 @@
 The following files were generated for 'icon_pro' in directory
-C:\Users\isar\Documents\code4\TX9UMB-2\ise-project\_ngo\cs_icon_pro\
+C:\Users\isar\Documents\code4\TX9UMB-3\ise-project\_ngo\cs_icon_pro\
 
 XCO file generator:
    Generate an XCO file for compatibility with legacy flows.
@@ -10,6 +10,7 @@ Creates an implementation netlist:
    Creates an implementation netlist for the IP.
 
    * icon_pro.ngc
+   * icon_pro.ucf
    * icon_pro.vhd
    * icon_pro.vho
 
@@ -30,7 +31,7 @@ Generate ISE subproject:
    * icon_pro.xise
 
 Deliver Readme:
-   Text file indicating the files generated and how they are used.
+   Readme file for the IP.
 
    * icon_pro_readme.txt
 

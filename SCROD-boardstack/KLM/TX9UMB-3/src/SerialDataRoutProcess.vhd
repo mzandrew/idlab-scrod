@@ -12,7 +12,7 @@ use ieee.std_logic_unsigned.all;
 use work.readout_definitions.all;
 
 
-entity SerialDataRout is
+entity SerialDataRoutProcess is
    port (
         clk		 			 : in   std_logic;
         start	    		 : in   std_logic;  -- start serial readout
@@ -34,11 +34,18 @@ entity SerialDataRout is
 		  
 		  fifo_wr_en		 : out  std_logic;
 		  fifo_wr_clk		 : out  std_logic;
-		  fifo_wr_din		 : out  std_logic_vector(31 downto 0)
+		  fifo_wr_din		 : out  std_logic_vector(31 downto 0);
+		  
+		  -- Pedestal RAM Access: only for reading pedestals
+		  ram_addr			: out std_logic_vector(21 downto 0);
+		  ram_data			: in std_logic_vector(7 downto 0);
+		  ram_update		: out std_logic;
+		  ram_busy			: in std_logic
+		  
        );
-end SerialDataRout;
+end SerialDataRoutProcess;
 
-architecture Behavioral of SerialDataRout is
+architecture Behavioral of SerialDataRoutProcess is
 	
 	--time samplesel_any is held high
 	constant ADDR_TIME : std_logic_vector(4 downto 0) := "00010";

@@ -19,6 +19,7 @@ entity clock_gen is
 		--Raw boad clock input
 		BOARD_CLOCKP      : in  STD_LOGIC;
 		BOARD_CLOCKN      : in  STD_LOGIC;
+		BOARD_CLOCK_OUT			: out std_logic;
 		--FTSW inputs from KLM_SCROD interface
 
 		--Trigger outputs from FTSW
@@ -30,6 +31,8 @@ entity clock_gen is
 		CLOCK_MPPC_DAC   : out STD_LOGIC; -- around 4 or 5MHz for MPPC DAC read writes
 		CLOCK_MPPC_ADC :out std_logic;
 		--ASIC control clocks
+		CLOCK_ASIC_CTRL_WILK  : out STD_LOGIC; --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
+
 		CLOCK_ASIC_CTRL  : out STD_LOGIC --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
 	);
 end clock_gen;
@@ -38,15 +41,16 @@ architecture Behavioral of clock_gen is
 	signal internal_BOARD_CLOCK         : std_logic;
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
+	
 --	signal ratio_asic_ctrl_clock :  integer:=4;
 --	signal ratio_fpga_logic_clock : integer:=4;
 --	signal ratio_mppc_dac_clock :   integer:=12;
 --	signal ratio_mppc_adc_clock :   integer:=6;
 	
 	signal ratio_asic_ctrl_clock :  integer:=2;
-	signal ratio_fpga_logic_clock : integer:=4;
+	signal ratio_fpga_logic_clock : integer:=2;
 	signal ratio_mppc_dac_clock :   integer:=6;
-	signal ratio_mppc_adc_clock :   integer:=3;
+	signal ratio_mppc_adc_clock :   integer:=6;
 begin
 	------------------------------------------------------
 	--            Board derived clocking                --
@@ -58,7 +62,9 @@ begin
 --ratio_mppc_dac_clock<=6;
 --ratio_mppc_adc_clock<=3;
 ----end generate;	
-	
+	--BOARD_CLOCK_OUT<=internal_BOARD_CLOCK;
+		--BOARD_CLOCK_OUT<='0';
+
 	map_board_clock : ibufds
 	port map(
 		I  => BOARD_CLOCKP,
@@ -73,6 +79,24 @@ begin
 	port map (
 		CLOCK_IN         => internal_BOARD_CLOCK,
 		CLOCK_ENABLE_OUT => internal_CLOCK_ASIC_CTRL
+	);
+	
+	map_ASIC_CTRL_clock_enable_WILK : entity work.clock_enable_generator
+	generic map (
+		DIVIDE_RATIO => ratio_asic_ctrl_clock
+	)
+	port map (
+		CLOCK_IN         => internal_BOARD_CLOCK,
+		CLOCK_ENABLE_OUT => CLOCK_ASIC_CTRL_WILK
+	);
+	
+	map_test_clock_enable : entity work.clock_enable_generator
+	generic map (
+		DIVIDE_RATIO => ratio_fpga_logic_clock
+	)
+	port map (
+		CLOCK_IN         => internal_BOARD_CLOCK,
+		CLOCK_ENABLE_OUT => BOARD_CLOCK_OUT
 	);
 	
 	map_FPGA_LOGIC_clock_enable : entity work.clock_enable_generator
@@ -95,6 +119,12 @@ begin
 		I  => internal_CLOCK_ASIC_CTRL,
 		O  => CLOCK_ASIC_CTRL
 	);
+	
+--	map_ASIC_CTRL_clock_bufg2 : bufg
+--	port map(
+--		I  => internal_CLOCK_ASIC_CTRL,
+--		O  => CLOCK_ASIC_CTRL_WILK
+--	);
 	
 	map_MPPC_DAC_clock_enable : entity work.clock_enable_generator
 	generic map (
