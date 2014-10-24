@@ -17,7 +17,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="88" />
+   <WVObjectSize size="104" />
    <wvobject fp_name="/tb_readoutcontrol01/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -289,6 +289,29 @@
       <obj_property name="ObjectShortName">a[21:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_ram_ain[3:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_ram_ain[3:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[3]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">internal_ram_ain[3]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[2]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">internal_ram_ain[2]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[1]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">internal_ram_ain[1]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[0]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">internal_ram_ain[0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+   </wvobject>
    <wvobject fp_name="/tb_readoutcontrol01/web" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">web</obj_property>
       <obj_property name="ObjectShortName">web</obj_property>
@@ -329,12 +352,6 @@
       <obj_property name="ElementShortName">sr_start</obj_property>
       <obj_property name="ObjectShortName">sr_start</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/waveform" type="array" db_ref_id="1">
-      <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="ElementShortName">waveform[2047:0]</obj_property>
-      <obj_property name="ObjectShortName">waveform[2047:0]</obj_property>
-      <obj_property name="label">waveform[0][0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">dmx_wav[15:0]</obj_property>
       <obj_property name="ObjectShortName">dmx_wav[15:0]</obj_property>
@@ -342,6 +359,14 @@
    <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedsub_st" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">pedsub_st</obj_property>
       <obj_property name="ObjectShortName">pedsub_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_allwin_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dmx_allwin_busy</obj_property>
+      <obj_property name="ObjectShortName">dmx_allwin_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sub_fetch_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sub_fetch_busy</obj_property>
+      <obj_property name="ObjectShortName">ped_sub_fetch_busy</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/sa_cnt" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">sa_cnt</obj_property>
@@ -366,6 +391,62 @@
    <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_bit" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">dmx_bit</obj_property>
       <obj_property name="ObjectShortName">dmx_bit</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_update</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_busy</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedsub_st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">pedsub_st</obj_property>
+      <obj_property name="ObjectShortName">pedsub_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/sa_cnt" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_cnt</obj_property>
+      <obj_property name="ObjectShortName">sa_cnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/next_ped_st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_ped_st</obj_property>
+      <obj_property name="ObjectShortName">next_ped_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">st</obj_property>
+      <obj_property name="ObjectShortName">st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/idx" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">idx</obj_property>
+      <obj_property name="ObjectShortName">idx</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa</obj_property>
+      <obj_property name="ObjectShortName">ped_sa</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/ram_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_busy</obj_property>
+      <obj_property name="ObjectShortName">ram_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/ram_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_update</obj_property>
+      <obj_property name="ObjectShortName">ram_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/ram_datar" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_datar[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_datar[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/rbytes" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rbytes[23:0]</obj_property>
+      <obj_property name="ObjectShortName">rbytes[23:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/rval0" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rval0[11:0]</obj_property>
+      <obj_property name="ObjectShortName">rval0[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/Inst_PedRAMaccess/rval1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rval1[11:0]</obj_property>
+      <obj_property name="ObjectShortName">rval1[11:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">fifo_din[31:0]</obj_property>

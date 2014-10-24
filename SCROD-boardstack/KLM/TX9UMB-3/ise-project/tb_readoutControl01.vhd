@@ -132,6 +132,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
  COMPONENT WaveformDemuxPedsubDSP
     PORT(
          clk : IN  std_logic;
+			enable : IN std_logic;
          asic_no : IN  std_logic_vector(3 downto 0);
          win_addr_start : IN  std_logic_vector(8 downto 0);
          sr_start : IN  std_logic;
@@ -169,8 +170,27 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
          OEb : OUT  std_logic
         );
     END COMPONENT;
-    
-	 
+  COMPONENT WaveformDemuxCalcPeds
+	PORT(
+		clk : IN std_logic;
+		reset : IN std_logic;
+		enable : IN std_logic;
+		navg : IN std_logic_vector(3 downto 0);
+		asic_no : IN std_logic_vector(3 downto 0);
+		win_addr_start : IN std_logic_vector(8 downto 0);
+		trigin : IN std_logic;
+		fifo_en : IN std_logic;
+		fifo_clk : IN std_logic;
+		fifo_din : IN std_logic_vector(31 downto 0);
+		ram_busy : IN std_logic;          
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_data : OUT std_logic_vector(7 downto 0);
+		ram_update : OUT std_logic
+		);
+	END COMPONENT;
+  
+	
+
    --Inputs
    signal clk : std_logic := '0';
    signal smp_clk : std_logic := '0';
@@ -250,6 +270,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    signal CE1b : std_logic;
    signal OEb : std_logic;
 
+	signal PedCalcReset: std_logic:='0';
 
 
   signal wr_addrclr_out : std_logic;
@@ -288,7 +309,8 @@ BEGIN
           SMP_IDLE_status => SMP_IDLE_status,
           DIG_IDLE_status => DIG_IDLE_status,
           SROUT_IDLE_status => SROUT_IDLE_status,
-          dig_win_start			=> internal_READCTRL_dig_win_start,fifo_empty => fifo_empty,
+          dig_win_start			=> internal_READCTRL_dig_win_start,
+			 fifo_empty => fifo_empty,
           EVTBUILD_DONE_SENDING_EVENT => EVTBUILD_DONE_SENDING_EVENT,
           READOUT_RESET => READOUT_RESET,
           READOUT_CONTINUE => READOUT_CONTINUE,
@@ -342,18 +364,37 @@ BEGIN
 		  
 		  uut_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
           clk => clk,
-          asic_no => ASIC_NUM,
+			enable => '0',
+         asic_no => ASIC_NUM,
           win_addr_start => WIN_ADDR,
           sr_start => LATCH_DONE,--srout_start,
           fifo_en => fifo_wr_en,
           fifo_clk => fifo_wr_clk,
           fifo_din => fifo_wr_din,
-          ram_addr => internal_ram_Ain(0),
+          
+			 ram_addr => internal_ram_Ain(0),
           ram_data => internal_ram_DRout(0),
           ram_update => internal_ram_update(0),
           ram_busy => internal_ram_busy(0)
         );
-		  
+
+	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPeds PORT MAP(
+		clk => clk,
+		reset => PedCalcReset,
+		enable => '1',
+		navg => x"3",
+		asic_no => ASIC_NUM,
+		win_addr_start =>WIN_ADDR ,
+		trigin => LATCH_DONE,
+		fifo_en => fifo_wr_en ,
+		fifo_clk => fifo_wr_clk,
+		fifo_din => fifo_wr_din,
+		ram_addr => internal_ram_Ain(3),
+		ram_data => internal_ram_DWin(3),
+		ram_update => internal_ram_update(3),
+		ram_busy => internal_ram_busy(3)
+	);
+	  
 		   uut_sramsched: SRAMscheduler PORT MAP (
           clk => clk,
           Ain => internal_ram_Ain,
@@ -388,25 +429,77 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-      wait for 100 ns;	
+      wait for clk_period*10;	
 		smp_reset<='1';
-     wait for 100 ns;	
+     wait for clk_period*10;	
 		smp_reset<='0';
-    wait for 200 ns;	
+    wait for clk_period*10;	
 		
-
+PedCalcReset<='1';
       wait for clk_period*10;
-	
+PedCalcReset<='0';
+		
 
 	trigger<='1';
       -- insert stimulus here 
       wait for clk_period*20;
-		--SROUT_IDLE_status<='1';
+			trigger<='0';
+
       wait for clk_period*20;
---		SROUT_IDLE_status<='0';
-      wait for clk_period*20;
-	--	SROUT_IDLE_status<='1';
 		
+		
+		
+		
+      wait for clk_period*25000;
+		--poke at the shared RAM to see if it can manage
+		internal_ram_Ain (1)<="10" & x"DCBA0";
+		internal_ram_DWin(1)<=x"D0";
+		internal_ram_rw(1)<='1';
+		internal_ram_update(1)<='0';
+
+		internal_ram_Ain (2)<="10" & x"DCBA1";
+		--internal_ram_DWin(2)<=x"D0";
+		internal_ram_rw(2)<='1';
+		internal_ram_update(2)<='0';
+
+		wait for clk_period*2;
+		internal_ram_update(1)<='1';
+		internal_ram_update(2)<='1';
+		wait for clk_period*2;
+		internal_ram_update(1)<='0';
+		internal_ram_update(2)<='0';
+
+		wait for clk_period*20;
+		internal_ram_update(1)<='1';
+		wait for clk_period*20;
+		internal_ram_update(1)<='0';
+		
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+		wait for 1000 us;
+		wait for 10*clk_period;READOUT_RESET<='1';wait for 10*clk_period;READOUT_RESET<='0';
+		wait for 10*clk_period;trigger<='1';wait for clk_period*20;trigger<='0';
+
 
       wait;
    end process;
