@@ -111,7 +111,7 @@ begin
 if (rising_edge(clk)) then
 	update_i(1)<=update_i(0);
 	update_i(0)<=update;
---	ram_busy_i<=ram_busy;
+	ram_busy_i<=ram_busy;
 --	dr<=dr_i;
 --	dw_i<=dw;
 end if;
@@ -136,7 +136,7 @@ if (rising_edge(clk )) then
 	
 	--if(update_i ="01") then
 	if(update ='1' and update_i(0)='0') then
-		ram_busy_i<=ram_busy;
+		--ram_busy_i<=ram_busy;
 		dr<=dr_i;
 		dw_i<=dw;
 	

@@ -203,8 +203,10 @@ case update_req_edg is
 
 when "0000" =>
 
-when "0001" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=0;ql_i<=ql_i+1; else allch_busy<='1'; end if;
-when "0010" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=1;ql_i<=ql_i+1; else allch_busy<='1'; end if;
+when "0001" => 
+if (ql_i  <NRAMCH) then queue_i(ql_i)<=0;ql_i<=ql_i+1; else allch_busy<='1'; end if;
+when "0010" => 
+if (ql_i  <NRAMCH) then queue_i(ql_i)<=1;ql_i<=ql_i+1; else allch_busy<='1'; end if;
 when "0100" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=2;ql_i<=ql_i+1; else allch_busy<='1'; end if;
 when "1000" => if (ql_i  <NRAMCH) then queue_i(ql_i)<=3;ql_i<=ql_i+1; else allch_busy<='1'; end if;
 when "0011" => if (ql_i+1<NRAMCH) then queue_i(ql_i)<=0;queue_i(ql_i+1)<=1;ql_i<=ql_i+2; else allch_busy<='1'; end if;
@@ -225,28 +227,10 @@ when others =>
 
 end case;
 
+if (update_req_edg_new='1') then 
 
+else 
 
-Case sched_st is
-   
-	When SrvQ =>
-	-- code to service exiting queue
-	
-	if (update_req_edg_new='1') then 
-	-- find the all the update requests and queue RAM access accordingly
-
-		sched_st<=WaitCheckUpdate;-- there are new update requests, so go and check them and add to queue
-		else 
-		sched_st<=CheckUpdate;-- there are new update requests, so go and check them and add to queue
-
-		--sched_st<=SrvQ;  -- otherwise just service the queue
-	end if;
-
-	When WaitCheckUpdate =>
-		sched_st<=CheckUpdate;
-
-
-	When CheckUpdate =>
 	if (busy_i(curr_ch)='0' and ql_i>0) then
 	--done with this channel shift everything one toward index 0 in array
 	queue_i(0)<=queue_i(1);
@@ -254,14 +238,46 @@ Case sched_st is
 	queue_i(2)<=queue_i(3);
 	ql_i<=ql_i-1;
 	end if;
-	
-	sched_st<=SrvQ;
+
+end if;
 
 
-	when others =>
-			--busy_i<=(others=>'0');
-			sched_st<=SrvQ;
-	end case;
+
+--Case sched_st is
+--   
+--	When SrvQ =>
+--	-- code to service exiting queue
+--	
+--	if (update_req_edg_new='1') then 
+--	-- find the all the update requests and queue RAM access accordingly
+--
+--		sched_st<=WaitCheckUpdate;-- there are new update requests, so go and check them and add to queue
+--		else 
+--		sched_st<=CheckUpdate;-- there are new update requests, so go and check them and add to queue
+--
+--		--sched_st<=SrvQ;  -- otherwise just service the queue
+--	end if;
+--
+--	When WaitCheckUpdate =>
+--		sched_st<=CheckUpdate;
+--
+--
+--	When CheckUpdate =>
+--	if (busy_i(curr_ch)='0' and ql_i>0) then
+--	--done with this channel shift everything one toward index 0 in array
+--	queue_i(0)<=queue_i(1);
+--	queue_i(1)<=queue_i(2);
+--	queue_i(2)<=queue_i(3);
+--	ql_i<=ql_i-1;
+--	end if;
+--	
+--	sched_st<=SrvQ;
+--
+--
+--	when others =>
+--			--busy_i<=(others=>'0');
+--			sched_st<=SrvQ;
+--	end case;
 
 end if;
 

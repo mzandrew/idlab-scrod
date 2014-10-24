@@ -97,8 +97,8 @@ entity scrod_top_A4 is
 		--MB Specific Signals
 		
 		EX_TRIGGER1_MB					 : out std_logic;
-		EX_TRIGGER2_MB					 : in std_logic;
-		EX_TRIGGER_SCROD	   		 : out STD_LOGIC;
+		EX_TRIGGER2_MB					 : out std_logic;
+		EX_TRIGGER_SCROD	   		 : in STD_LOGIC;
 --		EX_TRIGGER2						 : out STD_LOGIC;
 		
 		--Global Bus Signals
@@ -616,19 +616,32 @@ begin
       I => internal_EX_TRIGGER1_MB      -- Buffer input 
    );
 	
- extrig2_IBUF_inst : IBUF
+	extrig2_OBUF_inst : OBUF
+   generic map (
+      DRIVE => 12,
+      IOSTANDARD => "DEFAULT",
+      SLEW => "SLOW")
+   port map (
+      O => EX_TRIGGER2_MB,     -- Buffer output (connect directly to top-level port)
+      I => internal_EX_TRIGGER2_MB      -- Buffer input 
+   );
+	
+	
+ extrigscrd_IBUF_inst : IBUF
    generic map (
       IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
       IOSTANDARD => "DEFAULT")
    port map (
-      O => internal_EX_TRIGGER2_MB,     -- Buffer output
-      I => EX_TRIGGER2_MB      -- Buffer input (connect directly to top-level port)
+      O => internal_EX_TRIGGER_SCROD,     -- Buffer output
+      I => EX_TRIGGER_SCROD      -- Buffer input (connect directly to top-level port)
    );
 	
 
-internal_TRIGGER_ALL <=internal_EX_TRIGGER2_MB;
+internal_TRIGGER_ALL <=internal_EX_TRIGGER_SCROD;
 
 internal_EX_TRIGGER1_MB<=internal_TRIGGER_ALL;
+
+internal_EX_TRIGGER2_MB<=internal_READCTRL_LATCH_DONE;
 
 
 
@@ -642,7 +655,7 @@ internal_EX_TRIGGER1_MB<=internal_TRIGGER_ALL;
 --	EX_TRIGGER2 <= internal_READCTRL_trigger;--SHOUT(9);
  -- EX_TRIGGER1_MB<= internal_BOARD_CLOCK_OUT;--internal_clock_asic_ctrl;
 --  EX_TRIGGER2_MB<='0';-- internal_clock_asic_ctrl;
-  EX_TRIGGER_SCROD<='0';
+ -- EX_TRIGGER_SCROD<='0';
 	
    internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
    internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
