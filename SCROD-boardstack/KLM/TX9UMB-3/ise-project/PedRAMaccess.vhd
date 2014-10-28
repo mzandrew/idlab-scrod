@@ -133,12 +133,13 @@ case st is
 	addrarr(1)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  & '0'))*3+1,22)) ;
 	addrarr(2)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  & '0'))*3+2,22)) ;
 --	ram_dataw<=wbytes(23-8*idx downto 16-8*idx);
-	ram_dataw<=wbytes(23 downto 16);
+--	ram_dataw<=wbytes(23 downto 16);
 	ram_rw<=rw_i;
 	idx<=0;
 	st<=set_ram_addr;
 	
 	when set_ram_addr=>
+		ram_dataw<=wbytes(23-8*idx downto 16-8*idx);
 		ram_addr<=addrarr(idx);
 		ram_update<='1';
 		st<=wait_ram1;
