@@ -401,9 +401,14 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_READCTRL_RESET_EVENT_NUM : std_logic := '0';
 	signal internal_CMDREG_readctrl_ramp_length : std_logic_vector(15 downto 0) :=(others => '0');
 	signal internal_cmdreg_readctrl_use_fixed_dig_start_win : std_logic_vector(15 downto 0):=(others => '0');
-	
 	signal internal_CMDREG_SW_STATUS_READ : std_logic;
 
+	--pedestal handling unit using command regs
+	signal interna_CMDREG_PedCalcReset			:std_logic:='0';
+	signal interna_CMDREG_PedCalcEnable			:std_logic:='0';
+	signal interna_CMDREG_PedSubEnable			:std_logic:='0';
+	signal interna_CMDREG_PedCalcNAVG			:std_logic_vector(3 downto 0):=x"3";-- 2**3=8 averages for calculating peds
+		
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_MAIN_CNT 			: std_logic_vector(8 downto 0) := (others => '0');
 	signal internal_SSTIN 					: std_logic := '0';
@@ -483,6 +488,7 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_RAMDATARD :std_logic_vector(7 downto 0);
 	signal internal_CMDREG_RAMRW :std_logic;
 	signal internal_CMDREG_RAMBUSY :std_logic;
+-- Mutlti port RAM driver channels: ch 0: USB, ch 1: Run Control pedestal write, ch 2: waveform demux+ped subtraction, ch 3: waveform demux + ped calculation  
    signal internal_ram_Ain : AddrArray;--:= (others => '0');
    signal internal_ram_DWin : DataArray;-- := (others => '0');
    signal internal_ram_rw : std_logic_vector(NRAMCH-1 downto 0) := (others => '0');
@@ -493,6 +499,8 @@ architecture Behavioral of scrod_top_A4 is
 	signal RAM_IOr_i:std_logic_vector(7 downto 0);
 	signal RAM_IO_bs_i:std_logic;
 	
+-------------------------------------
+	signal internal_pswfifo_d:std_logic_vector(31 downto 0);
 	
 	
 	
@@ -584,6 +592,8 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
 	 COMPONENT WaveformDemuxPedsubDSP
     PORT(
          clk : IN  std_logic;
+			enable 				: in std_logic;  -- '0'= disable, '1'= enable
+
          asic_no : IN  std_logic_vector(3 downto 0);
          win_addr_start : IN  std_logic_vector(8 downto 0);
          sr_start : IN  std_logic;
@@ -602,6 +612,25 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
         );
     END COMPONENT;
 
+	COMPONENT WaveformDemuxCalcPeds
+	PORT(
+		clk : IN std_logic;
+		reset : IN std_logic;
+		enable : IN std_logic;
+		navg : IN std_logic_vector(3 downto 0);
+		asic_no : IN std_logic_vector(3 downto 0);
+		win_addr_start : IN std_logic_vector(8 downto 0);
+		trigin : IN std_logic;
+		fifo_en : IN std_logic;
+		fifo_clk : IN std_logic;
+		fifo_din : IN std_logic_vector(31 downto 0);
+		ram_busy : IN std_logic;          
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_data : OUT std_logic_vector(7 downto 0);
+		ram_update : OUT std_logic
+		);
+	END COMPONENT;
+	
 
 	
 begin
@@ -1032,7 +1061,11 @@ end generate;
 
 	---status regs: automaticly generated and fed to conc. or read via software?
 	internal_CMDREG_SW_STATUS_READ<=internal_OUTPUT_REGISTERS(37)(0); -- '0': SW status read connections disabled, '1': SW status read is enabled
-	
+
+	interna_CMDREG_PedCalcNAVG		<=internal_OUTPUT_REGISTERS(38)(3 downto 0); -- 2**NAVG= number of averages for calculating peds
+	interna_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
+	interna_CMDREG_PedSubEnable 	<=internal_OUTPUT_REGISTERS(38)(14);
+	interna_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(13);		
 	
 	--Event builder signals
 	internal_CMDREG_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
@@ -1122,6 +1155,7 @@ end generate;
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
 	
 	internal_INPUT_REGISTERS(N_GPR + 30) <= "0000000" & internal_READCTRL_dig_win_start; -- digitizatoin window start
+	internal_INPUT_REGISTERS(N_GPR + 31) <=internal_pswfifo_d(15 downto 0);--internal_INPUT_REGISTERS(31)
 	
 	-- Status Regs:
 	gen_STAT_REG_INREG: for i in 0 to N_STAT_REG-1 generate
@@ -1262,24 +1296,45 @@ end generate;
 	
 	--demux and ped sub logic:
 	
-	 u_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
-          clk => internal_CLOCK_FPGA_LOGIC,
-          asic_no => internal_READCTRL_ASIC_NUM,
-          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
-          sr_start => internal_READCTRL_LATCH_DONE,--srout_start,
-			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
-			fifo_clk => internal_SROUT_FIFO_WR_CLK,
-			fifo_din => internal_SROUT_FIFO_DATA_OUT,
-
-          ram_addr => internal_ram_Ain(2),
-          ram_data => internal_ram_DRout(2),
-          ram_update => internal_ram_update(2),
-          ram_busy => internal_ram_busy(2)
-        );
+--	 u_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
+--          clk => internal_CLOCK_FPGA_LOGIC,
+--			 enable=>interna_CMDREG_PedSubEnable,
+--          asic_no => internal_READCTRL_ASIC_NUM,
+--          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+--          sr_start => internal_READCTRL_LATCH_DONE,--srout_start,
+--			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
+--			fifo_clk => internal_SROUT_FIFO_WR_CLK,
+--			fifo_din => internal_SROUT_FIFO_DATA_OUT,
+--
+--			pswfifo_d =>internal_pswfifo_d,--internal_INPUT_REGISTERS(31)
+--
+--          ram_addr => internal_ram_Ain(2),
+--          ram_data => internal_ram_DRout(2),
+--          ram_update => internal_ram_update(2),
+--          ram_busy => internal_ram_busy(2)
+--        );
+--	
+--		internal_ram_rw(2)<='0';-- always reading from this channel
 	
-		internal_ram_rw(2)<='0';-- always reading from this channel
-	
-	
+	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPeds PORT MAP(
+		clk => internal_CLOCK_FPGA_LOGIC,
+		reset => interna_CMDREG_PedCalcReset,
+		enable => interna_CMDREG_PedCalcEnable,
+		navg => interna_CMDREG_PedCalcNAVG,
+		asic_no => internal_READCTRL_ASIC_NUM,
+		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+		trigin => internal_READCTRL_LATCH_DONE,
+		fifo_en => internal_SROUT_FIFO_WR_EN ,
+		fifo_clk => internal_SROUT_FIFO_WR_CLK,
+		fifo_din => internal_SROUT_FIFO_DATA_OUT,
+		
+		ram_addr => internal_ram_Ain(3),
+		ram_data => internal_ram_DWin(3),
+		ram_update => internal_ram_update(3),
+		ram_busy => internal_ram_busy(3)
+	);
+		
+		internal_ram_rw(3)<='1';-- always write to this channel	
 	
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control

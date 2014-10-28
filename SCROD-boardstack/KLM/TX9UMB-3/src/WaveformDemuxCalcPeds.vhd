@@ -30,7 +30,7 @@ library UNISIM;
 use UNISIM.VComponents.all;
 use work.readout_definitions.all;
  
- 
+  
 entity WaveformDemuxCalcPeds is
 port(
 			clk		 			 : in   std_logic;
@@ -107,8 +107,10 @@ signal ped_hbword				:integer:=0;
 signal ped_word				:std_logic_vector(16 downto 0);
 signal dmx_asic				:integer:=0;
 signal dmx_win					:integer:=0;
+signal dmx2_win				:std_logic_vector(1 downto 0):="00";
 signal dmx_ch					:integer:=0;
 signal dmx_sa					:integer:=0;
+signal dmx2_sa					:std_logic_vector(4 downto 0):="00000";
 signal dmx_bit					:integer:=0;
 signal dmx_wav					: WaveTempArray;
 signal fifo_din_i				: std_logic_vector(31 downto 0);
@@ -122,12 +124,11 @@ signal ncnt						:std_logic_vector(15 downto 0):=x"0000";
 signal ncnt_i					:integer :=0;-- decrement counter
 signal ncnt_int				:integer :=0;-- fixed
 signal clr_idx					:integer:=0;
+signal jdx						: JDXTempArray;
+ 
 
 
-
-signal waveform					: WaveformArray;--temp waveform array
-signal pedarray					: WaveformArray;--temp pedestal array
-signal wavepedsubarray			: WaveformArray;--temp pedestal array
+signal pedarray					: WaveformArray;--temp waveform array
 
 
 
@@ -224,7 +225,7 @@ when demuxing =>
 				dmx_allwin_busy<='1';
 			end if;
 	
-			if (dmx_win=NWWIN-1 and fifo_din(4 downto 0)="11111" ) then -- this is the last window- set the flag
+			if (dmx_win=NWWIN-1 and fifo_din_i(4 downto 0)="11111" ) then -- this is the last window- set the flag
 				dmx_allwin_busy<='0';
 				ncnt_i<=ncnt_i-1;
 			end if;
@@ -232,15 +233,52 @@ when demuxing =>
 			dmx_asic<=to_integer(unsigned(fifo_din(9 downto 6)));
 			dmx_win <=to_integer(unsigned(fifo_din(18 downto 10)))-win_addr_start_i;
 			dmx_sa  <=to_integer(unsigned(fifo_din(4 downto 0)));
-
+			dmx2_sa<=fifo_din(4 downto 0);
 			
 		elsif (fifo_din(31 downto 20)=x"DEF") then-- reconstruct the sampels and demux
+			
+			if (fifo_din(19 downto 16)="0000") then
+				dmx2_win<=std_logic_vector(to_unsigned(dmx_win,2));
+			end if;
+			
+			if (fifo_din(19 downto 16)="0001") then -- this is the first bit in the sequence, so prep the address and stuff
+--				jdx(0)<=dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN;-- tryong to make this in the following lines
+				jdx(0 )<=x"0" & dmx2_win & dmx2_sa;
+				jdx(1 )<=x"1" & dmx2_win & dmx2_sa;
+				jdx(2 )<=x"2" & dmx2_win & dmx2_sa;
+				jdx(3 )<=x"3" & dmx2_win & dmx2_sa;
+				jdx(4 )<=x"4" & dmx2_win & dmx2_sa;
+				jdx(5 )<=x"5" & dmx2_win & dmx2_sa;
+				jdx(6 )<=x"6" & dmx2_win & dmx2_sa;
+				jdx(7 )<=x"7" & dmx2_win & dmx2_sa;
+				jdx(8 )<=x"8" & dmx2_win & dmx2_sa;
+				jdx(9 )<=x"9" & dmx2_win & dmx2_sa;
+				jdx(10)<=x"A" & dmx2_win & dmx2_sa;
+				jdx(11)<=x"B" & dmx2_win & dmx2_sa;
+				jdx(12)<=x"C" & dmx2_win & dmx2_sa;
+				jdx(13)<=x"D" & dmx2_win & dmx2_sa;
+				jdx(14)<=x"E" & dmx2_win & dmx2_sa;
+				jdx(15)<=x"F" & dmx2_win & dmx2_sa;
+				
+			end if;
+			
 			dmx_bit<=to_integer(unsigned(fifo_din(19 downto 16)));
 			dmx_wav(0)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(0);
 			dmx_wav(1)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(1);
 			dmx_wav(2)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(2);
 			dmx_wav(3)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(3);
-			--add all 16 chnannels
+			dmx_wav(4)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(4);
+			dmx_wav(5)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(5);
+			dmx_wav(6)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(6);
+			dmx_wav(7)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(7);
+			dmx_wav(8)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(8);
+			dmx_wav(9)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(9);
+			dmx_wav(10)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(10);
+			dmx_wav(11)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(11);
+			dmx_wav(12)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(12);
+			dmx_wav(13)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(13);
+			dmx_wav(14)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(14);
+			dmx_wav(15)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(15);
 
 		
 		elsif (fifo_din(31 downto 0) = x"FACEFACE") then --end of window.
@@ -251,10 +289,41 @@ when demuxing =>
 		end if;
 	
 		if (fifo_din_i(19 downto 16)="1011") then  -- this is the last sample, add to averaging buffer
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(0)))+waveform(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN);
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(1)))+waveform(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN);
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+2*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(2)))+waveform(dmx_sa+dmx_win*NSamplesPerWin+2*NSamplesPerWin*NWWIN);
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+3*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(3)))+waveform(dmx_sa+dmx_win*NSamplesPerWin+3*NSamplesPerWin*NWWIN);
+--			pedarray(to_integer(unsigned(jdx(  ))))<=to_integer(unsigned(dmx_wav(  )))+pedarray(to_integer(unsigned(jdx(  ))));
+			pedarray(to_integer(unsigned(jdx(0 ))))<=to_integer(unsigned(dmx_wav(0 )))+pedarray(to_integer(unsigned(jdx(0 ))));
+			pedarray(to_integer(unsigned(jdx(1 ))))<=to_integer(unsigned(dmx_wav(1 )))+pedarray(to_integer(unsigned(jdx(1 ))));
+			pedarray(to_integer(unsigned(jdx(2 ))))<=to_integer(unsigned(dmx_wav(2 )))+pedarray(to_integer(unsigned(jdx(2 ))));
+			pedarray(to_integer(unsigned(jdx(3 ))))<=to_integer(unsigned(dmx_wav(3 )))+pedarray(to_integer(unsigned(jdx(3 ))));
+			pedarray(to_integer(unsigned(jdx(4 ))))<=to_integer(unsigned(dmx_wav(4 )))+pedarray(to_integer(unsigned(jdx(4 ))));
+			pedarray(to_integer(unsigned(jdx(5 ))))<=to_integer(unsigned(dmx_wav(5 )))+pedarray(to_integer(unsigned(jdx(5 ))));
+			pedarray(to_integer(unsigned(jdx(6 ))))<=to_integer(unsigned(dmx_wav(6 )))+pedarray(to_integer(unsigned(jdx(6 ))));
+			pedarray(to_integer(unsigned(jdx(7 ))))<=to_integer(unsigned(dmx_wav(7 )))+pedarray(to_integer(unsigned(jdx(7 ))));
+			pedarray(to_integer(unsigned(jdx(8 ))))<=to_integer(unsigned(dmx_wav(8 )))+pedarray(to_integer(unsigned(jdx(8 ))));
+			pedarray(to_integer(unsigned(jdx(9 ))))<=to_integer(unsigned(dmx_wav(9 )))+pedarray(to_integer(unsigned(jdx(9 ))));
+			pedarray(to_integer(unsigned(jdx(10))))<=to_integer(unsigned(dmx_wav(10)))+pedarray(to_integer(unsigned(jdx(10))));
+			pedarray(to_integer(unsigned(jdx(11))))<=to_integer(unsigned(dmx_wav(11)))+pedarray(to_integer(unsigned(jdx(11))));
+			pedarray(to_integer(unsigned(jdx(12))))<=to_integer(unsigned(dmx_wav(12)))+pedarray(to_integer(unsigned(jdx(12))));
+			pedarray(to_integer(unsigned(jdx(13))))<=to_integer(unsigned(dmx_wav(13)))+pedarray(to_integer(unsigned(jdx(13))));
+			pedarray(to_integer(unsigned(jdx(14))))<=to_integer(unsigned(dmx_wav(14)))+pedarray(to_integer(unsigned(jdx(14))));
+			pedarray(to_integer(unsigned(jdx(15))))<=to_integer(unsigned(dmx_wav(15)))+pedarray(to_integer(unsigned(jdx(15))));
+							
+
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(0)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(1)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+2*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(2)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+2*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+3*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(3)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+3*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+4*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(4)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+4*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+5*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(5)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+5*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+6*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(6)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+6*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+7*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(7)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+7*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+8*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(8)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+8*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+9*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(9)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+9*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+10*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(10)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+10*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+11*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(11)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+11*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+12*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(12)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+12*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+13*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(13)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+13*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+14*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(14)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+14*NSamplesPerWin*NWWIN);
+--			pedarray(dmx_sa+dmx_win*NSamplesPerWin+15*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(15)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+15*NSamplesPerWin*NWWIN);
 			--add all 16 chnannels
 
 
@@ -267,7 +336,7 @@ when demuxing =>
 		clr_idx<=0;
 		dmx_st<=clear_array;
 		else
-			if (ncnt_i=1) then-- this is the last window to be averaged, so start writing to ped ram
+			if (ncnt_i=0) then-- this is the last window to be averaged, so start writing to ped ram
 			dmx_st<=peds_write;
 			else 
 				dmx_st<=demuxing;
@@ -278,16 +347,8 @@ when demuxing =>
 		ncnt_i<=to_integer(unsigned(ncnt));
 		ncnt_int<=to_integer(unsigned(ncnt));
 	   	
-		waveform(clr_idx+0)<=0;
---		waveform(clr_idx+1)<=0;
---		waveform(clr_idx+2)<=0;
---		waveform(clr_idx+3)<=0;
---		waveform(clr_idx+4)<=0;
---		waveform(clr_idx+5)<=0;
---		waveform(clr_idx+1)<=6;
---		waveform(clr_idx+7)<=0;
---		waveform(clr_idx+8)<=0;
---		waveform(clr_idx+9)<=0;
+		pedarray(clr_idx+0)<=0;
+
 		clr_idx<=clr_idx+1;
 		if (clr_idx<NSamplesPerWin*NWWIN*16-2) then
 				dmx_st<=clear_array;
@@ -372,10 +433,10 @@ when demuxing =>
 			end if;
 	
 	When PedsWRCheckCH=>
-			if (ped_ch<NCHPerTX) then
-				dmx_st<=PedsWRPedAddr1;
-			else
+			if (ped_ch=NCHPerTX) then
 				dmx_st<=PedsWRDone;
+			else
+				dmx_st<=PedsWRPedAddr1;
 			end if;
 					
 	When PedsWRDone =>

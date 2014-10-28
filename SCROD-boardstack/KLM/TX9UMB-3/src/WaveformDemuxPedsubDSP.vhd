@@ -118,6 +118,8 @@ signal ped_sa					: integer:=0;
 signal ped_hbyte				:std_logic_vector(7 downto 0);
 signal ped_hbword				:integer:=0;
 signal ped_word				:std_logic_vector(16 downto 0);
+signal dmx2_win				:std_logic_vector(1 downto 0):="00";
+signal dmx2_sa					:std_logic_vector(4 downto 0):="00000";
 signal dmx_asic				:integer:=0;
 signal dmx_win					:integer:=0;
 signal dmx_ch					:integer:=0;
@@ -132,8 +134,9 @@ signal ped_sub_fetch_busy 	: std_logic:='1';
 signal ped_sub_start			:std_logic_vector(1 downto 0):="00";
 signal waveform					: WaveformArray;--temp waveform array
 signal pedarray					: WaveformArray;--temp pedestal array
-signal wavepedsubarray			: WaveformArray;--temp pedestal array
-
+--signal wavepedsubarray			: WaveformArray;--temp pedestal array
+signal sapedsub					: integer:=0;
+signal jdx						: JDXTempArray;
 
 type ped_state is --pedstals fetch state
 (
@@ -316,11 +319,55 @@ if (rising_edge(clk)) then
 
 			
 		elsif (fifo_din(31 downto 20)=x"DEF") then
+
+			if (fifo_din(19 downto 16)="0000") then
+					dmx2_win<=std_logic_vector(to_unsigned(dmx_win,2));
+			end if;
+			
+			if (fifo_din(19 downto 16)="0001") then -- this is the first bit in the sequence, so prep the address and stuff
+--				jdx(0)<=dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN;-- tryong to make this in the following lines
+				jdx(0 )<=x"0" & dmx2_win & dmx2_sa;
+				jdx(1 )<=x"1" & dmx2_win & dmx2_sa;
+				jdx(2 )<=x"2" & dmx2_win & dmx2_sa;
+				jdx(3 )<=x"3" & dmx2_win & dmx2_sa;
+				jdx(4 )<=x"4" & dmx2_win & dmx2_sa;
+				jdx(5 )<=x"5" & dmx2_win & dmx2_sa;
+				jdx(6 )<=x"6" & dmx2_win & dmx2_sa;
+				jdx(7 )<=x"7" & dmx2_win & dmx2_sa;
+				jdx(8 )<=x"8" & dmx2_win & dmx2_sa;
+				jdx(9 )<=x"9" & dmx2_win & dmx2_sa;
+				jdx(10)<=x"A" & dmx2_win & dmx2_sa;
+				jdx(11)<=x"B" & dmx2_win & dmx2_sa;
+				jdx(12)<=x"C" & dmx2_win & dmx2_sa;
+				jdx(13)<=x"D" & dmx2_win & dmx2_sa;
+				jdx(14)<=x"E" & dmx2_win & dmx2_sa;
+				jdx(15)<=x"F" & dmx2_win & dmx2_sa;
+				
+			end if;
+
+
+
+
+
+
+
 			dmx_bit<=to_integer(unsigned(fifo_din(19 downto 16)));
 			dmx_wav(0)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(0);
 			dmx_wav(1)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(1);
 			dmx_wav(2)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(2);
 			dmx_wav(3)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(3);
+			dmx_wav(4)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(4);
+			dmx_wav(5)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(5);
+			dmx_wav(6)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(6);
+			dmx_wav(7)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(7);
+			dmx_wav(8)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(8);
+			dmx_wav(9)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(9);
+			dmx_wav(10)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(10);
+			dmx_wav(11)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(11);
+			dmx_wav(12)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(12);
+			dmx_wav(13)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(13);
+			dmx_wav(14)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(14);
+			dmx_wav(15)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(15);
 			--add all 16 chnannels
 		if (dmx_win=3) then -- this is the last window- set the flag
 			dmx_allwin_busy<='0';
@@ -334,10 +381,39 @@ if (rising_edge(clk)) then
 		end if;
 	
 		if (fifo_din_i(19 downto 16)="1011") then  -- this is the last sample
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(0)));
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(1)));
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+2*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(2)));
-			waveform(dmx_sa+dmx_win*NSamplesPerWin+3*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(3)));
+			waveform(to_integer(unsigned(jdx(0 ))))<=to_integer(unsigned(dmx_wav(0 )));
+			waveform(to_integer(unsigned(jdx(1 ))))<=to_integer(unsigned(dmx_wav(1 )));			
+			waveform(to_integer(unsigned(jdx(2 ))))<=to_integer(unsigned(dmx_wav(2 )));			
+			waveform(to_integer(unsigned(jdx(3 ))))<=to_integer(unsigned(dmx_wav(3 )));			
+			waveform(to_integer(unsigned(jdx(4 ))))<=to_integer(unsigned(dmx_wav(4 )));			
+			waveform(to_integer(unsigned(jdx(5 ))))<=to_integer(unsigned(dmx_wav(5 )));			
+			waveform(to_integer(unsigned(jdx(6 ))))<=to_integer(unsigned(dmx_wav(6 )));			
+			waveform(to_integer(unsigned(jdx(7 ))))<=to_integer(unsigned(dmx_wav(7 )));			
+			waveform(to_integer(unsigned(jdx(8 ))))<=to_integer(unsigned(dmx_wav(8 )));			
+			waveform(to_integer(unsigned(jdx(9 ))))<=to_integer(unsigned(dmx_wav(9 )));			
+			waveform(to_integer(unsigned(jdx(10))))<=to_integer(unsigned(dmx_wav(10)));			
+			waveform(to_integer(unsigned(jdx(11))))<=to_integer(unsigned(dmx_wav(11)));			
+			waveform(to_integer(unsigned(jdx(12))))<=to_integer(unsigned(dmx_wav(12)));			
+			waveform(to_integer(unsigned(jdx(13))))<=to_integer(unsigned(dmx_wav(13)));			
+			waveform(to_integer(unsigned(jdx(14))))<=to_integer(unsigned(dmx_wav(14)));			
+			waveform(to_integer(unsigned(jdx(15))))<=to_integer(unsigned(dmx_wav(15)));			
+
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(0)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(1)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+2*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(2)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+3*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(3)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+4*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(4)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+5*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(5)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+6*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(6)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+7*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(7)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+8*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(8)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+9*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(9)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+10*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(10)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+11*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(11)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+12*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(12)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+13*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(13)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+14*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(14)));
+--			waveform(dmx_sa+dmx_win*NSamplesPerWin+15*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(15)));
 			--add all 16 chnannels
 		
 		end if;
@@ -364,15 +440,18 @@ When pedsub_idle =>
 	end if;
 
 When pedsub_sub=>
-		wavepedsubarray(sa_cnt)<=waveform(sa_cnt)-pedarray(sa_cnt);
+		sapedsub<=waveform(sa_cnt)-pedarray(sa_cnt);
+--		wavepedsubarray(sa_cnt)<=waveform(sa_cnt)-pedarray(sa_cnt);
 --		wavepedsubarray(sa_cnt+1)<=waveformarray(sa_cnt+1)-pedarray(sa_cnt+1);
 --		wavepedsubarray(sa_cnt+2)<=waveformarray(sa_cnt+2)-pedarray(sa_cnt+2);
 --		wavepedsubarray(sa_cnt+3)<=waveformarray(sa_cnt+3)-pedarray(sa_cnt+3);
-		pswfifo_d<=std_logic_vector(to_unsigned(sa_cnt,16)) & std_logic_vector(to_signed(wavepedsubarray(sa_cnt+0),16));
+--		pswfifo_d<=std_logic_vector(to_unsigned(sa_cnt,16)) & std_logic_vector(to_signed(wavepedsubarray(sa_cnt+0),16));
+		pswfifo_d<=std_logic_vector(to_unsigned(sa_cnt,16)) & std_logic_vector(to_signed(sapedsub,16));
 		sa_cnt<=sa_cnt+1;
 		if (sa_cnt>NSamplesPerWin*NWWIN*16-2) then
 				pedsub_st<=pedsub_idle;
-				
+		else 
+				pedsub_st<=pedsub_sub;
 		end if;
 
 when others=>
