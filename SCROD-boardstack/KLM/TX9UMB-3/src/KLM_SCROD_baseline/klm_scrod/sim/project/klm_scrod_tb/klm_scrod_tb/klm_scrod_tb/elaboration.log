@@ -1,4 +1,4 @@
-Active-HDL 9.2.2499.sp1.36.4586  2014-07-17 11:25:12
+Active-HDL 9.2.2499.sp1.36.4586  2014-10-22 20:33:25
 
 Elaboration top modules:
 Architecture                  behave(klm_scrod_tb)
@@ -19,6 +19,7 @@ m_count                            | implementation                 | ft2u_lib  
 m_fifo                             | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 tt_blink                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 tt_regs                            | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+m_jtag                             | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 tt_ioswitch                        | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 tt_jitterspi                       | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 tt_phasedet                        | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
@@ -61,15 +62,18 @@ m_enreset                          | implementation                 | ft2u_lib  
 x_decode                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_iddr                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 iddr                               | iddr_v                         | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
-m_decode                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-m_decomma                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-m_debit2                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-m_debit10                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-m_debusy                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-m_deoctet                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-m_depacket                         | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+b2tt_iscan                         | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_decode                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_decomma                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_debit2                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_debit10                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_debusy                           | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_deoctet                          | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+o_depacket                         | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_de8b10b                       | implementation                 | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 ramb18                             | ramb18_v                       | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+m_icon                             | structure                      | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+m_ila                              | structure                      | ft2u_lib      |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 targetx                            | behave                         | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 klm_aurora                         | mapped                         | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 STANDARD_CC_MODULE                 | rtl                            | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
@@ -94,18 +98,18 @@ srl16                              | srl16_v                        | unisim    
 TX_LL_DATAPATH                     | rtl                            | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 TX_LL_CONTROL                      | rtl                            | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 RX_LL_PDU_DATAPATH                 | rtl                            | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+ibuf                               | ibuf_v                         | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 obuf                               | obuf_v                         | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 timing_ctrl                        | behave                         | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt                               | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 conc_intfc                         | behave                         | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-FRAME_GEN                          | rtl                            | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 run_ctrl                           | behave                         | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 sfp_stat_ctrl                      | behave                         | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-ibuf                               | ibuf_v                         | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
-b2tt_clk                           | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_fifo                          | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_decode                        | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+b2tt_payload                       | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_encode                        | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+b2tt_clk                           | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 pll_base                           | pll_base_v                     | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 pll_adv                            | pll_adv_v                      | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 ramb16bwer                         | ramb16bwer_v                   | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
@@ -119,9 +123,9 @@ b2tt_depacket                      | implementation                 | klm_scrod_
 b2tt_detag                         | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 iodelay2                           | iodelay2_v                     | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 iddr2                              | iddr2_v                        | unisim        |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+b2tt_iscan                         | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_de8b10b                       | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_encounter                     | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-b2tt_enpacket                      | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_enoctet                       | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_enbit2                        | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 b2tt_oddr                          | implementation                 | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
@@ -147,6 +151,8 @@ fifo_generator_v9_3_bhv_ss         | behavioral                     | xilinxcore
 fifo_generator_v9_3_bhv_as         | behavioral                     | xilinxcorelib |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 fifo_generator_v9_3_bhv_preload0   | behavioral                     | xilinxcorelib |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 fifo_generator_v9_3_axic_reg_slice | xilinx                         | xilinxcorelib |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
+FRAME_GEN                          | rtl                            | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+daq_gen                            | multi_trig                     | klm_scrod_tb  |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -60,11 +60,12 @@ architecture behave of klm_scrod_tb is
         tx_data                     : out std_logic_vector (15 downto 0));
     end component;
 
-    component klm_aurora_intfc is
-    generic(
-        REFSELDYPLL                 : std_logic_vector(2 downto 0);
+    component klm_aurora_intfc is    generic(        
         SIM_GTPRESET_SPEEDUP        : integer);
     port(
+        refseldypll                 : std_logic_vector(2 downto 0);
+        ref_clk0                    : in std_logic;
+        ref_clk1                    : in std_logic;
         user_clk                    : in std_logic;
         sync_clk                    : in std_logic;
         reset                       : in std_logic;
@@ -104,7 +105,11 @@ architecture behave of klm_scrod_tb is
 
     component klm_scrod is
         generic(
-        NUM_GTS                     : integer := 2);
+        NUM_GTS                     : integer   := 2;
+        REVISION                    : string;  --A2,A3,A4
+        CLKSRC                      : string;--FTSW, OBOSC                
+        LINK_TEST                   : std_logic;
+        B2TT_SIM_SPEEDUP            : std_logic);
         port(
         -- TTD/FTSW interface
         ttdclkp                     : in std_logic;
@@ -125,10 +130,15 @@ architecture behave of klm_scrod_tb is
         mgttxdis                    : out std_logic_vector(1 to NUM_GTS);
         mgtmod2                     : out std_logic_vector(1 to NUM_GTS);
         mgtmod1                     : out std_logic_vector(1 to NUM_GTS);
+        mgtclk0p                    : in std_logic;
+        mgtclk0n                    : in std_logic;
+        mgtclk1p                    : in std_logic;
+        mgtclk1n                    : in std_logic;
         mgtrxp                      : in std_logic;
         mgtrxn                      : in std_logic;
         mgttxp                      : out std_logic;
         mgttxn                      : out std_logic;
+        ex_trig1                    : in std_logic;--fake address bit
         status_fake                 : out std_logic;
         control_fake                : out std_logic);
     end component;
@@ -270,6 +280,7 @@ architecture behave of klm_scrod_tb is
     signal scrod_mgtrxn             : std_logic;
     signal scrod_mgttxp             : std_logic;
     signal scrod_mgttxn             : std_logic;
+    signal scrod_ex_trig1           : std_logic;
     signal scrod_status             : std_logic;
     signal scrod_control            : std_logic;
 
@@ -279,42 +290,42 @@ begin
     -- Front-End Timing Switch (FTSW)
     -----------------------------------------------------------------------------------------------
     ft2u_ins : entity ft2u_lib.ft2u
-    generic map(
-        VERSION                     =>  40,
+      generic map(
         LCK_ENABLE                  => '1',
         TTIN_ENABLE                 => '0',
-        ID                          => X"46543255") -- "FT2U"
-    port map(
-    -- FTSW2 only (dummy pin in FTSW3)
-        f_led1y_b                   => f2tu_f_led1y_b,
-    -- FTSW3 only (dummy pins in FTSW2)
-        f_led1g                     => open,
-        f_led1y                     => open,
-        f_led2g                     => open,
-        f_led2y                     => open,
-        --c_led0                    => ,
-        --c_led1                    => ,
-        --f_testin                  => ,
-        --c_gpio0                   => ,
-    -- local bus and local clock
+        USE_CHIPSCOPE               => '0',
+        ID                          => x"46543255") -- "FT2U"
+      port map(
+        -- FTSW2 only (dummy pin in FTSW3)
+        f_led1y_b                   => f2tu_f_led1y_b, -- only in ft2u
+        -- FTSW3 only (dummy pins in FTSW2)
+        f_led1g                     => open,  -- for clock source
+        f_led1y                     => open,  -- G:IN/Y:FTOR, blink if PLL unlock
+        f_led2g                     => open,  -- G for ft3u
+        f_led2y                     => open,  -- only in ft3u
+        --c_led0                    =>
+        --c_led1                    =>
+        --f_testin                  =>        -- for test trigger input
+        --c_gpio0                   =>
+        -- local bus and local clock
         f_d                         => f2tu_f_d,
         f_a                         => f2tu_f_a,
         f_ads                       => ft2u_ads,
         f_wr                        => ft2u_wr,
         f_irq                       => open,  -- unused, set to L
-    -- misc
+        -- misc
         c_id1                       => ft2u_c_id1,
         c_id2                       => ft2u_c_id2,
         f_xen                       => ft2u_f_xen,
         f_ckmux                     => ft2u_f_ckmux,
-        --f_testin_p                => ,
-        --f_testin_n                => ,
-    -- test jtag-in
-        f_tck                       => ft2u_f_tck,  -- tck
-        f_tms                       => ft2u_f_tms,  -- tms
-        f_tdi                       => ft2u_f_tdi,  -- tdi
-        f_tdo                       => ft2u_f_tdo,
-    -- jitter cleaner control
+        --f_testin_p                =>
+        --f_testin_n                =>
+        -- test jtag-in
+        f_tck                       => ft2u_f_tck, -- tck
+        f_tms                       => ft2u_f_tms, -- tms
+        f_tdi                       => ft2u_f_tdi, -- tdi
+        f_tdo                       => ft2u_f_tdo, -- tdo
+        -- jitter cleaner control
         j_pd_b                      => ft2u_j_pd_b,
         j_plllock                   => ft2u_j_plllock,
         j_spiclk                    => ft2u_j_spiclk,
@@ -322,26 +333,26 @@ begin
         j_spimiso                   => ft2u_j_spimiso,
         j_spimosi                   => ft2u_j_spimosi,
         j_testsync                  => ft2u_j_testsync,
-    -- clock input
-        f_ick_p                     => ft2u_f_ick_p, --31MHz
+        -- clock input
+        f_ick_p                     => ft2u_f_ick_p,  -- for phase detection --31MHz
         f_ick_n                     => ft2u_f_ick_n,
-        f_lck_p                     => ft2u_f_lck_p, --127MHz
+        f_lck_p                     => ft2u_f_lck_p,                         --127MHz
         f_lck_n                     => ft2u_f_lck_n,
-        s_jck_p                     => ft2u_s_jck_p, --127MHz
+        s_jck_p                     => ft2u_s_jck_p,  -- main system clock   --127MHz
         s_jck_n                     => ft2u_s_jck_n,
-    -- AUX (same set of pins, switch the direction by UCF pin assignment)
+        -- AUX (same set of pins, switch the direction by UCF pin assignment)
         o_aux_n                     => ft2u_o_aux_n,
         o_aux_p                     => ft2u_o_aux_p,
         i_aux_n                     => ft2u_i_aux_n,
         i_aux_p                     => ft2u_i_aux_p,
-    -- IN
+        -- IN
         i_trg_n                     => ft2u_i_trg_n,  -- opposite to nominal direction
         i_trg_p                     => ft2u_i_trg_p,  -- opposite to nominal direction
         i_ack_n                     => ft2u_i_ack_n,  -- opposite to nominal direction
         i_ack_p                     => ft2u_i_ack_p,  -- opposite to nominal direction
         i_rsv_n                     => open,
         i_rsv_p                     => open,
-    -- OUT
+        -- OUT
         o_clk_n                     => ft2u_o_clk_n,
         o_clk_p                     => ft2u_o_clk_p,
         o_trg_n                     => ft2u_o_trg_n,
@@ -350,29 +361,29 @@ begin
         o_ack_p                     => ft2u_o_ack_p,
         o_rsv_n                     => ft2u_o_rsv_n,
         o_rsv_p                     => ft2u_o_rsv_p,
+        -- LED
         i_ledy_b                    => ft2u_i_ledy_b,
         i_ledg_b                    => ft2u_i_ledg_b,
         o_ledy_b                    => ft2u_o_ledy_b,
         o_ledg_b                    => ft2u_o_ledg_b,
-    -- FMC control and I/O
-        -- m_rst                    => open,
-        -- m_scl                    => open,
-        -- m_sda                    => open,
-        -- m_prsnt                  => open,
+        -- FMC control and I/O
+        --m_rst                     => open,
+        --m_scl                     => open,
+        --m_sda                     => open,
+        --m_prsnt                   => open,
         m_a                         => ft2u_m_a,
         m_d                         => ft2u_m_d,
-        -- m_io                     => open,
+        --m_io                      => open,
         m_wr                        => ft2u_m_wr,
         m_ads                       => ft2u_m_ads,
         m_lck                       => ft2u_m_lck,
-
-    -- spartan3 control (only in FTSW3 / dummy in FTSW2)
+        -- spartan3 control (only in FTSW3 / dummy in FTSW2)
         f_enable                    => open,
         f_entck                     => open,
         f_ftop                      => open,
         f_query                     => open,
         f_prsnt_b                   => open,
-    -- Ethernet                     => open,
+        -- ethernet
         e_rst_b                     => open,
         e_txen                      => open
     );
@@ -417,10 +428,12 @@ begin
     -- Fake the Data Concentrator Aurora Core
     ------------------------------------------------------------
     conc_ins : klm_aurora_intfc
-    generic map(
-        REFSELDYPLL                 => CLKSEL,
+    generic map(        
         SIM_GTPRESET_SPEEDUP        => 1)
     port map(
+        refseldypll                 => CLKSEL,
+        ref_clk0                    => conc_user_clk,
+        ref_clk1                    => conc_user_clk,
         user_clk                    => conc_user_clk,
         sync_clk                    => conc_sync_clk,
         reset                       => conc_reset,
@@ -463,7 +476,10 @@ begin
     ------------------------------------------------------------    
     UUT : klm_scrod
     generic map(
-        NUM_GTS                     => 2)
+        REVISION                    => "A2",--A2, A3, A4
+        CLKSRC                      => "FTSW",--FTSW, OBOSC
+        LINK_TEST                   => '0',
+        B2TT_SIM_SPEEDUP            => '1')
     port map(
         -- TTD/FTSW interface
         ttdclkp                     => scrod_ttdclk_p,
@@ -484,10 +500,15 @@ begin
         mgttxdis                    => scrod_mgttxdis,
         mgtmod2                     => scrod_mgtmod2,
         mgtmod1                     => scrod_mgtmod1,
+        mgtclk0p                    => scrod_ttdclk_p,--!add osc to testbench
+        mgtclk0n                    => scrod_ttdclk_n,
+        mgtclk1p                    => scrod_ttdclk_p,--!add osc to testbench
+        mgtclk1n                    => scrod_ttdclk_n,        
         mgtrxp                      => scrod_mgtrxp,
         mgtrxn                      => scrod_mgtrxn,
         mgttxp                      => scrod_mgttxp,
         mgttxn                      => scrod_mgttxn,
+        ex_trig1                    => scrod_ex_trig1,
         status_fake                 => scrod_status,
         control_fake                => scrod_control
     );
@@ -537,12 +558,12 @@ begin
     ft2u_trg_pcs : process
     begin
         ft2u_i_aux_p(3) <= '0';--not ft2u_i_aux_p(3) after 1 us;
-        wait for 2000 us;
+        wait for 1250 us;
         trg_loop: while(TRUE) loop
             ft2u_i_aux_p(3) <= '1';
-            wait for 1 us;
+            wait for 500 us;
             ft2u_i_aux_p(3) <= '0';
-            wait for 999 us;
+            wait for 500 us;
         end loop;
     end process;
 
@@ -578,6 +599,7 @@ begin
     scrod_mgtlos <= (others => '0');
     scrod_mgtrxp <= conc_txp;
     scrod_mgtrxn <= conc_txn;     
+    scrod_ex_trig1 <= '0';
 
     -----------------------------------------------------------------------------------------------
     -- Miscellaneous Test Bench Stuff

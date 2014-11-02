@@ -93,11 +93,16 @@ port
     TXPOWERDOWN0_IN                         : in   std_logic_vector(1 downto 0);
     TXPOWERDOWN1_IN                         : in   std_logic_vector(1 downto 0);
     --------------------------------- PLL Ports --------------------------------
-    REFSELDYPLL0                            : in std_logic_vector(2 downto 0);
-    -- CLK00_IN                                : in   std_logic;
-    -- CLK01_IN                                : in   std_logic;
-    PLLCLK00_IN                             : in   std_logic;
-    PLLCLK01_IN                             : in   std_logic;    
+    REFSELDYPLL0_IN                         : in std_logic_vector(2 downto 0);
+    REFSELDYPLL1_IN                         : in std_logic_vector(2 downto 0);
+    CLK00_IN                                : in   std_logic;
+    CLK01_IN                                : in   std_logic;
+    CLK10_IN                                : in   std_logic;
+    CLK11_IN                                : in   std_logic;    
+    GCLK00_IN                               : in   std_logic;
+    GCLK01_IN                               : in   std_logic;    
+    GCLK10_IN                               : in   std_logic;
+    GCLK11_IN                               : in   std_logic;    
     GTPRESET0_IN                            : in   std_logic;
     GTPRESET1_IN                            : in   std_logic;
     PLLLKDET0_OUT                           : out  std_logic;
@@ -504,26 +509,26 @@ begin
         TXPOWERDOWN0                    =>      TXPOWERDOWN0_IN,
         TXPOWERDOWN1                    =>      TXPOWERDOWN1_IN,
         --------------------------------- PLL Ports --------------------------------
-        CLK00                           =>      tied_to_ground_i,--CLK00_IN,
-        CLK01                           =>      tied_to_ground_i,--CLK01_IN,
-        CLK10                           =>      tied_to_ground_i,
-        CLK11                           =>      tied_to_ground_i,
+        CLK00                           =>      CLK00_IN,
+        CLK01                           =>      CLK01_IN,
+        CLK10                           =>      CLK10_IN,
+        CLK11                           =>      CLK11_IN,
         CLKINEAST0                      =>      tied_to_ground_i,
         CLKINEAST1                      =>      tied_to_ground_i,
         CLKINWEST0                      =>      tied_to_ground_i,
         CLKINWEST1                      =>      tied_to_ground_i,
-        GCLK00                          =>      tied_to_ground_i,
-        GCLK01                          =>      tied_to_ground_i,
-        GCLK10                          =>      tied_to_ground_i,
-        GCLK11                          =>      tied_to_ground_i,
+        GCLK00                          =>      GCLK00_IN,
+        GCLK01                          =>      GCLK01_IN,
+        GCLK10                          =>      GCLK10_IN,
+        GCLK11                          =>      GCLK11_IN,
         GTPRESET0                       =>      GTPRESET0_IN,
         GTPRESET1                       =>      GTPRESET1_IN,
         GTPTEST0                        =>      "00010000",
         GTPTEST1                        =>      "00010000",
         INTDATAWIDTH0                   =>      tied_to_vcc_i,
         INTDATAWIDTH1                   =>      tied_to_vcc_i,
-        PLLCLK00                        =>      PLLCLK00_IN,
-        PLLCLK01                        =>      PLLCLK01_IN,
+        PLLCLK00                        =>      tied_to_ground_i,
+        PLLCLK01                        =>      tied_to_ground_i,
         PLLCLK10                        =>      tied_to_ground_i,
         PLLCLK11                        =>      tied_to_ground_i,
         PLLLKDET0                       =>      PLLLKDET0_OUT,
@@ -538,8 +543,8 @@ begin
         REFCLKPLL1                      =>      open,
         REFCLKPWRDNB0                   =>      tied_to_vcc_i,
         REFCLKPWRDNB1                   =>      tied_to_vcc_i,
-        REFSELDYPLL0                    =>      tied_to_ground_vec_i(2 downto 0),
-        REFSELDYPLL1                    =>      tied_to_ground_vec_i(2 downto 0),
+        REFSELDYPLL0                    =>      REFSELDYPLL0_IN,
+        REFSELDYPLL1                    =>      REFSELDYPLL1_IN,
         RESETDONE0                      =>      RESETDONE0_OUT,
         RESETDONE1                      =>      RESETDONE1_OUT,
         TSTCLK0                         =>      tied_to_ground_i,

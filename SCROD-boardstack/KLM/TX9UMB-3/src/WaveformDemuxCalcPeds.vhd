@@ -19,10 +19,13 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
-use IEEE.NUMERIC_STD.ALL;
+--use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -87,8 +90,8 @@ signal trigin_i			: std_logic_vector(4 downto 0);
 --signal ped_sa_num_i		: std_logic_vector(21 downto 0);
 signal ped_sa_wval0		: std_logic_vector(11 downto 0);
 signal ped_sa_wval1		: std_logic_vector(11 downto 0);
-signal ped_sa_wval0_tmp		: std_logic_vector(31 downto 0);
-signal ped_sa_wval1_tmp		: std_logic_vector(31 downto 0);
+signal ped_sa_wval0_tmp		: std_logic_vector(15 downto 0);
+signal ped_sa_wval1_tmp		: std_logic_vector(15 downto 0);
 --signal ped_rval0_i		: std_logic_vector(11 downto 0);
 signal ped_arr_addr:std_logic_vector(10 downto 0);
 signal ped_arr_addr0_int : integer:=0;
@@ -112,7 +115,6 @@ signal dmx_ch					:integer:=0;
 signal dmx_sa					:integer:=0;
 signal dmx2_sa					:std_logic_vector(4 downto 0):="00000";
 signal dmx_bit					:integer:=0;
-signal dmx_wav					: WaveTempArray;
 signal fifo_din_i				: std_logic_vector(31 downto 0);
 signal start_ped_sub			: std_logic :='0';
 signal sa_cnt					: integer 	:=0;
@@ -129,6 +131,8 @@ signal jdx						: JDXTempArray;
 
 
 signal pedarray					: WaveformArray;--temp waveform array
+signal pedarray_tmp				: WaveTempArray;
+signal dmx_wav					: WaveTempArray;
 
 
 
@@ -187,7 +191,7 @@ begin
 		ncnt<=x"0000";
 	end if;
 	
-	trigin_i(4)<=trigin_i(3);
+	trigin_i(4)<=trigin_i(3);-- doube clech if the trigger in is long enough
 	trigin_i(3)<=trigin_i(2);
 	trigin_i(2)<=trigin_i(1);
 	trigin_i(1)<=trigin_i(0);
@@ -195,10 +199,10 @@ begin
 	-- give it enough time till the win addr and other information become available
 	
 	if (trigin_i="01111") then
-		asic_no_i<=to_integer(unsigned(asic_no));
-		win_addr_start_i<=to_integer(unsigned(win_addr_start));
+		asic_no_i<=conv_integer(unsigned(asic_no));
+		win_addr_start_i<=conv_integer(unsigned(win_addr_start));
 		navg_i<=navg;
-		ncnt(to_integer(unsigned(navg)))<='1';
+		ncnt(conv_integer(unsigned(navg)))<='1';
 		
 	end if;
 	
@@ -230,15 +234,15 @@ when demuxing =>
 				ncnt_i<=ncnt_i-1;
 			end if;
 			
-			dmx_asic<=to_integer(unsigned(fifo_din(9 downto 6)));
-			dmx_win <=to_integer(unsigned(fifo_din(18 downto 10)))-win_addr_start_i;
-			dmx_sa  <=to_integer(unsigned(fifo_din(4 downto 0)));
+			dmx_asic<=conv_integer(unsigned(fifo_din(9 downto 6)));
+			dmx_win <=conv_integer(unsigned(fifo_din(18 downto 10)))-win_addr_start_i;
+			dmx_sa  <=conv_integer(unsigned(fifo_din(4 downto 0)));
 			dmx2_sa<=fifo_din(4 downto 0);
 			
 		elsif (fifo_din(31 downto 20)=x"DEF") then-- reconstruct the sampels and demux
 			
 			if (fifo_din(19 downto 16)="0000") then
-				dmx2_win<=std_logic_vector(to_unsigned(dmx_win,2));
+				dmx2_win<=conv_std_logic_vector(dmx_win,2);
 			end if;
 			
 			if (fifo_din(19 downto 16)="0001") then -- this is the first bit in the sequence, so prep the address and stuff
@@ -262,23 +266,45 @@ when demuxing =>
 				
 			end if;
 			
-			dmx_bit<=to_integer(unsigned(fifo_din(19 downto 16)));
-			dmx_wav(0)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(0);
-			dmx_wav(1)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(1);
-			dmx_wav(2)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(2);
-			dmx_wav(3)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(3);
-			dmx_wav(4)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(4);
-			dmx_wav(5)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(5);
-			dmx_wav(6)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(6);
-			dmx_wav(7)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(7);
-			dmx_wav(8)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(8);
-			dmx_wav(9)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(9);
-			dmx_wav(10)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(10);
-			dmx_wav(11)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(11);
-			dmx_wav(12)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(12);
-			dmx_wav(13)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(13);
-			dmx_wav(14)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(14);
-			dmx_wav(15)(to_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(15);
+			if (fifo_din(19 downto 16)="0010") then
+				pedarray_tmp((0 ))<=pedarray(conv_integer(jdx(0  )));
+				pedarray_tmp((1 ))<=pedarray(conv_integer(jdx(1  )));
+				pedarray_tmp((2 ))<=pedarray(conv_integer(jdx(2  )));
+				pedarray_tmp((3 ))<=pedarray(conv_integer(jdx(3  )));
+				pedarray_tmp((4 ))<=pedarray(conv_integer(jdx(4  )));
+				pedarray_tmp((5 ))<=pedarray(conv_integer(jdx(5  )));
+				pedarray_tmp((6 ))<=pedarray(conv_integer(jdx(6  )));
+				pedarray_tmp((7 ))<=pedarray(conv_integer(jdx(7  )));
+				pedarray_tmp((8 ))<=pedarray(conv_integer(jdx(8  )));
+				pedarray_tmp((9 ))<=pedarray(conv_integer(jdx(9  )));
+				pedarray_tmp((10))<=pedarray(conv_integer(jdx(10 )));
+				pedarray_tmp((11))<=pedarray(conv_integer(jdx(11 )));
+				pedarray_tmp((12))<=pedarray(conv_integer(jdx(12 )));
+				pedarray_tmp((13))<=pedarray(conv_integer(jdx(13 )));
+				pedarray_tmp((14))<=pedarray(conv_integer(jdx(14 )));
+				pedarray_tmp((15))<=pedarray(conv_integer(jdx(15 )));
+		
+								
+			end if;
+			
+			
+			dmx_bit<=conv_integer(unsigned(fifo_din(19 downto 16)));
+			dmx_wav(0)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(0);
+			dmx_wav(1)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(1);
+			dmx_wav(2)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(2);
+			dmx_wav(3)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(3);
+			dmx_wav(4)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(4);
+			dmx_wav(5)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(5);
+			dmx_wav(6)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(6);
+			dmx_wav(7)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(7);
+			dmx_wav(8)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(8);
+			dmx_wav(9)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(9);
+			dmx_wav(10)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(10);
+			dmx_wav(11)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(11);
+			dmx_wav(12)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(12);
+			dmx_wav(13)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(13);
+			dmx_wav(14)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(14);
+			dmx_wav(15)(conv_integer(unsigned(fifo_din(19 downto 16))))<=fifo_din(15);
 
 		
 		elsif (fifo_din(31 downto 0) = x"FACEFACE") then --end of window.
@@ -290,23 +316,57 @@ when demuxing =>
 	
 		if (fifo_din_i(19 downto 16)="1011") then  -- this is the last sample, add to averaging buffer
 --			pedarray(to_integer(unsigned(jdx(  ))))<=to_integer(unsigned(dmx_wav(  )))+pedarray(to_integer(unsigned(jdx(  ))));
-			pedarray(to_integer(unsigned(jdx(0 ))))<=to_integer(unsigned(dmx_wav(0 )))+pedarray(to_integer(unsigned(jdx(0 ))));
-			pedarray(to_integer(unsigned(jdx(1 ))))<=to_integer(unsigned(dmx_wav(1 )))+pedarray(to_integer(unsigned(jdx(1 ))));
-			pedarray(to_integer(unsigned(jdx(2 ))))<=to_integer(unsigned(dmx_wav(2 )))+pedarray(to_integer(unsigned(jdx(2 ))));
-			pedarray(to_integer(unsigned(jdx(3 ))))<=to_integer(unsigned(dmx_wav(3 )))+pedarray(to_integer(unsigned(jdx(3 ))));
-			pedarray(to_integer(unsigned(jdx(4 ))))<=to_integer(unsigned(dmx_wav(4 )))+pedarray(to_integer(unsigned(jdx(4 ))));
-			pedarray(to_integer(unsigned(jdx(5 ))))<=to_integer(unsigned(dmx_wav(5 )))+pedarray(to_integer(unsigned(jdx(5 ))));
-			pedarray(to_integer(unsigned(jdx(6 ))))<=to_integer(unsigned(dmx_wav(6 )))+pedarray(to_integer(unsigned(jdx(6 ))));
-			pedarray(to_integer(unsigned(jdx(7 ))))<=to_integer(unsigned(dmx_wav(7 )))+pedarray(to_integer(unsigned(jdx(7 ))));
-			pedarray(to_integer(unsigned(jdx(8 ))))<=to_integer(unsigned(dmx_wav(8 )))+pedarray(to_integer(unsigned(jdx(8 ))));
-			pedarray(to_integer(unsigned(jdx(9 ))))<=to_integer(unsigned(dmx_wav(9 )))+pedarray(to_integer(unsigned(jdx(9 ))));
-			pedarray(to_integer(unsigned(jdx(10))))<=to_integer(unsigned(dmx_wav(10)))+pedarray(to_integer(unsigned(jdx(10))));
-			pedarray(to_integer(unsigned(jdx(11))))<=to_integer(unsigned(dmx_wav(11)))+pedarray(to_integer(unsigned(jdx(11))));
-			pedarray(to_integer(unsigned(jdx(12))))<=to_integer(unsigned(dmx_wav(12)))+pedarray(to_integer(unsigned(jdx(12))));
-			pedarray(to_integer(unsigned(jdx(13))))<=to_integer(unsigned(dmx_wav(13)))+pedarray(to_integer(unsigned(jdx(13))));
-			pedarray(to_integer(unsigned(jdx(14))))<=to_integer(unsigned(dmx_wav(14)))+pedarray(to_integer(unsigned(jdx(14))));
-			pedarray(to_integer(unsigned(jdx(15))))<=to_integer(unsigned(dmx_wav(15)))+pedarray(to_integer(unsigned(jdx(15))));
-							
+		
+			pedarray(conv_integer(jdx(0 )))<=dmx_wav(0  )+pedarray_tmp((0 ));
+			pedarray(conv_integer(jdx(1 )))<=dmx_wav(1  )+pedarray_tmp((1 ));
+			pedarray(conv_integer(jdx(2 )))<=dmx_wav(2  )+pedarray_tmp((2 ));
+			pedarray(conv_integer(jdx(3 )))<=dmx_wav(3  )+pedarray_tmp((3 ));
+			pedarray(conv_integer(jdx(4 )))<=dmx_wav(4  )+pedarray_tmp((4 ));
+			pedarray(conv_integer(jdx(5 )))<=dmx_wav(5  )+pedarray_tmp((5 ));
+			pedarray(conv_integer(jdx(6 )))<=dmx_wav(6  )+pedarray_tmp((6 ));
+			pedarray(conv_integer(jdx(7 )))<=dmx_wav(7  )+pedarray_tmp((7 ));
+			pedarray(conv_integer(jdx(8 )))<=dmx_wav(8  )+pedarray_tmp((8 ));
+			pedarray(conv_integer(jdx(9 )))<=dmx_wav(9  )+pedarray_tmp((9 ));
+			pedarray(conv_integer(jdx(10)))<=dmx_wav(10 )+pedarray_tmp((10));
+			pedarray(conv_integer(jdx(11)))<=dmx_wav(11 )+pedarray_tmp((11));
+			pedarray(conv_integer(jdx(12)))<=dmx_wav(12 )+pedarray_tmp((12));
+			pedarray(conv_integer(jdx(13)))<=dmx_wav(13 )+pedarray_tmp((13));
+			pedarray(conv_integer(jdx(14)))<=dmx_wav(14 )+pedarray_tmp((14));
+			pedarray(conv_integer(jdx(15)))<=dmx_wav(15 )+pedarray_tmp((15));
+
+--			pedarray(conv_integer(jdx(0 )))<=dmx_wav(0  )+pedarray(conv_integer(jdx(0  )));
+--			pedarray(conv_integer(jdx(1 )))<=dmx_wav(1  )+pedarray(conv_integer(jdx(1  )));
+--			pedarray(conv_integer(jdx(2 )))<=dmx_wav(2  )+pedarray(conv_integer(jdx(2  )));
+--			pedarray(conv_integer(jdx(3 )))<=dmx_wav(3  )+pedarray(conv_integer(jdx(3  )));
+--			pedarray(conv_integer(jdx(4 )))<=dmx_wav(4  )+pedarray(conv_integer(jdx(4  )));
+--			pedarray(conv_integer(jdx(5 )))<=dmx_wav(5  )+pedarray(conv_integer(jdx(5  )));
+--			pedarray(conv_integer(jdx(6 )))<=dmx_wav(6  )+pedarray(conv_integer(jdx(6  )));
+--			pedarray(conv_integer(jdx(7 )))<=dmx_wav(7  )+pedarray(conv_integer(jdx(7  )));
+--			pedarray(conv_integer(jdx(8 )))<=dmx_wav(8  )+pedarray(conv_integer(jdx(8  )));
+--			pedarray(conv_integer(jdx(9 )))<=dmx_wav(9  )+pedarray(conv_integer(jdx(9  )));
+--			pedarray(conv_integer(jdx(10)))<=dmx_wav(10 )+pedarray(conv_integer(jdx(10 )));
+--			pedarray(conv_integer(jdx(11)))<=dmx_wav(11 )+pedarray(conv_integer(jdx(11 )));
+--			pedarray(conv_integer(jdx(12)))<=dmx_wav(12 )+pedarray(conv_integer(jdx(12 )));
+--			pedarray(conv_integer(jdx(13)))<=dmx_wav(13 )+pedarray(conv_integer(jdx(13 )));
+--			pedarray(conv_integer(jdx(14)))<=dmx_wav(14 )+pedarray(conv_integer(jdx(14 )));
+--			pedarray(conv_integer(jdx(15)))<=dmx_wav(15 )+pedarray(conv_integer(jdx(15 )));
+
+--			pedarray(to_integer(unsigned(jdx(1 ))))<=dmx_wav(1 )))+pedarray(to_integer(unsigned(jdx(1 ))));
+--			pedarray(to_integer(unsigned(jdx(2 ))))<=to_integer(unsigned(dmx_wav(2 )))+pedarray(to_integer(unsigned(jdx(2 ))));
+--			pedarray(to_integer(unsigned(jdx(3 ))))<=to_integer(unsigned(dmx_wav(3 )))+pedarray(to_integer(unsigned(jdx(3 ))));
+--			pedarray(to_integer(unsigned(jdx(4 ))))<=to_integer(unsigned(dmx_wav(4 )))+pedarray(to_integer(unsigned(jdx(4 ))));
+--			pedarray(to_integer(unsigned(jdx(5 ))))<=to_integer(unsigned(dmx_wav(5 )))+pedarray(to_integer(unsigned(jdx(5 ))));
+--			pedarray(to_integer(unsigned(jdx(6 ))))<=to_integer(unsigned(dmx_wav(6 )))+pedarray(to_integer(unsigned(jdx(6 ))));
+--			pedarray(to_integer(unsigned(jdx(7 ))))<=to_integer(unsigned(dmx_wav(7 )))+pedarray(to_integer(unsigned(jdx(7 ))));
+--			pedarray(to_integer(unsigned(jdx(8 ))))<=to_integer(unsigned(dmx_wav(8 )))+pedarray(to_integer(unsigned(jdx(8 ))));
+--			pedarray(to_integer(unsigned(jdx(9 ))))<=to_integer(unsigned(dmx_wav(9 )))+pedarray(to_integer(unsigned(jdx(9 ))));
+--			pedarray(to_integer(unsigned(jdx(10))))<=to_integer(unsigned(dmx_wav(10)))+pedarray(to_integer(unsigned(jdx(10))));
+--			pedarray(to_integer(unsigned(jdx(11))))<=to_integer(unsigned(dmx_wav(11)))+pedarray(to_integer(unsigned(jdx(11))));
+--			pedarray(to_integer(unsigned(jdx(12))))<=to_integer(unsigned(dmx_wav(12)))+pedarray(to_integer(unsigned(jdx(12))));
+--			pedarray(to_integer(unsigned(jdx(13))))<=to_integer(unsigned(dmx_wav(13)))+pedarray(to_integer(unsigned(jdx(13))));
+--			pedarray(to_integer(unsigned(jdx(14))))<=to_integer(unsigned(dmx_wav(14)))+pedarray(to_integer(unsigned(jdx(14))));
+--			pedarray(to_integer(unsigned(jdx(15))))<=to_integer(unsigned(dmx_wav(15)))+pedarray(to_integer(unsigned(jdx(15))));
+--							
 
 --			pedarray(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(0)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN);
 --			pedarray(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN)<=to_integer(unsigned(dmx_wav(1)))+pedarray(dmx_sa+dmx_win*NSamplesPerWin+1*NSamplesPerWin*NWWIN);
@@ -344,10 +404,10 @@ when demuxing =>
 		end if;
 
 	when clear_array =>
-		ncnt_i<=to_integer(unsigned(ncnt));
-		ncnt_int<=to_integer(unsigned(ncnt));
+		ncnt_i<=conv_integer(unsigned(ncnt));
+		ncnt_int<=conv_integer(unsigned(ncnt));
 	   	
-		pedarray(clr_idx+0)<=0;
+		pedarray(clr_idx+0)<=x"0000";
 
 		clr_idx<=clr_idx+1;
 		if (clr_idx<NSamplesPerWin*NWWIN*16-2) then
@@ -358,7 +418,7 @@ when demuxing =>
 		
 	When peds_write =>
 	if (enable='1') then
-		ped_asic<=to_integer(unsigned(asic_no));
+		ped_asic<=conv_integer(unsigned(asic_no));
 		ped_ch  <=0;
 		ped_win <=0;
 		ped_sa  <=0;
@@ -370,25 +430,27 @@ when demuxing =>
 
 	When PedsWRPedAddr1 =>
 		ped_sub_wr_busy<='1';
-		ped_sa_num(21 downto 18)<=std_logic_vector(to_unsigned(ped_asic,4));--		: std_logic_vector(21 downto 0);
-		ped_sa_num(17 downto 14)<=std_logic_vector(to_unsigned(ped_ch,4));--		: std_logic_vector(21 downto 0);
-		ped_sa_num(13 downto 5) <=std_logic_vector(to_unsigned(ped_win+win_addr_start_i,9));
-		ped_sa_num(4  downto 0) <=std_logic_vector(to_unsigned(ped_sa,5));
+		ped_sa_num(21 downto 18)<=conv_std_logic_vector(ped_asic,4);--		: std_logic_vector(21 downto 0);
+		ped_sa_num(17 downto 14)<=conv_std_logic_vector(ped_ch,4);--		: std_logic_vector(21 downto 0);
+		ped_sa_num(13 downto 5) <=conv_std_logic_vector(ped_win+win_addr_start_i,9);
+		ped_sa_num(4  downto 0) <=conv_std_logic_vector(ped_sa,5);
 		dmx_st<=PedsWRPedAddr2;	
 		
 	
 	When PedsWRPedAddr2 =>
-		ped_arr_addr<=ped_sa_num(17 downto 14) & std_logic_vector(to_unsigned(ped_win,2)) & ped_sa_num(4 downto 0);
+		ped_arr_addr<=ped_sa_num(17 downto 14) & conv_std_logic_vector(ped_win,2) & ped_sa_num(4 downto 0);
 		dmx_st<=PedsWRPedAddr3;	
 
 	When PedsWRPedAddr3 =>
-		ped_arr_addr0_int<=  to_integer(unsigned(ped_arr_addr));
-		ped_arr_addr1_int<=1+to_integer(unsigned(ped_arr_addr));
+		ped_arr_addr0_int<=  conv_integer(unsigned(ped_arr_addr));
+		ped_arr_addr1_int<=1+conv_integer(unsigned(ped_arr_addr));
 		dmx_st<=PedsWRPedVal;
 		
 	When PedsWRPedVal =>
-		ped_sa_wval0_tmp<=std_logic_vector(to_unsigned(pedarray(ped_arr_addr0_int),32));
-		ped_sa_wval1_tmp<=std_logic_vector(to_unsigned(pedarray(ped_arr_addr1_int),32));
+--		ped_sa_wval0_tmp<=std_logic_vector(to_unsigned(pedarray(ped_arr_addr0_int),32));
+--		ped_sa_wval1_tmp<=std_logic_vector(to_unsigned(pedarray(ped_arr_addr1_int),32));
+		ped_sa_wval0_tmp<=pedarray(ped_arr_addr0_int);
+		ped_sa_wval1_tmp<=pedarray(ped_arr_addr1_int);
 		dmx_st<=PedsWRPedVal2;
 	
 	When PedsWRPedVal2 =>

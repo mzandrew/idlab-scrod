@@ -17,6 +17,18 @@
 -- 20131121 0.11  port from sp605_b2tt11
 -- 20131126 0.12  test version for 509MHz out
 -- 20131127 0.13  updated b2tt (tagerr and dup header fix) [no 509MHz]
+-- 20140616 0.14  single idelay measurement [ 31 tap => 2.4 ns ]
+-- 20140618 0.15  iserdes version
+-- 20140708 0.16  iserdes version debug
+-- 20140710 0.17  crc8 in rx
+-- 20140710 0.18  new iscan scheme (scan test only)
+-- 20140710 0.19  new iscan scheme (calc test only)
+-- 20140711 0.20  new iscan scheme
+-- 20140711 0.21  new iscan scheme code clean-up
+-- 20140715 0.22  back port for SVN release
+-- 20140722 0.23  b2tt 0.27
+-- 20140723 0.24  b2tt 0.29
+-- 20140917 0.25  b2tt 0.31
 ------------------------------------------------------------------------
 
 library ieee;
@@ -34,8 +46,9 @@ use unisim.vcomponents.ALL;
 ------------------------------------------------------------------------
 entity ml605_b2tt is
   generic (
-    VERSION : integer := 13;
-    ID : std_logic_vector (31 downto 0) := x"4d363035" );  -- "M605"
+    VERSION : integer := 25;
+    ID : std_logic_vector (31 downto 0) := x"4d363035";   -- "M605"
+    USE_CHIPSCOPE : std_logic := '1' );
 
   port (
     ack_n      : out   std_logic;
@@ -58,7 +71,7 @@ entity ml605_b2tt is
 
  -- header     : out   std_logic_vector (3 downto 0);
     pushsw     : in    std_logic_vector (3 downto 1);
-    dipsw      : in    std_logic_vector (2 downto 0) );
+    dipsw      : in    std_logic_vector (7 downto 0) );
 
 end ml605_b2tt;
 
@@ -72,10 +85,13 @@ architecture implementation of ml605_b2tt is
 
   signal sig_led       : std_logic_vector (3 downto 0) := (others => '0');
 
+  signal sig_1Hz       : std_logic := '0';
+  signal cnt_clk       : std_logic_vector (26 downto 0) := (others => '0');
   signal cnt_l         : std_logic_vector (23 downto 0) := (others => '0');
 
   signal sig_raw127    : std_logic := '0';
   signal clk_127       : std_logic := '0';
+  signal clk_254       : std_logic := '0';
   
   signal sig_clkup     : std_logic := '0';
   signal sig_ttup      : std_logic := '0';
@@ -92,8 +108,8 @@ architecture implementation of ml605_b2tt is
   signal cnt_delay     : std_logic_vector (6  downto 0) := (others => '0');
   signal sig_delay     : std_logic := '0';
   -- 65ms (2^23 * 7.8ns) to avoid chattering
-  signal cnt_pushsw    : std_logic_vector (23 downto 0) := (others => '0');
-  signal seq_pushsw    : std_logic_vector (1  downto 0) := "00";
+  signal cnt_pushsw1   : std_logic_vector (23 downto 0) := (others => '0');
+  signal seq_pushsw1   : std_logic_vector (1  downto 0) := "00";
   signal cnt_pushsw2   : std_logic_vector (23 downto 0) := (others => '0');
   signal seq_pushsw2   : std_logic_vector (1  downto 0) := "00";
   signal sig_caldelay  : std_logic := '0';
@@ -117,10 +133,12 @@ architecture implementation of ml605_b2tt is
   signal open_isk      : std_logic := '0';
   signal open_cntbit2  : std_logic_vector (2  downto 0) := (others => '0');
   signal open_sigbit2  : std_logic_vector (1  downto 0) := (others => '0');
-  signal sig_dbg       : std_logic_vector (31 downto 0) := (others => '0');
-  signal open_dbg2     : std_logic_vector (31 downto 0) := (others => '0');
+  signal sig_dbg       : std_logic_vector (95 downto 0) := (others => '0');
 
   signal sig_raw509 : std_logic := '0';
+
+  -- for chipscope
+  signal sig_ilacontrol : std_logic_vector (35 downto 0) := (others => '0');
 begin
   ----------------------------------------------------------------------
   -- clock and LED (lclk, jclk)
@@ -128,12 +146,16 @@ begin
   ---_ods: obufds port map ( i => sig_test, o => clkout_p, ob => clkout_n );
   map_ods: obufds port map ( i => sig_bitddr, o => clkout_p, ob => clkout_n );
 
-  led(7 downto 4) <= sig_dbg(3 downto 0);
-  
   proc_test: process (clk_127)
   begin
     if clk_127'event and clk_127 = '1' then
       sig_test <= not sig_test;
+      if cnt_clk = (127216000/2)-1 then
+        cnt_clk <= (others => '0');
+        sig_1Hz <= not sig_1Hz;
+      else
+        cnt_clk <= cnt_clk + 1;
+      end if;
     end if;
   end process;
   
@@ -146,7 +168,12 @@ begin
   led(1) <= sig_ttup;
   led(3 downto 2) <= sig_trgtag(1 downto 0) when dipsw(0) = '0' else
                      cnt_delay(1 downto 0);
-
+  led(4) <= dipsw(4);
+  led(5) <= '0';
+  led(6) <= '1';
+  led(7) <= sig_1Hz;
+  --led(7 downto 4) <= sig_dbg(3 downto 0);
+  
   reg_dbg(0) <= dipsw(0);      -- manual delay control for debug
   reg_dbg(1) <= dipsw(1);      -- bitslip
   reg_dbg(2) <= sig_delay;     -- incdelay from pushsw(2)
@@ -159,17 +186,17 @@ begin
     if clk_127'event and clk_127 = '1' then
 
       -- SW5: pushsw(2) for "inc"
-      if seq_pushsw(0) = pushsw(2) then
-        cnt_pushsw <= (others => '0');
+      if seq_pushsw1(0) = pushsw(2) then
+        cnt_pushsw1 <= (others => '0');
       else
-        if cnt_pushsw(cnt_pushsw'left) = '0' then
-          cnt_pushsw <= cnt_pushsw + 1;
+        if cnt_pushsw1(cnt_pushsw1'left) = '0' then
+          cnt_pushsw1 <= cnt_pushsw1 + 1;
         else
-          seq_pushsw(0) <= pushsw(2);
+          seq_pushsw1(0) <= pushsw(2);
         end if;
       end if;
-      seq_pushsw(1) <= seq_pushsw(0);
-      sig_delay     <= seq_pushsw(0) and (not seq_pushsw(1));
+      seq_pushsw1(1) <= seq_pushsw1(0);
+      sig_delay      <= seq_pushsw1(0) and (not seq_pushsw1(1));
 
       -- SW8: pushsw(3) for "cal"
       if seq_pushsw2(0) = pushsw(3) then
@@ -181,7 +208,8 @@ begin
           seq_pushsw2(0) <= pushsw(3);
         end if;
       end if;
-      sig_caldelay <= seq_pushsw2(0) and (not seq_pushsw2(1));
+      seq_pushsw2(1) <= seq_pushsw2(0);
+      sig_caldelay   <= seq_pushsw2(0) and (not seq_pushsw2(1));
       
       if pushsw(1) = '1' then
         cnt_delay <= (others => '0');
@@ -197,7 +225,7 @@ begin
   --sma_gpio_p <= sig_trg;
   --sma_gpio_n <= sig_revo;
   sma_gpio_p <= sig_raw127;
-  sma_gpio_n <= sig_raw509;
+  sma_gpio_n <= sig_bitddr;
   
   
   map_b2tt: entity work.b2tt
@@ -217,6 +245,13 @@ begin
       rsvp     => rsv_p,
       rsvn     => rsv_n,
 
+      -- alternative external clock source
+      extclk    => '0',
+      extclkinv => '0',
+      extclkdbl => '0',
+      extdblinv => '0',
+      extclklck => '0',
+
       -- board id
       id       => (others => '0'),
       
@@ -227,7 +262,7 @@ begin
       -- system clock and time
       sysclk   => clk_127,
       rawclk   => sig_raw127,
-      --raw509   => sig_raw509,
+      dblclk   => clk_254,
       utime    => open_utime,
       ctime    => open_ctime,
 
@@ -284,7 +319,22 @@ begin
       cntbit2  => open_cntbit2,
       sigbit2  => open_sigbit2,
       bitddr   => sig_bitddr,
-      dbg      => sig_dbg,
-      dbg2     => open_dbg2 );
+      dbglink  => sig_dbg,
+      dbgerr   => open );
+      --dbgerr   => sig_dbg,
+      --dbglink  => open );
   
+  ----------------------------------------------------------------------
+  -- chipscope
+  ----------------------------------------------------------------------
+  gen_cs: if USE_CHIPSCOPE = '1' generate
+    map_icon: entity work.b2tt_icon port map ( control0 => sig_ilacontrol );
+    map_ila:  entity work.b2tt_ila
+      port map (
+        control => sig_ilacontrol,
+        clk     => clk_254,
+        trig0   => sig_dbg );
+
+  end generate;
+
 end implementation;

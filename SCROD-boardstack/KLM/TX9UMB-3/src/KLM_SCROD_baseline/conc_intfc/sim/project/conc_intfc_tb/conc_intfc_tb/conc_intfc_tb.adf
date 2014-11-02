@@ -46,6 +46,6 @@ conc_intfc_lib=.
 .\..\..\..\script\waves.do=Macro
 
 [HierarchyViewer]
-HierarchyInformation=conc_intfc_tb|behave|0     
+HierarchyInformation=conc_intfc_tb|behave|0         
 ShowHide=ShowTopLevel
 Selected=

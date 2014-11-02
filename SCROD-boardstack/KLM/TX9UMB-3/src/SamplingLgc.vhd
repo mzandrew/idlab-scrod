@@ -100,17 +100,19 @@ if (rising_edge(clk)) then
  next_state<=resetting;
  end if;
   
- if ((dig_win_wrap_i='0' and ( MAIN_CNT > dig_win_start_i and MAIN_CNT < dig_win_end2_i )) or
-	  (dig_win_wrap_i='1' and ( MAIN_CNT > dig_win_start_i or  MAIN_CNT < dig_win_end2_i ))
- ) then -- if no carry over is present
-  wr_ena<=not dig_win_ena;
-  
-  else
-  wr_ena<='1';
+-- if ((dig_win_wrap_i='0' and ( MAIN_CNT > dig_win_start_i and MAIN_CNT < dig_win_end2_i )) or
+--	  (dig_win_wrap_i='1' and ( MAIN_CNT > dig_win_start_i or  MAIN_CNT < dig_win_end2_i ))
+-- ) then -- if no carry over is present
+--  wr_ena<=not dig_win_ena;
+--  
+--  else
+--  wr_ena<='1';
+-- 
+-- end if;
  
- end if;
- 
- 
+   wr_ena<=not dig_win_ena;
+
+
  Case next_state is
   
   --resetting, state, stay here for a few cycles

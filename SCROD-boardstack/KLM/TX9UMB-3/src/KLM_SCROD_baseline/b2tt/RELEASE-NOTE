@@ -1,0 +1,51 @@
+
+b2tt firmware component
+
+* version 0.16 - 2014.06.10 Mikihiko Nakao
+  b2tt version is available at the top, to be used by belle2link 0.01
+
+* version 0.17 - 2014.06.11 Mikihiko Nakao
+  revised debug signals for chipscope
+
+* version 0.19 - 2014.06.18 Mikihiko Nakao
+  Virtex-6 version uses oversampling mode with iserdes to overcome the
+  limited range of idelay
+
+* version 0.22 - 2014.07.10 Mikihiko Nakao
+  CRC8 data check for b2tt_decode, too
+  chipscope signals revised to scan the idelay range manually
+
+* version 0.23 - 2014.07.10 Mikihiko Nakao
+  1-bit slipped case is also treated as a part of idelay tuning to
+  search for the proper idelay
+
+* version 0.26 - 2014.07.15 Mikihiko Nakao
+  Auto delay scan to decide the idelay value
+  b2link down to stop the trigger
+  hold most of the errors until cleared
+  stareset to clear the error without runreste
+  Virtex-5, Spartan-6, Virtex-6 versions checked
+  SVN release, to be used with belle2link 0.08
+
+* version 0.27 - 2014.07.24 Mikihiko Nakao
+  b2tt/b2link up status shows current status,
+  b2tt/b2link down status tells link-up failed in the past
+  tested with HSLB/SP605/ML605/CDC/ECL/KLM boards
+  SVN release, to be used with belle2link 0.08
+
+* version 0.28 - 2014.07.29 Mikihiko Nakao
+  b2tt_symbol definition is revised in a non-backward compatible way
+  to work with ft2u059 and later versions
+  
+* version 0.29 - 2014.08.08 Mikihiko Nakao
+  b2tt_payload is in a separate file to make it usuable for other part
+  of the cascaded FTSW chain
+
+* version 0.30 - 2014.08.27 Mikihiko Nakao
+  runreset fix: now runreset is a 1 revolution cycle long signal
+  busyup handling at runreset is fixed
+
+* version 0.31 - 2014.09.17 Mikihiko Nakao
+  sim_speedup option to bypass most of the iscan initialization code
+  clock may be provided from an external source instead of clk_p/clk_n
+  from RJ45 poart.

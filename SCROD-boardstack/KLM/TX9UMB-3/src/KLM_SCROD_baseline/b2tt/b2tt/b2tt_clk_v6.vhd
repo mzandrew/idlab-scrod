@@ -8,6 +8,7 @@
 -- 20131012 0.05  unification with v5 as much as possible
 -- 20131013 0.06  unification with s6 as much as possible
 -- 20131101 0.07  no more std_logic_arith
+-- 20140715 0.26  USEPLL is no more used
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -23,7 +24,7 @@ use unisim.vcomponents.all;
 entity b2tt_clk is
   generic (
     FLIPCLK  : std_logic := '0';
-    USEPLL   : std_logic := '0';
+    USEPLL   : std_logic := '1'; -- unused (MMCM is anyway needed)
     USEICTRL : std_logic := '1' );
   port (
     clkp     : in  std_logic;
@@ -32,7 +33,8 @@ entity b2tt_clk is
     rawclk   : out std_logic;
     clock    : out std_logic;
     invclock : out std_logic;  -- (only for Spartan-6)
-    -- clk254 : out std_logic;  -- (not enabled by default)
+    dblclock : out std_logic;  -- (only for Virtex-6)
+    dblclockb : out std_logic; -- (only for Virtex-6)
     locked   : out std_logic;
     stat     : out std_logic_vector (1 downto 0) );
 end b2tt_clk;
@@ -57,6 +59,7 @@ architecture implementation of b2tt_clk is
 
   signal sig_xcm127   : std_logic := '0';
   signal sig_xcm254   : std_logic := '0';
+  signal sig_xcm254b  : std_logic := '0';
 
   signal open_clk3    : std_logic := '0';
   signal open_clk4    : std_logic := '0';
@@ -73,15 +76,10 @@ begin
 
   invclock <= '0';
   
-  gen_pll0: if USEPLL = '0' generate
-    rawclk <= sig_127;
-    clock  <= clk_127;
-  end generate;
-  gen_pll1: if USEPLL = '1' generate
-    rawclk <= sig_xcm127;
-    map_127g: bufg  port map ( i => sig_xcm127, o => clock );
-    --map_254g: bufg  port map ( i => sig_xcm254, o => clk254 );
-  end generate;
+  rawclk <= sig_xcm127;
+  map_127g: bufg  port map ( i => sig_xcm127, o => clock );
+  map_254g: bufg  port map ( i => sig_xcm254, o => dblclock );
+  map_254b: bufg  port map ( i => sig_xcm254b, o => dblclockb );
   
   ------------------------------------------------------------------------
   -- MMCM
@@ -94,7 +92,9 @@ begin
       CLKOUT0_DIVIDE_F => 8.0, -- 127.2MHz (only this one is real)
       CLKOUT1_DIVIDE   => 4,   -- 254.4MHz (others are integers)
       CLKOUT2_DIVIDE   => 5,   -- 203.5MHz
-      BANDWIDTH => "OPTIMIZED" )
+      CLKOUT3_DIVIDE   => 4,   -- 254.4MHz
+      CLKOUT3_PHASE    => 180.0,
+      BANDWIDTH => "LOW" )
     port map (
       clkin1   => clk_127,
       rst      => clr_xcm,
@@ -102,7 +102,7 @@ begin
       clkout0  => sig_xcm127,
       clkout1  => sig_xcm254,
       clkout2  => sig_xcm203,
-      clkout3  => open_clk3,
+      clkout3  => sig_xcm254b,
       clkout4  => open_clk4,
       locked   => sta_xcm,
       pwrdwn   => '0',

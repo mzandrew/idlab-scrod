@@ -3,7 +3,7 @@
 --- b2tt.vhd --- Belle II TT-link receiver top
 ---
 --  This firmware is a reference design for a frontend board
---  which is connected to ft3u firmware
+--  which is connected to ft2u firmware
 --
 --  (Note: there are still missing features,
 --         marked with TBI = to be implemented.)
@@ -25,6 +25,22 @@
 --  20140102 0.13  fix for one-pulse err signal, tagerr check ini.values
 --  20140406 0.14  ttup error study
 --  20140409 0.15  crc8 trial
+--  20140607 0.16  b2tt version output
+--  20140611 0.17  revised dbg for chipscope of KLM data concentrator
+--  20140614 0.18  port 0.17 changes to v5 and s6
+--  20140618 0.19  iserdes version for v6
+--  20140704 0.20  interface adjustment for v5 and s6
+--  20140708 0.21  iserdes version for v6 tuning
+--  20140710 0.22  crc8 for rx, ila revised, signals for scan mode
+--  20140710 0.23  no sigslip version (scan test, only for v6)
+--  20140710 0.24  delay scan (calc test, only for v6)
+--  20140710 0.25  delay scan and set (only for v6)
+--  20140715 0.26  improved error handling
+--  20140718 0.27  b2ttup and b2lup should be current status
+--  20140729 0.28  new b2tt_symbols for ft2u059
+--  20140808 0.29  b2tt_payload separated from b2tt_encode
+--  20140827 0.30  one frame long runreset, busyup at runreset fix
+--  20140902 0.31  sim_speedup, optional external clock source
 --
 ------------------------------------------------------------------------
 
@@ -35,7 +51,7 @@ use ieee.numeric_std.all;
 
 entity b2tt is
   generic (
-    VERSION  : integer := 15;
+    VERSION  : integer := 31;
     DEFADDR  : std_logic_vector (19 downto 0) := x"00000";
     FLIPCLK  : std_logic := '0';
     FLIPTRG  : std_logic := '0';
@@ -48,8 +64,13 @@ entity b2tt is
     NBITTIM  : integer range 1 to 32 := 32;
     NBITTAG  : integer range 4 to 32 := 32;
     NBITID   : integer range 4 to 32 := 16;
-    B2LRATE  : integer := 4 );  -- 127 Mbyte / s
+    B2LRATE  : integer := 4;  -- 127 Mbyte / s
+    USEEXTCLK   : std_logic := '0';
+    SIM_SPEEDUP : std_logic := '0' );
   port (
+    -- b2tt version
+    b2ttver  : out std_logic_vector (15 downto 0);
+    
     -- RJ-45
     clkp     : in  std_logic;
     clkn     : in  std_logic;
@@ -60,6 +81,13 @@ entity b2tt is
     ackp     : out std_logic;
     ackn     : out std_logic;
 
+    -- alternative external clock source
+    extclk    : in std_logic;
+    extclkinv : in std_logic;
+    extclkdbl : in std_logic;
+    extdblinv : in std_logic;
+    extclklck : in std_logic;
+
     -- board id
     id       : in  std_logic_vector (NBITID-1 downto 0);
 
@@ -69,8 +97,8 @@ entity b2tt is
 
     -- system clock and time
     sysclk   : out std_logic;
-    sysclk2x : out std_logic;
     rawclk   : out std_logic;
+    dblclk   : out std_logic;
     utime    : out std_logic_vector (NBITTIM-1 downto 0);
     ctime    : out std_logic_vector (26 downto 0);
 
@@ -94,6 +122,7 @@ entity b2tt is
 
     -- revolution
     revo     : out std_logic;
+    --revo3  : out std_logic;
     revo9    : out std_logic;
     revoclk  : out std_logic_vector (10 downto 0);
     revogap  : out std_logic;                       -- TBI
@@ -130,8 +159,8 @@ entity b2tt is
     cntbit2  : out std_logic_vector (2 downto 0);  -- decode
     sigbit2  : out std_logic_vector (1 downto 0);  -- decode
     bitddr   : out std_logic;                      -- encode
-    dbg      : out std_logic_vector (31 downto 0);
-    dbg2     : out std_logic_vector (31 downto 0) );
+    dbglink  : out std_logic_vector (95 downto 0);
+    dbgerr   : out std_logic_vector (95 downto 0) );
 
 end b2tt;
 
@@ -140,7 +169,8 @@ architecture implementation of b2tt is
   signal sig_clkin    : std_logic := '0';
   signal clk_i        : std_logic := '0';
   signal clk_inv      : std_logic := '0';
-  ------ clk_254      : std_logic := '0';
+  signal clk_dbl      : std_logic := '0';
+  signal clk_dblinv   : std_logic := '0';
   ------ sig_254s     : std_logic := '0';
   
   signal regin        : std_logic_vector (5  downto 0) := (others => '0');
@@ -149,7 +179,7 @@ architecture implementation of b2tt is
   signal set_idelay   : std_logic := '0';
   signal reg_slip     : std_logic := '0';
   signal sig_caldelay : std_logic := '0';
-  signal sig_decdelay : std_logic := '0';
+  signal reg_decdelay : std_logic := '0';
 
   signal sta_dcm      : std_logic := '0';
   signal buf_myaddr   : std_logic_vector (19 downto 0) := DEFADDR;
@@ -158,6 +188,7 @@ architecture implementation of b2tt is
   signal sta_ctime    : std_logic_vector (26 downto 0) := (others => '0');
   signal sta_timerr   : std_logic := '0';
   signal sig_runreset : std_logic := '0';
+  signal sig_stareset : std_logic := '0';
   signal sig_trig     : std_logic := '0';
   signal sta_trgtyp   : std_logic_vector (3  downto 0) := (others => '0');
   signal sta_trgtag   : std_logic_vector (31 downto 0) := (others => '0');
@@ -168,38 +199,66 @@ architecture implementation of b2tt is
   signal sta_link     : std_logic := '0';
   signal cnt_linkrst  : std_logic_vector (7  downto 0) := (others => '0');
   signal sig_frame    : std_logic := '0';
+  signal sig_frame3   : std_logic := '0';
   signal sig_frame9   : std_logic := '0';
   signal buf_payload  : std_logic_vector (76 downto 0) := (others => '0');
   signal sig_payload  : std_logic := '0';
   signal sig_idle     : std_logic := '0';
 
   signal cnt_packet   : std_logic_vector (7  downto 0) := (others => '0');
-  signal cnt_delay    : std_logic_vector (11 downto 0) := (others => '0');
-  signal cnt_slip     : std_logic_vector (1  downto 0) := (others => '0');
+  signal cnt_idelay   : std_logic_vector (6  downto 0) := (others => '0');
+  signal cnt_iwidth   : std_logic_vector (5  downto 0) := (others => '0');
+  signal sta_iddr     : std_logic_vector (1  downto 0) := (others => '0');
+  signal sta_rxerr    : std_logic_vector (8  downto 0) := (others => '0');
   signal sta_slip     : std_logic := '0';
-  signal sig_bitddr   : std_logic := '0';
 
-  signal sig_dbg2     : std_logic_vector (31 downto 0) := (others => '0');
   signal sig_rawclk   : std_logic := '0';
 
   signal sta_fifoful  : std_logic := '0';
   signal sta_fifoemp  : std_logic := '0'; -- unused
   signal sta_fifoerr  : std_logic := '0';
+  signal sta_fifordy  : std_logic := '0';
   signal sta_seu      : std_logic_vector (6  downto 0) := (others => '0');
 
   signal sig_trgdat   : std_logic_vector (95 downto 0) := (others => '0');
 
+  signal buf_rxisk    : std_logic := '0';
+  signal buf_rxoctet  : std_logic_vector (7  downto 0) := (others => '0');
+  signal buf_rxbit2   : std_logic_vector (1  downto 0) := (others => '0');
+  signal buf_rxddr    : std_logic := '0';
+  signal buf_rxcnt2   : std_logic_vector (2  downto 0) := (others => '0');
+  signal buf_rxcnto   : std_logic_vector (4  downto 0) := (others => '0');
+  signal buf_rxcntd   : std_logic_vector (3  downto 0) := (others => '0');
+
+  signal cnt_b2ltag   : std_logic_vector (15 downto 0) := (others => '0');
+  signal cnt_b2lwe    : std_logic_vector (15 downto 0) := (others => '0');
+
+  signal buf_txdata   : std_logic_vector (111 downto 0) := (others => '0');
+  signal sig_txfill   : std_logic;
+  
   -- unused signals defined for poor simulator
   signal open_stat    : std_logic_vector (1  downto 0) := (others => '0');
   signal open_drd     : std_logic_vector (95 downto 0) := (others => '0');
   signal open_dbg     : std_logic_vector (17 downto 0) := (others => '0');
   signal open_bit10   : std_logic_vector (9  downto 0) := (others => '0');
-  signal open_cnt2    : std_logic_vector (2  downto 0) := (others => '0');
-  signal open_cnto    : std_logic_vector (3  downto 0) := (others => '0');
-  signal open_isk     : std_logic := '0';
-  signal open_octet   : std_logic_vector (7  downto 0) := (others => '0');
-  signal open_bit2    : std_logic_vector (1  downto 0) := (others => '0');
-  signal open_bitddr  : std_logic := '0';
+  signal buf_txcnt2   : std_logic_vector (2  downto 0) := (others => '0');
+  signal buf_txcnto   : std_logic_vector (3  downto 0) := (others => '0');
+  signal buf_txisk    : std_logic := '0';
+  signal buf_txoctet  : std_logic_vector (7  downto 0) := (others => '0');
+  signal buf_txbit2   : std_logic_vector (1  downto 0) := (others => '0');
+  signal buf_txddr    : std_logic := '0';
+
+  signal sig_dbg1     : std_logic_vector (31 downto 0) := (others => '0');
+  signal sig_dbg2     : std_logic_vector (31 downto 0) := (others => '0');
+  signal sig_dbg3     : std_logic_vector (31 downto 0) := (others => '0');
+
+  signal sig_ilarx    : std_logic_vector (95 downto 0) := (others => '0');
+  signal sig_ilatx    : std_logic_vector (95 downto 0) := (others => '0');
+
+  signal sig_iddrdbg  : std_logic_vector (9  downto 0) := (others => '0');
+  signal sig_crcdbg   : std_logic_vector (8  downto 0) := (others => '0');
+
+  signal sta_badver   : std_logic := '0';
 begin
 
   -- in
@@ -209,24 +268,35 @@ begin
   set_idelay   <= regin(2);
   clr_idelay   <= regin(3);
   sig_caldelay <= regin(4);
-  sig_decdelay <= regin(5);
+  reg_decdelay <= regin(5);
   sta_seu <= seuinit & seubusy & seuactiv & seuscan & seudet & seucrc & seumbe;
 
-  map_clk: entity work.b2tt_clk
-    generic map (
-      FLIPCLK  => FLIPCLK,
-      USEPLL   => USEPLL,
-      USEICTRL => USEICTRL )
-    port map (
-      clkp     => clkp,
-      clkn     => clkn,
-      reset    => '0', -- (probably there's no way to reset)
-      rawclk   => sig_rawclk,  -- out
-      clock    => clk_i,       -- out
-      invclock => clk_inv,     -- out
-      clk254   => sysclk2x, --bmk
-      locked   => sta_dcm,     -- out
-      stat     => open_stat ); -- out
+  gen_useextclk0: if USEEXTCLK = '0' generate
+    map_clk: entity work.b2tt_clk
+      generic map (
+        FLIPCLK  => FLIPCLK,
+        USEPLL   => USEPLL,
+        USEICTRL => USEICTRL )
+      port map (
+        clkp     => clkp,
+        clkn     => clkn,
+        reset    => '0', -- (probably there's no way to reset)
+        rawclk   => sig_rawclk,  -- out
+        clock    => clk_i,       -- out
+        invclock => clk_inv,     -- out
+        dblclock => clk_dbl,     -- out
+        dblclockb => clk_dblinv,     -- out
+        locked   => sta_dcm,     -- out
+        stat     => open_stat ); -- out
+  end generate;
+  gen_useextclk1: if USEEXTCLK = '1' generate
+    clk_i      <= extclk;
+    clk_inv    <= extclkinv;
+    clk_dbl    <= extclkdbl;
+    clk_dblinv <= extdblinv;
+    sta_dcm    <= extclklck;
+    sig_rawclk <= '0';
+  end generate;
 
   sig_trgdat <= sta_fifoerr & sta_ctime(26 downto 0) & sta_trgtyp(3 downto 0) &
                 sta_trgtag(31 downto 0) &
@@ -241,7 +311,7 @@ begin
       wr     => sig_trig,
       din    => sig_trgdat,
       rd     => fifonext,
-      ready  => fifordy,
+      ready  => sta_fifordy,
       dout   => fifodata,      -- out
       drd    => open_drd,      -- out
       err    => sta_fifoerr,   -- out
@@ -249,18 +319,20 @@ begin
       empty  => sta_fifoemp,   -- out
       full   => sta_fifoful ); -- out
       
-      
-  
   map_decode: entity work.b2tt_decode
     generic map (
+      VERSION => VERSION,
       FLIPTRG => FLIPTRG,
       DEFADDR => DEFADDR,
       CLKDIV1 => CLKDIV1,
-      CLKDIV2 => CLKDIV2 )
+      CLKDIV2 => CLKDIV2,
+      SIM_SPEEDUP => SIM_SPEEDUP )
     port map (
       -- input
       clock      => clk_i,
       invclock   => clk_inv,
+      dblclock   => clk_dbl,
+      dblclockb  => clk_dblinv,
       en         => sta_dcm,
       trgp       => trgp,
       trgn       => trgn,
@@ -276,6 +348,7 @@ begin
       
       -- reset out
       runreset   => sig_runreset, -- out
+      stareset   => sig_stareset, -- out
       feereset   => feereset, -- out
       b2lreset   => b2lreset, -- out
       gtpreset   => gtpreset, -- out
@@ -291,94 +364,149 @@ begin
       staoctet   => sta_octet,    -- out
       stalink    => sta_link,     -- out
       cntlinkrst => cnt_linkrst,  -- out
+      badver     => sta_badver,   -- out
       
       -- revolution signal
       frame      => sig_frame,    -- out
+      frame3     => sig_frame3,   -- out
       frame9     => sig_frame9,   -- out
       cntrevoclk => revoclk,      -- out
       divclk1    => divclk1,      -- out
       divclk2    => divclk2,      -- out
-      
+
       -- data out
-      octet      => octet,        -- out
-      isk        => isk,          -- out
+      octet      => buf_rxoctet,  -- out
+      isk        => buf_rxisk,    -- out
       payload    => buf_payload (76 downto 0), -- out
       sigpayload => sig_payload,  -- out
       sigidle    => sig_idle,     -- out
-      cntbit2    => cntbit2,      -- out
+      cntbit2    => buf_rxcnt2,   -- out
+      cntoctet   => buf_rxcnto,   -- out
+      cntdato    => buf_rxcntd,   -- out
       cntpacket  => cnt_packet,   -- out
       
       -- debug input
       manual   => reg_imanual,
       clrdelay => clr_idelay,
-      sigdelay => set_idelay,
+      incdelay => set_idelay,
       regslip  => reg_slip,
-      decdelay => sig_decdelay,
+      decdelay => reg_decdelay,
       caldelay => sig_caldelay,
       
       -- debug output
-      staslip    => sta_slip,   -- out
-      bitddr     => sig_bitddr, -- out
-      bit2       => sigbit2,    -- out
+      bitddr     => buf_rxddr,  -- out
+      bit2       => buf_rxbit2, -- out
       bit10      => open_bit10, -- out
-      cntslip    => cnt_slip,   -- out
-      cntdelay   => cnt_delay,  -- out
-      dbg        => dbg,        -- out
-      dbg2       => sig_dbg2 ); -- out
+      cntdelay   => cnt_idelay,  -- out
+      cntwidth   => cnt_iwidth,  -- out
+      staiddr    => sta_iddr,     -- out
+      starxerr   => sta_rxerr,    -- out
+      iddrdbg    => sig_iddrdbg,  -- out
+      crcdbg     => sig_crcdbg ); -- out
 
+  --- map: b2tt_payload ------------------------------------------------
+
+  map_pa: entity work.b2tt_payload
+    port map (
+      clock     => clk_i,
+      id        => id,
+      myaddr    => buf_myaddr,
+      b2clkup   => sta_dcm,
+      b2ttup    => sta_link,
+      b2plllk   => b2plllk,
+      b2linkup  => b2linkup,
+      b2linkwe  => b2linkwe,
+      b2lnext   => fifonext,
+      b2lclk    => b2lclk,
+      runreset  => sig_runreset,
+      stareset  => sig_stareset,
+      busy      => busy,
+      err       => err,
+      moreerrs  => "00",
+      timerr    => sta_timerr,
+      tag       => sta_trgtag,
+      tagerr    => sta_tagerr,
+      fifoerr   => sta_fifoerr,
+      fifoful   => sta_fifoful,
+      badver    => sta_badver,
+      seu       => sta_seu,
+      cntdelay  => cnt_idelay,
+      cntwidth  => cnt_iwidth,
+      regdbg    => (others => '0'),
+      fillsig   => sig_txfill,
+      cntb2ltag => cnt_b2ltag, -- out
+      cntb2lwe  => cnt_b2lwe,  -- out
+      payload   => buf_txdata ); -- out
+  
   --- map: b2tt_encode -------------------------------------------------
 
   map_encode: entity work.b2tt_encode
     generic map (
       FLIPACK => FLIPACK )
     port map (
-      clock    => clk_i,
-      invclock => clk_inv,
-      frame    => sig_frame,
-      id       => id,
-      myaddr   => buf_myaddr,
-      b2clkup  => sta_dcm,
-      b2ttup   => sta_link,
-      b2plllk  => b2plllk,
-      b2linkup => b2linkup,
-      b2linkwe => b2linkwe,
-      b2lnext  => fifonext,
-      b2lclk   => b2lclk,
-      runreset => sig_runreset,
-      busy     => busy,
-      err      => err,
-      moreerrs => "00",
-      tag      => sta_trgtag,
-      tagerr   => sta_tagerr,
-      fifoerr  => sta_fifoerr,
-      fifoful  => sta_fifoful,
-      seu      => sta_seu,
-      cntdelay => cnt_delay,
-      timerr   => sta_timerr,
-      regdbg   => (others => '0'),
+      clock     => clk_i,
+      invclock  => clk_inv,
+      frame     => sig_frame,
+      --id        => id,
+      --myaddr    => buf_myaddr,
+      --b2clkup   => sta_dcm,
+      --b2ttup    => sta_link,
+      --b2plllk   => b2plllk,
+      --b2linkup  => b2linkup,
+      --b2linkwe  => b2linkwe,
+      --b2lnext   => fifonext,
+      --b2lclk    => b2lclk,
+      runreset  => sig_runreset,
+      --stareset  => sig_stareset,
+      busy      => busy,
+      err       => err,
+      --moreerrs  => "00",
+      --tag       => sta_trgtag,
+      --tagerr    => sta_tagerr,
+      --fifoerr   => sta_fifoerr,
+      --fifoful   => sta_fifoful,
+      --badver    => sta_badver,
+      --seu       => sta_seu,
+      --cntdelay  => cnt_idelay,
+      --cntwidth  => cnt_iwidth,
+      --timerr    => sta_timerr,
+      --regdbg    => (others => '0'),
+      fillsig   => sig_txfill,
+      payload   => buf_txdata,
       
       -- to RJ-45
-      ackp     => ackp,   -- out
-      ackn     => ackn,   -- out
+      ackp      => ackp,   -- out
+      ackn      => ackn,   -- out
       
       -- debug output
-      cntbit2  => open_cnt2,  -- out
-      cntoctet => open_cnto,  -- out
-      isk      => open_isk,   -- out
-      octet    => open_octet, -- out
-      bit2     => open_bit2,  -- out
-      bitddr   => open_bitddr ); -- out
+      cntbit2   => buf_txcnt2,  -- out
+      cntoctet  => buf_txcnto,  -- out
+      isk       => buf_txisk,   -- out
+      octet     => buf_txoctet, -- out
+      bit2      => buf_txbit2,  -- out
+      bitddr    => buf_txddr ); -- out
 
   
   -- out (async)
-  bitddr   <= sig_bitddr;
+
+  -- out
+  rsvp     <= '0';
+  rsvn     <= '0';
+  b2ttver  <= std_logic_vector(to_unsigned(VERSION, 16));
+  
+  octet    <= buf_rxoctet;
+  isk      <= buf_rxisk;
+  sigbit2  <= buf_rxbit2;
+  bitddr   <= buf_rxddr;
+  cntbit2  <= buf_rxcnt2;
+  
   sysclk   <= clk_i;
+  dblclk   <= clk_dbl;
   revo     <= sig_frame;
+  --revo3  <= sig_frame3;
   revo9    <= sig_frame9;
   b2clkup  <= sta_dcm;
   b2ttup   <= sta_link;
-  rsvp     <= '0';
-  rsvn     <= '0';
   utime    <= sta_utime(NBITTIM-1 downto 0);
   ctime    <= sta_ctime;
   runreset <= sig_runreset;
@@ -386,8 +514,64 @@ begin
   trgtyp   <= sta_trgtyp;
   trgtag   <= sta_trgtag;
 
+  fifordy  <= sta_fifordy;
+
   rawclk <= sig_rawclk;
-  --dbg <= sig_dbg72 & sta_dcm & sig_rawclk;
-  dbg2 <= cnt_linkrst & sig_bitddr & sta_slip & cnt_slip & sig_dbg2(19 downto 0);
+
+  -- dbglink for signals to test establishing b2tt link
+  dbglink(95)           <= sta_link;
+  dbglink(94)           <= sta_octet;
+  dbglink(93)           <= sig_payload;
+  dbglink(92)           <= buf_rxddr;
+  dbglink(91 downto 90) <= buf_rxbit2;
+  dbglink(89 downto 82) <= buf_rxoctet;
+  dbglink(81)           <= buf_rxisk;
+  dbglink(80 downto 78) <= buf_rxcnt2;
+  dbglink(77 downto 73) <= buf_rxcnto;
+  dbglink(72)           <= sig_idle;
+  dbglink(71)           <= '0' when cnt_packet(7 downto 4) = 0 else '1';
+  dbglink(70 downto 67) <= cnt_packet(3 downto 0) when sta_link = '1' else
+                           buf_rxcntd;
+
+  dbglink(66)           <= sig_trig;
+  dbglink(65)           <= sig_runreset;
+  dbglink(64 downto 58) <= cnt_idelay;
+  dbglink(57 downto 52) <= cnt_iwidth;
+  dbglink(51 downto 43) <= sta_rxerr;
+  dbglink(42 downto 34) <= sig_crcdbg;
+  dbglink(33 downto 24) <= sig_iddrdbg;
+  dbglink(23 downto 22) <= sta_iddr;
+
+  dbglink(21 downto 19) <= (others => '0');
+
+  dbglink(18 downto 16) <= buf_txcnt2;
+  dbglink(15 downto 12) <= buf_txcnto;
+  dbglink(11)           <= buf_txddr;
+  dbglink(10 downto  9) <= buf_txbit2;
+  dbglink(8)            <= buf_txisk;
+  dbglink(7  downto  0) <= buf_txoctet;
+
+  -- dbgerr for signals to analyze error in the trigger cycle
+  dbgerr(95) <= sta_link; -- b2ttup
+  dbgerr(94) <= sta_octet;
+  dbgerr(93) <= sig_trig;
+  dbgerr(92) <= fifonext;
+  dbgerr(91) <= sta_fifordy;
+  dbgerr(90) <= busy;
+  dbgerr(89) <= err;
+  dbgerr(88) <= sta_fifoerr;
+  dbgerr(87) <= sta_fifoful;
+  dbgerr(86) <= sta_tagerr;
+  dbgerr(85) <= sig_runreset;
+  dbgerr(84 downto 69) <= cnt_b2ltag;
+  dbgerr(68 downto 53) <= cnt_b2lwe;
+  dbgerr(52) <= b2linkup;
+  dbgerr(51) <= sta_dcm; -- b2clkup
+
+  dbgerr(50 downto 37) <= (others => '0');
+  
+  dbgerr(36)           <= buf_rxisk;
+  dbgerr(35 downto 28) <= buf_rxoctet;
+  dbgerr(27 downto  0) <= sta_trgtag(27 downto 0);
   
 end implementation;

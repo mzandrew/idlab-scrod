@@ -1,4 +1,5 @@
 cd C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\conc_intfc\sim\
+
 vlib conc_intfc_lib "./library/conc_intfc_lib.lib"
 
 #IP Cores
@@ -23,6 +24,7 @@ vcom -work conc_intfc_lib .\..\source\conc_intfc_pkg.vhd
 vcom -work conc_intfc_lib .\..\source\trig_chan_calc.vhd
 vcom -work conc_intfc_lib .\..\source\conc_intfc.vhd
 
+vcom -work conc_intfc_lib .\source\b2tt.vhd
 vcom -work conc_intfc_lib .\source\targetx.vhd
 vcom -work conc_intfc_lib .\source\daq_stim.vhd
 vcom -work conc_intfc_lib .\source\aurora_model.vhd
@@ -51,6 +53,10 @@ add wave -noreg -logic {/conc_intfc_tb/stim_enable}
 add wave -noreg -logic {/conc_intfc_tb/b2tt_runreset}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/b2tt_runreset2x}
 add wave -noreg -logic {/conc_intfc_tb/b2tt_gtpreset}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/b2tt_trgtag}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/b2tt_ctime}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/b2tt_utime}
+add wave -noreg -logic {/conc_intfc_tb/b2tt_trgout}
 add wave -noreg -logic {/conc_intfc_tb/b2tt_fifordy}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/b2tt_fifodata}
 add wave -noreg -logic {/conc_intfc_tb/b2tt_fifonext}
@@ -77,7 +83,6 @@ add wave -noreg -hexadecimal -literal {/conc_intfc_tb/rcl_data}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/target_tb}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/target_tb16}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/status_regs}
-add wave -noreg -logic {/conc_intfc_tb/b2tt_runreset'DELAYED~13}
 
 #-------------------------------------------------------------
 wave -divider "/---------------------------" -color 255,255,255
@@ -142,8 +147,12 @@ add wave -noreg -logic {/conc_intfc_tb/UUT/axis_bit}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trg_ch}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trg_ch_valid}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trg_valid}
+add wave -noreg -logic {/conc_intfc_tb/UUT/zrlentrg}
+add wave -noreg -logic {/conc_intfc_tb/UUT/daq_sof_d}
+add wave -noreg -logic {/conc_intfc_tb/UUT/daq_eof_d}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_sof_q}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_eof_q}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_src_rdy_q}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_data_q}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_valid}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_di_addr}
@@ -167,4 +176,4 @@ add wave -noreg -logic {/conc_intfc_tb/UUT/daq_eof}
 
 transcript on
 
-run 5 us;
+run 50 us;

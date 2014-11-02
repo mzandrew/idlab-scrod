@@ -81,6 +81,9 @@ architecture behave of time_order is
     signal dout_q0              : std_logic_vector(TO_WIDTH-1 downto 0)     := (others => '0');
     signal dout_q1              : std_logic_vector(TO_WIDTH-1 downto 0)     := (others => '0');
     
+    signal rdfail_ctr           : std_logic_vector(2 downto 0)            := (others => '1');
+    signal rdfail               : std_logic_vector(1 to TO_NUM_LANES)     := (others => '0');    
+    
     alias lane is cmin(cmin'length-1 downto cmin'length-4);
 
 begin
@@ -134,10 +137,13 @@ begin
 
     -- assert when the output data changes
     out_cmp_d0 <= '0' when dout_q0 = dout_q1 else '1';
-    out_cmp_d1 <= out_cmp_q0 and (not emin);
-    out_cmp_vec <= (others => out_cmp_q0);
+    --out_cmp_d1 <= out_cmp_q0 and (not emin);
+    out_cmp_d1 <= out_cmp_q0 and (not emin) and (not dst_full);
+    --out_cmp_vec <= (others => out_cmp_q0);--? should we use _q1?
+    out_cmp_vec <= (others => out_cmp_q1);--add another clock/output word?
 
-    src_re_d0 <= out_cmp_vec and (not src_epty) and one_hot_ch_t;
+    --src_re_d0 <= out_cmp_vec and (not src_epty) and one_hot_ch_t;
+    src_re_d0 <= ((not src_epty) and out_cmp_vec and one_hot_ch_t) or (rdfail and one_hot_ch_t);
     -------------------------------- ---------------------------
     
 ---------------------------------------------------------------------------------------------------------
@@ -162,9 +168,33 @@ begin
         if (clk'event and clk = '1') then
             src_re_q0 <= src_re_d0;
             dout_q1 <= dout_q0;
-            out_cmp_q0 <= out_cmp_d0;
+            --out_cmp_q0 <= out_cmp_d0;
+            if dst_full = '0' then
+            -- upate with new value
+                out_cmp_q0 <= out_cmp_d0;
+            else
+            --store when destination full so writing continues after
+                out_cmp_q0 <= out_cmp_q0;
+            end if;            
             out_cmp_q1 <= out_cmp_d1;
             out_cmp_q2 <= out_cmp_q1;
+            --keep the logic from freezing, one value is lost
+            if (emin or out_cmp_q1 or dst_full) = '1' then
+            -- reset when empty or read
+                rdfail_ctr <= (others => '1');
+                rdfail <= (others => '0');
+            else
+            -- count idle CEs when not empty
+                if ce = '1' then
+                    rdfail_ctr <= rdfail_ctr - '1';
+                end if;
+                -- force a read for one clock cycle
+                if rdfail_ctr = 0 then-- may need to move outside reset to meet timing
+                    rdfail <= (others => '1');
+                else
+                    rdfail <= (others => '0');
+                end if;
+            end if;            
         end if;
     end process;
 

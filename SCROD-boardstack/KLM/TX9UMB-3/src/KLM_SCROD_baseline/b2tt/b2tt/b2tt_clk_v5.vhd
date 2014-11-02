@@ -35,7 +35,8 @@ entity b2tt_clk is
     rawclk   : out std_logic;
     clock    : out std_logic;
     invclock : out std_logic;  -- (only for Spartan-6)
-    -- clk254 : out std_logic;  -- (not enabled by default)
+    dblclock : out std_logic;  -- (only for Virtex-6)
+    dblclockb : out std_logic; -- (only for Virtex-6)
     locked   : out std_logic;
     stat     : out std_logic_vector (1 downto 0) );
 end b2tt_clk;
@@ -80,6 +81,8 @@ begin
   -- PLL
   ------------------------------------------------------------------------
   invclock <= '0';
+  dblclock <= '0';
+  dblclockb <= '0';
   
   gen_pll0: if USEPLL = '0' generate
     rawclk <= sig_127;
@@ -106,7 +109,7 @@ begin
         rst      => clr_xcm,
         clkfbout => sig_fbpll,
         clkout0  => sig_xcm127,
-        --clkout1  => sig_xcm,
+        --clkout1  => sig_xcm254,
         locked   => sta_pll,
         clkfbin  => clk_fbpll );
   end generate;

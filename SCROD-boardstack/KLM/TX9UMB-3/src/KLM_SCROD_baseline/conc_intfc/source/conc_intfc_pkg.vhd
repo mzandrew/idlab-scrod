@@ -48,8 +48,8 @@ package conc_intfc_pkg is
     --------------------------------------------------------------------------
 	-- Type declarations.
     --------------------------------------------------------------------------
-    type stat_reg_type is array (0 to NUM_STAT_REGS-1) of std_logic_vector(7 downto 0);
-    type ctrl_reg_type is array (0 to NUM_CTRL_REGS-1) of std_logic_vector(7 downto 0);
+    type stat_reg_type is array (0 to NUM_STAT_REGS-1) of std_logic_vector(15 downto 0);
+    type ctrl_reg_type is array (0 to NUM_CTRL_REGS-1) of std_logic_vector(15 downto 0);
 
     --------------------------------------------------------------------------
 	-- Function declarations.

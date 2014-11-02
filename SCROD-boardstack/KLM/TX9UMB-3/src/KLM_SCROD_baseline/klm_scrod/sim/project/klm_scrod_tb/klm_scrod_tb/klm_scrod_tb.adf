@@ -42,12 +42,16 @@ ft2u_lib=.
 [Files]
 /..\..\..\..\script\klm_scrod_tb.do=-1
 /..\..\..\..\script\waves.do=-1
+/..\..\10-16-2014_2ms.asdb=-1
+/..\..\10-16-2014_2ms.awc=-1
 
 [Files.Data]
 .\..\..\..\script\klm_scrod_tb.do=Macro
 .\..\..\..\script\waves.do=Macro
+.\..\10-16-2014_2ms.asdb=Accelerated Waveform File
+.\..\10-16-2014_2ms.awc=Accelerated Waveform Configuration
 
 [HierarchyViewer]
-HierarchyInformation=klm_scrod_tb|behave|0          
+HierarchyInformation=klm_scrod_tb|behave|0                 
 ShowHide=ShowTopLevel
 Selected=

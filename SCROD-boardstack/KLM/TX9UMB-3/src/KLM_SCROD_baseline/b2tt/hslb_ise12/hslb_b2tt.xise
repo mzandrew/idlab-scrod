@@ -46,6 +46,10 @@
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="Implementation"/>
     </file>
+    <file xil_pn:name="../b2tt/b2tt_payload.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
     <file xil_pn:name="../b2tt/b2tt_encode.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="Implementation"/>
@@ -59,6 +63,24 @@
       <association xil_pn:name="Implementation"/>
     </file>
     <file xil_pn:name="../main/mytypes.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="../b2ttv5-coregen/b2tt_icon.ngc" xil_pn:type="FILE_NGC">
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="../b2ttv5-coregen/b2tt_icon.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="../b2ttv5-coregen/b2tt_ila.ngc" xil_pn:type="FILE_NGC">
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="../b2ttv5-coregen/b2tt_ila.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation"/>
+      <association xil_pn:name="Implementation"/>
+    </file>
+    <file xil_pn:name="../b2tt/b2tt_iscan.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation"/>
       <association xil_pn:name="Implementation"/>
     </file>

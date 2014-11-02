@@ -9,7 +9,7 @@
 -- Target Devices: 
 -- Tool versions: 
 -- Description: 
---
+---- add explicit comments on the input here
 -- Dependencies: 
 --
 -- Revision: 

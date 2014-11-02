@@ -134,7 +134,7 @@ begin
         if (tdc_clk'event and tdc_clk = '1') then
             -- local reset for counters
             --tdc_clr_dlyln <= tdc_clr_qn(3) & tdc_clr_dlyln(1 to tdc_clr_dlyln'length-1);
-            tdc_clr_dlyln <= tdc_clr_dlyln(2 to tdc_clr_dlyln'length) & tdc_clr_qn(3);--?distribute instead of shift to meet timing
+            tdc_clr_dlyln <= tdc_clr_dlyln(2 to tdc_clr_dlyln'length) & tdc_clr_qn(3);--?distribute instead of shift to improve timing
             -- clock enable these so timing analyzer understands multi-cycle path -------
             -- top of the chip --------------
             if ce(1) = '1' then

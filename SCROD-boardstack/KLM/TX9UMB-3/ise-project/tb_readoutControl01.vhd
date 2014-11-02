@@ -170,7 +170,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
          OEb : OUT  std_logic
         );
     END COMPONENT;
-  COMPONENT WaveformDemuxCalcPeds
+  COMPONENT WaveformDemuxCalcPedsBRAM
 	PORT(
 		clk : IN std_logic;
 		reset : IN std_logic;
@@ -378,7 +378,7 @@ BEGIN
           ram_busy => internal_ram_busy(0)
         );
 
-	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPeds PORT MAP(
+	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPedsBRAM PORT MAP(
 		clk => clk,
 		reset => PedCalcReset,
 		enable => '1',
@@ -429,14 +429,14 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-      wait for clk_period*10;	
+      wait for clk_period*1;	
 		smp_reset<='1';
-     wait for clk_period*10;	
+     wait for clk_period*1;	
 		smp_reset<='0';
-    wait for clk_period*10;	
+    wait for clk_period*1;	
 		
 PedCalcReset<='1';
-      wait for clk_period*10;
+      wait for clk_period*1;
 PedCalcReset<='0';
 		
 

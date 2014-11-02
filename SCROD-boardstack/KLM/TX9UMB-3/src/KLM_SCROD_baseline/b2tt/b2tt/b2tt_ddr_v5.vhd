@@ -26,44 +26,58 @@ entity b2tt_iddr is
   generic (
     FLIPIN    : std_logic := '0';
     REFFREQ   : real      := 203.546;
-    WRAPCOUNT : integer   := 51 );
+    SLIPBIT   : integer   := 0;     -- 0 for v5/s6, 1 for v6
+    WRAPCOUNT : integer   := 51;    -- 51 for v5, 25 for v6, 170 for s6
+    FULLCOUNT : integer   := 102;   -- *2 for v5/s6, *4 for v6
+    SIM_SPEEDUP : std_logic := '0' ); -- to speedup simulation
+  --
+  -- Virtex-5 and Virtex-6 (both):
+  --   1 tap = 7.8 ns / ((8/5*64)) = 78 ps
+  --   [for V5, idelayctrl clock tick = 7.8 ns / (8/5)]
+  -- Virtex-5: 51 taps to cover the delay range (V5)
+  -- Virtex-6: there is no way to cover half clock width of 3.9ns
+  --   since 31 is the max tap which is about 2.4ns
+  --   => oversample with iserdes for 1.95ns period to be covered
+  --      by 25 taps (cnt_islip=0..3)
+  --
   port (
-    clock    : in  std_logic;
-    invclock : in  std_logic; -- spartan6 only
-    inp      : in  std_logic;
-    inn      : in  std_logic;
-    incdelay : in  std_logic;
-    clrdelay : in  std_logic;
-    sigslip  : in  std_logic;
-    enslip   : in  std_logic;
-    autoslip : in  std_logic;
-    decdelay : in  std_logic; -- debug only (decrement instead of increment)
-    caldelay : in  std_logic; -- spartan6 only
-    staslip  : out std_logic;
-    bitddr   : out std_logic;
-    bit2     : out std_logic_vector (1 downto 0);
-    cntdelay : out std_logic_vector (11 downto 0) );
+    clock     : in  std_logic;
+    invclock  : in  std_logic; -- spartan6 only
+    dblclock  : in  std_logic;  -- virtex6 only
+    dblclockb : in  std_logic; -- virtex6 only
+    inp       : in  std_logic;
+    inn       : in  std_logic;
+    staoctet  : in  std_logic;
+    stacrc8ok : in  std_logic;
+    manual    : in  std_logic;
+    incdelay  : in  std_logic;
+    clrdelay  : in  std_logic;
+    caldelay  : in  std_logic; -- spartan6 only
+    staiddr   : out std_logic_vector (1  downto 0);
+    bitddr    : out std_logic;
+    bit2      : out std_logic_vector (1  downto 0);
+    cntdelay  : out std_logic_vector (6  downto 0);
+    cntwidth  : out std_logic_vector (5  downto 0);
+    iddrdbg   : out std_logic_vector (9  downto 0) );
 
 end b2tt_iddr;
 ------------------------------------------------------------------------
 architecture implementation of b2tt_iddr is
-  signal sig_i      : std_logic := '0';
-  signal sig_q      : std_logic := '0';
-  signal seq_inc    : std_logic_vector (1 downto 0) := "00";
-  signal sig_inc    : std_logic := '0';
-  signal sig_clr    : std_logic := '0';
-  signal cnt_delay  : std_logic_vector (5 downto 0) := "000000";
-  signal cnt_delay2 : std_logic_vector (4 downto 0) := "00000";
+  signal sig_i       : std_logic := '0';
+  signal sig_q       : std_logic := '0';
+  signal sig_inc     : std_logic := '0';
+  signal clr_inc     : std_logic := '0';
+  signal sig_islip   : std_logic := '0';
+  signal clr_islip   : std_logic := '0';
+
   signal sig_raw2   : std_logic_vector (1 downto 0) := "00";
   signal sig_bit2   : std_logic_vector (1 downto 0) := "00";
   signal sta_slip   : std_logic := '0';
   signal buf_bit    : std_logic := '0';
-  signal sig_incdir : std_logic := '1';
+
 begin
   -- in
-  sig_incdir <= not decdelay;
-  
-  mpa_ibufds: ibufds
+  map_ibufds: ibufds
     port map ( o => sig_i, i => inp, ib => inn );
   
   map_idelay: iodelay
@@ -79,9 +93,9 @@ begin
       datain  => '0',
       dataout => sig_q,
       ce  => sig_inc,
-      rst => sig_clr,
+      rst => clr_inc,
       t   => '0',
-      inc => sig_incdir,
+      inc => '1',
       c   => clock );
 
   map_id: iddr
@@ -99,73 +113,54 @@ begin
   sig_bit2(0) <= sig_raw2(0) xor FLIPIN;
   sig_bit2(1) <= sig_raw2(1) xor FLIPIN;
 
-  proc: process (clock)
+  process(clock)
   begin
-    if clock'event and clock = '1' then
-
-      -- incdelay / clrdelay combination
-      
-      seq_inc <= seq_inc(0) & incdelay;
-
-      -- VIRTEX5: idelayctrl clock tick = 7.8 ns / (8/5)
-      -- tap = 7.8 ns / ((8/5*64))
-      -- to cover half clock width (3.9ns): (8/5)*64/2 = about 51 (WRAPCOUNT)
-      
-      if clrdelay = '1' then
-        sig_clr <= '1';
-        cnt_delay2 <= (others => '0');
-      elsif sig_incdir = '1' and seq_inc = "01" and cnt_delay = WRAPCOUNT then
-        sig_clr <= '1';
-        cnt_delay2 <= cnt_delay2 + 1;
-      else
-        sig_clr <= '0';
-      end if;
-
-      if sig_incdir = '1' and seq_inc = "01" and cnt_delay /= WRAPCOUNT then
-        sig_inc <= '1';
-      elsif sig_incdir = '0' and seq_inc = "01" and cnt_delay /= 0 then
-        sig_inc <= '1';
-      else
-        sig_inc <= '0';
-      end if;
-
-      if sig_clr = '1' then
-        cnt_delay <= (others => '0');
-      elsif sig_inc = '1' then
-        if sig_incdir = '1' then
-          cnt_delay <= cnt_delay + 1;
-        else
-          cnt_delay <= cnt_delay - 1;
-        end if;
-      end if;
-
-      -- slip logic
-      if autoslip = '1' and sigslip = '1' then
-        sta_slip <= not sta_slip;
-      elsif autoslip = '0' then
-        sta_slip <= enslip;
-      end if;
-      buf_bit <= sig_bit2(0);
-
-      -- bit2
+    if rising_edge(clock) then
+      -- slipped bit is generated upon clock,
+      -- as asynchronous bit2 was timing-tight
       if sta_slip = '0' then
         bit2 <= sig_bit2;
       else
         bit2 <= buf_bit & sig_bit2(1);
       end if;
-      
-    end if; -- event
+      buf_bit <= sig_bit2(0);
+
+      -- sta_slip
+      if clr_islip = '1' then
+        sta_slip <= '0';
+      elsif sig_islip = '1' then
+        sta_slip <= not sta_slip;
+      end if;
+
+    end if; -- clock
   end process;
   
-  -- bit2 was generated here up to b2tt 0.11, but it is a bit timing-tight
-  --   -- out (buf_bit is sync, sig_bit2 is async)
-  --   bit2 <= sig_bit2 when sta_slip = '0' else buf_bit & sig_bit2(1);
-
-  -- out
-  bitddr   <= sig_q;
-  staslip  <= sta_slip;
-  cntdelay <= sta_slip & cnt_delay2 & cnt_delay;
-      
+  map_iscan: entity work.b2tt_iscan
+    generic map (
+      FLIPIN => FLIPIN,
+      REFFREQ => REFFREQ,
+      SLIPBIT => SLIPBIT,
+      WRAPCOUNT => WRAPCOUNT,
+      FULLCOUNT => FULLCOUNT,
+      SIM_SPEEDUP => SIM_SPEEDUP )
+    port map (
+      -- from/to b2tt_decode
+      clock     => clock,
+      staoctet  => staoctet,
+      stacrc8ok => stacrc8ok,
+      manual    => manual,
+      incdelay  => incdelay,
+      clrdelay  => clrdelay,
+      staiddr   => staiddr,     -- out
+      cntdelay  => cntdelay,    -- out
+      cntwidth  => cntwidth,    -- out
+      iddrdbg   => iddrdbg,     -- out
+      -- from/to b2tt_iddr
+      siginc    => sig_inc,     -- out
+      sigislip  => sig_islip,   -- out
+      clrinc    => clr_inc,     -- out
+      clrislip  => clr_islip) ; -- out
+  
 end implementation;
 
 ------------------------------------------------------------------------
@@ -180,6 +175,7 @@ use unisim.vcomponents.ALL;
 
 entity b2tt_oddr is
   generic (
+    ODELAY   : integer   := 0;
     FLIPOUT  : std_logic := '0';
     REFFREQ  : real      := 203.546 );
   port (
@@ -210,6 +206,7 @@ begin
       REFCLK_FREQUENCY => 203.546,
       HIGH_PERFORMANCE_MODE => FALSE,
       IDELAY_TYPE => "FIXED",
+      ODELAY_VALUE => ODELAY,
       DELAY_SRC   => "O" )
     port map (
       odatain => sig_oq,

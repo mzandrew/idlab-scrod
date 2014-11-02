@@ -25,7 +25,7 @@ use unisim.vcomponents.all;
 entity b2tt_clk is
   generic (
     FLIPCLK  : std_logic := '0';
-    USEPLL   : std_logic := '1';
+    USEPLL   : std_logic := '1'; -- always PLL is used for s6
     USEICTRL : std_logic := '0' );
   port (
     clkp     : in  std_logic;
@@ -33,9 +33,9 @@ entity b2tt_clk is
     reset    : in  std_logic;
     rawclk   : out std_logic;
     clock    : out std_logic;
-    invclock : out std_logic; -- (only for Spartan-6)
-    clk254   : out std_logic; --bmk
- -- clk254s  : out std_logic; -- (only for Spartan-6)
+    invclock : out std_logic;  -- (only for Spartan-6)
+    dblclock : out std_logic;  -- (only for Virtex-6)
+    dblclockb : out std_logic; -- (only for Virtex-6)
     locked   : out std_logic;
     stat     : out std_logic_vector (1 downto 0) );
 end b2tt_clk;
@@ -62,9 +62,8 @@ architecture implementation of b2tt_clk is
   signal sig_xcm127   : std_logic := '0';
   signal sig_xcm127b  : std_logic := '0';
   signal sig_inv127   : std_logic := '0';
-  signal sig_xcm254   : std_logic := '0';--bmk
-  
-  begin
+  signal sig_xcm254   : std_logic := '0';
+begin
   ------------------------------------------------------------------------
   -- clock buffers
   ------------------------------------------------------------------------
@@ -72,7 +71,6 @@ architecture implementation of b2tt_clk is
   
   map_ick: ibufds port map ( o => sig_raw,    i => clkp, ib => clkn );
   map_ig:   bufg  port map ( i => sig_127,    o => clk_127 );
-  map_ig2:   bufg  port map ( i => sig_xcm254,    o => clk254 );--bmk
 
   map_fb:   bufg  port map ( i => sig_fbout,  o => clk_fb  );
   map_203g: bufg  port map ( i => sig_xcm203, o => clk_203 );
@@ -81,16 +79,20 @@ architecture implementation of b2tt_clk is
   -- PLL
   ------------------------------------------------------------------------
 
-  -- PROBABLY USEPLL = '0' DOES NOT WORK FOR SPARTAN 6
+  -- unused in the Spartan 6 design
+--  dblclock  <= '0';
+  dblclockb <= '0';
   
-  gen_pll0: if USEPLL = '0' generate
-    sig_inv127 <= not sig_127;
-    rawclk <= sig_127;
-    clock  <= clk_127;
-    map_invg: bufg  port map ( i => sig_inv127, o => invclock );
-  end generate;
+  -- PROBABLY USEPLL = '0' DOES NOT WORK FOR SPARTAN 6
+    
+  -- gen_pll0: if USEPLL = '0' generate
+  --   sig_inv127 <= not sig_127;
+  --   rawclk <= sig_127;
+  --   clock  <= clk_127;
+  --   map_invg: bufg  port map ( i => sig_inv127, o => invclock );
+  -- end generate;
 
-  gen_pll1: if USEPLL = '1' generate
+  --gen_pll1: if USEPLL = '1' generate
     -- (bufpll is needed if iserdes2 is used)
     -- map_254: bufpll
     --   generic map ( DIVIDE => 2 )
@@ -106,16 +108,18 @@ architecture implementation of b2tt_clk is
     rawclk <= sig_xcm127;
     map_127g: bufg  port map ( i => sig_xcm127,  o => clk_xcm127 );
     map_invg: bufg  port map ( i => sig_xcm127b, o => invclock );
+    map_254g: bufg  port map ( i => sig_xcm254, o => dblclock );--!add
   
     map_pll: pll_base
       generic map (
         CLKIN_PERIOD   => 7.8,  -- F_VCO has to be between 400 - 1000 MHz
-        CLKFBOUT_MULT  => 4,    -- F_VCO = F_CLKIN * CLKFBOUT_MULT
+        CLKFBOUT_MULT  => 8,    -- F_VCO = F_CLKIN * CLKFBOUT_MULT
         DIVCLK_DIVIDE  => 1,    --         / DIVCLK_DIVIDE
-        CLKOUT0_DIVIDE => 4,    -- F_OUT = F_VCO / CLKOUTn_DIVIDE
-        CLKOUT1_DIVIDE => 4,
+        CLKOUT0_DIVIDE => 8,    -- F_OUT = F_VCO / CLKOUTn_DIVIDE
+        CLKOUT1_DIVIDE => 8,
         CLKOUT1_PHASE  => 180.0,
-        CLKOUT2_DIVIDE => 2,--bkm
+        CLKOUT2_DIVIDE => 4,    --!uncommment
+        CLKOUT2_PHASE  => 0.0,  --!add
         --CLKOUT3_DIVIDE => 16,
         --CLKOUT4_DIVIDE => 5,
         BANDWIDTH => "OPTIMIZED" )
@@ -125,12 +129,12 @@ architecture implementation of b2tt_clk is
         clkfbout => sig_fbout,
         clkout0  => sig_xcm127,
         clkout1  => sig_xcm127b,
-        clkout2  => sig_xcm254,--bmk
+        clkout2  => sig_xcm254,--!uncomment
         --clkout3  => sig_clk3,
         --clkout4  => sig_clk4,
         locked   => sta_xcm,
         clkfbin  => clk_fb );
-  end generate;
+  --end generate;
 
   ------------------------------------------------------------------------
   -- no idelayctrl for Spartan 6

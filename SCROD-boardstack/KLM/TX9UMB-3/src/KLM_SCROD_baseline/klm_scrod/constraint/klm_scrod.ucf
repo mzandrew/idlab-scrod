@@ -18,6 +18,9 @@ TIMESPEC TS_SYS_CLK2X = PERIOD "SYS_CLK2X" TS_SYS_CLK / 2 HIGH 50%;
 NET "target_tb*<*><*>" TNM_NET = "TNM_TTB";
 TIMESPEC TS_TTB = PERIOD "TNM_TTB" 100000 ns HIGH 12 ns;
 
+#PIN "aurora_ins/klm_aurora_ins/gtp_wrapper_i/GTP_TILE_INST/gtpa1_dual_i.CLK01" CLOCK_DEDICATED_ROUTE = FALSE;
+#PIN "aurora_ins/klm_aurora_ins/gtp_wrapper_i/GTP_TILE_INST/gtpa1_dual_i.CLK10" CLOCK_DEDICATED_ROUTE = FALSE;
+
 ################################################################
 #Muli-Cycle Path Constraints
 ################################################################
@@ -33,6 +36,7 @@ NET "mgtlos*[*]" TIG;
 NET "mgttxdis*[*]" TIG;
 NET "mgtmod2*[*]" TIG;
 NET "mgtmod1*[*]" TIG;
+NET "ex_trig*" TIG;
 
 # [Clk_0 period * N cycles]
 TIMESPEC TS_CCD_TDC2SYS = FROM "SYS_CLK_GRP" TO "SYS_CLK2X_GRP" TS_SYS_CLK2X DATAPATHONLY;
@@ -46,6 +50,10 @@ TIMESPEC TS_CCD_SYS2TDC = FROM "SYS_CLK2X_GRP" TO "SYS_CLK_GRP" TS_SYS_CLK2X DAT
 # GTP
 ##############################
 INST aurora_ins/klm_aurora_ins/gtp_wrapper_i/gtp_tile_inst/gtpa1_dual_i LOC=GTPA1_DUAL_X0Y1;
+##############################
+#EXT TRIG
+##############################
+NET ex_trig1 LOC=E14 | IOSTANDARD=LVCMOS33 | PULLUP;
 ##############################
 #B2TT
 ##############################
@@ -71,23 +79,27 @@ NET ttdrsvn LOC=AF15 | IOSTANDARD=LVCMOS25;
 ##############################
 #SFP
 ##############################
-NET MGTTXFAULT[1] LOC=G12 | IOSTANDARD=LVCMOS33;
-NET MGTTXDIS[1]   LOC=E10 | IOSTANDARD=LVCMOS33;
-NET MGTMOD2[1]    LOC=D13 | IOSTANDARD=LVCMOS33;
-NET MGTMOD1[1]    LOC=C13 | IOSTANDARD=LVCMOS33;
-NET MGTMOD0[1]    LOC=A13 | IOSTANDARD=LVCMOS33;
-NET MGTLOS[1]     LOC=B5  | IOSTANDARD=LVCMOS33;
-NET MGTTXFAULT[2] LOC=A5  | IOSTANDARD=LVCMOS33;
-NET MGTTXDIS[2]   LOC=G13 | IOSTANDARD=LVCMOS33;
-NET MGTMOD2[2]    LOC=A14 | IOSTANDARD=LVCMOS33;
-NET MGTMOD1[2]    LOC=K12 | IOSTANDARD=LVCMOS33;
-NET MGTMOD0[2]    LOC=J12 | IOSTANDARD=LVCMOS33;
-NET MGTLOS[2]     LOC=J13 | IOSTANDARD=LVCMOS33;
+NET mgtclk0p      LOC = B10;
+NET mgtclk0n      LOC = A10;
+NET mgtclk1p      LOC = D11;
+NET mgtclk1n      LOC = C11;
+NET mgttxfault[1] LOC=G12 | IOSTANDARD=LVCMOS33;
+NET mgttxdis[1]   LOC=E10 | IOSTANDARD=LVCMOS33;
+NET mgtmod2[1]    LOC=D13 | IOSTANDARD=LVCMOS33;
+NET mgtmod1[1]    LOC=C13 | IOSTANDARD=LVCMOS33;
+NET mgtmod0[1]    LOC=A13 | IOSTANDARD=LVCMOS33;
+NET mgtlos[1]     LOC=B5  | IOSTANDARD=LVCMOS33;
+NET mgttxfault[2] LOC=A5  | IOSTANDARD=LVCMOS33;
+NET mgttxdis[2]   LOC=G13 | IOSTANDARD=LVCMOS33;
+NET mgtmod2[2]    LOC=A14 | IOSTANDARD=LVCMOS33;
+NET mgtmod1[2]    LOC=K12 | IOSTANDARD=LVCMOS33;
+NET mgtmod0[2]    LOC=J12 | IOSTANDARD=LVCMOS33;
+NET mgtlos[2]     LOC=J13 | IOSTANDARD=LVCMOS33;
 ##############################
 #Fake
 ##############################
-NET STATUS_FAKE   LOC=F16 | IOSTANDARD=LVCMOS33;
-NET CONTROL_FAKE  LOC=J17 | IOSTANDARD=LVCMOS33;
+NET status_fake   LOC=F16 | IOSTANDARD=LVCMOS33;
+NET control_fake  LOC=J17 | IOSTANDARD=LVCMOS33;
 ##############################
 # TARGET ASIC
 ##############################
