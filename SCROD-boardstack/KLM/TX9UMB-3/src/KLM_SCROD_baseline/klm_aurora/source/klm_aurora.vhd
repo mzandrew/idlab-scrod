@@ -91,8 +91,9 @@ port(
     TXN                 : out std_logic;
     --GTP Reference Clock Interface
     REFSELDYPLL         : in    std_logic_vector(2 downto 0);
-    --GTPD2               : in  std_logic;
-    PLLCLK              : in  std_logic;
+    REFCLK0             : in  std_logic;
+    REFCLK1             : in  std_logic;    
+    GCLK                : in  std_logic;
     -- Error Detection Interface
     HARD_ERR            : out std_logic;
     SOFT_ERR            : out std_logic;
@@ -230,7 +231,9 @@ architecture MAPPED of klm_aurora is
         RXUSRCLK_IN                 : in    std_logic;
         RXUSRCLK2_IN                : in    std_logic;
         REFSELDYPLL                 : in std_logic_vector(2 downto 0);
-        REFCLK                      : in    std_logic;
+        REFCLK0                     : in    std_logic;
+        REFCLK1                     : in    std_logic;
+        GCLK                        : in    std_logic;        
         RXCHARISCOMMA_OUT_unused    : out   std_logic_vector (1 downto 0);
         RXCHARISK_OUT_unused        : out   std_logic_vector (1 downto 0);
         RXDISPERR_OUT_unused        : out   std_logic_vector (1 downto 0);
@@ -532,7 +535,9 @@ begin
         TXUSRCLK_IN                 => SYNC_CLK,
         TXUSRCLK2_IN                => USER_CLK,
         REFSELDYPLL                 => REFSELDYPLL,
-        REFCLK                      => PLLCLK,--GTPD2,
+        REFCLK0                     => REFCLK0,
+        REFCLK1                     => REFCLK1,
+        GCLK                        => GCLK,
         RXCHARISCOMMA_OUT_unused    => rx_char_is_comma_i_unused(1 downto 0),
         RXCHARISK_OUT_unused        => rx_char_is_k_i_unused(1 downto 0),
         RXDISPERR_OUT_unused        => rx_disp_err_i_unused(1 downto 0),

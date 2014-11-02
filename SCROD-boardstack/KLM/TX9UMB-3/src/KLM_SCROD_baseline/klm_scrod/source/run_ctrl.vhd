@@ -38,6 +38,7 @@ architecture behave of run_ctrl is
     signal intfc_bit        : std_logic;
     signal data_q0          : std_logic_vector(15 downto 0);
     signal data_q1          : std_logic_vector(15 downto 0);
+	signal data_q2          : std_logic_vector(15 downto 0);
 
 begin
 
@@ -67,9 +68,10 @@ begin
             intfc_bit <= rx_sof_n xor rx_eof_n xor rx_src_rdy_n;
             data_q0 <= rx_data;
             data_q1 <= data_q0;
+			data_q2 <= data_q1;
             rx_dst_rdy_n <= intfc_bit;
-            ctrl_regs(0) <= data_q1(15 downto 8);
-            ctrl_regs(1) <= data_q1(7 downto 0);
+            ctrl_regs(0) <= data_q1;
+            ctrl_regs(1) <= not data_q2;
     	end if;
     end process;
 

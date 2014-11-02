@@ -1,12 +1,12 @@
 Release 14.6 par P.68d (nt64)
 Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
 
-BL-CEEM-075::  Fri Jun 20 10:58:58 2014
+BL-CEEM-075::  Tue Oct 14 13:06:08 2014
 
 par -filter
 C:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/KLM_SCROD/klm_scrod/chi
-pscope/klm_scrod_b2tt/iseconfig/filter.filter -w -intstyle ise -ol high -mt 4
-klm_scrod_map.ncd klm_scrod.ncd klm_scrod.pcf 
+pscope/klm_scrod_b2tt/iseconfig/filter.filter -w -intstyle ise -ol high -xe n
+-mt off klm_scrod_map.ncd klm_scrod.ncd klm_scrod.pcf 
 
 
 Constraints file: klm_scrod.pcf.
@@ -30,36 +30,39 @@ Device speed data version:  "PRODUCTION 1.23 2013-06-08".
 Device Utilization Summary:
 
 Slice Logic Utilization:
-  Number of Slice Registers:                 1,060 out of 184,304    1%
-    Number used as Flip Flops:               1,058
+  Number of Slice Registers:                 3,958 out of 184,304    2%
+    Number used as Flip Flops:               3,950
     Number used as Latches:                      1
     Number used as Latch-thrus:                  0
-    Number used as AND/OR logics:                1
-  Number of Slice LUTs:                        941 out of  92,152    1%
-    Number used as logic:                      782 out of  92,152    1%
-      Number using O6 output only:             456
-      Number using O5 output only:             149
-      Number using O5 and O6:                  177
+    Number used as AND/OR logics:                7
+  Number of Slice LUTs:                      3,637 out of  92,152    3%
+    Number used as logic:                    3,093 out of  92,152    3%
+      Number using O6 output only:           2,244
+      Number using O5 output only:             213
+      Number using O5 and O6:                  636
       Number used as ROM:                        0
-    Number used as Memory:                      68 out of  21,680    1%
-      Number used as Dual Port RAM:              0
+    Number used as Memory:                     318 out of  21,680    1%
+      Number used as Dual Port RAM:            140
+        Number using O6 output only:            20
+        Number using O5 output only:             0
+        Number using O5 and O6:                120
       Number used as Single Port RAM:            0
-      Number used as Shift Register:            68
-        Number using O6 output only:            59
+      Number used as Shift Register:           178
+        Number using O6 output only:            96
         Number using O5 output only:             1
-        Number using O5 and O6:                  8
-    Number used exclusively as route-thrus:     91
-      Number with same-slice register load:     70
+        Number using O5 and O6:                 81
+    Number used exclusively as route-thrus:    226
+      Number with same-slice register load:    205
       Number with same-slice carry load:        21
       Number with other load:                    0
 
 Slice Logic Distribution:
-  Number of occupied Slices:                   466 out of  23,038    2%
-  Number of MUXCYs used:                       388 out of  46,076    1%
-  Number of LUT Flip Flop pairs used:        1,316
-    Number with an unused Flip Flop:           366 out of   1,316   27%
-    Number with an unused LUT:                 375 out of   1,316   28%
-    Number of fully used LUT-FF pairs:         575 out of   1,316   43%
+  Number of occupied Slices:                 1,717 out of  23,038    7%
+  Number of MUXCYs used:                       768 out of  46,076    1%
+  Number of LUT Flip Flop pairs used:        4,459
+    Number with an unused Flip Flop:         1,036 out of   4,459   23%
+    Number with an unused LUT:                 822 out of   4,459   18%
+    Number of fully used LUT-FF pairs:       2,601 out of   4,459   58%
     Number of slice register sites lost
       to control set restrictions:               0 out of 184,304    0%
 
@@ -70,23 +73,25 @@ Slice Logic Distribution:
   over-mapped for a non-slice resource or if Placement fails.
 
 IO Utilization:
-  Number of bonded IOBs:                        22 out of     396    5%
-    Number of LOCed IOBs:                       22 out of      22  100%
-    IOB Flip Flops:                             10
+  Number of bonded IOBs:                        83 out of     396   20%
+    Number of LOCed IOBs:                       83 out of      83  100%
+    IOB Flip Flops:                             11
     IOB Master Pads:                             1
     IOB Slave Pads:                              1
+    Number of bonded IPADs:                      2 out of      32    6%
+    Number of bonded OPADs:                      2 out of      16   12%
 
 Specific Feature Utilization:
-  Number of RAMB16BWERs:                         1 out of     268    1%
-  Number of RAMB8BWERs:                          0 out of     536    0%
+  Number of RAMB16BWERs:                         3 out of     268    1%
+  Number of RAMB8BWERs:                          2 out of     536    1%
   Number of BUFIO2/BUFIO2_2CLKs:                 0 out of      32    0%
   Number of BUFIO2FB/BUFIO2FB_2CLKs:             0 out of      32    0%
-  Number of BUFG/BUFGMUXs:                       5 out of      16   31%
-    Number used as BUFGs:                        5
+  Number of BUFG/BUFGMUXs:                       6 out of      16   37%
+    Number used as BUFGs:                        6
     Number used as BUFGMUX:                      0
   Number of DCM/DCM_CLKGENs:                     0 out of      12    0%
-  Number of ILOGIC2/ISERDES2s:                   7 out of     586    1%
-    Number used as ILOGIC2s:                     7
+  Number of ILOGIC2/ISERDES2s:                   8 out of     586    1%
+    Number used as ILOGIC2s:                     8
     Number used as ISERDES2s:                    0
   Number of IODELAY2/IODRP2/IODRP2_MCBs:         2 out of     586    1%
     Number used as IODELAY2s:                    2
@@ -99,8 +104,9 @@ Specific Feature Utilization:
   Number of BUFHs:                               0 out of     384    0%
   Number of BUFPLLs:                             0 out of       8    0%
   Number of BUFPLL_MCBs:                         0 out of       4    0%
-  Number of DSP48A1s:                            0 out of     180    0%
-  Number of GTPA1_DUALs:                         0 out of       4    0%
+  Number of DSP48A1s:                            1 out of     180    1%
+  Number of GTPA1_DUALs:                         1 out of       4   25%
+    Number of LOCed GTPA1_DUALs:                 1 out of       1  100%
   Number of ICAPs:                               0 out of       1    0%
   Number of MCBs:                                0 out of       4    0%
   Number of PCIE_A1s:                            0 out of       1    0%
@@ -114,37 +120,54 @@ Specific Feature Utilization:
 Overall effort level (-ol):   High 
 Router effort level (-rl):    High 
 
-PAR will use up to 4 processors
-WARNING:Par:288 - The signal b2tt_ins/trgtyp<3> has no load.  PAR will not attempt to route this signal.
-WARNING:Par:288 - The signal b2tt_ins/trgtyp<2> has no load.  PAR will not attempt to route this signal.
-WARNING:Par:288 - The signal b2tt_ins/trgtyp<1> has no load.  PAR will not attempt to route this signal.
-WARNING:Par:288 - The signal b2tt_ins/trgtyp<0> has no load.  PAR will not attempt to route this signal.
-Starting Multi-threaded Router
+INFO:Timing:3386 - Intersecting Constraints found and resolved.  For more information, see the TSI report.  Please consult the Xilinx
+   Command Line Tools User Guide for information on generating a TSI report.
+Starting initial Timing Analysis.  REAL time: 10 secs 
+Finished initial Timing Analysis.  REAL time: 10 secs 
+
+WARNING:Par:288 - The signal target_tb16<1>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<2>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<3>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<4>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<5>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<6>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<7>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<8>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<9>_IBUF has no load.  PAR will not attempt to route this signal.
+WARNING:Par:288 - The signal target_tb16<10>_IBUF has no load.  PAR will not attempt to route this signal.
+Starting Router
 
 
-Phase  1  : 5520 unrouted;      REAL time: 9 secs 
+Phase  1  : 22186 unrouted;      REAL time: 12 secs 
 
-Phase  2  : 4502 unrouted;      REAL time: 13 secs 
+Phase  2  : 17895 unrouted;      REAL time: 17 secs 
 
-Phase  3  : 1722 unrouted;      REAL time: 17 secs 
+Phase  3  : 6560 unrouted;      REAL time: 35 secs 
 
-Phase  4  : 1722 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 21 secs 
+Phase  4  : 6566 unrouted; (Setup:1937, Hold:0, Component Switching Limit:0)     REAL time: 40 secs 
 
 Updating file: klm_scrod.ncd with current fully routed design.
 
-Phase  5  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 22 secs 
+Phase  5  : 0 unrouted; (Setup:1395, Hold:0, Component Switching Limit:0)     REAL time: 48 secs 
 
-Phase  6  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 22 secs 
+Phase  6  : 0 unrouted; (Setup:1395, Hold:0, Component Switching Limit:0)     REAL time: 48 secs 
 
-Phase  7  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 22 secs 
+Phase  7  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 1 mins 14 secs 
 
-Phase  8  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 22 secs 
+Phase  8  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 1 mins 14 secs 
 
-Phase  9  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 22 secs 
+Phase  9  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 1 mins 14 secs 
 
-Phase 10  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 22 secs 
-Total REAL time to Router completion: 23 secs 
-Total CPU time to Router completion (all processors): 27 secs 
+Phase 10  : 0 unrouted; (Setup:0, Hold:0, Component Switching Limit:0)     REAL time: 1 mins 15 secs 
+Total REAL time to Router completion: 1 mins 15 secs 
+Total CPU time to Router completion: 1 mins 18 secs 
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
 
 Generating "PAR" statistics.
 
@@ -155,16 +178,118 @@ Generating Clock Report
 +---------------------+--------------+------+------+------------+-------------+
 |        Clock Net    |   Resource   |Locked|Fanout|Net Skew(ns)|Max Delay(ns)|
 +---------------------+--------------+------+------+------------+-------------+
-|          sys_clk_ib |  BUFGMUX_X2Y4| No   |  312 |  0.829     |  1.915      |
+|          sys_clk_ib |  BUFGMUX_X2Y1| No   |  867 |  0.830     |  1.916      |
 +---------------------+--------------+------+------+------------+-------------+
-|    icon_control0<0> |  BUFGMUX_X2Y3| No   |   62 |  0.267     |  1.355      |
+|        sys_clk2x_ib |  BUFGMUX_X2Y4| No   |  442 |  0.398     |  1.482      |
++---------------------+--------------+------+------+------------+-------------+
+|    icon_control0<0> |  BUFGMUX_X2Y3| No   |   66 |  0.195     |  1.284      |
 +---------------------+--------------+------+------+------------+-------------+
 |    b2tt_ins/clk_inv |  BUFGMUX_X2Y2| No   |    3 |  0.133     |  1.900      |
 +---------------------+--------------+------+------+------------+-------------+
-|U_icon_pro/U0/iUPDAT |              |      |      |            |             |
-|               E_OUT |         Local|      |    1 |  0.000     |  2.346      |
+|   target_tb_i<1><5> |         Local|      |    1 |  0.000     |  2.360      |
 +---------------------+--------------+------+------+------------+-------------+
-|   icon_control0<13> |         Local|      |    4 |  0.000     |  0.662      |
+|   target_tb_i<1><4> |         Local|      |    1 |  0.000     |  4.832      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<1><3> |         Local|      |    1 |  0.000     |  3.489      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<1><2> |         Local|      |    1 |  0.000     |  4.038      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<1><1> |         Local|      |    1 |  0.000     |  4.117      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<2><5> |         Local|      |    1 |  0.000     |  4.367      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<2><4> |         Local|      |    1 |  0.000     |  4.512      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<2><3> |         Local|      |    1 |  0.000     |  4.382      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<2><2> |         Local|      |    1 |  0.000     |  4.911      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<2><1> |         Local|      |    1 |  0.000     |  4.351      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<3><5> |         Local|      |    1 |  0.000     |  2.645      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<3><4> |         Local|      |    1 |  0.000     |  4.427      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<3><3> |         Local|      |    1 |  0.000     |  6.300      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<3><2> |         Local|      |    1 |  0.000     |  3.300      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<3><1> |         Local|      |    1 |  0.000     |  3.962      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<4><5> |         Local|      |    1 |  0.000     |  3.999      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<4><4> |         Local|      |    1 |  0.000     |  5.755      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<4><3> |         Local|      |    1 |  0.000     |  5.849      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<4><2> |         Local|      |    1 |  0.000     |  4.634      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<4><1> |         Local|      |    1 |  0.000     |  4.586      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<5><5> |         Local|      |    1 |  0.000     |  2.870      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<5><4> |         Local|      |    1 |  0.000     |  5.305      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<5><3> |         Local|      |    1 |  0.000     |  5.838      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<5><2> |         Local|      |    1 |  0.000     |  4.679      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<5><1> |         Local|      |    1 |  0.000     |  3.690      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<6><5> |         Local|      |    1 |  0.000     |  1.858      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<6><4> |         Local|      |    1 |  0.000     |  2.838      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<6><3> |         Local|      |    1 |  0.000     |  3.045      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<6><2> |         Local|      |    1 |  0.000     |  5.327      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<6><1> |         Local|      |    1 |  0.000     |  4.348      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<7><5> |         Local|      |    1 |  0.000     |  4.482      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<7><4> |         Local|      |    1 |  0.000     |  7.104      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<7><3> |         Local|      |    1 |  0.000     |  6.732      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<7><2> |         Local|      |    1 |  0.000     |  3.722      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<7><1> |         Local|      |    1 |  0.000     |  3.782      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<8><5> |         Local|      |    1 |  0.000     |  2.374      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<8><4> |         Local|      |    1 |  0.000     |  2.612      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<8><3> |         Local|      |    1 |  0.000     |  3.124      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<8><2> |         Local|      |    1 |  0.000     |  3.217      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<8><1> |         Local|      |    1 |  0.000     |  3.220      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<9><5> |         Local|      |    1 |  0.000     |  3.699      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<9><4> |         Local|      |    1 |  0.000     |  4.685      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<9><3> |         Local|      |    1 |  0.000     |  3.919      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<9><2> |         Local|      |    1 |  0.000     |  2.605      |
++---------------------+--------------+------+------+------------+-------------+
+|   target_tb_i<9><1> |         Local|      |    1 |  0.000     |  2.124      |
++---------------------+--------------+------+------+------------+-------------+
+|  target_tb_i<10><5> |         Local|      |    1 |  0.000     |  3.493      |
++---------------------+--------------+------+------+------------+-------------+
+|  target_tb_i<10><4> |         Local|      |    1 |  0.000     |  4.158      |
++---------------------+--------------+------+------+------------+-------------+
+|  target_tb_i<10><3> |         Local|      |    1 |  0.000     |  3.269      |
++---------------------+--------------+------+------+------------+-------------+
+|  target_tb_i<10><2> |         Local|      |    1 |  0.000     |  2.526      |
++---------------------+--------------+------+------+------------+-------------+
+|  target_tb_i<10><1> |         Local|      |    1 |  0.000     |  3.016      |
++---------------------+--------------+------+------+------------+-------------+
+|U_icon_pro/U0/iUPDAT |              |      |      |            |             |
+|               E_OUT |         Local|      |    1 |  0.000     |  2.125      |
++---------------------+--------------+------+------+------------+-------------+
+|   icon_control0<13> |         Local|      |    4 |  0.000     |  0.620      |
 +---------------------+--------------+------+------+------------+-------------+
 
 * Net Skew is the difference between the minimum and maximum routing
@@ -177,7 +302,7 @@ for example SLICE loads not FF loads.
 
 Timing Score: 0 (Setup: 0, Hold: 0, Component Switching Limit: 0)
 
-Number of Timing Constraints that were not applied: 4
+Number of Timing Constraints that were not applied: 7
 
 Asterisk (*) preceding a constraint indicates it was not met.
    This may be due to a setup or hold violation.
@@ -186,37 +311,63 @@ Asterisk (*) preceding a constraint indicates it was not met.
   Constraint                                |    Check    | Worst Case |  Best Case | Timing |   Timing   
                                             |             |    Slack   | Achievable | Errors |    Score   
 ----------------------------------------------------------------------------------------------------------
-  TS_b2tt_ins_rawclk = PERIOD TIMEGRP "b2tt | SETUP       |     0.408ns|     7.452ns|       0|           0
-  _ins_rawclk" TS_TTD_CLK HIGH 50%          | HOLD        |     0.195ns|            |       0|           0
+  TS_b2tt_ins_gen_useextclk0_map_clk_sig_xc | SETUP       |     0.232ns|     3.698ns|       0|           0
+  m254 = PERIOD TIMEGRP         "b2tt_ins_g | HOLD        |     0.224ns|            |       0|           0
+  en_useextclk0_map_clk_sig_xcm254" TS_TTD_ | MINPERIOD   |     0.014ns|     3.916ns|       0|           0
+  CLK / 2 HIGH 50%                          |             |            |            |        |            
 ----------------------------------------------------------------------------------------------------------
-  TS_TTD_CLK = PERIOD TIMEGRP "TTD_CLK" 127 | MINLOWPULSE |     4.526ns|     3.334ns|       0|           0
-  .216 MHz HIGH 50%                         |             |            |            |        |            
+  TS_SYS_CLK2X = PERIOD TIMEGRP "SYS_CLK2X" | MINPERIOD   |     0.014ns|     3.916ns|       0|           0
+   TS_SYS_CLK / 2 HIGH 50%                  |             |            |            |        |            
 ----------------------------------------------------------------------------------------------------------
-  TS_b2tt_ins_map_clk_sig_xcm127b = PERIOD  | MINPERIOD   |     6.130ns|     1.730ns|       0|           0
-  TIMEGRP         "b2tt_ins_map_clk_sig_xcm |             |            |            |        |            
-  127b" TS_TTD_CLK PHASE 3.93032323 ns HIGH |             |            |            |        |            
-           50%                              |             |            |            |        |            
+  TS_b2tt_ins_rawclk = PERIOD TIMEGRP "b2tt | SETUP       |     0.681ns|     7.180ns|       0|           0
+  _ins_rawclk" TS_TTD_CLK HIGH 50%          | HOLD        |     0.235ns|            |       0|           0
 ----------------------------------------------------------------------------------------------------------
-  TS_U_TO_J = MAXDELAY FROM TIMEGRP "U_CLK" | SETUP       |    10.624ns|     4.376ns|       0|           0
-   TO TIMEGRP "J_CLK" 15 ns                 | HOLD        |     1.676ns|            |       0|           0
+  TS_CCD_TDC2SYS = MAXDELAY FROM TIMEGRP "S | SETUP       |     1.552ns|     2.378ns|       0|           0
+  YS_CLK_GRP" TO TIMEGRP         "SYS_CLK2X | HOLD        |     0.521ns|            |       0|           0
+  _GRP" TS_SYS_CLK2X DATAPATHONLY           |             |            |            |        |            
 ----------------------------------------------------------------------------------------------------------
-  TS_U_TO_U = MAXDELAY FROM TIMEGRP "U_CLK" | SETUP       |    14.048ns|     0.952ns|       0|           0
-   TO TIMEGRP "U_CLK" 15 ns                 | HOLD        |     0.492ns|            |       0|           0
+  TS_SYS_CLK = PERIOD TIMEGRP "SYS_CLK" 7.8 | MINPERIOD   |     1.611ns|     6.250ns|       0|           0
+  61 ns HIGH 50%                            |             |            |            |        |            
 ----------------------------------------------------------------------------------------------------------
-  TS_J_CLK = PERIOD TIMEGRP "J_CLK" 30 ns H | SETUP       |    17.539ns|    12.461ns|       0|           0
-  IGH 50%                                   | HOLD        |     0.333ns|            |       0|           0
+  TS_CCD_SYS2TDC = MAXDELAY FROM TIMEGRP "S | SETUP       |     2.511ns|     1.419ns|       0|           0
+  YS_CLK2X_GRP" TO TIMEGRP         "SYS_CLK | HOLD        |     0.465ns|            |       0|           0
+  _GRP" TS_SYS_CLK2X DATAPATHONLY           |             |            |            |        |            
 ----------------------------------------------------------------------------------------------------------
-  PATH "TS_D2_TO_T2_ila_pro_0_path" TIG     | SETUP       |         N/A|     3.567ns|     N/A|           0
+  TS_TTD_CLK = PERIOD TIMEGRP "TTD_CLK" 7.8 | MINLOWPULSE |     4.526ns|     3.334ns|       0|           0
+  61 ns HIGH 50%                            |             |            |            |        |            
 ----------------------------------------------------------------------------------------------------------
-  PATH "TS_J2_TO_D2_ila_pro_0_path" TIG     | N/A         |         N/A|         N/A|     N/A|         N/A
+  TS_TDC_2X = MAXDELAY FROM TIMEGRP "TDC_2X | SETUP       |     5.911ns|     9.811ns|       0|           0
+  _GRP" TO TIMEGRP "TDC_2X_GRP"         TS_ | HOLD        |     0.436ns|            |       0|           0
+  TTD_CLK * 2                               |             |            |            |        |            
+----------------------------------------------------------------------------------------------------------
+  TS_b2tt_ins_gen_useextclk0_map_clk_sig_xc | MINPERIOD   |     6.131ns|     1.730ns|       0|           0
+  m127b = PERIOD TIMEGRP         "b2tt_ins_ |             |            |            |        |            
+  gen_useextclk0_map_clk_sig_xcm127b" TS_TT |             |            |            |        |            
+  D_CLK PHASE 3.9305         ns HIGH 50%    |             |            |            |        |            
+----------------------------------------------------------------------------------------------------------
+  TS_U_TO_J = MAXDELAY FROM TIMEGRP "U_CLK" | SETUP       |    11.041ns|     3.959ns|       0|           0
+   TO TIMEGRP "J_CLK" 15 ns                 | HOLD        |     1.429ns|            |       0|           0
+----------------------------------------------------------------------------------------------------------
+  TS_U_TO_U = MAXDELAY FROM TIMEGRP "U_CLK" | SETUP       |    14.085ns|     0.915ns|       0|           0
+   TO TIMEGRP "U_CLK" 15 ns                 | HOLD        |     0.419ns|            |       0|           0
+----------------------------------------------------------------------------------------------------------
+  TS_J_CLK = PERIOD TIMEGRP "J_CLK" 30 ns H | SETUP       |    21.700ns|     8.300ns|       0|           0
+  IGH 50%                                   | HOLD        |     0.299ns|            |       0|           0
+----------------------------------------------------------------------------------------------------------
+  TS_TTB = PERIOD TIMEGRP "TNM_TTB" 100000  | MINHIGHPULSE| 98208.333ns|  1791.666ns|       0|           0
+  ns HIGH 12 ns                             |             |            |            |        |            
+----------------------------------------------------------------------------------------------------------
+  PATH "TS_J_TO_D_path" TIG                 | SETUP       |         N/A|     8.643ns|     N/A|           0
+----------------------------------------------------------------------------------------------------------
+  PATH "TS_D_TO_J_path" TIG                 | SETUP       |         N/A|     3.982ns|     N/A|           0
+----------------------------------------------------------------------------------------------------------
+  PATH "TS_J4_TO_D2_ila_pro_0_path" TIG     | MAXDELAY    |         N/A|     3.658ns|     N/A|           0
 ----------------------------------------------------------------------------------------------------------
   PATH "TS_J3_TO_D2_ila_pro_0_path" TIG     | N/A         |         N/A|         N/A|     N/A|         N/A
 ----------------------------------------------------------------------------------------------------------
-  PATH "TS_J4_TO_D2_ila_pro_0_path" TIG     | MAXDELAY    |         N/A|     5.216ns|     N/A|           0
+  PATH "TS_J2_TO_D2_ila_pro_0_path" TIG     | N/A         |         N/A|         N/A|     N/A|         N/A
 ----------------------------------------------------------------------------------------------------------
-  PATH "TS_J_TO_D_path" TIG                 | SETUP       |         N/A|     9.573ns|     N/A|           0
-----------------------------------------------------------------------------------------------------------
-  PATH "TS_D_TO_J_path" TIG                 | MAXDELAY    |         N/A|     4.457ns|     N/A|           0
+  PATH "TS_D2_TO_T2_ila_pro_0_path" TIG     | SETUP       |         N/A|     3.347ns|     N/A|           0
 ----------------------------------------------------------------------------------------------------------
 
 
@@ -230,10 +381,25 @@ Derived Constraints for TS_TTD_CLK
 |           Constraint          | Requirement |-------------+-------------|-------------+-------------|-------------+-------------|
 |                               |             |   Direct    | Derivative  |   Direct    | Derivative  |   Direct    | Derivative  |
 +-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
-|TS_TTD_CLK                     |      7.861ns|      3.334ns|      7.452ns|            0|            0|            0|        50685|
-| TS_b2tt_ins_map_clk_sig_xcm127|      7.861ns|      1.730ns|          N/A|            0|            0|            0|            0|
-| b                             |             |             |             |             |             |             |             |
-| TS_b2tt_ins_rawclk            |      7.861ns|      7.452ns|          N/A|            0|            0|        50685|            0|
+|TS_TTD_CLK                     |      7.861ns|      3.334ns|      7.832ns|            0|            0|            0|       133283|
+| TS_TDC_2X                     |     15.722ns|      9.811ns|          N/A|            0|            0|        32514|            0|
+| TS_b2tt_ins_gen_useextclk0_map|      7.861ns|      1.730ns|          N/A|            0|            0|            0|            0|
+| _clk_sig_xcm127b              |             |             |             |             |             |             |             |
+| TS_b2tt_ins_rawclk            |      7.861ns|      7.180ns|          N/A|            0|            0|        95973|            0|
+| TS_b2tt_ins_gen_useextclk0_map|      3.930ns|      3.916ns|          N/A|            0|            0|         4796|            0|
+| _clk_sig_xcm254               |             |             |             |             |             |             |             |
++-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
+
+Derived Constraints for TS_SYS_CLK
++-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
+|                               |   Period    |       Actual Period       |      Timing Errors        |      Paths Analyzed       |
+|           Constraint          | Requirement |-------------+-------------|-------------+-------------|-------------+-------------|
+|                               |             |   Direct    | Derivative  |   Direct    | Derivative  |   Direct    | Derivative  |
++-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
+|TS_SYS_CLK                     |      7.861ns|      6.250ns|      7.832ns|            0|            0|            0|           41|
+| TS_SYS_CLK2X                  |      3.930ns|      3.916ns|      2.378ns|            0|            0|            0|           41|
+|  TS_CCD_TDC2SYS               |      3.930ns|      2.378ns|          N/A|            0|            0|           31|            0|
+|  TS_CCD_SYS2TDC               |      3.930ns|      1.419ns|          N/A|            0|            0|           10|            0|
 +-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
 All constraints were met.
@@ -248,20 +414,20 @@ Generating Pad Report.
 
 All signals are completely routed.
 
-WARNING:Par:283 - There are 4 loadless signals in this design. This design will cause Bitgen to issue DRC warnings.
+WARNING:Par:283 - There are 10 loadless signals in this design. This design will cause Bitgen to issue DRC warnings.
 
-Total REAL time to PAR completion: 24 secs 
-Total CPU time to PAR completion (all processors): 28 secs 
+Total REAL time to PAR completion: 1 mins 17 secs 
+Total CPU time to PAR completion: 1 mins 20 secs 
 
-Peak Memory Usage:  530 MB
+Peak Memory Usage:  781 MB
 
 Placer: Placement generated during map.
 Routing: Completed - No errors found.
 Timing: Completed - No errors found.
 
 Number of error messages: 0
-Number of warning messages: 6
-Number of info messages: 0
+Number of warning messages: 12
+Number of info messages: 1
 
 Writing design to file klm_scrod.ncd
 

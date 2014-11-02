@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------
 --
--- sp605_b2tt.vhd --- B2TT receiver test with SP605 evaluation board
+-- sp605_b2tt.vhd --- B2TT receiver example with SP605 evaluation board
 --
 -- Mikihiko Nakao, KEK IPNS
 --
@@ -16,6 +16,11 @@
 -- 20131120 0.10  fix (varaible_from_zero, reset after 170, cal after 1024)
 -- 20131121 0.11  decdelay to test the boundary
 -- 20131127 0.12  updated b2tt (tagerr and duplicated header fix)
+-- 20140711 0.13  updated b2tt 0.25 (iscan)
+-- 20140714 0.14  directory rearranged
+-- 20140722 0.15  b2tt 0.27
+-- 20140808 0.16  b2tt 0.29
+-- 20140917 0.17  b2tt 0.31
 ------------------------------------------------------------------------
 
 library ieee;
@@ -33,8 +38,9 @@ use unisim.vcomponents.ALL;
 ------------------------------------------------------------------------
 entity sp605_b2tt is
   generic (
-    VERSION : integer := 12;
-    ID : std_logic_vector (31 downto 0) := x"53363035" );  -- "S605"
+    VERSION : integer := 17;
+    ID : std_logic_vector (31 downto 0) := x"53363035";  -- "S605"
+    USE_CHIPSCOPE : std_logic := '1' );
 
   port (
     ack_n      : out   std_logic;
@@ -75,6 +81,7 @@ architecture implementation of sp605_b2tt is
 
   signal sig_raw127    : std_logic := '0';
   signal clk_127       : std_logic := '0';
+  signal clk_254       : std_logic := '0';
   
   signal sig_clkup     : std_logic := '0';
   signal sig_ttup      : std_logic := '0';
@@ -116,9 +123,10 @@ architecture implementation of sp605_b2tt is
   signal open_isk      : std_logic := '0';
   signal open_cntbit2  : std_logic_vector (2  downto 0) := (others => '0');
   signal open_sigbit2  : std_logic_vector (1  downto 0) := (others => '0');
-  signal sig_dbg       : std_logic_vector (31 downto 0) := (others => '0');
-  signal open_dbg2     : std_logic_vector (31 downto 0) := (others => '0');
+  signal sig_dbg       : std_logic_vector (95 downto 0) := (others => '0');
 
+  -- for chipscope
+  signal sig_ilacontrol : std_logic_vector (35 downto 0) := (others => '0');
 begin
   ----------------------------------------------------------------------
   -- clock and LED (lclk, jclk)
@@ -212,6 +220,13 @@ begin
       rsvp     => rsv_p,
       rsvn     => rsv_n,
 
+      -- alternative external clock source
+      extclk    => '0',
+      extclkinv => '0',
+      extclkdbl => '0',
+      extdblinv => '0',
+      extclklck => '0',
+
       -- board id
       id       => (others => '0'),
       
@@ -222,6 +237,7 @@ begin
       -- system clock and time
       sysclk   => clk_127,
       rawclk   => sig_raw127,
+      dblclk   => clk_254,
       utime    => open_utime,
       ctime    => open_ctime,
 
@@ -278,7 +294,22 @@ begin
       cntbit2  => open_cntbit2,
       sigbit2  => open_sigbit2,
       bitddr   => sig_bitddr,
-      dbg      => sig_dbg,
-      dbg2     => open_dbg2 );
+      dbglink  => sig_dbg,
+      dbgerr   => open );
+      --dbgerr   => sig_dbg,
+      --dbglink  => open );
   
+  ----------------------------------------------------------------------
+  -- chipscope
+  ----------------------------------------------------------------------
+  gen_cs: if USE_CHIPSCOPE = '1' generate
+    map_icon: entity work.b2tt_icon port map ( control0 => sig_ilacontrol );
+    map_ila:  entity work.b2tt_ila
+      port map (
+        control => sig_ilacontrol,
+        clk     => clk_127,
+        trig0   => sig_dbg );
+
+  end generate;
+
 end implementation;

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <report-views version="2.0" >
  <header>
-  <DateModified>2014-06-20T11:20:52</DateModified>
+  <DateModified>2014-10-14T13:04:29</DateModified>
   <ModuleName>klm_scrod</ModuleName>
-  <SummaryTimeStamp>2014-06-20T10:30:05</SummaryTimeStamp>
+  <SummaryTimeStamp>2014-10-14T12:55:23</SummaryTimeStamp>
   <SavedFilePath>C:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/KLM_SCROD/klm_scrod/chipscope/klm_scrod_b2tt/iseconfig/klm_scrod.xreport</SavedFilePath>
   <ImplementationReportsDirectory>C:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/KLM_SCROD/klm_scrod/chipscope/klm_scrod_b2tt\</ImplementationReportsDirectory>
   <DateInitialized>2014-06-20T10:21:32</DateInitialized>

@@ -1,14 +1,16 @@
-28526
+37446
 ~E 1 "./../source/aurora_model.vhd" 21 aurora_model
 ~A 1 "./../source/aurora_model.vhd" 41 behave
+~E 1 "./../source/b2tt.vhd" 23 b2tt
+~A 1 "./../source/b2tt.vhd" 39 behave
 ~E 1 "./../../source/conc_intfc.vhd" 37 conc_intfc
 ~A 1 "./../../source/conc_intfc.vhd" 82 behave
-~E 1 "./../source/conc_intfc_tb.vhd" 30 conc_intfc_tb
+~E 1 "./../source/conc_intfc_tb0.vhd" 30 conc_intfc_tb
 ~A 1 "./../source/conc_intfc_tb.vhd" 33 behave
 ~E 1 "./../../../ipcore/daq_fifo.vhd" 43 daq_fifo
 ~A 1 "./../../../ipcore/daq_fifo.vhd" 58 daq_fifo_a
-~E 1 "./../source/daq_stim.vhd" 24 daq_stim
-~A 1 "./../source/daq_stim.vhd" 39 behave
+~E 1 "./../source/conc_intfc_stim.vhd" 24 daq_stim
+~A 1 "./../source/daq_stim.vhd" 45 scint_arch
 ~E 1 "./../source/targetx.vhd" 23 targetx
 ~A 1 "./../source/targetx.vhd" 35 behave
 ~E 1 "./../../../tdc/source/tdc.vhd" 30 tdc

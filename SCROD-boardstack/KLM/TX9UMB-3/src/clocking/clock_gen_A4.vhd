@@ -19,7 +19,8 @@ entity clock_gen is
 		--Raw boad clock input
 		BOARD_CLOCKP      : in  STD_LOGIC;
 		BOARD_CLOCKN      : in  STD_LOGIC;
-		BOARD_CLOCK_OUT			: out std_logic;
+		BOARD_CLOCK_OUT	: out std_logic;
+		B2TT_SYS_CLOCK		: in std_logic;
 		--FTSW inputs from KLM_SCROD interface
 
 		--Trigger outputs from FTSW
@@ -39,6 +40,7 @@ end clock_gen;
 
 architecture Behavioral of clock_gen is
 	signal internal_BOARD_CLOCK         : std_logic;
+	signal internal_LOCAL_CLOCK         : std_logic;
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
 	
@@ -69,8 +71,10 @@ begin
 	port map(
 		I  => BOARD_CLOCKP,
 		IB => BOARD_CLOCKN,
-		O  => internal_BOARD_CLOCK -- either 250 MHz or 125 MHz depending on the osc on SCROD
+		O  => internal_LOCAL_CLOCK -- either 250 MHz or 125 MHz depending on the osc on SCROD
 	);	
+	
+	internal_BOARD_CLOCK<=internal_LOCAL_CLOCK when USE_LOCAL_CLOCK='1' else B2TT_SYS_CLOCK;
 	
 	map_ASIC_CTRL_clock_enable : entity work.clock_enable_generator
 	generic map (

@@ -21,21 +21,21 @@ package klm_scrod_pkg is
     --------------------------------------------------------------------------
     -- Constant declarations.
     --------------------------------------------------------------------------
-    constant VERSION        : integer                           := 15;
-    constant DEFADDR        : std_logic_vector(19 downto 0)     := x"00000";
-    constant FLIPCLK        : std_logic                         := '0';
-    constant FLIPTRG        : std_logic                         := '0';
-    constant FLIPACK        : std_logic                         := '0';
-    constant USEFIFO        : std_logic                         := '1';
-    constant CLKDIV1        : integer range 1 to 72             := 3;
-    constant CLKDIV2        : integer range 1 to 72             := 2;
-    constant USEPLL         : std_logic                         := '1';
-    constant USEICTRL       : std_logic                         := '1';
-    constant NBITTIM        : integer range 1 to 32             := 32;
-    constant NBITTAG        : integer range 4 to 32             := 32;
-    constant NBITID         : integer range 4 to 32             := 16;
-    constant B2LRATE        : integer                           := 4;  -- 127 Mbyte / s
-
+    constant B2TT_DEFADDR           : std_logic_vector(19 downto 0)     := x"00000";
+    constant B2TT_FLIPCLK           : std_logic                         := '0';
+    constant B2TT_FLIPTRG           : std_logic                         := '0';
+    constant B2TT_FLIPACK           : std_logic                         := '0';
+    constant B2TT_USEFIFO           : std_logic                         := '1';
+    constant B2TT_CLKDIV1           : integer range 1 to 72             := 2;
+    constant B2TT_CLKDIV2           : integer range 1 to 72             := 4;
+    constant B2TT_USEPLL            : std_logic                         := '1';
+    constant B2TT_USEICTRL          : std_logic                         := '1';
+    constant B2TT_NBITTIM           : integer range 1 to 32             := 32;
+    constant B2TT_NBITTAG           : integer range 4 to 32             := 32;
+    constant B2TT_NBITID            : integer range 4 to 32             := 16;
+    constant B2TT_B2LRATE           : integer                           := 4;  -- 127 Mbyte / s
+    constant B2TT_USEEXTCLK         : std_logic                         := '0';   
+    
 end klm_scrod_pkg;
 
 package body klm_scrod_pkg is

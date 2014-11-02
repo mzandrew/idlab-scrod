@@ -1,4 +1,4 @@
-Active-HDL 9.2.2499.sp1.36.4586  2014-07-16 16:37:05
+Active-HDL 9.2.2499.sp1.36.4586  2014-10-22 11:30:49
 
 Elaboration top modules:
 Architecture                  behave(conc_intfc_tb)
@@ -8,7 +8,8 @@ Architecture                  behave(conc_intfc_tb)
 Entity                             | Architecture | Library        | Info | Compiler Version                | Compilation Options
 ----------------------------------------------------------------------------------------------------------------------------------
 conc_intfc_tb                      | behave       | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
-daq_stim                           | behave       | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+b2tt                               | behave       | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+daq_stim                           | scint_arch   | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 aurora_model                       | behave       | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 conc_intfc                         | behave       | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
 targetx                            | behave       | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
@@ -46,6 +47,7 @@ conc_intfc_pkg                                    | conc_intfc_lib |      | 9.2.
 std_logic_arith                                   | ieee           |      | 9.2.2499.sp1.36.4586  (Windows) | 
 STD_LOGIC_TEXTIO                                  | ieee           |      | 9.2.2499.sp1.36.4586  (Windows) | 
 time_order_pkg                                    | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg
+std_logic_misc                                    | ieee           |      | 9.2.2499.sp1.36.4586  (Windows) |  -2008
 STD_LOGIC_UNSIGNED                                | ieee           |      | 9.2.2499.sp1.36.4586  (Windows) | 
 VCOMPONENTS                                       | unisim         |      | 9.2.2499.sp1.36.4586  (Windows) | -vendor xilinx
 tdc_pkg                                           | conc_intfc_lib |      | 9.2.2499.sp1.36.4586  (Windows) | -dbg

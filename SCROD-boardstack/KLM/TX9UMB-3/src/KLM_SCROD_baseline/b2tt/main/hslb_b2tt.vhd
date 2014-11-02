@@ -9,6 +9,11 @@
 --  20131118 0.04  updated b2tt (no open in b2tt)
 --  20131121 0.05  including fixes for sp605_b2tt11
 --  20131127 0.06  tagerr fix and duplicated header fix
+--  20131213 0.07  b2tt 0.12 (entagerr flag)
+--  20140715 0.08  b2tt 0.26
+--  20140722 0.09  b2tt 0.27
+--  20140808 0.10  b2tt 0.29
+--  20140917 0.11  b2tt 0.31
 ------------------------------------------------------------------------
 
 library ieee;
@@ -23,8 +28,9 @@ use work.mytypes.all;
 
 entity hslb_b2tt is
   generic (
-    constant VERSION : integer := 6;
-    constant ID : std_logic_vector (31 downto 0) := x"42325448" ); -- "B2TH"
+    VERSION : integer := 11;
+    ID : std_logic_vector (31 downto 0) := x"42325448"; -- "B2TH"
+    USE_CHIPSCOPE : std_logic := '1' );
   port (
     f_ld     : inout std_logic_vector (7 downto 0);  -- localbus data
     f_la     : in    std_logic_vector (6 downto 0);  -- localbus address
@@ -136,6 +142,9 @@ architecture implementation of hslb_b2tt is
   alias sig_clkup   : std_logic is sta_b(16#40#)(0);
   alias sig_ttup    : std_logic is sta_b(16#40#)(1);
 
+  -- for chipscope
+  signal sig_ilacontrol : std_logic_vector (35 downto 0) := (others => '0');
+  signal sig_dbg        : std_logic_vector (95 downto 0) := (others => '0');
   
 begin
   ----------------------------------------------------------------------
@@ -182,6 +191,13 @@ begin
       ackn => r_ackb_n,
       rsvp => r_rsv_p,
       rsvn => r_rsv_n,
+
+      -- alternative external clock source
+      extclk    => '0',
+      extclkinv => '0',
+      extclkdbl => '0',
+      extdblinv => '0',
+      extclklck => '0',
 
       -- board id
       id => reg_boardid,
@@ -249,8 +265,11 @@ begin
       cntbit2 => open,
       sigbit2 => open,
       bitddr => open,
-      dbg => sta_dbg,
-      dbg2 => open );
+      
+      dbglink  => sig_dbg,
+      dbgerr   => open );
+      --dbgerr   => sig_dbg,
+      --dbglink  => open );
   
   ----------------------------------------------------------------------
   -- dummy input / output
@@ -297,6 +316,19 @@ begin
       inib => ini_b, inil => ini_l,
       regb => reg_b, setb => set_b, stab => sta_b, getb => get_b,
       regl => reg_l, setl => set_l, stal => sta_l, getl => get_l );
+
+  ----------------------------------------------------------------------
+  -- chipscope
+  ----------------------------------------------------------------------
+  gen_cs: if USE_CHIPSCOPE = '1' generate
+    map_icon: entity work.b2tt_icon port map ( control0 => sig_ilacontrol );
+    map_ila:  entity work.b2tt_ila
+      port map (
+        control => sig_ilacontrol,
+        clk     => clk_127,
+        trig0   => sig_dbg );
+
+  end generate;
 
 end implementation;
 

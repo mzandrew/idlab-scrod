@@ -75,10 +75,10 @@ net led<0> loc=ac22 | iostandard=lvcmos25;
 net led<1> loc=ac24 | iostandard=lvcmos25;
 net led<2> loc=ae22 | iostandard=lvcmos25;
 net led<3> loc=ae23 | iostandard=lvcmos25;
-### led<4> loc=ab23 | iostandard=lvcmos25;
-### led<5> loc=ag23 | iostandard=lvcmos25;
-### led<6> loc=ae24 | iostandard=lvcmos25;
-### led<7> loc=ad24 | iostandard=lvcmos25;
+net led<4> loc=ab23 | iostandard=lvcmos25;
+net led<5> loc=ag23 | iostandard=lvcmos25;
+net led<6> loc=ae24 | iostandard=lvcmos25;
+net led<7> loc=ad24 | iostandard=lvcmos25;
 
 ### J62 header corresponds to LED
 
@@ -91,8 +91,8 @@ net pushsw<3>  loc = h17;   ## SW8 (W) pushbutton (active-high)
 net dipsw<0>  loc = d22;    ## 1 on SW1 DIP switch (active-high)
 net dipsw<1>  loc = c22;    ## 2 on SW1 DIP switch (active-high)
 net dipsw<2>  loc = l21;    ## 3 on SW1 DIP switch (active-high)
-### dipsw<3>  loc = l20;    ## 4 on SW1 DIP switch (active-high)
-### dipsw<4>  loc = c18;    ## 5 on SW1 DIP switch (active-high)
-### dipsw<5>  loc = b18;    ## 6 on SW1 DIP switch (active-high)
-### dipsw<6>  loc = k22;    ## 7 on SW1 DIP switch (active-high)
-### dipsw<7>  loc = k21;    ## 8 on SW1 DIP switch (active-high)
+net dipsw<3>  loc = l20;    ## 4 on SW1 DIP switch (active-high)
+net dipsw<4>  loc = c18;    ## 5 on SW1 DIP switch (active-high)
+net dipsw<5>  loc = b18;    ## 6 on SW1 DIP switch (active-high)
+net dipsw<6>  loc = k22;    ## 7 on SW1 DIP switch (active-high)
+net dipsw<7>  loc = k21;    ## 8 on SW1 DIP switch (active-high)

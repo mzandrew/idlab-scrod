@@ -30,6 +30,8 @@ package readout_definitions is
 
 
   type WaveformArray is array (NWWin*NSamplesPerWin*NCHPerTX-1 downto 0) of integer;
+--  type WaveformArray is array (NWWin*NSamplesPerWin*NCHPerTX-1 downto 0) of std_logic_vector(15 downto 0);
+
   type WaveTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(15 downto 0);
   type JDXTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(10 downto 0);
 

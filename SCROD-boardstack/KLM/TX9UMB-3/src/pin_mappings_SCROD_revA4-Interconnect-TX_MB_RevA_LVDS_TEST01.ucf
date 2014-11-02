@@ -18,10 +18,9 @@
 #					SRAM -- DONE. Will need to modify the existing code.
 #					LED -- DONE
 #-----------------------------------------------------------------------------------
-
+#working version as on 10/28/2014, IM
 
 ####################General SCROD IOs######################################
-
 
 #General SCROD clocking
 #default onboard clock is 127 MHz- close to and similar to the FTSW clock freq.
@@ -564,21 +563,16 @@ NET RAM_CE2						LOC= H19   | IOSTANDARD = LVCMOS33;		# RAM1_CE2,	J3_045_K19
 NET RAM_OEn							LOC= H15   | IOSTANDARD = LVCMOS33;		# RAM1_OE,	J3_043_M21                                    
 NET RAM_WEn							LOC= G19   | IOSTANDARD = LVCMOS33;		# RAM1_WE,	J3_017_V6        
 
-#ONLY ONE RAM ON SCROD REVA4                              
-#NET RAM2_CE1				LOC= G20;		# RAM2_CE1,	J3_049_G20                                  
-#NET RAM2_CE2				LOC= H21;		# RAM2_CE2,	J3_052_H21                                  
-#NET RAM2_OE				LOC= H20;		# RAM2_OE,	J3_048_H20                                    
-#NET RAM2_WE				LOC= K21;		# RAM2_WE,	J3_047_K21    
 
 ############### New pins added. Code modification will be necessary###################                              
-NET RAM_IO<0>							LOC= G15		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<1>							LOC= F15		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<2>							LOC= K14		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<3>							LOC= H14		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<4>							LOC= F14		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<5>							LOC= E14		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<6>							LOC= B14		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
-NET RAM_IO<7>							LOC= A14		| IOSTANDARD = LVCMOS33;# | SUSPEND=3STATE;
+NET RAM_IO<0>							LOC= G15		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<1>							LOC= F15		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<2>							LOC= K14		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<3>							LOC= H14		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<4>							LOC= F14		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<5>							LOC= E14		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<6>							LOC= B14		| IOSTANDARD = LVCMOS33;
+NET RAM_IO<7>							LOC= A14		| IOSTANDARD = LVCMOS33;
 
 NET RAM_A<0>							LOC= F16		| IOSTANDARD = LVCMOS33;
 NET RAM_A<1>							LOC= B23		| IOSTANDARD = LVCMOS33;

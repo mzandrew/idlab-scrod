@@ -6,7 +6,7 @@
 -- 20120130  first version
 -- 20130403  renamed to tt_symbols
 -- 20130507  renamed back to b2tt_symbols
--- 20131101  no more std_logic_arith
+-- 20131002  TTYP_TEST added
 ------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
@@ -76,10 +76,10 @@ package b2tt_symbols is
   constant TTYP_CDC  : trigtyp_t := "0011";
   constant TTYP_DPHY : trigtyp_t := "0101";  -- delayed physics
   constant TTYP_RAND : trigtyp_t := "0111";
-  constant TTYP_RSV4 : trigtyp_t := "1001";
+  constant TTYP_TEST : trigtyp_t := "1001";  -- test pulse input
   constant TTYP_RSV5 : trigtyp_t := "1011";
   constant TTYP_RSV6 : trigtyp_t := "1101";
-  constant TTYP_NONE : trigtyp_t := "1111";
+  constant TTYP_NONE : trigtyp_t := "1111";  -- also used for begin-run
   
   -- - payload
   subtype payload_t is std_logic_vector (76 downto 0);
@@ -87,14 +87,14 @@ package b2tt_symbols is
 
   -- - command
   subtype ttcmd_t  is std_logic_vector (11 downto 0);
-  constant TTCMD_IDLE : ttcmd_t := x"000";
-  constant TTCMD_SYNC : ttcmd_t := x"001";
-  -- data for sync = runrst:1 frame3:1 frame9:1 rsv:2 utim:32 ctim:27
-  constant TTCMD_TTAG : ttcmd_t := x"002";
-  -- data for ttag = exp:8 run:12 sub:12 evt:32 (TBD)
-  constant TTCMD_RST  : ttcmd_t := x"003";
-  -- data for rst = addr:20 feerst:1 gtprst:1
-  constant TTCMD_INJV : ttcmd_t := x"004";
+  constant TTPKT_IDLE : ttcmd_t := x"fff"; -- unused
+  constant TTPKT_TTAG : ttcmd_t := x"000";
+  constant TTPKT_FREQ : ttcmd_t := x"001";
+  constant TTPKT_RST  : ttcmd_t := x"002";
+  constant TTPKT_CMD  : ttcmd_t := x"003";
+  constant TTPKT_DISP : ttcmd_t := x"007";
+  constant TTPKT_INJV : ttcmd_t := x"00e";
+  constant TTPKT_SYNC : ttcmd_t := x"00f";
   
 end package b2tt_symbols;
 

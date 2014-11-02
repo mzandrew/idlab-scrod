@@ -346,7 +346,7 @@ begin
 	------FIFO layer that connects to USB and/or Aurora------
 	map_daq_fifo_layer : entity work.daq_fifo_layer
 	generic map(
-		INCLUDE_AURORA => 1,
+		INCLUDE_AURORA => 0,
 		INCLUDE_USB    => 1
 	)
 	port map (

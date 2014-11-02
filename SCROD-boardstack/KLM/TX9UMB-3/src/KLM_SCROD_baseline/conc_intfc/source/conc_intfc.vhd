@@ -21,7 +21,7 @@
 --    is asserted. Could tranistion to a wait state that keeps all local link signals
 --    the same until tx_dst_rdy_n is de-asserted. Or, could use the do_cc and warn_cc
 --    signals to prevent sending data when tx_dst_rdy_n is going to be asserted.
--- 2) Does nothing with run control registers.
+-- 2) Does nothing with run control registers (may not matter).
 -- 3) Does nothing with status registers.
 -- 4) Need to add assertions to make sure no FIFO read or write errors occur.
 --*********************************************************************************
@@ -108,7 +108,7 @@ architecture behave of conc_intfc is
         dst_we                  : out std_logic;
         dout                    : out std_logic_vector(TO_WIDTH-1 downto 0));
     end component;
-    
+
     component trig_chan_calc is
     generic(
         NUM_CHAN                : integer;   -- ASIC channels
@@ -125,7 +125,7 @@ architecture behave of conc_intfc is
         valid                   : out std_logic;
         axis_bit                : out std_logic;
         trig_chan               : out std_logic_vector(CHANOW-1 downto 0));
-    end component;    
+    end component;
 
     component trig_fifo
     port (
@@ -166,7 +166,6 @@ architecture behave of conc_intfc is
     signal to_dst_we            : std_logic;
     signal to_dout              : std_logic_vector(TO_WIDTH-1 downto 0);
     signal to_valid             : std_logic_vector(1 downto 0);
-    
 
     signal trg_fifo_we          : std_logic                         := '0';
     signal trg_fifo_di          : std_logic_vector(17 downto 0);
@@ -193,14 +192,18 @@ architecture behave of conc_intfc is
     signal axis_bit             : std_logic;
     signal trg_ch               : std_logic_vector(7 downto 0);
     signal trg_ch_valid         : std_logic;
-    signal trg_valid            : std_logic_vector(2 downto 0);
+    --signal trg_valid            : std_logic_vector(2 downto 0);
 
+    signal zrlentrg             : std_logic;
+    signal ftrgtag              : std_logic;
+    signal daq_sof_d            : std_logic;
+    signal daq_eof_d            : std_logic;
     signal daq_sof_q            : std_logic_vector(1 downto 0);
     signal daq_eof_q            : std_logic_vector(1 downto 0);
+    signal daq_src_rdy_q        : std_logic_vector(1 downto 0);
     signal daq_data_q           : word_shift_type(1 downto 0);
     signal daq_valid            : std_logic_vector(2 downto 0);
-    signal daq_di_addr          : std_logic_vector(1 downto 0);
-    signal daq_cnt              : std_logic_vector(2 downto 0);
+    signal daq_di_addr          : std_logic_vector(2 downto 0);
 
     -- pakcet type counter (time spent writing trigger data) - just change the width to adjust
     signal pkttp_ctr_ld         : std_logic;
@@ -261,11 +264,11 @@ begin
         dst_we                  => to_dst_we,
         dout                    => to_dout
     );
-    
+
     --------------------------------------------------------------------------
 	-- Calculate the channel word for trigger Aurora stream (convert to unified
     -- trigger data format).
-	--------------------------------------------------------------------------    
+	--------------------------------------------------------------------------
     trg_chan_ins : trig_chan_calc
     generic map(
         NUM_CHAN                => ASIC_NUM_CHAN,
@@ -281,7 +284,7 @@ begin
         valid                   => trg_ch_valid,
         axis_bit                => axis_bit,
         trig_chan               => trg_ch
-    );    
+    );
 
     --------------------------------------------------------------------------
 	-- Buffer trigger data and cross clock domain to system clock.
@@ -325,7 +328,10 @@ begin
 	--------------------------------------------------------
 	-- Combinational logic
 	--------------------------------------------------------
-    daq_di_addr <= daq_sof_q(1) & (not (daq_sof_n or daq_src_rdy_n));
+    daq_sof_d <= not (daq_sof_n or daq_src_rdy_n);
+    daq_eof_d <= not (daq_eof_n or daq_src_rdy_n);
+    daq_di_addr <= ftrgtag & daq_sof_q(1) & (not (daq_sof_n or daq_src_rdy_n));
+
 
 ---------------------------------------------------------------------------------------------------------
 -- Asynchronous and Synchronous processes
@@ -375,7 +381,7 @@ begin
     end process;
 
     --------------------------------------------------------------------------
-	-- Read data from the trigger FIFO and generate output local link signals.
+	-- Read data from the trigger FIFO.
 	--------------------------------------------------------------------------
     trg_rd_pcs : process(tdc_clk)
     begin
@@ -391,27 +397,45 @@ begin
     begin
         if (sys_clk'event and sys_clk = '1') then
             daq_dst_rdy_n <= daq_fifo_afull;
-            --delay so we can insert SOF_VAL
-            daq_sof_q <= (not (daq_sof_n or daq_src_rdy_n))  & daq_sof_q(daq_sof_q'length-1 downto 1);
-            daq_eof_q <= (not (daq_eof_n or daq_src_rdy_n)) & daq_eof_q(daq_eof_q'length-1 downto 1);
+            zrlentrg <= not (daq_sof_n or daq_eof_n or daq_src_rdy_n);
+            ftrgtag <= zrlentrg;
+            --delay two clocks so we can insert SOF marker and TRGTAG ------------
+            daq_sof_q <= daq_sof_d & daq_sof_q(daq_sof_q'length-1 downto 1);
+            daq_eof_q <= daq_eof_d & daq_eof_q(daq_eof_q'length-1 downto 1);
+            daq_src_rdy_q <= (not daq_src_rdy_n) & daq_src_rdy_q(daq_src_rdy_q'length-1 downto 1);
             daq_data_q <= daq_data & daq_data_q(daq_data_q'length-1 downto 1);
+            -------------------------------------------------------------------
             --generate write enable and extend to compensate for SOF marker and TRGTAG
-            daq_fifo_we <= (not daq_fifo_afull) and ((not daq_src_rdy_n) or daq_eof_q(1) or daq_eof_q(0));--!make sure afull provides enough delay
+            --daq_fifo_we <= (not daq_fifo_afull) and (not zrlentrg) and ((not daq_src_rdy_n) or daq_eof_q(1) or daq_eof_q(0));--!make sure afull provides enough delay
+            daq_fifo_we <= (not daq_fifo_afull) and (not zrlentrg) and (daq_sof_d or daq_sof_q(1) or daq_src_rdy_q(0) or daq_eof_q(1) or daq_eof_q(0));--!make sure afull provides enough delay
+            -- select link transmit data
             case daq_di_addr is
-            when "00" =>
-                -- payload, allow for zero length
+            when "000" =>
+                -- payload/EOF
                 daq_fifo_di <= (not daq_sof_n) & daq_eof_q(0) & daq_data_q(0);
-            when "01" =>
-                -- insert SOF marker, allow for zero length
+            when "001" =>
+                -- insert SOF marker
                 daq_fifo_di <= "10" & DAQ_SOF_VAL;
-            when "10" =>
-                -- insert 16-bits of trigger tag, allow for zero length
-                daq_fifo_di <= '0' & daq_eof_q(1) & trgtag;
-            when "11" =>
+            when "010" =>
+                -- insert 16-bits of trigger tag
+                daq_fifo_di <= "00" & trgtag;
+            when "011" =>
+                -- should not happen
+                daq_fifo_di <= "10" & DAQ_SOF_VAL;
+            when "100" =>
+                -- payload/EOF, force trigger tag & EOF when zero length
+                daq_fifo_di <= "01" & trgtag;
+            when "101" =>
+                -- insert SOF marker
+                daq_fifo_di <= "10" & DAQ_SOF_VAL;
+            when "110" =>
+                -- insert 16-bits of trigger tag
+                daq_fifo_di <= "00" & trgtag;
+            when "111" =>
                 -- should not happen
                 daq_fifo_di <= "10" & DAQ_SOF_VAL;
             when others =>
-                -- payload, allow for zero length
+                -- will not happen
                 daq_fifo_di <= (others => 'X');
             end case;
         end if;

@@ -56,6 +56,8 @@
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="klm_scrod_par.xrpt"/>
     <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="klm_scrod_summary.xml"/>
     <file xil_pn:fileType="FILE_WEBTALK" xil_pn:name="klm_scrod_usage.xml"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="smartxplorer_results"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="smartxplorer_setup"/>
     <file xil_pn:fileType="FILE_LOG" xil_pn:name="webtalk.log"/>
     <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="webtalk_pn.xml"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xlnx_auto_0_xdb"/>
@@ -94,11 +96,11 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403276297" xil_pn:in_ck="-7495912421794421580" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="-8119199784824191712" xil_pn:start_ts="1403276297">
+    <transform xil_pn:end_ts="1413292713" xil_pn:in_ck="-7495912421794421580" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="-8119199784824191712" xil_pn:start_ts="1413292713">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403276304" xil_pn:in_ck="7805444505622432394" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="342933264415952551" xil_pn:start_ts="1403276297">
+    <transform xil_pn:end_ts="1413306281" xil_pn:in_ck="7805444505622432394" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="-7707150941359181014" xil_pn:start_ts="1413306271">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
@@ -108,7 +110,7 @@
       <outfile xil_pn:name="klm_scrod.ngd"/>
       <outfile xil_pn:name="klm_scrod_ngdbuild.xrpt"/>
     </transform>
-    <transform xil_pn:end_ts="1403276337" xil_pn:in_ck="6475435074530197145" xil_pn:name="TRANEXT_map_spartan6" xil_pn:prop_ck="2804497036381638362" xil_pn:start_ts="1403276304">
+    <transform xil_pn:end_ts="1413306368" xil_pn:in_ck="6475435074530197145" xil_pn:name="TRANEXT_map_spartan6" xil_pn:prop_ck="6392316745860629401" xil_pn:start_ts="1413306281">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
@@ -124,7 +126,7 @@
       <outfile xil_pn:name="klm_scrod_summary.xml"/>
       <outfile xil_pn:name="klm_scrod_usage.xml"/>
     </transform>
-    <transform xil_pn:end_ts="1403276373" xil_pn:in_ck="-6672117199906360782" xil_pn:name="TRANEXT_par_spartan6" xil_pn:prop_ck="-1028300388139410080" xil_pn:start_ts="1403276337">
+    <transform xil_pn:end_ts="1413306462" xil_pn:in_ck="-6672117199906360782" xil_pn:name="TRANEXT_par_spartan6" xil_pn:prop_ck="-5532773532809494528" xil_pn:start_ts="1413306368">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
@@ -139,7 +141,7 @@
       <outfile xil_pn:name="klm_scrod_pad.txt"/>
       <outfile xil_pn:name="klm_scrod_par.xrpt"/>
     </transform>
-    <transform xil_pn:end_ts="1403276802" xil_pn:in_ck="-373197825322920735" xil_pn:name="TRANEXT_bitFile_spartan6" xil_pn:prop_ck="2154860577361114628" xil_pn:start_ts="1403276784">
+    <transform xil_pn:end_ts="1413308855" xil_pn:in_ck="-373197825322920735" xil_pn:name="TRANEXT_bitFile_spartan6" xil_pn:prop_ck="-7011406494891320952" xil_pn:start_ts="1413308828">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
@@ -151,12 +153,28 @@
       <outfile xil_pn:name="webtalk.log"/>
       <outfile xil_pn:name="webtalk_pn.xml"/>
     </transform>
-    <transform xil_pn:end_ts="1403276373" xil_pn:in_ck="6475435074530197013" xil_pn:name="TRAN_postRouteTrce" xil_pn:prop_ck="445577401284416185" xil_pn:start_ts="1403276364">
+    <transform xil_pn:end_ts="1413306462" xil_pn:in_ck="6475435074530197013" xil_pn:name="TRAN_postRouteTrce" xil_pn:prop_ck="445577401284416185" xil_pn:start_ts="1413306448">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="_xmsgs/trce.xmsgs"/>
       <outfile xil_pn:name="klm_scrod.twr"/>
       <outfile xil_pn:name="klm_scrod.twx"/>
+    </transform>
+    <transform xil_pn:end_ts="1413305110" xil_pn:in_ck="-373197825322920603" xil_pn:name="TRAN_SmartXplorer" xil_pn:prop_ck="-4875218390153404968" xil_pn:start_ts="1413305109">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="smartxplorer_results"/>
+      <outfile xil_pn:name="smartxplorer_setup"/>
+    </transform>
+    <transform xil_pn:end_ts="1413305658" xil_pn:in_ck="-373197825322920603" xil_pn:name="TRAN_CopySmartXplorerResult" xil_pn:start_ts="1413305658">
+      <status xil_pn:value="FailedRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="InputChanged"/>
     </transform>
   </transforms>
 

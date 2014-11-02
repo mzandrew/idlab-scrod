@@ -34,16 +34,16 @@ entity scrod_top_A4 is
 	   generic(
     NUM_GTS                     : integer := 1;
 	 -- uncomment one of these lines only to comiple with the given configuration
-	 HW_CONF						: string :="SA4_MBA_DCA_RB_I" --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
+--	 HW_CONF						: string :="SA4_MBA_DCA_RB_I" --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
 --	 HW_CONF						: string :="SA4_MBSF_TX" --SCROD A4, MB SciFi, TX SificDC 
 --	 HW_CONF						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
---	 HW_CONF						: string :="SA4_MBB_DCA_RB", 	 --SCROD A4, MB B, TXDC A, RHIC B
+	 HW_CONF						: string :="SA4_MBB_DCA_RB" 	 --SCROD A4, MB B, TXDC A, RHIC B
 	 
 	 );
 	 Port(
 		BOARD_CLOCKP                : in  STD_LOGIC;
 		BOARD_CLOCKN                : in  STD_LOGIC;
-		LEDS                        : out STD_LOGIC_VECTOR(15 downto 0);
+		LEDS                        : out STD_LOGIC_VECTOR(12 downto 0);
 		------------------FTSW pins------------------
 		RJ45_ACK_P                  : out std_logic;
 		RJ45_ACK_N                  : out std_logic;			  
@@ -54,7 +54,7 @@ entity scrod_top_A4 is
 		RJ45_CLK_P                  : in std_logic;
 		RJ45_CLK_N                  : in std_logic;
 		---------Jumper for choosing FTSW clock------
-		MONITOR_INPUT               : in  std_logic_vector(0 downto 0);
+	--	MONITOR_INPUT               : in  std_logic_vector(0 downto 0);- shoud go
 		
 		--------------------------------------
 		----------SFP-------------------------
@@ -71,33 +71,35 @@ entity scrod_top_A4 is
 		mgttxn                      : out std_logic;
 		status_fake                 : out std_logic;
 		control_fake                : out std_logic;
+		mgtclk0p   						 : in std_logic; 
+		mgtclk0n  					    : in std_logic; 
+		mgtclk1p                    : in std_logic; 
+		mgtclk1n                    : in std_logic; 
 		
 		
 		----------------------------------------------
 		------------Fiberoptic Pins-------------------
 		----------------------------------------------
-		FIBER_0_RXP                 : in  STD_LOGIC;
-		FIBER_0_RXN                 : in  STD_LOGIC;
-		FIBER_1_RXP                 : in  STD_LOGIC;
-		FIBER_1_RXN                 : in  STD_LOGIC;
-		FIBER_0_TXP                 : out STD_LOGIC;
-		FIBER_0_TXN                 : out STD_LOGIC;
-		FIBER_1_TXP                 : out STD_LOGIC;
-		FIBER_1_TXN                 : out STD_LOGIC;
-		FIBER_REFCLKP               : in  STD_LOGIC;
-		FIBER_REFCLKN               : in  STD_LOGIC;
-		FIBER_0_DISABLE_TRANSCEIVER : out STD_LOGIC;
-		FIBER_1_DISABLE_TRANSCEIVER : out STD_LOGIC;
-		FIBER_0_LINK_UP             : out STD_LOGIC;
-		FIBER_1_LINK_UP             : out STD_LOGIC;
-		FIBER_0_LINK_ERR            : out STD_LOGIC;
-		FIBER_1_LINK_ERR            : out STD_LOGIC;
-	
-		
+--		FIBER_0_RXP                 : in  STD_LOGIC;
+--		FIBER_0_RXN                 : in  STD_LOGIC;
+--		FIBER_1_RXP                 : in  STD_LOGIC;
+--		FIBER_1_RXN                 : in  STD_LOGIC;
+--		FIBER_0_TXP                 : out STD_LOGIC;
+--		FIBER_0_TXN                 : out STD_LOGIC;
+--		FIBER_1_TXP                 : out STD_LOGIC;
+--		FIBER_1_TXN                 : out STD_LOGIC;
+--		FIBER_REFCLKP               : in  STD_LOGIC;
+--		FIBER_REFCLKN               : in  STD_LOGIC;
+--		FIBER_0_DISABLE_TRANSCEIVER : out STD_LOGIC;
+--		FIBER_1_DISABLE_TRANSCEIVER : out STD_LOGIC;
+--		FIBER_0_LINK_UP             : out STD_LOGIC;
+--		FIBER_1_LINK_UP             : out STD_LOGIC;
+--		FIBER_0_LINK_ERR            : out STD_LOGIC;
+--		FIBER_1_LINK_ERR            : out STD_LOGIC;
+
 		--MB Specific Signals
 		
-		EX_TRIGGER1_MB					 : out std_logic;
-		EX_TRIGGER2_MB					 : out std_logic;
+		EX_TRIGGER_MB					 : out std_logic;
 		EX_TRIGGER_SCROD	   		 : in STD_LOGIC;
 --		EX_TRIGGER2						 : out STD_LOGIC;
 		
@@ -133,7 +135,7 @@ entity scrod_top_A4 is
 		--ASIC DAC Update Signals
 		SIN								 : out STD_LOGIC_VECTOR(9 downto 0);
 		PCLK								 : out STD_LOGIC_VECTOR(9 downto 0);
-		SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0);
+		SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0);--bring SCLOK up here
 		
 		
 		--Digitization Signals
@@ -199,9 +201,9 @@ entity scrod_top_A4 is
 --		TDC_CS1_DAC						: out std_logic_vector(9 downto 0);
 --		TDC_CS2_DAC						: out std_logic_vector(9 downto 0);
 		-- Uncomment for TX KLM MB, keep commented for SciFi
-		TDC_CS_DAC                  : out STD_LOGIC_VECTOR(9 downto 0);
+		TDC_CS_DAC                  : out STD_LOGIC_VECTOR(9 downto 0);-- move it to close to SPI DACs
 ----		HV_DISABLE                  : out STD_LOGIC;
-		TDC_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
+		TDC_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);--change to RHIC_ some better known name and maybe connect them together
 		TOP_AMUX_S                  : out STD_LOGIC_VECTOR(3 downto 0);
 		---------------------------------------------
 		------------------USB pins-------------------
@@ -241,7 +243,7 @@ entity scrod_top_A4 is
 		SCLK								: out STD_LOGIC_VECTOR(9 downto 0);
 		WL_CLK_N								: out STD_LOGIC_VECTOR(9 downto 0);
 		WL_CLK_P								: out STD_LOGIC_VECTOR(9 downto 0);
-		WR1_ENA								: out STD_LOGIC_VECTOR(9 downto 0);
+		WR1_ENA								: out STD_LOGIC_VECTOR(9 downto 0);--move up
 		WR2_ENA								: out STD_LOGIC_VECTOR(9 downto 0);
 
 		SSTIN_N								 : out STD_LOGIC_VECTOR(9 downto 0);
@@ -249,8 +251,8 @@ entity scrod_top_A4 is
 		
 		SCL_MON								 : out STD_LOGIC;
 		SDA_MON								 : inout STD_LOGIC;
-		TDC_DONE								: in STD_LOGIC_VECTOR(9 downto 0);
-		TDC_MON_TIMING						: in STD_LOGIC_VECTOR(9 downto 0)
+		TDC_DONE								: in STD_LOGIC_VECTOR(9 downto 0);-- move to readout signals
+		TDC_MON_TIMING						: in STD_LOGIC_VECTOR(9 downto 0)-- add the ref to the programming of the TX chip
 
 	);
 end scrod_top_A4;
@@ -261,12 +263,13 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CLOCK_MPPC_DAC  : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
 	signal internal_CLOCK_ASIC_CTRL_WILK : std_logic;
-
+	signal internal_CLOCK_B2TT_SYS	:std_logic;
+	
 	signal internal_CLOCK_MPPC_ADC  : std_logic;
 	
 	signal WL_CLK_tmp	:std_logic_vector(9 downto 0);
 
-	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);
+	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);--remove
 	signal internal_CLOCK_8xSST_OBUFDS_P : std_logic_vector(9 downto 0);
 
 	signal internal_OUTPUT_REGISTERS : GPR;
@@ -323,9 +326,8 @@ architecture Behavioral of scrod_top_A4 is
 	--External Trig Control:
 	
 		
-	signal internal_EX_TRIGGER1_MB	: std_logic;
-	signal internal_EX_TRIGGER2_MB   : std_logic;
-	signal internal_EX_TRIGGER_SCROD	: STD_LOGIC;
+	signal internal_EX_TRIGGER_MB	: std_logic:='0';
+	signal internal_EX_TRIGGER_SCROD	: STD_LOGIC:='0';
 		
 		
 	--ASIC TRIGGER CONTROL
@@ -378,6 +380,7 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_READCTRL_EVENT_NUM : std_logic_vector(31 downto 0) := x"00000000";
 	signal internal_READCTRL_READOUT_DONE : std_logic := '0';
 	signal internal_READCTRL_dig_win_start : std_logic_vector(8 downto 0) := (others => '0');
+	signal internal_ASIC_TRIG: std_logic:='0';
 	
 	signal internal_CMDREG_RESET_SAMPLIG_LOGIC :std_logic :='0';
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
@@ -612,7 +615,7 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
         );
     END COMPONENT;
 
-	COMPONENT WaveformDemuxCalcPeds
+	COMPONENT WaveformDemuxCalcPedsBRAM
 	PORT(
 		clk : IN std_logic;
 		reset : IN std_logic;
@@ -635,24 +638,14 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
 	
 begin
 
- extrig1_OBUF_inst : OBUF
+	extrig_OBUF_inst : OBUF
    generic map (
       DRIVE => 12,
       IOSTANDARD => "DEFAULT",
       SLEW => "SLOW")
    port map (
-      O => EX_TRIGGER1_MB,     -- Buffer output (connect directly to top-level port)
-      I => internal_EX_TRIGGER1_MB      -- Buffer input 
-   );
-	
-	extrig2_OBUF_inst : OBUF
-   generic map (
-      DRIVE => 12,
-      IOSTANDARD => "DEFAULT",
-      SLEW => "SLOW")
-   port map (
-      O => EX_TRIGGER2_MB,     -- Buffer output (connect directly to top-level port)
-      I => internal_EX_TRIGGER2_MB      -- Buffer input 
+      O => EX_TRIGGER_MB,     -- Buffer output (connect directly to top-level port)
+      I => internal_EX_TRIGGER_MB      -- Buffer input 
    );
 	
 	
@@ -668,9 +661,9 @@ begin
 
 internal_TRIGGER_ALL <=internal_EX_TRIGGER_SCROD;
 
-internal_EX_TRIGGER1_MB<=internal_TRIGGER_ALL;
+internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 
-internal_EX_TRIGGER2_MB<=internal_READCTRL_LATCH_DONE;
+--internal_EX_TRIGGER2_MB<=internal_READCTRL_LATCH_DONE;
 
 
 
@@ -745,28 +738,30 @@ end generate;
 --	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
 --	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
 
-
+--	internal_ASIC_TRIG<=internal_TRIGGER_ASIC(9) and internal_TRIGGER_ASIC_control_word(9) ;
 --	internal_TRIGGER_ALL <=EX_TRIGGER2_MB or  (internal_TRIGGER_ASIC(0) --AND internal_TRIGGER_ASIC_control_word(0)
+
 --	)
---		OR ( internal_TRIGGER_ASIC(1) --AND internal_TRIGGER_ASIC_control_word(1)
---		)
---		OR ( internal_TRIGGER_ASIC(2) --AND internal_TRIGGER_ASIC_control_word(2) 
---		)
---		OR ( internal_TRIGGER_ASIC(3) --AND internal_TRIGGER_ASIC_control_word(3) 
---		)
---		OR ( internal_TRIGGER_ASIC(4) --AND internal_TRIGGER_ASIC_control_word(4) 
---		)
---		OR ( internal_TRIGGER_ASIC(5) --AND internal_TRIGGER_ASIC_control_word(5) 
---		)
---		OR ( internal_TRIGGER_ASIC(6) --AND internal_TRIGGER_ASIC_control_word(6) 
---		)
---		OR ( internal_TRIGGER_ASIC(7) --AND internal_TRIGGER_ASIC_control_word(7) 
---		)
---		OR ( internal_TRIGGER_ASIC(8) --AND internal_TRIGGER_ASIC_control_word(8) 
---		)
---		OR ( internal_TRIGGER_ASIC(9) --AND internal_TRIGGER_ASIC_control_word(9) 
---		);
---	
+	internal_ASIC_TRIG<=(internal_TRIGGER_ASIC(0) and internal_TRIGGER_ASIC_control_word(0) )
+		OR ( internal_TRIGGER_ASIC(1) AND internal_TRIGGER_ASIC_control_word(1)
+		)
+		OR ( internal_TRIGGER_ASIC(2) AND internal_TRIGGER_ASIC_control_word(2) 
+		)
+		OR ( internal_TRIGGER_ASIC(3) AND internal_TRIGGER_ASIC_control_word(3) 
+		)
+		OR ( internal_TRIGGER_ASIC(4) AND internal_TRIGGER_ASIC_control_word(4) 
+		)
+		OR ( internal_TRIGGER_ASIC(5) AND internal_TRIGGER_ASIC_control_word(5) 
+		)
+		OR ( internal_TRIGGER_ASIC(6) AND internal_TRIGGER_ASIC_control_word(6) 
+		)
+		OR ( internal_TRIGGER_ASIC(7) AND internal_TRIGGER_ASIC_control_word(7) 
+		)
+		OR ( internal_TRIGGER_ASIC(8) AND internal_TRIGGER_ASIC_control_word(8) 
+		)
+		OR ( internal_TRIGGER_ASIC(9) AND internal_TRIGGER_ASIC_control_word(9) 
+		);
+	
 
 
 	--RAM_A <=internal_RAM_A;
@@ -823,12 +818,14 @@ end generate;
 		BOARD_CLOCKP      => BOARD_CLOCKP,
 		BOARD_CLOCKN      => BOARD_CLOCKN,
 		BOARD_CLOCK_OUT			=>internal_BOARD_CLOCK_OUT,
+		
+		B2TT_SYS_CLOCK		=>internal_CLOCK_B2TT_SYS,
 		--FTSW inputs
 		
 		--Trigger outputs from FTSW
 		FTSW_TRIGGER      => open,
 		--Select signal between the two
-		USE_LOCAL_CLOCK   => MONITOR_INPUT(0),
+		USE_LOCAL_CLOCK   => '0',
 		--General output clocks
 		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
 		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
@@ -868,34 +865,34 @@ end generate;
 		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
 		--WAVEFORM_PACKET_BUILDER_VETO => open,
 --
-		FIBER_0_RXP                  => FIBER_0_RXP,
-		FIBER_0_RXN                  => FIBER_0_RXN,
-	   FIBER_1_RXP                  => FIBER_1_RXP,
-		FIBER_1_RXN                  => FIBER_1_RXN,
-		FIBER_0_TXP                  => FIBER_0_TXP,
-		FIBER_0_TXN                  => FIBER_0_TXN,
-		FIBER_1_TXP                  => FIBER_1_TXP,
-		FIBER_1_TXN                  => FIBER_1_TXN,
-		FIBER_REFCLKP                => FIBER_REFCLKP,
-   	FIBER_REFCLKN                => FIBER_REFCLKN,
---		FIBER_0_DISABLE_TRANSCEIVER  => FIBER_0_DISABLE_TRANSCEIVER,
---		FIBER_1_DISABLE_TRANSCEIVER  => FIBER_1_DISABLE_TRANSCEIVER,
---		FIBER_0_LINK_UP              => FIBER_0_LINK_UP,
---		FIBER_1_LINK_UP              => FIBER_1_LINK_UP,
---		FIBER_0_LINK_ERR             => FIBER_0_LINK_ERR,
---		FIBER_1_LINK_ERR             => FIBER_1_LINK_ERR,
+--		FIBER_0_RXP                  => FIBER_0_RXP,
+--		FIBER_0_RXN                  => FIBER_0_RXN,
+--	   FIBER_1_RXP                  => FIBER_1_RXP,
+--		FIBER_1_RXN                  => FIBER_1_RXN,
+--		FIBER_0_TXP                  => FIBER_0_TXP,
+--		FIBER_0_TXN                  => FIBER_0_TXN,
+--		FIBER_1_TXP                  => FIBER_1_TXP,
+--		FIBER_1_TXN                  => FIBER_1_TXN,
+--		FIBER_REFCLKP                => FIBER_REFCLKP,
+--   	    FIBER_REFCLKN                => FIBER_REFCLKN,
+----		FIBER_0_DISABLE_TRANSCEIVER  => FIBER_0_DISABLE_TRANSCEIVER,
+----		FIBER_1_DISABLE_TRANSCEIVER  => FIBER_1_DISABLE_TRANSCEIVER,
+----		FIBER_0_LINK_UP              => FIBER_0_LINK_UP,
+----		FIBER_1_LINK_UP              => FIBER_1_LINK_UP,
+----		FIBER_0_LINK_ERR             => FIBER_0_LINK_ERR,
+----		FIBER_1_LINK_ERR             => FIBER_1_LINK_ERR,
 --
 
---		FIBER_0_RXP                  => '0',
---		FIBER_0_RXN                  => '0',
---		FIBER_1_RXP                  => '0',
---		FIBER_1_RXN                  => '0',
---		FIBER_0_TXP                  => open,
---		FIBER_0_TXN                  => open,
---		FIBER_1_TXP                  =>  open,
---		FIBER_1_TXN                  =>  open,
---		FIBER_REFCLKP                =>  '0',
---		FIBER_REFCLKN                =>  '0',
+		FIBER_0_RXP                  => 'Z',
+		FIBER_0_RXN                  => 'Z',
+		FIBER_1_RXP                  => 'Z',
+		FIBER_1_RXN                  => 'Z',
+		FIBER_0_TXP                  => open,
+		FIBER_0_TXN                  => open,
+		FIBER_1_TXP                  =>  open,
+		FIBER_1_TXN                  =>  open,
+		FIBER_REFCLKP                =>  'Z',
+		FIBER_REFCLKN                =>  'Z',
 		FIBER_0_DISABLE_TRANSCEIVER  =>  open,
 		FIBER_1_DISABLE_TRANSCEIVER  =>  open,
 		FIBER_0_LINK_UP              =>  open,
@@ -903,26 +900,6 @@ end generate;
 		FIBER_0_LINK_ERR             =>  open,
 		FIBER_1_LINK_ERR             =>  open,
                                          
-
-
---		USB_IFCLK                    =>open,
---		USB_CTL0                     =>open,
---		USB_CTL1                     =>open,
---		USB_CTL2                     =>open,
---		USB_FDD                      =>open,
---		USB_PA0                      =>open,
---		USB_PA1                      =>open,
---		USB_PA2                      =>open,
---		USB_PA3                      =>open,
---		USB_PA4                      =>open,
---		USB_PA5                      =>open,
---		USB_PA6                      =>open,
---		USB_PA7                      =>open,
---		USB_RDY0                     =>open,
---		USB_RDY1                     =>open,
---		USB_WAKEUP                   =>open,
---		USB_CLKOUT		             =>open
-
 
 		USB_IFCLK                    =>USB_IFCLK,
 		USB_CTL0                     =>USB_CTL0,
@@ -941,48 +918,7 @@ end generate;
 		USB_RDY1                     =>USB_RDY1,
 		USB_WAKEUP                   =>USB_WAKEUP,
 		USB_CLKOUT		             =>USB_CLKOUT
---
---		USB_IFCLK                    =>internal_USB_IFCLK,
---		USB_CTL0                     =>internal_USB_CTL0,
---		USB_CTL1                     =>internal_USB_CTL1,
---		USB_CTL2                     =>internal_USB_CTL2,
---		USB_FDD                      =>internal_USB_FDD,
---		USB_PA0                      =>internal_USB_PA0,
---		USB_PA1                      =>internal_USB_PA1,
---		USB_PA2                      =>internal_USB_PA2,
---		USB_PA3                      =>internal_USB_PA3,
---		USB_PA4                      =>internal_USB_PA4,
---		USB_PA5                      =>internal_USB_PA5,
---		USB_PA6                      =>internal_USB_PA6,
---		USB_PA7                      =>internal_USB_PA7,
---		USB_RDY0                     =>internal_USB_RDY0,
---		USB_RDY1                     =>internal_USB_RDY1,
---		USB_WAKEUP                   =>internal_USB_WAKEUP,
---		USB_CLKOUT		              =>internal_USB_CLKOUT
---		
-	);
-	
---	usb_signal_tp_top: if (HW_CONF="SA4_MBA_DCA_RB_I") generate
---		USB_IFCLK                    <=internal_USB_IFCLK;
---		USB_CTL0                     <=internal_USB_CTL0;
---		USB_CTL1                     <=internal_USB_CTL1;
---		USB_CTL2                     <=internal_USB_CTL2;
---		USB_FDD                      <=internal_USB_FDD;
---		USB_PA0                      <=internal_USB_PA0;
---		USB_PA1                      <=internal_USB_PA1;
---		USB_PA2                      <=internal_USB_PA2;
---		USB_PA3                      <=internal_USB_PA3;
---		USB_PA4                      <=internal_USB_PA4;
---		USB_PA5                      <=internal_USB_PA5;
---		USB_PA6                      <=internal_USB_PA6;
---		USB_PA7                      <=internal_USB_PA7;
---		USB_RDY0                     <=internal_USB_RDY0;
---		USB_RDY1                     <=internal_USB_RDY1;
---		USB_WAKEUP                   <=internal_USB_WAKEUP;
---		USB_CLKOUT		             <=internal_USB_CLKOUT;
---	end generate usb_signal_tp_top;
---
---	
+);
 ---------------------------------------------------------------
 ---------KLM_SCROD: interface for Trigger using FTSW-----------
 ---------------------------------------------------------------
@@ -1001,6 +937,7 @@ end generate;
     ttdrsvn  => RJ45_RSV_N,
     ttdackp  => RJ45_ACK_P,
     ttdackn  => RJ45_ACK_N,
+	 b2ttsysclk	=>internal_CLOCK_B2TT_SYS,
 ----     ASIC Interface
     target_tb  => internal_TXDCTRIG_buf,		--                 : in tb_vec_type; 
     target_tb16 => internal_TXDCTRIG16_buf,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
@@ -1010,11 +947,16 @@ end generate;
     mgtlos		=>		mgtlos,                
     mgttxdis	=>		mgttxdis,              
     mgtmod2   	=>		mgtmod2,               
-    mgtmod1  	=>		mgtmod1,               
+    mgtmod1  	=>		mgtmod1,              
+	 mgtclk0p   =>		mgtclk0p,
+	 mgtclk0n   =>		mgtclk0n,
+	 mgtclk1p   =>		mgtclk1p,
+	 mgtclk1n   =>		mgtclk1n,
     mgtrxp    	=>		mgtrxp,                
     mgtrxn   	=>		mgtrxn,                
     mgttxp    	=>		mgttxp,                
-    mgttxn   	=>		mgttxn,                
+    mgttxn   	=>		mgttxn,               
+	ex_trig1=>'1',
     status_fake =>	status_fake,          
     control_fake => 	control_fake         
 
@@ -1029,7 +971,8 @@ end generate;
 	--------------------------------------------------
 
 	--LEDS (no need for A4?)- it is on Interconnect Board
-	LEDS <= internal_OUTPUT_REGISTERS(0);
+	LEDS(11 downto 3) <= internal_OUTPUT_REGISTERS(0)(11 downto 3);
+	
 	--LEDS <= internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status & internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS & "000" & internal_SMP_MAIN_CNT;
 	
 	--DAC CONTROL SIGNALS
@@ -1065,7 +1008,7 @@ end generate;
 	interna_CMDREG_PedCalcNAVG		<=internal_OUTPUT_REGISTERS(38)(3 downto 0); -- 2**NAVG= number of averages for calculating peds
 	interna_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
 	interna_CMDREG_PedSubEnable 	<=internal_OUTPUT_REGISTERS(38)(14);
-	interna_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(13);		
+	interna_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(13);	
 	
 	--Event builder signals
 	internal_CMDREG_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
@@ -1186,24 +1129,7 @@ end generate;
 
 
 	gen_wl_clk_to_asic : for i in 0 to 9 generate
---	
---	map_wlclkp : ODDR2
---			generic map(
---				DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1"
---				INIT => '0', -- Sets initial state of the Q output to '0' or '1'
---				SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
---			port map (
---				Q  => WL_CLK_tmp(i),        -- 1-bit output data
---				C0 => internal_CLOCK_ASIC_CTRL,      -- 1-bit clock input
---				C1 => not(internal_CLOCK_ASIC_CTRL), -- 1-bit clock input
---				CE => '1',                     -- 1-bit clock enable input
---				D0 => '1',                     -- 1-bit data input (associated with C0)
---				D1 => '0',                     -- 1-bit data input (associated with C1)
---				R  => '0',                     -- 1-bit reset input
---				S  => '0'                      -- 1-bit set input
---		);
---	
-	
+
 	wilk_OBUFDS_inst : OBUFDS
    generic map (
       --IOSTANDARD => "DEFAULT")
@@ -1285,7 +1211,7 @@ end generate;
 	internal_HARDWARE_TRIGGER_ENABLE <= internal_CMDREG_HARDWARE_TRIGGER_ENABLE;
 	internal_SOFTWARE_TRIGGER <= internal_CMDREG_SOFTWARE_trigger;-- AND NOT internal_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER <= internal_TRIGGER_ALL AND internal_HARDWARE_TRIGGER_ENABLE;
-	internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER;
+	internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER or internal_ASIC_TRIG;
 	--internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER;
 	internal_READCTRL_trig_delay <= internal_CMDREG_READCTRL_trig_delay;
 	internal_READCTRL_dig_offset <= internal_CMDREG_READCTRL_dig_offset;
@@ -1294,6 +1220,11 @@ end generate;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
+	LEDS(0)<=internal_TRIGGER_ALL;-- scope probe here
+	LEDS(1)<=internal_READCTRL_trigger;
+	LEDS(2)<=internal_SMP_MAIN_CNT(4); 
+	
+	LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
 	
 --	 u_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
@@ -1316,25 +1247,25 @@ end generate;
 --	
 --		internal_ram_rw(2)<='0';-- always reading from this channel
 	
-	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPeds PORT MAP(
-		clk => internal_CLOCK_FPGA_LOGIC,
-		reset => interna_CMDREG_PedCalcReset,
-		enable => interna_CMDREG_PedCalcEnable,
-		navg => interna_CMDREG_PedCalcNAVG,
-		asic_no => internal_READCTRL_ASIC_NUM,
-		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
-		trigin => internal_READCTRL_LATCH_DONE,
-		fifo_en => internal_SROUT_FIFO_WR_EN ,
-		fifo_clk => internal_SROUT_FIFO_WR_CLK,
-		fifo_din => internal_SROUT_FIFO_DATA_OUT,
-		
-		ram_addr => internal_ram_Ain(3),
-		ram_data => internal_ram_DWin(3),
-		ram_update => internal_ram_update(3),
-		ram_busy => internal_ram_busy(3)
-	);
-		
-		internal_ram_rw(3)<='1';-- always write to this channel	
+--	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPedsBRAM PORT MAP(
+--		clk => internal_CLOCK_FPGA_LOGIC,
+--		reset => interna_CMDREG_PedCalcReset,
+--		enable => interna_CMDREG_PedCalcEnable,
+--		navg => interna_CMDREG_PedCalcNAVG,
+--		asic_no => internal_READCTRL_ASIC_NUM,
+--		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+--		trigin => internal_READCTRL_LATCH_DONE,
+--		fifo_en => internal_SROUT_FIFO_WR_EN ,
+--		fifo_clk => internal_SROUT_FIFO_WR_CLK,
+--		fifo_din => internal_SROUT_FIFO_DATA_OUT,
+--		
+--		ram_addr => internal_ram_Ain(3),
+--		ram_data => internal_ram_DWin(3),
+--		ram_update => internal_ram_update(3),
+--		ram_busy => internal_ram_busy(3)
+--	);
+--		
+--		internal_ram_rw(3)<='1';-- always write to this channel	
 	
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
@@ -1348,11 +1279,11 @@ end generate;
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
 		sstin_out 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
 		wr_addrclr_out => internal_WR_ADDRCLR,
-		wr1_ena 	=>open,-- internal_WR_ENA,
+		wr1_ena 	=> internal_WR_ENA,
 		wr2_ena 	=> open
 	);
 	
-internal_WR_ENA<= not internal_READCTRL_trigger;-- debug
+--internal_WR_ENA<= not internal_DIG_IDLE_status;--internal_READCTRL_trigger;-- debug
 
 	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
 	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
@@ -1373,22 +1304,15 @@ internal_WR_ENA<= not internal_READCTRL_trigger;-- debug
 	
 	--SamplingLgc signals just get fanned out identically to each daughter card
 	gen_SamplingLgcSignals : for i in 0 to 9 generate
-		--SSPIN(i) 		<= internal_SSPIN;
---		SSTIN(i) 		<= internal_CLOCK_ASIC_CTRL;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
---		SSTIN_N(i) 		<= internal_SSTIN;-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
---		SSTIN_P(i) 		<= not(internal_SSTIN);-- GV: 6/9/14 still needed to be fixed to LVDS, pending if we can route out of ports + and - pins of clocks
 		WR1_ENA(i) 		<= internal_WR_ENA;
 		WR2_ENA(i) 		<= internal_WR_ENA;
 	end generate;
 
-
- --IM: 6/12/14 Save this for later when LVDS problem on PCB is fixed- they need to be routed to the correct bank
 gen_sstin : for i in 0 to 9 generate
  OBUFDS_inst : OBUFDS
    generic map (
  --     IOSTANDARD => "DEFAULT")
 		IOSTANDARD => "LVDS_25")
-
    port map (
       O => SSTIN_P(i),    			-- Diff_p output (connect directly to top-level port)
       OB => SSTIN_N(i),   			-- Diff_n output (connect directly to top-level port)
@@ -1448,9 +1372,9 @@ end generate;
 --		ram_update=>internal_ram_update(2),
 --		ram_busy=>internal_ram_busy(2)
 	);
---	internal_ram_rw(2)<='0'; --only reading from this channel of RAM
-	
+--	internal_ram_rw(2)<='0'; --only reading from this channel of RAM	
 	internal_SROUT_START <= internal_READCTRL_srout_start;
+
 	
 	--make serial readout bus signals identical
 	BUSA_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;

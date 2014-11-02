@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------
 --
---  b2tt_ddr.vhd -- TT-link DDR and delay hander for Belle2link frontend
---                  for Virtex-5 / Virtex-6
+--  b2tt_ddr_v6.vhd -- TT-link DDR and delay hander for Belle2link
+--                     frontend for Virtex-6
 --
 --  Mikihiko Nakao, KEK IPNS
 --
@@ -9,6 +9,8 @@
 --  20131013 Spartan-6 support
 --  20131028 slip fix, no auto wrap, separate Virtex-6 support
 --  20131101 no more std_logic_arith
+--  20140614 dbg added for chipscope
+--  20140709 new scheme to find the stable delay
 --
 ------------------------------------------------------------------------
 
@@ -26,56 +28,55 @@ entity b2tt_iddr is
   generic (
     FLIPIN    : std_logic := '0';
     REFFREQ   : real      := 203.546;
-    WRAPCOUNT : integer   := 51 );
+    SLIPBIT   : integer   := 1;     -- 0 for v5/s6, 1 for v6
+    WRAPCOUNT : integer   := 25;    -- 51 for v5, 25 for v6, 170 for s6
+    FULLCOUNT : integer   := 100;   -- WC*4 for v6, WC*2 for v5/s6
+    SIM_SPEEDUP : std_logic := '0' ); -- to speedup simulation
+  --
+  -- Virtex-5 and Virtex-6 (both):
+  --   1 tap = 7.8 ns / ((8/5*64)) = 78 ps
+  --   [for V5, idelayctrl clock tick = 7.8 ns / (8/5)]
+  -- Virtex-5: 51 taps to cover the delay range (V5)
+  -- Virtex-6: there is no way to cover half clock width of 3.9ns
+  --   since 31 is the max tap which is about 2.4ns
+  --   => oversample with iserdes for 1.95ns period to be covered
+  --      by 25 taps (cnt_islip=0..3)
+  --
   port (
-    clock    : in  std_logic;
-    invclock : in  std_logic; -- spartan6 only
-    inp      : in  std_logic;
-    inn      : in  std_logic;
-    incdelay : in  std_logic;
-    clrdelay : in  std_logic;
-    sigslip  : in  std_logic;
-    enslip   : in  std_logic;
-    autoslip : in  std_logic;
-    decdelay : in  std_logic; -- debug only (decrement instead of increment)
-    caldelay : in  std_logic; -- spartan6 only
-    staslip  : out std_logic;
-    bitddr   : out std_logic;
-    bit2     : out std_logic_vector (1 downto 0);
-    cntdelay : out std_logic_vector (11 downto 0) );
+    clock     : in  std_logic;
+    invclock  : in  std_logic; -- spartan6 only
+    dblclock  : in  std_logic;
+    dblclockb : in  std_logic;
+    inp       : in  std_logic;
+    inn       : in  std_logic;
+    staoctet  : in  std_logic;
+    stacrc8ok : in  std_logic;
+    manual    : in  std_logic;
+    incdelay  : in  std_logic;
+    clrdelay  : in  std_logic;
+    caldelay  : in  std_logic; -- spartan6 only (or for v6 iserdes bitflip)
+    staiddr   : out std_logic_vector (1  downto 0);
+    bitddr    : out std_logic;
+    bit2      : out std_logic_vector (1  downto 0);
+    cntdelay  : out std_logic_vector (6  downto 0);
+    cntwidth  : out std_logic_vector (5  downto 0);
+    iddrdbg   : out std_logic_vector (9  downto 0) );
 
 end b2tt_iddr;
 ------------------------------------------------------------------------
 architecture implementation of b2tt_iddr is
-  signal sig_ii     : std_logic_vector (1 downto 0) := "00";
-  signal sig_di     : std_logic_vector (1 downto 0) := "00";
-  signal sig_q      : std_logic_vector (1 downto 0) := "00";
-  signal seq_inc    : std_logic_vector (1 downto 0) := "00";
-  signal sig_inc    : std_logic_vector (1 downto 0) := "00";
-  signal sig_clr    : std_logic := '0';
-  signal cnt_delay  : std_logic_vector (5 downto 0) := "000000";
-  signal cnt_delay2 : std_logic_vector (4 downto 0) := "00000";
-  signal sig_raw2   : std_logic_vector (1 downto 0) := "00";
-  signal sig_bit2   : std_logic_vector (1 downto 0) := "00";
-  signal sta_slip   : std_logic := '0';
-  signal buf_bit    : std_logic := '0';
-  signal sig_incdir : std_logic := '1';
-  
-  -- following does not work because length of "string" is
-  -- unconstrained:
-  -- type   string_vector is array (natural range <>) of string;
-  -- constant string : DLYSRC (1 downto 0) := ("DATAIN", "I");
+  signal sig_i       : std_logic := '0';
+  signal sig_q       : std_logic := '0';
+  signal sig_inc     : std_logic := '0';
+  signal clr_inc     : std_logic := '0';
+  signal sig_islip   : std_logic := '0';
+  signal clr_islip   : std_logic := '0';
+  signal sig_raw4    : std_logic_vector (3  downto 0) := "0000";
 begin
-  -- in
-  sig_incdir <= not decdelay;
-  
   mpa_ibufds: ibufds
-    port map ( o => sig_ii(0), i => inp, ib => inn );
-  sig_ii(1) <= '0';
-  sig_di(0) <= '0';
-  sig_di(1) <= sig_q(0);
+    port map ( o => sig_i, i => inp, ib => inn );
 
-  map_idelay0: iodelay
+  map_idelay: iodelay
     generic map (
       REFCLK_FREQUENCY => REFFREQ,
       HIGH_PERFORMANCE_MODE => FALSE,
@@ -83,124 +84,79 @@ begin
       ODELAY_VALUE => 0,
       DELAY_SRC   => "I" )
     port map (
-      idatain => sig_ii(0),
+      idatain => sig_i,
       odatain => '0',
-      datain  => sig_di(0),
-      dataout => sig_q(0),
-      ce  => sig_inc(0),
-      rst => sig_clr,
+      datain  => '0',
+      dataout => sig_q,
+      ce  => sig_inc,
+      rst => clr_inc,
       t   => '0',
-      inc => sig_incdir,
+      inc => '1',
       c   => clock );
   
-  map_idelay1: iodelay
+  map_id: iserdese1
     generic map (
-      REFCLK_FREQUENCY => REFFREQ,
-      HIGH_PERFORMANCE_MODE => FALSE,
-      IDELAY_TYPE => "VARIABLE",
-      ODELAY_VALUE => 0,
-      DELAY_SRC   => "DATAIN" )
+      -- BITSLIP_ENABLE => TRUE, -- not in v6
+      DATA_RATE         => "DDR",
+      DATA_WIDTH        => 4,
+      DYN_CLKDIV_INV_EN => FALSE,
+      DYN_CLK_INV_EN    => FALSE,
+      INTERFACE_TYPE    => "NETWORKING",
+      IOBDELAY          => "BOTH", -- BOTH to use O, IFD if not
+      NUM_CE            => 1, -- not so clear 1 or 2
+      OFB_USED          => FALSE,
+      SERDES_MODE       => "MASTER" )
     port map (
-      idatain => sig_ii(1),
-      odatain => '0',
-      datain  => sig_di(1),
-      dataout => sig_q(1),
-      ce  => sig_inc(1),
-      rst => sig_clr,
-      t   => '0',
-      inc => sig_incdir,
-      c   => clock );
-  
-  map_id: iddr
+      q1   => sig_raw4(0),
+      q2   => sig_raw4(1),
+      q3   => sig_raw4(2),
+      q4   => sig_raw4(3),
+      d    => '0',
+      o    => bitddr,
+      ddly => sig_q,
+      ce1  => '1',
+      ce2  => '1',
+      clk  => dblclock,
+      clkb => dblclockb,
+      rst  => clr_islip,
+      clkdiv => clock,
+      oclk    => '0',
+      bitslip => sig_islip,
+      dynclkdivsel => '0',
+      dynclksel => '0',
+      ofb => '0',
+      shiftin1 => '0',
+      shiftin2 => '0' );
+
+  bit2(0) <= sig_raw4(0) xor FLIPIN;
+  bit2(1) <= sig_raw4(2) xor FLIPIN;
+
+  map_iscan: entity work.b2tt_iscan
     generic map (
-      DDR_CLK_EDGE => "SAME_EDGE" )
+      FLIPIN => FLIPIN,
+      REFFREQ => REFFREQ,
+      SLIPBIT => SLIPBIT,
+      WRAPCOUNT => WRAPCOUNT,
+      FULLCOUNT => FULLCOUNT,
+      SIM_SPEEDUP => SIM_SPEEDUP )
     port map (
-      s  => '0',
-      d  => sig_q(1),
-      ce => '1',
-      c  => clock,
-      r  => '0',
-      q1 => sig_raw2(0),
-      q2 => sig_raw2(1) );
-
-  sig_bit2(0) <= sig_raw2(0) xor FLIPIN;
-  sig_bit2(1) <= sig_raw2(1) xor FLIPIN;
-
-  proc: process (clock)
-  begin
-    if clock'event and clock = '1' then
-
-      -- incdelay / clrdelay combination
-      
-      seq_inc <= seq_inc(0) & incdelay;
-
-      -- VIRTEX5: idelayctrl clock tick = 7.8 ns / (8/5)
-      -- tap = 7.8 ns / ((8/5*64))
-      -- to cover half clock width (3.9ns): (8/5)*64/2 = about 51 (WRAPCOUNT)
-      
-      if clrdelay = '1' then
-        sig_clr <= '1';
-        cnt_delay2 <= (others => '0');
-      elsif sig_incdir = '1' and seq_inc = "01" and cnt_delay = WRAPCOUNT then
-        sig_clr <= '1';
-        cnt_delay2 <= cnt_delay2 + 1;
-      else
-        sig_clr <= '0';
-      end if;
-
-      if sig_incdir = '1' and seq_inc = "01" and cnt_delay /= WRAPCOUNT then
-        if cnt_delay(0) = '1' then
-          sig_inc <= "10";
-        else
-          sig_inc <= "01";
-        end if;
-      elsif sig_incdir = '0' and seq_inc = "01" and cnt_delay /= 0 then
-        if cnt_delay(0) = '1' then
-          sig_inc <= "01";
-        else
-          sig_inc <= "10";
-        end if;
-      else
-        sig_inc <= "00";
-      end if;
-
-      if sig_clr = '1' then
-        cnt_delay <= (others => '0');
-      elsif sig_inc /= 0 then
-        if sig_incdir = '1' then
-          cnt_delay <= cnt_delay + 1;
-        else
-          cnt_delay <= cnt_delay - 1;
-        end if;
-      end if;
-
-      -- slip logic
-      if autoslip = '1' and sigslip = '1' then
-        sta_slip <= not sta_slip;
-      elsif autoslip = '0' then
-        sta_slip <= enslip;
-      end if;
-      buf_bit <= sig_bit2(0);
-
-      -- bit2
-      if sta_slip = '0' then
-        bit2 <= sig_bit2;
-      else
-        bit2 <= buf_bit & sig_bit2(1);
-      end if;
-      
-    end if; -- event
-  end process;
+      -- from/to b2tt_decode
+      clock     => clock,
+      staoctet  => staoctet,
+      stacrc8ok => stacrc8ok,
+      manual    => manual,
+      incdelay  => incdelay,
+      clrdelay  => clrdelay,
+      staiddr   => staiddr,     -- out
+      cntdelay  => cntdelay,    -- out
+      cntwidth  => cntwidth,    -- out
+      iddrdbg   => iddrdbg,     -- out
+      -- from/to b2tt_iddr
+      siginc    => sig_inc,     -- out
+      sigislip  => sig_islip,   -- out
+      clrinc    => clr_inc,     -- out
+      clrislip  => clr_islip) ; --  out
   
-  -- bit2 was generated here up to b2tt 0.11, but it is a bit timing-tight
-  --   -- out (buf_bit is sync, sig_bit2 is async)
-  --   bit2 <= sig_bit2 when sta_slip = '0' else buf_bit & sig_bit2(1);
-
-  -- out
-  bitddr   <= sig_q(1);
-  staslip  <= sta_slip;
-  cntdelay <= sta_slip & cnt_delay2 & cnt_delay;
-      
 end implementation;
 
 ------------------------------------------------------------------------

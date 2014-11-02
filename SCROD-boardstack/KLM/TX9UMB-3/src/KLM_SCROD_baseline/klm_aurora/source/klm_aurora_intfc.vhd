@@ -18,10 +18,12 @@ use ieee.std_logic_misc.all;
 use work.aurora_pkg.all;
 
 entity klm_aurora_intfc is
-    generic(
-        REFSELDYPLL             : std_logic_vector(2 downto 0)  := "010";--PLLCLK (bad idea)
+    generic(        
         SIM_GTPRESET_SPEEDUP    : integer                       := 1);
     port(
+        refseldypll             : std_logic_vector(2 downto 0);
+        ref_clk0                : in std_logic;
+        ref_clk1                : in std_logic;
         user_clk                : in std_logic;
         sync_clk                : in std_logic;
         reset                   : in std_logic;
@@ -108,8 +110,9 @@ architecture MAPPED of klm_aurora_intfc is
         TXN                     : out std_logic;
         -- GT Reference Clock Interface
         REFSELDYPLL             : in std_logic_vector(2 downto 0);
-        --GTPD2                 : in std_logic;
-        PLLCLK                  : in std_logic;
+        REFCLK0                 : in std_logic;
+        REFCLK1                 : in std_logic;
+        GCLK                    : in std_logic;
         -- Error Detection Interface
         HARD_ERR                : out std_logic;
         SOFT_ERR                : out std_logic;
@@ -175,9 +178,10 @@ begin
         TXP                     => txp,
         TXN                     => txn,
         -- GT Reference Clock Interface
-        REFSELDYPLL             => REFSELDYPLL,
-        --GTPD2                 => --GTPD2_left_i,
-        PLLCLK                  => user_clk,
+        REFSELDYPLL             => refseldypll,
+        REFCLK0                 => ref_clk0,
+        REFCLK1                 => ref_clk1,
+        GCLK                    => user_clk,
         -- Error Detection Interface
         HARD_ERR                => hard_err_i,
         SOFT_ERR                => soft_err_i,

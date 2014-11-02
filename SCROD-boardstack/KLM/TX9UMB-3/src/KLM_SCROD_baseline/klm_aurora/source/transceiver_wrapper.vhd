@@ -111,7 +111,9 @@ port(
     DWE_IN                              : in   std_logic;
     ------------------- Shared Ports - Tile and PLL Ports --------------------
     REFSELDYPLL                         : in    std_logic_vector(2 downto 0);
-    REFCLK                              : in    std_logic;
+    REFCLK0                             : in    std_logic;
+    REFCLK1                             : in    std_logic;
+    GCLK                                : in    std_logic;
     GTPRESET_IN                         : in    std_logic;
     PLLLKDET_OUT                        : out   std_logic;
     -------------- Transmit Ports - 8b10b Encoder Control Ports --------------
@@ -211,11 +213,16 @@ port(
     DRPDO_OUT                           : out  std_logic_vector(15 downto 0);
     DWE_IN                              : in   std_logic;
     --------------------- Shared Ports - Tile and PLL Ports --------------------
-    REFSELDYPLL0                        : in std_logic_vector(2 downto 0);
-    -- CLK00_IN                         : in   std_logic;
-    -- CLK01_IN                         : in   std_logic;
-    PLLCLK00_IN                         : in   std_logic;
-    PLLCLK01_IN                         : in   std_logic;  
+    REFSELDYPLL0_IN                     : in std_logic_vector(2 downto 0);
+    REFSELDYPLL1_IN                     : in std_logic_vector(2 downto 0);
+    CLK00_IN                            : in   std_logic;
+    CLK01_IN                            : in   std_logic;
+    CLK10_IN                            : in   std_logic;
+    CLK11_IN                            : in   std_logic;
+    GCLK00_IN                           : in   std_logic;
+    GCLK01_IN                           : in   std_logic;
+    GCLK10_IN                           : in   std_logic;
+    GCLK11_IN                           : in   std_logic;
     GTPRESET0_IN                        : in   std_logic;
     GTPRESET1_IN                        : in   std_logic;
     PLLLKDET0_OUT                       : out  std_logic;
@@ -265,7 +272,7 @@ begin
 
 --Assign lock signals
   PLLLKDET_OUT  <=   plllkdet_i;
-  
+
 --*************************************************************************************************
 -------------------------------------EVEN GTP-----------------------------------------------
 --*************************************************************************************************
@@ -322,7 +329,7 @@ begin
         -------- Receive Ports - RX Elastic Buffer and Phase Alignment Ports -------
         RXBUFSTATUS0_OUT(2)             => RXBUFERR_OUT ,
         RXBUFSTATUS0_OUT(1 downto 0)    => open_rxbufstatus(1 downto 0),
-        RXBUFSTATUS1_OUT                => RXBUFERR_OUT_unused,    
+        RXBUFSTATUS1_OUT                => RXBUFERR_OUT_unused,
         TXBUFSTATUS0_OUT(1)             => TXBUFERR_OUT ,
         TXBUFSTATUS0_OUT(0)             => open_txbufstatus,
         TXBUFSTATUS1_OUT                => TXBUFERR_OUT_unused,
@@ -338,11 +345,16 @@ begin
         DRPDO_OUT                       => DRPDO_OUT,
         DWE_IN                          => DWE_IN,
         --------------------- Shared Ports - Tile and PLL Ports --------------------
-        REFSELDYPLL0                   => REFSELDYPLL,
-        -- CLK00_IN                    => REFCLK,
-        -- CLK01_IN                    => REFCLK,
-        PLLCLK00_IN                    => REFCLK,
-        PLLCLK01_IN                    => REFCLK,
+        REFSELDYPLL0_IN                => REFSELDYPLL,
+        REFSELDYPLL1_IN                => REFSELDYPLL,
+        CLK00_IN                       => REFCLK0,
+        CLK01_IN                       => REFCLK0,
+        CLK10_IN                       => REFCLK1,
+        CLK11_IN                       => REFCLK1,
+        GCLK00_IN                      => GCLK,
+        GCLK01_IN                      => GCLK,
+        GCLK10_IN                      => GCLK,
+        GCLK11_IN                      => GCLK,
         GTPRESET0_IN                   => GTPRESET_IN,
         GTPRESET1_IN                   => GTPRESET_IN,
         PLLLKDET0_OUT                  => plllkdet_i,
