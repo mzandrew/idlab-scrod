@@ -11,9 +11,9 @@ use work.asic_definitions_irs2_carrier_revA.all;
 entity clock_gen is
    generic(
 	 -- uncomment one of these lines only to comiple with the given configuration
-	 HW_CONF						: string:="ee"-- :="SA4_MBA_DCA_RB_I", --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
+--	 HW_CONF						: string:="ee"-- :="SA4_MBA_DCA_RB_I", --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
 --	 HW_CONF						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
---	 HW_CONF						: string :="SA4_MBB_DCA_RB", 	 --SCROD A4, MB B, TXDC A, RHIC B
+	 HW_CONF						: string :="SA4_MBB_DCA_RB" 	 --SCROD A4, MB B, TXDC A, RHIC B
 	 );
 	Port ( 
 		--Raw boad clock input
@@ -71,7 +71,7 @@ begin
 	port map(
 		I  => BOARD_CLOCKP,
 		IB => BOARD_CLOCKN,
-		O  => internal_LOCAL_CLOCK -- either 250 MHz or 125 MHz depending on the osc on SCROD
+		O  => internal_LOCAL_CLOCK -- 127 MHz depending on the osc on SCROD A4
 	);	
 	
 	internal_BOARD_CLOCK<=internal_LOCAL_CLOCK when USE_LOCAL_CLOCK='1' else B2TT_SYS_CLOCK;

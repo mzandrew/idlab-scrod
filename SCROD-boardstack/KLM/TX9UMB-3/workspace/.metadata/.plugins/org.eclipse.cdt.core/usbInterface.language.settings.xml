@@ -20,23 +20,7 @@
 						<entry kind="macro" name="DEBUG" value=""/>
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
-					<resource project-relative-path="src/target6Control_testTrigger.cpp">
-						<entry kind="includePath" name="/${ProjName}/src/lib">
-							<flag value="VALUE_WORKSPACE_PATH"/>
-						</entry>
-						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
-						<entry kind="macro" name="DEBUG" value=""/>
-						<entry kind="macro" name="USE_USB" value=""/>
-					</resource>
 					<resource project-relative-path="src/parseTarget6Data2.cxx">
-						<entry kind="includePath" name="/${ProjName}/src/lib">
-							<flag value="VALUE_WORKSPACE_PATH"/>
-						</entry>
-						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
-						<entry kind="macro" name="DEBUG" value=""/>
-						<entry kind="macro" name="USE_USB" value=""/>
-					</resource>
-					<resource project-relative-path="src/target6Data_viewWaveformTree.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
@@ -52,7 +36,7 @@
 						<entry kind="macro" name="DEBUG" value=""/>
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
-					<resource project-relative-path="src/lib/idl_usb.cpp">
+					<resource project-relative-path="src/target6Data_viewWaveformTree.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
@@ -68,7 +52,7 @@
 						<entry kind="macro" name="DEBUG" value=""/>
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
-					<resource project-relative-path="src/target6Control_RAMtest01.cpp">
+					<resource project-relative-path="src/lib/idl_usb.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
@@ -76,7 +60,7 @@
 						<entry kind="macro" name="DEBUG" value=""/>
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
-					<resource project-relative-path="src/parseTarget6Data_DecodeTPG.cxx">
+					<resource project-relative-path="src/target6Control_RAMtest01.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
@@ -93,6 +77,22 @@
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
 					<resource project-relative-path="src/target6Control_readReg.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/SCRODA4_RAMtest02.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/tx_onboard_pedcalc01.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
@@ -124,14 +124,6 @@
 						<entry kind="macro" name="DEBUG" value=""/>
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
-					<resource project-relative-path="src/target6Control_writeReg.cpp">
-						<entry kind="includePath" name="/${ProjName}/src/lib">
-							<flag value="VALUE_WORKSPACE_PATH"/>
-						</entry>
-						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
-						<entry kind="macro" name="DEBUG" value=""/>
-						<entry kind="macro" name="USE_USB" value=""/>
-					</resource>
 					<resource project-relative-path="src/parseTarget6Data3.cxx">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
@@ -141,14 +133,6 @@
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
 					<resource project-relative-path="src/target6Data_makeHitTree.cpp">
-						<entry kind="includePath" name="/${ProjName}/src/lib">
-							<flag value="VALUE_WORKSPACE_PATH"/>
-						</entry>
-						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
-						<entry kind="macro" name="DEBUG" value=""/>
-						<entry kind="macro" name="USE_USB" value=""/>
-					</resource>
-					<resource project-relative-path="src/lib/target6ControlClass.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>
@@ -173,6 +157,54 @@
 						<entry kind="macro" name="USE_USB" value=""/>
 					</resource>
 					<resource project-relative-path="src/lib/target6DataClass.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_testTrigger.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/parseTarget6Data_DecodeTPG.cxx">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/parseTXPedSubData01.cxx">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/SCRODA4_RAMpattern01.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/target6Control_writeReg.cpp">
+						<entry kind="includePath" name="/${ProjName}/src/lib">
+							<flag value="VALUE_WORKSPACE_PATH"/>
+						</entry>
+						<entry kind="includePath" name="/usr/include/libusb-1.0"/>
+						<entry kind="macro" name="DEBUG" value=""/>
+						<entry kind="macro" name="USE_USB" value=""/>
+					</resource>
+					<resource project-relative-path="src/lib/target6ControlClass.cpp">
 						<entry kind="includePath" name="/${ProjName}/src/lib">
 							<flag value="VALUE_WORKSPACE_PATH"/>
 						</entry>

@@ -129,14 +129,15 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
         );
     END COMPONENT;
  
- COMPONENT WaveformDemuxPedsubDSP
+ COMPONENT WaveformDemuxPedsubDSPBRAM
     PORT(
          clk : IN  std_logic;
 			enable : IN std_logic;
          asic_no : IN  std_logic_vector(3 downto 0);
          win_addr_start : IN  std_logic_vector(8 downto 0);
          sr_start : IN  std_logic;
-			
+			mode	: in std_logic_vector(1 downto 0);
+		
 			pswfifo_en 			:	out std_logic;
 			pswfifo_clk 		: 	out std_logic;
 			pswfifo_d 			: 	out std_logic_vector(31 downto 0);
@@ -177,6 +178,8 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
 		enable : IN std_logic;
 		navg : IN std_logic_vector(3 downto 0);
 		asic_no : IN std_logic_vector(3 downto 0);
+					busy					 : out std_logic;
+
 		win_addr_start : IN std_logic_vector(8 downto 0);
 		trigin : IN std_logic;
 		fifo_en : IN std_logic;
@@ -215,7 +218,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    signal EVENT_NUM : std_logic_vector(31 downto 0) := (others => '0');
    signal WIN_ADDR : std_logic_vector(8 downto 0) := (others => '0');
  --  signal ASIC_NUM : std_logic_vector(3 downto 0) := (others => '0');
-   signal dout : std_logic_vector(15 downto 0) := (others => '0');
+   signal dout : std_logic_vector(15 downto 0) := "1111000011110000";
 
  	--Outputs
 --   signal IDLE_status : std_logic;
@@ -261,7 +264,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    signal internal_ram_DRout : DataArray;
    signal internal_ram_busy : std_logic_vector(NRAMCH-1 downto 0);
 
-   signal IOr : std_logic_vector(7 downto 0);
+   signal IOr : std_logic_vector(7 downto 0):="11011001";
    signal IOw : std_logic_vector(7 downto 0);
 	signal ramiobufstate : std_logic;
    signal A : std_logic_vector(21 downto 0);
@@ -271,12 +274,34 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    signal OEb : std_logic;
 
 	signal PedCalcReset: std_logic:='0';
+	signal PedCalcBusy: std_logic:='0';
 
 
   signal wr_addrclr_out : std_logic;
    signal wr1_ena : std_logic;
    signal wr2_ena : std_logic;
 	signal smp_reset : std_logic;
+	
+	signal fifo_wr_din_i:std_logic_vector(31 downto 0):=x"12345678";
+	signal bit_no: integer:=0;
+		  
+signal sa_val_0: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_1: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_2: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_3: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_4: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_5: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_6: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_7: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_8: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_9: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_A: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_B: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_C: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_D: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_E: std_logic_vector(11 downto 0):="000000000000";
+signal sa_val_F: std_logic_vector(11 downto 0):="000000000000";
+ signal sr_clk_i:std_logic_vector(1 downto 0):="00";
 
    -- Clock period definitions
    constant clk_period : time := 16 ns;
@@ -362,11 +387,13 @@ BEGIN
           fifo_wr_din => fifo_wr_din
         );
 		  
-		  uut_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
+		  uut_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
           clk => clk,
-			enable => '0',
+			enable => '1',
          asic_no => ASIC_NUM,
           win_addr_start => WIN_ADDR,
+			 mode=>"01",
+
           sr_start => LATCH_DONE,--srout_start,
           fifo_en => fifo_wr_en,
           fifo_clk => fifo_wr_clk,
@@ -381,8 +408,9 @@ BEGIN
 	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPedsBRAM PORT MAP(
 		clk => clk,
 		reset => PedCalcReset,
-		enable => '1',
+		enable => '0',
 		navg => x"3",
+		busy=>PedCalcBusy,
 		asic_no => ASIC_NUM,
 		win_addr_start =>WIN_ADDR ,
 		trigin => LATCH_DONE,
@@ -424,6 +452,86 @@ BEGIN
 		wait for clk_period/2;
    end process;
  
+ 
+ TXdummy: process (clk)
+  begin
+ 
+  if (rising_edge(clk)) then
+  
+  sr_clk_i(1)<=sr_clk_i(0);
+  sr_clk_i(0)<=sr_clk;
+  
+  if (fifo_wr_din(31 downto 20)=x"ABC") then
+	  bit_no<=0;
+	  fifo_wr_din_i<=fifo_wr_din;--the first is x"ABC"!
+  
+  
+  end if;
+	
+	if (sr_clk_i="01" ) then -- reset bit number 
+	
+	if (sr_sel='1') then
+	bit_no<=0;
+	  else 
+	bit_no<=bit_no+1;
+
+	 end if;
+
+	
+	 end if;
+	 
+--	  sa_no<=fifo_wr_din(4 downto 0);
+--	  win_no<=fifo_wr_din(18 downto 10);
+--	  win_no<=fifo_wr_din(12 downto 10);-- only reflect 3 lower bits of the window numbner for now
+	  sa_val_0 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"0";
+	  sa_val_1 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"1";
+	  sa_val_2 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"2";
+	  sa_val_3 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"3";
+	  sa_val_4 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"4";
+	  sa_val_5 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"5";
+	  sa_val_6 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"6";
+	  sa_val_7 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"7";
+	  sa_val_8 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"8";
+	  sa_val_9 <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"9";
+	  sa_val_A <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"A";
+	  sa_val_B <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"B";
+	  sa_val_C <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"C";
+	  sa_val_D <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"D";
+	  sa_val_E <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"E";
+	  sa_val_F <=fifo_wr_din_i(12 downto 10) & fifo_wr_din_i(4 downto 0)& x"F";
+	  
+
+	
+	if (sr_clk_i="01") then
+--	bit_no<=bit_no+1;
+	dout(0 )<=sa_val_0(bit_no);
+	dout(1 )<=sa_val_1(bit_no);
+	dout(2 )<=sa_val_2(bit_no);
+	dout(3 )<=sa_val_3(bit_no);
+	dout(4 )<=sa_val_4(bit_no);
+	dout(5 )<=sa_val_5(bit_no);
+	dout(6 )<=sa_val_6(bit_no);
+	dout(7 )<=sa_val_7(bit_no);
+	dout(8 )<=sa_val_8(bit_no);
+	dout(9 )<=sa_val_9(bit_no);
+	dout(10)<=sa_val_A(bit_no);
+	dout(11)<=sa_val_B(bit_no);
+	dout(12)<=sa_val_C(bit_no);
+	dout(13)<=sa_val_D(bit_no);
+	dout(14)<=sa_val_E(bit_no);
+	dout(15)<=sa_val_F(bit_no);
+	end if;
+	
+		
+	
+	--end if;
+
+ end if;
+
+ 
+ 
+ end process;
+ 
 
    -- Stimulus process
    stim_proc: process
@@ -440,6 +548,7 @@ PedCalcReset<='1';
 PedCalcReset<='0';
 		
 
+		wait for clk_period*10;
 	trigger<='1';
       -- insert stimulus here 
       wait for clk_period*20;

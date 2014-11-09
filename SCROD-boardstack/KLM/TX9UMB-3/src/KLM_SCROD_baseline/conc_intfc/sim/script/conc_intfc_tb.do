@@ -23,6 +23,7 @@ vcom -work conc_intfc_lib .\..\..\time_order\source\time_order.vhd
 vcom -work conc_intfc_lib .\..\source\conc_intfc_pkg.vhd
 vcom -work conc_intfc_lib .\..\source\trig_chan_calc.vhd
 vcom -work conc_intfc_lib .\..\source\conc_intfc.vhd
+#vcom -work conc_intfc_lib .\..\source\conc_intfc0.vhd
 
 vcom -work conc_intfc_lib .\source\b2tt.vhd
 vcom -work conc_intfc_lib .\source\targetx.vhd
@@ -129,6 +130,13 @@ add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/to_dout}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/to_valid}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trg_fifo_we}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trg_fifo_di}
+add wave -noreg -logic {/conc_intfc_tb/UUT/atrg_sof}
+add wave -noreg -logic {/conc_intfc_tb/UUT/atrg_eof}
+add wave -noreg -logic {/conc_intfc_tb/UUT/daq_sof}
+add wave -noreg -logic {/conc_intfc_tb/UUT/daq_eof}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_pause}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/sts_pause}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/idl_pause}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trg_fifo_re}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trg_fifo_do}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trg_fifo_afull}
@@ -143,11 +151,16 @@ add wave -noreg -logic {/conc_intfc_tb/UUT/daq_fifo_afull}
 add wave -noreg -logic {/conc_intfc_tb/UUT/daq_fifo_epty}
 add wave -noreg -logic {/conc_intfc_tb/UUT/daq_fifo_aepty}
 add wave -noreg -logic {/conc_intfc_tb/UUT/daq_fifo_full}
+add wave -noreg -logic {/conc_intfc_tb/UUT/fsm_sof}
 add wave -noreg -logic {/conc_intfc_tb/UUT/axis_bit}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trg_ch}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trg_ch_valid}
+add wave -noreg -logic {/conc_intfc_tb/UUT/strg_eof}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trg_valid}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trgsof_ctr}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trgeof_ctr}
 add wave -noreg -logic {/conc_intfc_tb/UUT/zrlentrg}
+add wave -noreg -logic {/conc_intfc_tb/UUT/ftrgtag}
 add wave -noreg -logic {/conc_intfc_tb/UUT/daq_sof_d}
 add wave -noreg -logic {/conc_intfc_tb/UUT/daq_eof_d}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_sof_q}
@@ -156,23 +169,29 @@ add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_src_rdy_q}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_data_q}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_valid}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_di_addr}
-add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/daq_cnt}
+
 add wave -noreg -logic {/conc_intfc_tb/UUT/pkttp_ctr_ld}
 add wave -noreg -logic {/conc_intfc_tb/UUT/pkttp_ctr_tc}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/pkttp_ctr}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trgpkt_ctr_ld}
+add wave -noreg -logic {/conc_intfc_tb/UUT/trgpkt_ctr_en}
 add wave -noreg -logic {/conc_intfc_tb/UUT/trgpkt_ctr_tc}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trgpkt_ctr}
+add wave -noreg -logic {/conc_intfc_tb/UUT/stspkt_ctr_ld}
+add wave -noreg -logic {/conc_intfc_tb/UUT/stspkt_ctr_en}
+add wave -noreg -logic {/conc_intfc_tb/UUT/stspkt_ctr_tc}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/stspkt_ctr}
+add wave -noreg -logic {/conc_intfc_tb/UUT/sts_sof}
+add wave -noreg -logic {/conc_intfc_tb/UUT/sts_sof_q}
+add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/sts_data}
 add wave -noreg -literal {/conc_intfc_tb/UUT/tx_fsm_cs}
 add wave -noreg -literal {/conc_intfc_tb/UUT/tx_fsm_ns}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/to_ln}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/to_ch}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/to_tdc}
 add wave -noreg -hexadecimal -literal {/conc_intfc_tb/UUT/trgtag}
-add wave -noreg -logic {/conc_intfc_tb/UUT/trg_sof}
-add wave -noreg -logic {/conc_intfc_tb/UUT/trg_eof}
-add wave -noreg -logic {/conc_intfc_tb/UUT/daq_sof}
-add wave -noreg -logic {/conc_intfc_tb/UUT/daq_eof}
+
+
 
 transcript on
 

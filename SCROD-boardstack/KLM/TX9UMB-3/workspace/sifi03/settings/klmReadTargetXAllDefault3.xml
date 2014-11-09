@@ -624,7 +624,7 @@
 				<register address='11' value='985' />
 				<register address='12' value='3509' />
 				<register address='13' value='985' />
-				<register address='14' value='3509' />
+				<register address='14' value='3500' />
 				<register address='15' value='985' />
 				<register address='16' value='3499' />
 				<register address='17' value='985' />
@@ -638,9 +638,9 @@
 				<register address='25' value='985' />
 				<register address='26' value='3504' />
 				<register address='27' value='985' />
-				<register address='28' value='3469' />
+				<register address='28' value='3530' />
 				<register address='29' value='985' />
-				<register address='30' value='2048' />
+				<register address='30' value='1400' />
 				<register address='31' value='985' />
 				<register address='48' value='1300' />
 				<register address='49' value='0' />

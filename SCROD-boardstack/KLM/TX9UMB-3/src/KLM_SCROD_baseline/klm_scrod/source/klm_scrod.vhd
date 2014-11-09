@@ -70,8 +70,10 @@ generic(
     REVISION                    : string    := "A4";  --A2,A3,A4
     CLKSRC                      : string    := "FTSW";--FTSW, OBOSC
     LINK_TEST                   : std_logic := '0';
-    B2TT_SIM_SPEEDUP            : std_logic := '0');
+    B2TT_SIM_SPEEDUP            : std_logic := '0';
+    DAQ_GEN_SIM_SPEEDUP         : std_logic := '0');
 port(
+    --tdc_sync                    : in std_logic;
     -- TTD/FTSW interface
     ttdclkp                     : in std_logic;
     ttdclkn                     : in std_logic;
@@ -81,9 +83,8 @@ port(
     ttdrsvn                     : out std_logic;
     ttdackp                     : out std_logic;
     ttdackn                     : out std_logic;
-	 --127 MHz clock for the rest of the board:
+ --127 MHz clock for the rest of the board:
 	 b2ttsysclk						  : out std_logic;
-	 
     -- ASIC Interface
     target_tb                   : in tb_vec_type;
     target_tb16                 : in std_logic_vector(1 to TDC_NUM_CHAN);
@@ -137,6 +138,7 @@ architecture behave of klm_scrod is
         port(
         clk                     : in std_logic;
         clk2x                   : in std_logic;
+        tdc_sync                : in std_logic;
         runreset                : in std_logic;
         tdcrst                  : out std_logic_vector(1 to 3);--vector so we can distribute to meet timing
         tdcce_2x                : out std_logic_vector(1 to 5)); -- _Nx is N times clock period
@@ -418,7 +420,7 @@ architecture behave of klm_scrod is
     signal b2tt_ctime_i         : std_logic;
     signal status_vec_i         : std_logic_vector(1 to NUM_STAT_REGS);
     signal ctrl_vec_i           : std_logic_vector(1 to NUM_CTRL_REGS);
-    signal ex_trig1_i                : std_logic;
+    signal ex_trig1_i           : std_logic;
     signal status_fake_i        : std_logic;
     signal control_fake_i       : std_logic;
 
@@ -508,8 +510,8 @@ architecture behave of klm_scrod is
 
 
 begin
-
 b2ttsysclk<=sys_clk_ib;
+
     -------------------------------------------------
     -- Input Buffers
     -------------------------------------------------
@@ -663,9 +665,10 @@ b2ttsysclk<=sys_clk_ib;
     tmg_ctrl_ins : timing_ctrl
     port map(
         clk                     => sys_clk_ib,
-        clk2x                   => sys_clk2x_ib,
+        clk2x                   => sys_clk2x_ib,        
+        tdc_sync                => '0',--tdc_sync,--!
         runreset                => b2tt_runreset,
-        tdcrst                  => b2tt_runreset2x,
+        tdcrst                  => b2tt_runreset2x,        
         tdcce_2x                => tdc_ce
     );    
 
@@ -895,7 +898,7 @@ b2ttsysclk<=sys_clk_ib;
     PROD_GEN : if LINK_TEST = '0' generate
         daq_gen_ins : daq_gen
         generic map(
-            SIM_SPEEDUP         => '1')
+            SIM_SPEEDUP         => DAQ_GEN_SIM_SPEEDUP)
         port map(
             clk                 => sys_clk_ib,
             reset               => b2tt_runreset,--b2tt_b2lreset,
@@ -958,6 +961,9 @@ b2ttsysclk<=sys_clk_ib;
     --! SFP/link signals are useless if link is down
     status_regs(0) <= "0000000" & fault_flag & mod_flag & los_flag & hard_err & soft_err & frame_err & lane_up & warn_cc & do_cc;
     status_regs(1) <= "0000000" & b2tt_b2plllk & b2tt_fifonext & b2tt_b2linkwe & b2tt_trgout & b2tt_b2ttup & b2tt_feereset & b2tt_b2lreset & b2tt_gtpreset & b2tt_ctime_iq;
+    STAT_GEN : for I in 2 to NUM_STAT_REGS-1 generate
+        status_regs(I) <= STD_LOGIC_VECTOR(TO_UNSIGNED(I,16));
+    end generate;
 
 
     mbaddr <= "000" & ex_trig1_i;
@@ -1030,7 +1036,7 @@ b2ttsysclk<=sys_clk_ib;
             status_fake_iq <= status_fake_i;
             control_fake_iq <= control_fake_i;
             -- keep signals from being synthesized away
-            status_vec_i <= OR_REDUCE(status_regs(0)) & OR_REDUCE(status_regs(1));
+            status_vec_i <= (others => '0');
             status_fake_i <= OR_REDUCE(status_vec_i);
             ctrl_vec_i <= OR_REDUCE(ctrl_regs(0)) & OR_REDUCE(ctrl_regs(1));
             control_fake_i <= OR_REDUCE(ctrl_vec_i);

@@ -407,10 +407,13 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_SW_STATUS_READ : std_logic;
 
 	--pedestal handling unit using command regs
-	signal interna_CMDREG_PedCalcReset			:std_logic:='0';
-	signal interna_CMDREG_PedCalcEnable			:std_logic:='0';
-	signal interna_CMDREG_PedSubEnable			:std_logic:='0';
-	signal interna_CMDREG_PedCalcNAVG			:std_logic_vector(3 downto 0):=x"3";-- 2**3=8 averages for calculating peds
+	signal internal_CMDREG_PedCalcReset			:std_logic:='0';
+	signal internal_CMDREG_PedCalcEnable			:std_logic:='0';
+	signal internal_PedSubEnable			:std_logic:='0';
+	signal internal_CMDREG_PedCalcNAVG			:std_logic_vector(3 downto 0):=x"3";-- 2**3=8 averages for calculating peds
+	signal internal_CMDREG_PedDemuxFifoEnable		:std_logic:='1';-- this out put will replace the common readout fifo from the SRreadout module
+	signal internal_CMDREG_PedDemuxFifoOutputSelect: std_logic_vector(1 downto 0);
+
 		
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_MAIN_CNT 			: std_logic_vector(8 downto 0) := (others => '0');
@@ -447,6 +450,9 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_SROUT_FIFO_WR_CLK   : std_logic := '0';
 	signal internal_SROUT_FIFO_WR_EN    : std_logic := '0';
 	signal internal_SROUT_FIFO_DATA_OUT : std_logic_vector(31 downto 0) := (others => '0');
+	signal internal_SROUT_FIFO_WR_CLK_waveformfifo   : std_logic := '0';
+	signal internal_SROUT_FIFO_WR_EN_waveformfifo    : std_logic := '0';
+	signal internal_SROUT_FIFO_DATA_OUT_waveformfifo : std_logic_vector(31 downto 0) := (others => '0');
 	signal internal_SROUT_dout 			: std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_SROUT_ASIC_CONTROL_WORD : std_logic_vector(9 downto 0) := (others => '0');
 	signal internal_CMDREG_SROUT_TPG : std_logic := '0';
@@ -504,6 +510,8 @@ architecture Behavioral of scrod_top_A4 is
 	
 -------------------------------------
 	signal internal_pswfifo_d:std_logic_vector(31 downto 0);
+	signal internal_pswfifo_clk:std_logic;
+	signal internal_pswfifo_en:std_logic;
 	
 	
 	
@@ -592,7 +600,7 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
         );
     END COMPONENT;
 	 
-	 COMPONENT WaveformDemuxPedsubDSP
+	 COMPONENT WaveformDemuxPedsubDSPBRAM
     PORT(
          clk : IN  std_logic;
 			enable 				: in std_logic;  -- '0'= disable, '1'= enable
@@ -600,6 +608,7 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
          asic_no : IN  std_logic_vector(3 downto 0);
          win_addr_start : IN  std_logic_vector(8 downto 0);
          sr_start : IN  std_logic;
+			mode : in std_logic_vector(1 downto 0);
 			
 			pswfifo_en 			:	out std_logic;
 			pswfifo_clk 		: 	out std_logic;
@@ -621,6 +630,7 @@ signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
 		reset : IN std_logic;
 		enable : IN std_logic;
 		navg : IN std_logic_vector(3 downto 0);
+		busy:out std_logic;
 		asic_no : IN std_logic_vector(3 downto 0);
 		win_addr_start : IN std_logic_vector(8 downto 0);
 		trigin : IN std_logic;
@@ -825,7 +835,7 @@ end generate;
 		--Trigger outputs from FTSW
 		FTSW_TRIGGER      => open,
 		--Select signal between the two
-		USE_LOCAL_CLOCK   => '0',
+		USE_LOCAL_CLOCK   => '1',
 		--General output clocks
 		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
 		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
@@ -1005,10 +1015,13 @@ end generate;
 	---status regs: automaticly generated and fed to conc. or read via software?
 	internal_CMDREG_SW_STATUS_READ<=internal_OUTPUT_REGISTERS(37)(0); -- '0': SW status read connections disabled, '1': SW status read is enabled
 
-	interna_CMDREG_PedCalcNAVG		<=internal_OUTPUT_REGISTERS(38)(3 downto 0); -- 2**NAVG= number of averages for calculating peds
-	interna_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
-	interna_CMDREG_PedSubEnable 	<=internal_OUTPUT_REGISTERS(38)(14);
-	interna_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(13);	
+	internal_CMDREG_PedCalcNAVG	<=internal_OUTPUT_REGISTERS(38)(3 downto 0); -- 2**NAVG= number of averages for calculating peds
+	internal_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
+	internal_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(14);	
+	internal_CMDREG_PedDemuxFifoOutputSelect<=internal_OUTPUT_REGISTERS(38)(13 downto 12); --00: disable (regular waveform dump)--01: ped sub, 10: ped only, 11: waveform only
+	
+	
+
 	
 	--Event builder signals
 	internal_CMDREG_WAVEFORM_FIFO_RST <= internal_OUTPUT_REGISTERS(40)(0);
@@ -1227,45 +1240,52 @@ end generate;
 	LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
 	
---	 u_wavedemux: WaveformDemuxPedsubDSP PORT MAP (
---          clk => internal_CLOCK_FPGA_LOGIC,
---			 enable=>interna_CMDREG_PedSubEnable,
---          asic_no => internal_READCTRL_ASIC_NUM,
---          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
---          sr_start => internal_READCTRL_LATCH_DONE,--srout_start,
---			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
---			fifo_clk => internal_SROUT_FIFO_WR_CLK,
---			fifo_din => internal_SROUT_FIFO_DATA_OUT,
---
---			pswfifo_d =>internal_pswfifo_d,--internal_INPUT_REGISTERS(31)
---
---          ram_addr => internal_ram_Ain(2),
---          ram_data => internal_ram_DRout(2),
---          ram_update => internal_ram_update(2),
---          ram_busy => internal_ram_busy(2)
---        );
---	
---		internal_ram_rw(2)<='0';-- always reading from this channel
+	 u_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
+          clk => internal_CLOCK_FPGA_LOGIC,
+			 enable=>internal_PedSubEnable,
+          asic_no => internal_READCTRL_ASIC_NUM,
+          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+          sr_start => internal_READCTRL_LATCH_DONE,--srout_start,
+			 mode=>internal_CMDREG_PedDemuxFifoOutputSelect,
+
+			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
+			fifo_clk => internal_SROUT_FIFO_WR_CLK,
+			fifo_din => internal_SROUT_FIFO_DATA_OUT,
+
+			pswfifo_d =>internal_pswfifo_d,--internal_INPUT_REGISTERS(31)
+			pswfifo_clk =>internal_pswfifo_clk,
+			pswfifo_en=>internal_pswfifo_en,
+
+          ram_addr => internal_ram_Ain(2),
+          ram_data => internal_ram_DRout(2),
+          ram_update => internal_ram_update(2),
+          ram_busy => internal_ram_busy(2)
+        );
 	
---	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPedsBRAM PORT MAP(
---		clk => internal_CLOCK_FPGA_LOGIC,
---		reset => interna_CMDREG_PedCalcReset,
---		enable => interna_CMDREG_PedCalcEnable,
---		navg => interna_CMDREG_PedCalcNAVG,
---		asic_no => internal_READCTRL_ASIC_NUM,
---		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
---		trigin => internal_READCTRL_LATCH_DONE,
---		fifo_en => internal_SROUT_FIFO_WR_EN ,
---		fifo_clk => internal_SROUT_FIFO_WR_CLK,
---		fifo_din => internal_SROUT_FIFO_DATA_OUT,
---		
---		ram_addr => internal_ram_Ain(3),
---		ram_data => internal_ram_DWin(3),
---		ram_update => internal_ram_update(3),
---		ram_busy => internal_ram_busy(3)
---	);
---		
---		internal_ram_rw(3)<='1';-- always write to this channel	
+	
+		internal_ram_rw(2)<='0';-- always reading from this channel
+		internal_PedSubEnable<='0' when  internal_CMDREG_PedDemuxFifoOutputSelect="00" else '1';
+	
+	Inst_WaveformDemuxCalcPedsBRAM: WaveformDemuxCalcPedsBRAM PORT MAP(
+		clk => internal_CLOCK_FPGA_LOGIC,
+		reset => internal_CMDREG_PedCalcReset,
+		enable => internal_CMDREG_PedCalcEnable,
+		navg => internal_CMDREG_PedCalcNAVG,
+		busy=>open,
+		asic_no => internal_READCTRL_ASIC_NUM,
+		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+		trigin => internal_READCTRL_LATCH_DONE,
+		fifo_en => internal_SROUT_FIFO_WR_EN ,
+		fifo_clk => internal_SROUT_FIFO_WR_CLK,
+		fifo_din => internal_SROUT_FIFO_DATA_OUT,
+		
+		ram_addr => internal_ram_Ain(3),
+		ram_data => internal_ram_DWin(3),
+		ram_update => internal_ram_update(3),
+		ram_busy => internal_ram_busy(3)
+	);
+		
+		internal_ram_rw(3)<='1';-- always write to this channel	
 	
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
@@ -1411,16 +1431,19 @@ end generate;
    u_waveform_fifo_wr32_rd32 : waveform_fifo_wr32_rd32
    PORT MAP (
 		rst => internal_WAVEFORM_FIFO_RST,
-		wr_clk => internal_SROUT_FIFO_WR_CLK,
+		wr_clk => internal_SROUT_FIFO_WR_CLK_waveformfifo,
 		rd_clk => internal_WAVEFORM_FIFO_READ_CLOCK,
-		din => internal_SROUT_FIFO_DATA_OUT,
-		wr_en => internal_SROUT_FIFO_WR_EN,
+		din => internal_SROUT_FIFO_DATA_OUT_waveformfifo,
+		wr_en => internal_SROUT_FIFO_WR_EN_waveformfifo,
 		rd_en => internal_WAVEFORM_FIFO_READ_ENABLE,
 		dout => internal_WAVEFORM_FIFO_DATA_OUT,
 		empty => internal_WAVEFORM_FIFO_EMPTY,
 		valid => internal_WAVEFORM_FIFO_DATA_VALID
    );
 
+	internal_SROUT_FIFO_WR_CLK_waveformfifo<= internal_SROUT_FIFO_WR_CLK when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_clk;
+	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
+	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
 	
 	
 	

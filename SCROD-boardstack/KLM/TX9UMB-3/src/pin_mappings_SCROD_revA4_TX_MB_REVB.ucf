@@ -51,7 +51,7 @@ TIMESPEC TS_SYS_CLK2X = PERIOD "SYS_CLK2X" TS_SYS_CLK / 2 HIGH 50%;
 #TIMESPEC "TS_LOCAL_CLOCK" = PERIOD "BOARD_CLOCK" 8 ns HIGH 50%;
 
 PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug
-PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug2
+PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = TRUE; #for chipscope debug2
 
 #PIN "aurora_ins/klm_aurora_ins/gtp_wrapper_i/GTP_TILE_INST/gtpa1_dual_i.CLK01" CLOCK_DEDICATED_ROUTE = FALSE;
 #PIN "aurora_ins/klm_aurora_ins/gtp_wrapper_i/GTP_TILE_INST/gtpa1_dual_i.CLK10" CLOCK_DEDICATED_ROUTE = FALSE;
