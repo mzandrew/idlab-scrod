@@ -19,7 +19,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="7" />
+   <WVObjectSize size="10" />
    <wvobject fp_name="/tb_readoutcontrol01/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -95,6 +95,10 @@
       <wvobject fp_name="/tb_readoutcontrol01/readout_continue" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">readout_continue</obj_property>
          <obj_property name="ObjectShortName">readout_continue</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/asic_no" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">asic_no[3:0]</obj_property>
+         <obj_property name="ObjectShortName">asic_no[3:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_readoutcontrol01/reset_event_num" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">reset_event_num</obj_property>
@@ -698,10 +702,6 @@
          <obj_property name="ElementShortName">ram_busy</obj_property>
          <obj_property name="ObjectShortName">ram_busy</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/wea" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">wea</obj_property>
-         <obj_property name="ObjectShortName">wea</obj_property>
-      </wvobject>
       <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dina" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dina[15:0]</obj_property>
          <obj_property name="ObjectShortName">dina[15:0]</obj_property>
@@ -759,13 +759,13 @@
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_wval0_tmp" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">ped_sa_wval0_tmp[15:0]</obj_property>
-         <obj_property name="ObjectShortName">ped_sa_wval0_tmp[15:0]</obj_property>
+         <obj_property name="ElementShortName">ped_sa_wval0_tmp[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_wval0_tmp[11:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_wval1_tmp" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">ped_sa_wval1_tmp[15:0]</obj_property>
-         <obj_property name="ObjectShortName">ped_sa_wval1_tmp[15:0]</obj_property>
+         <obj_property name="ElementShortName">ped_sa_wval1_tmp[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_wval1_tmp[11:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_arr_addr" type="array" db_ref_id="1">
@@ -850,10 +850,6 @@
       <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/sa_cnt" type="other" db_ref_id="1">
          <obj_property name="ElementShortName">sa_cnt</obj_property>
          <obj_property name="ObjectShortName">sa_cnt</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_allwin_busy" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">dmx_allwin_busy</obj_property>
-         <obj_property name="ObjectShortName">dmx_allwin_busy</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sub_wr_busy" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">ped_sub_wr_busy</obj_property>
@@ -1154,6 +1150,1697 @@
       <wvobject fp_name="/tb_readoutcontrol01/uut/internal_dig_win_start" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">internal_dig_win_start[8:0]</obj_property>
          <obj_property name="ObjectShortName">internal_dig_win_start[8:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group345" type="group">
+      <obj_property name="label">PedDemuxCalc</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/reset" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">reset</obj_property>
+         <obj_property name="ObjectShortName">reset</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/navg" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">navg[3:0]</obj_property>
+         <obj_property name="ObjectShortName">navg[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/asic_no" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">asic_no[3:0]</obj_property>
+         <obj_property name="ObjectShortName">asic_no[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/win_addr_start" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">win_addr_start[8:0]</obj_property>
+         <obj_property name="ObjectShortName">win_addr_start[8:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/trigin" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">trigin</obj_property>
+         <obj_property name="ObjectShortName">trigin</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/fifo_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_en</obj_property>
+         <obj_property name="ObjectShortName">fifo_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/fifo_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_clk</obj_property>
+         <obj_property name="ObjectShortName">fifo_clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/fifo_din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_din[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_din[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ram_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_addr[21:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_addr[21:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ram_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_data[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_data[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ram_update" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_update</obj_property>
+         <obj_property name="ObjectShortName">ram_update</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ram_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_busy</obj_property>
+         <obj_property name="ObjectShortName">ram_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/asic_no_i" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">asic_no_i</obj_property>
+         <obj_property name="ObjectShortName">asic_no_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/win_addr_start_i" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">win_addr_start_i</obj_property>
+         <obj_property name="ObjectShortName">win_addr_start_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/trigin_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">trigin_i[4:0]</obj_property>
+         <obj_property name="ObjectShortName">trigin_i[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_wval0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_wval0[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_wval0[11:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_wval1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_wval1[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_wval1[11:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_wval0_tmp" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_wval0_tmp[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_wval0_tmp[11:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_wval1_tmp" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_wval1_tmp[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_wval1_tmp[11:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_arr_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_arr_addr[10:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_arr_addr[10:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_arr_addr0_int" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_arr_addr0_int</obj_property>
+         <obj_property name="ObjectShortName">ped_arr_addr0_int</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_arr_addr1_int" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_arr_addr1_int</obj_property>
+         <obj_property name="ObjectShortName">ped_arr_addr1_int</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_update" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_update</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_update</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_busy</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa_num" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_num[21:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_num[21:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_st" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_st</obj_property>
+         <obj_property name="ObjectShortName">dmx_st</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_asic" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_asic</obj_property>
+         <obj_property name="ObjectShortName">ped_asic</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_ch" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_ch</obj_property>
+         <obj_property name="ObjectShortName">ped_ch</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_win" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_win</obj_property>
+         <obj_property name="ObjectShortName">ped_win</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sa" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa</obj_property>
+         <obj_property name="ObjectShortName">ped_sa</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_hbyte" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_hbyte[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_hbyte[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_hbword" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_hbword</obj_property>
+         <obj_property name="ObjectShortName">ped_hbword</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_word" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_word[16:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_word[16:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_asic" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_asic</obj_property>
+         <obj_property name="ObjectShortName">dmx_asic</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_win" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_win</obj_property>
+         <obj_property name="ObjectShortName">dmx_win</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx2_win" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx2_win[1:0]</obj_property>
+         <obj_property name="ObjectShortName">dmx2_win[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_ch" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_ch</obj_property>
+         <obj_property name="ObjectShortName">dmx_ch</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_sa" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_sa</obj_property>
+         <obj_property name="ObjectShortName">dmx_sa</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx2_sa" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx2_sa[4:0]</obj_property>
+         <obj_property name="ObjectShortName">dmx2_sa[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/start_ped_sub" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">start_ped_sub</obj_property>
+         <obj_property name="ObjectShortName">start_ped_sub</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/sa_cnt" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_cnt</obj_property>
+         <obj_property name="ObjectShortName">sa_cnt</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ped_sub_wr_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sub_wr_busy</obj_property>
+         <obj_property name="ObjectShortName">ped_sub_wr_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/navg_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">navg_i[3:0]</obj_property>
+         <obj_property name="ObjectShortName">navg_i[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/reset_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">reset_i[1:0]</obj_property>
+         <obj_property name="ObjectShortName">reset_i[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ncnt" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ncnt[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ncnt[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ncnt_i" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ncnt_i</obj_property>
+         <obj_property name="ObjectShortName">ncnt_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/ncnt_int" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ncnt_int</obj_property>
+         <obj_property name="ObjectShortName">ncnt_int</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/clr_idx" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">clr_idx</obj_property>
+         <obj_property name="ObjectShortName">clr_idx</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/fifo_din_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_din_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_din_i[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/wea_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wea_0[0:0]</obj_property>
+         <obj_property name="ObjectShortName">wea_0[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dina" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dina[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dina[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/doutb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">doutb[15:0]</obj_property>
+         <obj_property name="ObjectShortName">doutb[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/bram_addra" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">bram_addra[10:0]</obj_property>
+         <obj_property name="ObjectShortName">bram_addra[10:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/bram_addrb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">bram_addrb[10:0]</obj_property>
+         <obj_property name="ObjectShortName">bram_addrb[10:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/jdx" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">jdx[15:0]</obj_property>
+         <obj_property name="ObjectShortName">jdx[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/jdx2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">jdx2[15:0]</obj_property>
+         <obj_property name="ObjectShortName">jdx2[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/bram2tmp_ctr" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">bram2tmp_ctr</obj_property>
+         <obj_property name="ObjectShortName">bram2tmp_ctr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/tmp2bram_ctr" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">tmp2bram_ctr</obj_property>
+         <obj_property name="ObjectShortName">tmp2bram_ctr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pedarray_tmp[15:0]</obj_property>
+         <obj_property name="ObjectShortName">pedarray_tmp[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pedarray_tmp2[15:0]</obj_property>
+         <obj_property name="ObjectShortName">pedarray_tmp2[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/pedarray_tmp2[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/fifo_din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_din[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_din[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_wav[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_bit" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_bit</obj_property>
+         <obj_property name="ObjectShortName">dmx_bit</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/fifo_wr_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_wr_en</obj_property>
+         <obj_property name="ObjectShortName">fifo_wr_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_0[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_0[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[0]" type="array" db_ref_id="1">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[0]</obj_property>
+         <obj_property name="label">dmx_wav[0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_1[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_1[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[1]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[1]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_2[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_2[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[2]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[2]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_3" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_3[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_3[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[3]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[3]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_4" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_4[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_4[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[4]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[4]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[4]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_5" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_5[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_5[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[5]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[5]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[5]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_6" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_6[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_6[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[6]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[6]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[6]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_7" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_7[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_7[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[7]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[7]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[7]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_8" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_8[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_8[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[8]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[8]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[8]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_9" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_9[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_9[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[9]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[9]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[9]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_a" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_a[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_a[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[10]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[10]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[10]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_b" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_b[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_b[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[11]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[11]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[11]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_c" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_c[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_c[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[12]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[12]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[12]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_d[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_d[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[13]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[13]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[13]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_e" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_e[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_e[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[14]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[14]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[14]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_f" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_f[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_f[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_wav[15]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[15]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[15]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/dmx_st" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_st</obj_property>
+         <obj_property name="ObjectShortName">dmx_st</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/st_bram2tmp" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">st_bram2tmp</obj_property>
+         <obj_property name="ObjectShortName">st_bram2tmp</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/Inst_WaveformDemuxCalcPeds/st_tmp2bram" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">st_tmp2bram</obj_property>
+         <obj_property name="ObjectShortName">st_tmp2bram</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group480" type="group">
+      <obj_property name="label">SerReadout</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_0[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_0[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_1[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_1[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_2[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_2[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_3" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_3[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_3[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_4" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_4[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_4[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_5" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_5[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_5[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_6" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_6[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_6[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_7" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_7[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_7[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_8" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_8[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_8[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_9" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_9[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_9[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_a" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_a[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_a[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_b" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_b[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_b[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_c" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_c[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_c[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_d[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_d[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_e" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_e[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_e[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_f" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_f[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_f[11:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/bit_no" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">bit_no</obj_property>
+         <obj_property name="ObjectShortName">bit_no</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/fifo_wr_din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_wr_din[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_wr_din[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/fifo_wr_din_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_wr_din_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_wr_din_i[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/fifo_wr_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_wr_en</obj_property>
+         <obj_property name="ObjectShortName">fifo_wr_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/sr_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_clk</obj_property>
+         <obj_property name="ObjectShortName">sr_clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/sr_sel" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_sel</obj_property>
+         <obj_property name="ObjectShortName">sr_sel</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/start" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">start</obj_property>
+         <obj_property name="ObjectShortName">start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/event_num" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">event_num[31:0]</obj_property>
+         <obj_property name="ObjectShortName">event_num[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/win_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">win_addr[8:0]</obj_property>
+         <obj_property name="ObjectShortName">win_addr[8:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/asic_num" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">asic_num[3:0]</obj_property>
+         <obj_property name="ObjectShortName">asic_num[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/force_test_pattern" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">force_test_pattern</obj_property>
+         <obj_property name="ObjectShortName">force_test_pattern</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/idle_status" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">idle_status</obj_property>
+         <obj_property name="ObjectShortName">idle_status</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">busy</obj_property>
+         <obj_property name="ObjectShortName">busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/samp_done" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">samp_done</obj_property>
+         <obj_property name="ObjectShortName">samp_done</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/sr_clr" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_clr</obj_property>
+         <obj_property name="ObjectShortName">sr_clr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/samplesel" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">samplesel[4:0]</obj_property>
+         <obj_property name="ObjectShortName">samplesel[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/smplsi_any" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">smplsi_any</obj_property>
+         <obj_property name="ObjectShortName">smplsi_any</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/fifo_wr_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_wr_clk</obj_property>
+         <obj_property name="ObjectShortName">fifo_wr_clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/next_overall" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">next_overall</obj_property>
+         <obj_property name="ObjectShortName">next_overall</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/next_state" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">next_state</obj_property>
+         <obj_property name="ObjectShortName">next_state</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_start" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_start</obj_property>
+         <obj_property name="ObjectShortName">internal_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_start_reg" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_start_reg[1:0]</obj_property>
+         <obj_property name="ObjectShortName">internal_start_reg[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_start_srout" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_start_srout</obj_property>
+         <obj_property name="ObjectShortName">internal_start_srout</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_busy</obj_property>
+         <obj_property name="ObjectShortName">internal_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_srout_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_srout_busy</obj_property>
+         <obj_property name="ObjectShortName">internal_srout_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/sr_clk_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_clk_i</obj_property>
+         <obj_property name="ObjectShortName">sr_clk_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/ev_cnt" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ev_cnt[4:0]</obj_property>
+         <obj_property name="ObjectShortName">ev_cnt[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/bit_cnt" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">bit_cnt[4:0]</obj_property>
+         <obj_property name="ObjectShortName">bit_cnt[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/sr_clk_d" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_clk_d</obj_property>
+         <obj_property name="ObjectShortName">sr_clk_d</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/start_fifo" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">start_fifo</obj_property>
+         <obj_property name="ObjectShortName">start_fifo</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/fifodone" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifodone</obj_property>
+         <obj_property name="ObjectShortName">fifodone</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/fifocount" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifocount[7:0]</obj_property>
+         <obj_property name="ObjectShortName">fifocount[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/samp_done_out" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">samp_done_out</obj_property>
+         <obj_property name="ObjectShortName">samp_done_out</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/rd_cs_s" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">rd_cs_s[5:0]</obj_property>
+         <obj_property name="ObjectShortName">rd_cs_s[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/rd_rs_s" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">rd_rs_s[2:0]</obj_property>
+         <obj_property name="ObjectShortName">rd_rs_s[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_samplesel" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_samplesel[5:0]</obj_property>
+         <obj_property name="ObjectShortName">internal_samplesel[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_idle" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_idle</obj_property>
+         <obj_property name="ObjectShortName">internal_idle</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/chan_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">chan_data[3:0]</obj_property>
+         <obj_property name="ObjectShortName">chan_data[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/internal_fifo_wr_din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_fifo_wr_din[31:0]</obj_property>
+         <obj_property name="ObjectShortName">internal_fifo_wr_din[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/addr_time" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">addr_time[4:0]</obj_property>
+         <obj_property name="ObjectShortName">addr_time[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/load_time" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">load_time[4:0]</obj_property>
+         <obj_property name="ObjectShortName">load_time[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/load_time1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">load_time1[4:0]</obj_property>
+         <obj_property name="ObjectShortName">load_time1[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/load_time2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">load_time2[4:0]</obj_property>
+         <obj_property name="ObjectShortName">load_time2[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_serread/clk_cnt_max" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">clk_cnt_max[4:0]</obj_property>
+         <obj_property name="ObjectShortName">clk_cnt_max[4:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group582" type="group">
+      <obj_property name="label">PedDemuxSub</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/asic_no" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">asic_no[3:0]</obj_property>
+         <obj_property name="ObjectShortName">asic_no[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/win_addr_start" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">win_addr_start[8:0]</obj_property>
+         <obj_property name="ObjectShortName">win_addr_start[8:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/sr_start" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_start</obj_property>
+         <obj_property name="ObjectShortName">sr_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pswfifo_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">pswfifo_en</obj_property>
+         <obj_property name="ObjectShortName">pswfifo_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pswfifo_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">pswfifo_clk</obj_property>
+         <obj_property name="ObjectShortName">pswfifo_clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pswfifo_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pswfifo_d[31:0]</obj_property>
+         <obj_property name="ObjectShortName">pswfifo_d[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_en</obj_property>
+         <obj_property name="ObjectShortName">fifo_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_clk</obj_property>
+         <obj_property name="ObjectShortName">fifo_clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_din[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_din[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedsub_st" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">pedsub_st</obj_property>
+         <obj_property name="ObjectShortName">pedsub_st</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ram_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_addr[21:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_addr[21:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ram_data" type="array" db_ref_id="1">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">ram_data[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_data[7:0]</obj_property>
+         <obj_property name="label">ram_data[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ram_update" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_update</obj_property>
+         <obj_property name="ObjectShortName">ram_update</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ram_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_busy</obj_property>
+         <obj_property name="ObjectShortName">ram_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/asic_no_i" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">asic_no_i</obj_property>
+         <obj_property name="ObjectShortName">asic_no_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/win_addr_start_i" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">win_addr_start_i</obj_property>
+         <obj_property name="ObjectShortName">win_addr_start_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/sr_start_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sr_start_i[4:0]</obj_property>
+         <obj_property name="ObjectShortName">sr_start_i[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_fetch_start" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_fetch_start</obj_property>
+         <obj_property name="ObjectShortName">ped_fetch_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_rval0" type="array" db_ref_id="1">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">ped_sa_rval0[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_rval0[11:0]</obj_property>
+         <obj_property name="label">ped_sa_rval0[11:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_rval1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_rval1[11:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_rval1[11:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_arr_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_arr_addr[10:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_arr_addr[10:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_arr_addr0_int" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_arr_addr0_int</obj_property>
+         <obj_property name="ObjectShortName">ped_arr_addr0_int</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_arr_addr1_int" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_arr_addr1_int</obj_property>
+         <obj_property name="ObjectShortName">ped_arr_addr1_int</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_update" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_update</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_update</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_busy</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa_num" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa_num[21:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sa_num[21:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_asic" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_asic</obj_property>
+         <obj_property name="ObjectShortName">ped_asic</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_ch" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_ch</obj_property>
+         <obj_property name="ObjectShortName">ped_ch</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_win" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_win</obj_property>
+         <obj_property name="ObjectShortName">ped_win</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_hbyte" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_hbyte[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_hbyte[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_hbword" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_hbword</obj_property>
+         <obj_property name="ObjectShortName">ped_hbword</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_word" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_word[16:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_word[16:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx2_win" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx2_win[1:0]</obj_property>
+         <obj_property name="ObjectShortName">dmx2_win[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx2_sa" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx2_sa[4:0]</obj_property>
+         <obj_property name="ObjectShortName">dmx2_sa[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_asic" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_asic</obj_property>
+         <obj_property name="ObjectShortName">dmx_asic</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_win" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_win</obj_property>
+         <obj_property name="ObjectShortName">dmx_win</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_ch" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_ch</obj_property>
+         <obj_property name="ObjectShortName">dmx_ch</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_sa" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_sa</obj_property>
+         <obj_property name="ObjectShortName">dmx_sa</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_bit" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_bit</obj_property>
+         <obj_property name="ObjectShortName">dmx_bit</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_din_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_din_i[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_en_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_en_i</obj_property>
+         <obj_property name="ObjectShortName">fifo_en_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="vbus769" type="vbus" db_ref_id="1">
+         <obj_property name="label">fifo_din_i_bitNo</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i[19]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[19]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i[19]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i[18]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[18]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i[18]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i[17]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[17]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i[17]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i[16]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[16]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i[16]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="vbus776" type="vbus" db_ref_id="1">
+         <obj_property name="label">fifo_din_i2_bitno</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i2[19]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[19]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i2[19]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i2[18]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[18]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i2[18]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i2[17]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[17]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i2[17]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/fifo_din_i2[16]" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">[16]</obj_property>
+            <obj_property name="ObjectShortName">fifo_din_i2[16]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/start_ped_sub" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">start_ped_sub</obj_property>
+         <obj_property name="ObjectShortName">start_ped_sub</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/sa_cnt" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_cnt</obj_property>
+         <obj_property name="ObjectShortName">sa_cnt</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_allwin_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_allwin_busy</obj_property>
+         <obj_property name="ObjectShortName">dmx_allwin_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sub_fetch_busy" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sub_fetch_busy</obj_property>
+         <obj_property name="ObjectShortName">ped_sub_fetch_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sub_start" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sub_start[1:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_sub_start[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/sapedsub" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sapedsub[15:0]</obj_property>
+         <obj_property name="ObjectShortName">sapedsub[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/jdx" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">jdx[15:0]</obj_property>
+         <obj_property name="ObjectShortName">jdx[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/jdx2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">jdx2[15:0]</obj_property>
+         <obj_property name="ObjectShortName">jdx2[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[15]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[15]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[15]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/sa_val_f" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">sa_val_f[11:0]</obj_property>
+         <obj_property name="ObjectShortName">sa_val_f[11:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dmx_wav[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dmx_wav[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/dmx_wav[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">dmx_wav[0]</obj_property>
+            <obj_property name="Radix">BINARYRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/wav_bram_addra" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wav_bram_addra[10:0]</obj_property>
+         <obj_property name="ObjectShortName">wav_bram_addra[10:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/wav_wea" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wav_wea[0:0]</obj_property>
+         <obj_property name="ObjectShortName">wav_wea[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/tmp2bram_ctr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">tmp2bram_ctr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">tmp2bram_ctr[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pedarray_tmp2[15:0]</obj_property>
+         <obj_property name="ObjectShortName">pedarray_tmp2[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedarray_tmp2[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">pedarray_tmp2[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/next_ped_st" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">next_ped_st</obj_property>
+         <obj_property name="ObjectShortName">next_ped_st</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/next_dmx_st" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">next_dmx_st</obj_property>
+         <obj_property name="ObjectShortName">next_dmx_st</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/pedsub_st" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">pedsub_st</obj_property>
+         <obj_property name="ObjectShortName">pedsub_st</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/st_tmp2bram" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">st_tmp2bram</obj_property>
+         <obj_property name="ObjectShortName">st_tmp2bram</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/samem" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">samem[15:0]</obj_property>
+         <obj_property name="ObjectShortName">samem[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ct_lpt[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ct_lpt[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpt[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpt[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ct_lpv[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ct_lpv[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[15]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[15]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[15]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[14]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[14]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[14]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[13]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[13]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[13]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[12]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[12]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[12]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[11]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[11]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[11]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[10]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[10]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[10]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[9]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[9]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[9]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[8]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[8]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[8]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[7]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[7]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[7]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[6]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[6]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[6]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[5]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[5]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[5]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[4]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[4]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[4]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[3]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[2]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[1]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_lpv[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">ct_lpv[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_sa" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ct_sa[6:0]</obj_property>
+         <obj_property name="ObjectShortName">ct_sa[6:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ct_ch" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ct_ch</obj_property>
+         <obj_property name="ObjectShortName">ct_ch</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_sa" type="other" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_sa</obj_property>
+         <obj_property name="ObjectShortName">ped_sa</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_bram_addrb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_bram_addrb[10:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_bram_addrb[10:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/wav_bram_addrb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wav_bram_addrb[10:0]</obj_property>
+         <obj_property name="ObjectShortName">wav_bram_addrb[10:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_dina" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_dina[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_dina[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/ped_doutb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ped_doutb[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ped_doutb[15:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/uut_wavedemux/wav_doutb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wav_doutb[15:0]</obj_property>
+         <obj_property name="ObjectShortName">wav_doutb[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/internal_ram_update" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_ram_update[3:0]</obj_property>
+         <obj_property name="ObjectShortName">internal_ram_update[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">internal_ram_ain[3:0]</obj_property>
+         <obj_property name="ObjectShortName">internal_ram_ain[3:0]</obj_property>
+         <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[3]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[3]</obj_property>
+            <obj_property name="ObjectShortName">internal_ram_ain[3]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[2]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[2]</obj_property>
+            <obj_property name="ObjectShortName">internal_ram_ain[2]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[1]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[1]</obj_property>
+            <obj_property name="ObjectShortName">internal_ram_ain[1]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_readoutcontrol01/internal_ram_ain[0]" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">[0]</obj_property>
+            <obj_property name="ObjectShortName">internal_ram_ain[0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
       </wvobject>
    </wvobject>
 </wave_config>

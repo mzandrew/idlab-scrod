@@ -14,6 +14,8 @@
 -- packets are comprised of of many smaller raw samples. Trigger raw samples are
 -- channel and time. DAQ packets are an entire triggers worth of data. Data bandwith
 -- is increased by not using the overhead of marking each raw sample on the link.
+-- A pause should be inserted after the sof_n signal is asserted and ~4 pauses should
+-- be inserted after eof_n is asserted.
 --
 -- Deficiencies/Issues
 -- 1) Will drop a word if a clock correction sequence occurs during the middle of
@@ -29,6 +31,7 @@ library ieee;
 	use ieee.std_logic_1164.all;
     use ieee.std_logic_unsigned.all;
     use ieee.numeric_std.all;
+    use ieee.std_logic_misc.all;
 library work;
     use work.time_order_pkg.all;
     use work.tdc_pkg.all;
@@ -156,7 +159,7 @@ architecture behave of conc_intfc is
         almost_empty            : out std_logic);
     end component;
 
-    type tx_fsm_type is (CLEARS,IDLES,TRGSOFS,TRGPLDS,DAQSOFS,DAQPLDS,DAQCTRLS,STATWRS);
+    type tx_fsm_type is (CLEARS,IDLES,TRGSOFS,TRGPLDS,DAQSOFS,DAQPLDS,TRGEOFS,STATSOFS,STATPLDS);
     type word_shift_type is array (natural range <> ) of std_logic_vector(15 downto 0);
 
     signal tdc_rden             : std_logic_vector(1 to TDC_NUM_CHAN);
@@ -192,7 +195,10 @@ architecture behave of conc_intfc is
     signal axis_bit             : std_logic;
     signal trg_ch               : std_logic_vector(7 downto 0);
     signal trg_ch_valid         : std_logic;
-    --signal trg_valid            : std_logic_vector(2 downto 0);
+    signal strg_eof             : std_logic;
+    signal trg_valid            : std_logic_vector(0 downto 0);
+    signal trgsof_ctr           : std_logic_vector(7 downto 0);
+    signal trgeof_ctr           : std_logic_vector(7 downto 0);
 
     signal zrlentrg             : std_logic;
     signal ftrgtag              : std_logic;
@@ -204,14 +210,28 @@ architecture behave of conc_intfc is
     signal daq_data_q           : word_shift_type(1 downto 0);
     signal daq_valid            : std_logic_vector(2 downto 0);
     signal daq_di_addr          : std_logic_vector(2 downto 0);
+    signal daq_pause            : std_logic_vector(3 downto 0);
+    signal sts_pause            : std_logic_vector(1 downto 0);
+    signal idl_pause            : std_logic_vector(1 downto 0);
+
 
     -- pakcet type counter (time spent writing trigger data) - just change the width to adjust
     signal pkttp_ctr_ld         : std_logic;
     signal pkttp_ctr_tc         : std_logic;
     signal pkttp_ctr            : std_logic_vector(PKTTP_CTRW-1 downto 0);
     signal trgpkt_ctr_ld        : std_logic;
+    signal trgpkt_ctr_en        : std_logic;
     signal trgpkt_ctr_tc        : std_logic;
-    signal trgpkt_ctr           : std_logic_vector(PKTTP_CTRW-1 downto 0);
+    signal trgpkt_ctr           : std_logic_vector(TGPKT_CTRW-1 downto 0);
+    signal stspkt_ctr_ld        : std_logic;
+    signal stspkt_ctr_en        : std_logic;
+    signal stspkt_ctr_tc        : std_logic;
+    signal stspkt_ctr           : std_logic_vector(STSPKT_CTRW-1 downto 0);
+
+    signal sts_sof              : std_logic;
+    signal sts_eof              : std_logic;
+    signal sts_sof_q            : std_logic;
+    signal sts_data             : std_logic_vector(15 downto 0);
 
     signal tx_fsm_cs            : tx_fsm_type                           := CLEARS;
     signal tx_fsm_ns            : tx_fsm_type;
@@ -220,8 +240,8 @@ architecture behave of conc_intfc is
     alias to_ch is to_dout(12 downto 9);
     alias to_tdc is to_dout(TDC_TWIDTH-1 downto 0);
     alias trgtag is b2tt_fifodata(47 downto 32);
-    alias trg_sof is trg_fifo_do(trg_fifo_do'length-1);
-    alias trg_eof is trg_fifo_do(trg_fifo_do'length-2);
+    alias atrg_sof is trg_fifo_do(trg_fifo_do'length-1);
+    alias atrg_eof is trg_fifo_do(trg_fifo_do'length-2);
     alias daq_sof is daq_fifo_do(daq_fifo_do'length-1);
     alias daq_eof is daq_fifo_do(daq_fifo_do'length-2);
 
@@ -383,10 +403,21 @@ begin
     --------------------------------------------------------------------------
 	-- Read data from the trigger FIFO.
 	--------------------------------------------------------------------------
-    trg_rd_pcs : process(tdc_clk)
+    trg_rd_pcs : process(sys_clk)
     begin
-        if (tdc_clk'event and tdc_clk = '1') then
-            --trg_valid <= trg_fifo_re & trg_valid (trg_valid'length-1 downto 1);
+        if (sys_clk'event and sys_clk = '1') then
+            trg_valid <= trg_fifo_re & trg_valid (trg_valid'length-1 downto 1);
+            if pkttp_ctr_ld = '1' then
+                trgsof_ctr <= (others => '0');
+                trgeof_ctr <= (others => '0');
+            else
+                if (trg_valid(0) and atrg_sof) = '1' then
+                    trgsof_ctr <= trgsof_ctr + '1';
+                end if;
+                if (trg_valid(0) and atrg_eof) = '1' then
+                    trgeof_ctr <= trgeof_ctr + '1';
+                end if;
+            end if;
         end if;
     end process;
 
@@ -447,7 +478,25 @@ begin
     daq_rd_pcs : process(sys_clk)
     begin
         if (sys_clk'event and sys_clk = '1') then
-            daq_valid <= daq_fifo_re & daq_valid (daq_valid'length-1 downto 1);
+            daq_valid <= daq_fifo_re & daq_valid(daq_valid'length-1 downto 1);
+            daq_pause <= (atrg_eof and pkttp_ctr_tc) & daq_pause(daq_pause'length-1 downto 1);
+            sts_pause <= daq_eof & sts_pause(sts_pause'length-1 downto 1);
+            idl_pause <= sts_eof & idl_pause(idl_pause'length-1 downto 1);
+        end if;
+    end process;
+
+    --------------------------------------------------------------------------
+	-- Write status data to registers to delay.
+	--------------------------------------------------------------------------
+    status_wr_pcs : process(sys_clk)
+    begin
+        if (sys_clk'event and sys_clk = '1') then
+            sts_sof_q <= sts_sof;
+            if stspkt_ctr_en = '0' then
+                sts_data <= STS_SOF_VAL;
+            else
+                sts_data <= status_regs(TO_INTEGER(UNSIGNED(stspkt_ctr)));
+            end if;
         end if;
     end process;
 
@@ -462,19 +511,35 @@ begin
                 pkttp_ctr <= (others => '1');
                 pkttp_ctr_tc <= '0';
             else
-                pkttp_ctr <= pkttp_ctr - '1';
+                if pkttp_ctr_tc = '0' then
+                    pkttp_ctr <= pkttp_ctr - '1';
+                end if;
                 if pkttp_ctr = 0 then
                     pkttp_ctr_tc <= '1';
                 end if;
             end if;
-            -- Counter trigger packets for status packet decision
+            -- Counter for trigger packets for status packet decision
             if trgpkt_ctr_ld = '1' then
                 trgpkt_ctr <= (others => '1');
                 trgpkt_ctr_tc <= '0';
             else
-                trgpkt_ctr <= trgpkt_ctr - '1';
+                if trgpkt_ctr_en = '1' then
+                    trgpkt_ctr <= trgpkt_ctr - '1';
+                end if;
                 if trgpkt_ctr = 0 then
                     trgpkt_ctr_tc <= '1';
+                end if;
+            end if;
+            -- Counter for status packet length
+            if stspkt_ctr_ld = '1' then
+                stspkt_ctr <= (others => '0');
+                stspkt_ctr_tc <= '0';
+            else
+                if (stspkt_ctr_en and (not stspkt_ctr_tc)) <= '1' then
+                    stspkt_ctr <= stspkt_ctr + '1';
+                end if;
+                if stspkt_ctr = (NUM_STAT_REGS-2) then
+                    stspkt_ctr_tc <= '1';
                 end if;
             end if;
         end if;
@@ -488,11 +553,17 @@ begin
     -- pause transmit so no link errors occur.
     --?Unlikely this will meet timing, but try to keep trigger data latency low.
 	--------------------------------------------------------------------------
-    ll_tx_fsm_a : process(tx_fsm_cs,tx_dst_rdy_n,pkttp_ctr_tc,trg_fifo_epty,daq_fifo_epty,trg_sof,trg_eof,daq_sof,daq_eof,trgpkt_ctr_tc,trg_fifo_do,daq_fifo_do)
+    ll_tx_fsm_a : process(tx_fsm_cs,tx_dst_rdy_n,pkttp_ctr_tc,trg_fifo_epty,daq_fifo_epty,atrg_sof,atrg_eof,daq_sof,daq_eof,trgpkt_ctr_tc,trg_fifo_do,daq_fifo_do,daq_pause(0),stspkt_ctr_tc,sts_data,sts_pause,idl_pause,sts_eof)
 	begin
         -- Default values (use less lines)
         pkttp_ctr_ld <= '0';
         trgpkt_ctr_ld <= '0';
+        trgpkt_ctr_en <= '0';
+        stspkt_ctr_ld <= '1';
+        stspkt_ctr_en <= '0';
+        strg_eof <= '0';
+        sts_sof <= '0';
+        sts_eof <= '0';
         trg_fifo_re <= '0';
         daq_fifo_re <= '0';
         tx_sof_n <= '1';
@@ -504,6 +575,11 @@ begin
             when CLEARS =>
                 pkttp_ctr_ld <= '1';
                 trgpkt_ctr_ld <= '1';
+                trgpkt_ctr_en <= '0';
+                stspkt_ctr_ld <= '1';
+                strg_eof <= '0';
+                sts_sof <= '0';
+                sts_eof <= '0';
                 trg_fifo_re <= '0';
                 daq_fifo_re <= '0';
                 tx_sof_n <= '1';
@@ -533,8 +609,8 @@ begin
                 end if;
             when TRGSOFS =>
             -- make sure trigger SOF is read
-                trg_fifo_re <= (not tx_dst_rdy_n) and (not trg_fifo_epty) and (not trg_sof);
-                if ((not tx_dst_rdy_n) and trg_sof) = '1' then
+                trg_fifo_re <= (not tx_dst_rdy_n) and (not trg_fifo_epty) and (not atrg_sof);
+                if ((not tx_dst_rdy_n) and atrg_sof) = '1' then
                 -- make sure SOF was read
                     tx_sof_n <= '0';
                     --tx_src_rdy_n <= '0';
@@ -550,30 +626,32 @@ begin
                 --tx_data <= trg_fifo_do(15 downto 0);
             when TRGPLDS =>
             -- make sure the trigger payload is read until EOF
-                trg_fifo_re <= (not tx_dst_rdy_n) and (not trg_fifo_epty) and (not (trg_eof and pkttp_ctr_tc));
+                trg_fifo_re <= (not tx_dst_rdy_n) and (not trg_fifo_epty) and (not (atrg_eof and pkttp_ctr_tc));
                 --tx_src_rdy_n <= tx_dst_rdy_n or trg_fifo_epty;
-                if ((not tx_dst_rdy_n) and (trg_eof and pkttp_ctr_tc)) = '1' then
+                if ((not tx_dst_rdy_n) and (atrg_eof and pkttp_ctr_tc)) = '1' then
                 -- make sure EOF was read
-                    tx_eof_n <= '0';
-                    tx_fsm_ns <= DAQCTRLS;
+                    --tx_eof_n <= '0';--g
+                    strg_eof <= '1';--n
+                    tx_fsm_ns <= TRGEOFS;
                 else
                 -- keep reading otherwise
-                    tx_eof_n <= '1';
+                    --tx_eof_n <= '1';--g
+                    strg_eof <= '0';--n
                     tx_fsm_ns <= TRGPLDS;
                 end if;
                 tx_data <= trg_fifo_do(15 downto 0);
-            when DAQCTRLS =>
-            -- where do we go next?
-                pkttp_ctr_ld <= '1';
-                if daq_fifo_epty = '0' then
+            when TRGEOFS =>
+            -- write EOF and counters for debug
+                --tx_eof_n <= '0';--n
+                tx_eof_n <= not (daq_pause(daq_pause'length-1) and (not daq_pause(daq_pause'length-2)));--n
+                pkttp_ctr_ld <= '1';-- use for pause
+                -- where do we go next? - send status if sent enough trigger packets and DAQ ZLT
+                if daq_pause(0) = '1' then
                     tx_fsm_ns <= DAQSOFS;
                 else
-                    if trgpkt_ctr_tc = '1' then
-                        tx_fsm_ns <= STATWRS;
-                    else
-                        tx_fsm_ns <= IDLES;
-                    end if;
-               end if;
+                    tx_fsm_ns <= TRGEOFS;--IDLES;
+                end if;
+               tx_data <= trgsof_ctr & trgeof_ctr;
             when DAQSOFS =>
             -- make sure DAQ SOF is read
                 pkttp_ctr_ld <= '1';
@@ -581,10 +659,12 @@ begin
                 if ((not tx_dst_rdy_n) and daq_sof) = '1' then
                     tx_sof_n <= '0';
                     --tx_src_rdy_n <= '0';
+                    trgpkt_ctr_en <= '1';
                     tx_fsm_ns <= DAQPLDS;
                 else
                     tx_sof_n <= '1';
                     --tx_src_rdy_n <= '1';
+                    trgpkt_ctr_en <= '0';
                     tx_fsm_ns <= DAQSOFS;
                 end if;
                 tx_data <= daq_fifo_do(15 downto 0);
@@ -593,23 +673,58 @@ begin
                 pkttp_ctr_ld <= '1';
                 daq_fifo_re <= (not tx_dst_rdy_n) and (not daq_fifo_epty) and (not daq_eof);
                 --tx_src_rdy_n <= tx_dst_rdy_n or daq_fifo_epty;
-                if ((not tx_dst_rdy_n) and daq_eof) = '1' then
-                    tx_eof_n <= '0';
-                    if trgpkt_ctr_tc = '1' then
-                        tx_fsm_ns <= STATWRS;
+                --if ((not tx_dst_rdy_n) and daq_eof) = '1' then--g
+                tx_eof_n <= not (daq_eof and (not sts_pause(sts_pause'length-1)));
+                if ((not tx_dst_rdy_n) and daq_eof and sts_pause(0)) = '1' then--n
+                    --tx_eof_n <= '0';--g
+                    if trgpkt_ctr_tc = '1' then--g
+                        tx_fsm_ns <= STATSOFS;
                     else
                         tx_fsm_ns <= IDLES;
                     end if;
                 else
-                    tx_eof_n <= '1';
+                    --tx_eof_n <= '1';--g
                     tx_fsm_ns <= DAQPLDS;
                 end if;
                 tx_data <= daq_fifo_do(15 downto 0);
-            when STATWRS =>
-            -- don't do anything yet, Data Concentrator is not ready for status
+            when STATSOFS =>
+            -- send start of frame (SOF)
                 pkttp_ctr_ld <= '1';
                 trgpkt_ctr_ld <= '1';
-                tx_fsm_ns <= IDLES;
+                sts_sof <= '1';
+                if ((not tx_dst_rdy_n) and sts_sof_q) = '1' then
+                    tx_sof_n <= '0';
+                    tx_fsm_ns <= STATPLDS;
+                else
+                    tx_sof_n <= '1';
+                    tx_fsm_ns <= STATSOFS;
+                end if;
+                tx_data <= sts_data;
+            when STATPLDS =>
+                pkttp_ctr_ld <= '1';
+                trgpkt_ctr_ld <= '1';
+                stspkt_ctr_ld <= '0';
+                --tx_eof_n <= not (stspkt_ctr_tc and (not idl_pause(idl_pause'length-1)));-- sts_eof;--gish
+                tx_eof_n <= not (stspkt_ctr_tc and (not OR_REDUCE(idl_pause)));--n
+                -- if ((not tx_dst_rdy_n) and stspkt_ctr_tc) = '1' then
+                    -- stspkt_ctr_en <= '0';
+                    -- --tx_eof_n <= '0';--g
+                    -- sts_eof <= '1';
+                    -- --tx_fsm_ns <= IDLES;--g
+                -- else
+                    -- stspkt_ctr_en <= '1';
+                    -- --tx_eof_n <= '1';--g
+                    -- sts_eof <= '0';
+                    -- --tx_fsm_ns <= STATPLDS;--g
+                -- end if;
+                stspkt_ctr_en <= (not tx_dst_rdy_n) and (not stspkt_ctr_tc);
+                sts_eof <= (not tx_dst_rdy_n) and stspkt_ctr_tc;
+                if idl_pause(0) = '1' then--n
+                    tx_fsm_ns <= IDLES;
+                else
+                    tx_fsm_ns <= STATPLDS;
+                end if;
+                tx_data <= sts_data;
             when others =>
                 tx_fsm_ns <= IDLES;
         end case;
@@ -636,11 +751,12 @@ begin
     ll_tx_pcs :  process(sys_clk)
     begin
 		if (sys_clk'event and sys_clk = '1') then
-            --use trg_sof to inject trigger SOF word, delay read enable signals
+            --use atrg_sof to inject trigger SOF word, delay read enable signals
             -- so FIFO out if valid
             --!delaying this makes invalid local link signal because DST_RDY_N is zero delay
             --tx_src_rdy_n <= not (trg_fifo_re or daq_fifo_re);
-            tx_src_rdy_n <= not (trg_sof or trg_fifo_re or daq_fifo_re);
+            --tx_src_rdy_n <= not (atrg_sof or trg_fifo_re or daq_fifo_re);
+            tx_src_rdy_n <= not (atrg_sof or strg_eof or trg_fifo_re or daq_fifo_re or (sts_sof and (not sts_sof_q)) or stspkt_ctr_en);
         end if;
     end process;
 

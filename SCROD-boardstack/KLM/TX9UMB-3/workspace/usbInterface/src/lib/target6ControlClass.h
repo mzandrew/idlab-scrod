@@ -29,6 +29,8 @@ public:
   int resetTriggers(unsigned int board_id);
   int sendTrigger(unsigned int board_id, bool softwareOrHardware);
   int continueReadout(unsigned int board_id);
+  int sendSamplingReset(unsigned int board_id);
+
 };
 
 #endif

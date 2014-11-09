@@ -23,6 +23,7 @@ entity timing_ctrl is
 	port(
     clk                         : in std_logic;
     clk2x                       : in std_logic;
+    tdc_sync                    : in std_logic;
     runreset                    : in std_logic;    
     tdcrst                      : out std_logic_vector(1 to 3);--vector so we can distribute to meet timing
     tdcce_2x                    : out std_logic_vector(1 to 5)); -- _Nx is N times clock period
@@ -35,7 +36,7 @@ architecture behave of timing_ctrl is
 	-- Signal declarations.
     --------------------------------------------------------------------------
     signal tdcrst_d             : std_logic;
-    signal tdcrst_shift         : std_logic_vector(15 downto 0)             := (others => '1');
+    signal tdcrst_shift         : std_logic_vector(39 downto 0)             := (others => '1');
     signal tdcrst_i             : std_logic_vector(tdcrst'length downto 0)  := (others => '1');
     
     signal tce_cnt			    : std_logic_vector(TC_CCNT_WIDTH-1 downto 0):= (others => '0');
@@ -66,11 +67,16 @@ begin
  
     ------------------------------------------------------------------
 	-- Assert reset for shift length clock cycles and cross clock domain.
+    --! This process aligns the RPC and Sctintillato TDC counters.
+    --!Part of the shift register should be an SRL to reduce resource usage.
+    -- The initial delay is 39 clock cycles.
 	------------------------------------------------------------------    
-    trst_proc : process(runreset,clk2x)
+    --trst_proc : process(runreset,clk2x)
+    trst_proc : process(runreset,tdc_sync,clk2x)--!
 	begin
         -- must use asynch reset
-        if runreset = '1' then
+        --if runreset = '1' then
+        if (runreset or tdc_sync) = '1' then--!
             -- assert reset for shift length
             tdcrst_shift <= (others => '1');            
         else

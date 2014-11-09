@@ -530,3 +530,34 @@ int target6ControlClass::continueReadout(unsigned int board_id){
 	return 1;
 }
 
+
+int target6ControlClass::sendSamplingReset(unsigned int board_id){
+
+	//clear data point
+ 	clearDataBuffer();
+
+	///set up data buffers that are used in USB interface
+	int size = 0;
+	unsigned int *outbuf;
+
+	//create command packet
+	int command_id = 13;
+	packet command_stack;
+	command_stack.ClearPacket();
+	command_stack.CreateCommandPacket(command_id,board_id);
+	command_stack.AddWriteToPacket(10, 0);
+//	command_stack.AddWriteToPacket(10, 0);
+//	command_stack.AddWriteToPacket(10, 1);
+//	command_stack.AddWriteToPacket(10, 1);
+	command_stack.AddWriteToPacket(10, 1);
+//	command_stack.AddWriteToPacket(10, 0);
+//	command_stack.AddWriteToPacket(10, 0);
+	command_stack.AddWriteToPacket(10, 0);
+	//Software trigger
+	outbuf = command_stack.AssemblePacket(size);
+
+	//send command packet to SCROD through USB interface
+        usb_XferData((OUT_ADDR | LIBUSB_ENDPOINT_OUT), (unsigned char *) outbuf, size*4, TM_OUT);
+
+	return 1;
+}

@@ -104,7 +104,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1414029238" xil_pn:in_ck="8438391888630326128" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-3261106729304585681" xil_pn:start_ts="1414029171">
+    <transform xil_pn:end_ts="1415087993" xil_pn:in_ck="8438391888630326128" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-3261106729304585681" xil_pn:start_ts="1415087909">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
@@ -124,12 +124,10 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1414016292" xil_pn:in_ck="9117504149050110393" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="6734885114697929048" xil_pn:start_ts="1414016283">
-      <status xil_pn:value="SuccessfullyRun"/>
+    <transform xil_pn:end_ts="1415088003" xil_pn:in_ck="9117504149050110393" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="6734885114697929048" xil_pn:start_ts="1415087993">
+      <status xil_pn:value="FailedRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="InputChanged"/>
       <outfile xil_pn:name="_ngo"/>
       <outfile xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
       <outfile xil_pn:name="klm_scrod.bld"/>
@@ -140,7 +138,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
       <status xil_pn:value="OutOfDateForOutputs"/>
       <status xil_pn:value="OutputRemoved"/>
       <outfile xil_pn:name="_xmsgs/map.xmsgs"/>
@@ -156,6 +154,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
       <status xil_pn:value="OutOfDateForPredecessor"/>
       <outfile xil_pn:name="_xmsgs/par.xmsgs"/>
       <outfile xil_pn:name="klm_scrod.ncd"/>
@@ -189,7 +188,6 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
       <status xil_pn:value="OutOfDateForOutputs"/>
       <status xil_pn:value="InputAdded"/>
       <status xil_pn:value="InputChanged"/>
@@ -201,7 +199,6 @@
       <status xil_pn:value="FailedRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
       <status xil_pn:value="InputAdded"/>
       <status xil_pn:value="InputChanged"/>
       <status xil_pn:value="InputRemoved"/>

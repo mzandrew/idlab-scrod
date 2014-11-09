@@ -46,11 +46,23 @@ int main(int argc, char* argv[]){
 	control->clearDataBuffer();
 
 	//make simple sample histogram
-	TCanvas *c0 = new TCanvas("c0","c0",1300,800);
+	TCanvas *c0 = new TCanvas("c0","c0",800,600);
 	TH1F *hSampDist = new TH1F("hSampDist","",110,3000,4100);
 
 	//Initialize
-	control->registerWriteReadback(board_id, 11, 1, regValReadback); //Start sampling
+
+	//Initialize
+	control->sendSamplingReset(board_id);
+	/*
+	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
+	control->registerWriteReadback(board_id, 10, 1, regValReadback); //Start sampling
+	usleep(20);
+	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
+	usleep(10);
+*/
+	int digOffset = 1;
+
+//	control->registerWriteReadback(board_id, 11, 1, regValReadback); //Start sampling
 	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
 	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
 	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
@@ -59,15 +71,17 @@ int main(int argc, char* argv[]){
 	control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
 	control->registerWriteReadback(board_id, 51, 0x200, regValReadback); //enable ASICs for readout
 	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
-	control->registerWriteReadback(board_id, 53, 8, regValReadback); //set trigger delay
-	control->registerWriteReadback(board_id, 54, 0, regValReadback); //set digitization window offset
+	control->registerWriteReadback(board_id, 53, 0, regValReadback); //set trigger delay
+	control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 2, regValReadback); //set # of windows to read
-	control->registerWriteReadback(board_id, 62, 0x8000 | 120, regValReadback); //force start digitization start window to be the fixed value
+	control->registerWriteReadback(board_id, 57, 1, regValReadback); //set # of windows to read
+	control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
-	control->registerWrite(board_id, 72, 0x1, regValReadback); //enable trigger bits
+	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
+//	control->registerWrite(board_id, 72, 0x000, regValReadback); //enable trigger bits
+	control->registerWrite(board_id, 61, 0xD00, regValReadback); //ramp length- working on 40us ish
 
 	//define output file		
 	ofstream dataFile;
@@ -79,7 +93,6 @@ int main(int argc, char* argv[]){
 	int samples[10][512][32];
 
 	char ct = 0;
-	int digOffset = 0;
 	control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
 	while(ct != 'Q'){
 	//for( int numEv = 0 ; numEv < 10 ; numEv++ ){
@@ -105,7 +118,10 @@ int main(int argc, char* argv[]){
 		//	std::cout << "Send trigger, then enter character" << std::endl;
 		//	std::cin >> ct;
 		//}
-		control->sendTrigger(board_id,1);
+		control->sendTrigger(board_id,0);
+		usleep(500);
+		control->registerWriteReadback(board_id, 50, 0, regValReadback);
+
 		//hardware trigger only, make sure that pulse occurs
 		//if(1){
 		//	std::cout << "Send trigger, then enter character" << std::endl;
@@ -193,7 +209,8 @@ int main(int argc, char* argv[]){
 					continue;
 				//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
 				samples[asicNum-1][addrNum][sampNum] 
-					= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+//					= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+				= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00004000) >> 14) & 0x1);
 					//= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00000001) >> 0) & 0x1);
 
 				//samples[winNum-1][sampNum] = ((samples[winNum-1][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
@@ -254,7 +271,8 @@ int main(int argc, char* argv[]){
 		std::cout << std::dec << "# Readout iterations " << numIter << std::endl;
 
 		std::cout << "Please enter character, Q to quit" << std::endl;
-		std::cin >> ct;
+		//std::cin >> ct;
+		usleep(100000);
 		
 	}
 
@@ -286,3 +304,6 @@ int main(int argc, char* argv[]){
 
 	return 1;
 }	
+
+
+

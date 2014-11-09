@@ -232,7 +232,7 @@ begin
             clk                     => clk,
             ce                      => ce(6),
             run_reset               => b2tt_runreset,
-            stim_enable             => stim_enable,
+            stim_enable             => '0',--stim_enable,
             tb                      => target_tb(I),
             tb16                    => target_tb16(I));
     end generate;

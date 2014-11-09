@@ -243,7 +243,9 @@ if (Clk'event and Clk = '1') then
 	 fifo_wr_en			<= '1';
 	 internal_fifo_wr_din <= x"ABC" & '0' & WIN_ADDR & ASIC_NUM & '0' & internal_samplesel(4 downto 0);
 	 internal_srout_busy <= '1';
-      next_state 	<= LoadHeader2;
+      --next_state 	<= LoadHeader2;
+      next_state 	<= WaitAddr;--debug- IM: 11/4/2014
+
 	
 	--so dumb, temporaroily add second header word to deal with dumb FIFO buffer process
 	When LoadHeader2 =>

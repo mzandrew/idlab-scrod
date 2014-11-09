@@ -27,7 +27,7 @@ TString getOutputFileName(std::string inputFileName);
 //array to store motherboard event waveform data, very crude
 const int numDC = 10;
 const int numCHAN = 1;//only channel 16 is needed- which is connected to the signal gen
-int ActiveChs[numCHAN]={15};
+int ActiveChs[numCHAN]={14};
 const int numADDR = 512;
 const int numSAMP = 32;
 const int numBIT = 12;
