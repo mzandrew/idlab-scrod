@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
 	TH1F *hSampDist = new TH1F("hSampDist","",110,3000,4100);
 
 	//Initialize
-	//control->sendSamplingReset(board_id);
+	control->sendSamplingReset(board_id);
 	/*
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
 	control->registerWriteReadback(board_id, 10, 1, regValReadback); //Start sampling
@@ -72,27 +72,30 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
 	usleep(10);
 */
+	int digOffset = 0;
 
-	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
-	control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
-	control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
-	control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
-	control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
-	control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
-	//control->registerWriteReadback(board_id, 51, 0x3FF, regValReadback); //enable ASICs for readout
-	control->registerWriteReadback(board_id, 51, 0x200, regValReadback); //enable ASICs for readout: 7/12/14: IM: changed such that only DC10 is measured
-//	control->registerWriteReadback(board_id, 51, 0x001, regValReadback); //enable ASICs for readout: 7/12/14: IM: changed such that only DC10 is measured
-	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
-	control->registerWriteReadback(board_id, 53, 0, regValReadback); //set trigger delay
-	control->registerWriteReadback(board_id, 54, 510, regValReadback); //set digitization window offset: internal_CMDREG_READCTRL_dig_offset
-	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
-	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
-	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 1, regValReadback); //set # of windows to read: internal_READCTRL_win_num_to_read
-	control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
-	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
-	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
-	control->registerWrite(board_id, 61, 0xD00, regValReadback); //ramp length- working on 40us ish
+	//	control->registerWriteReadback(board_id, 11, 1, regValReadback); //Start sampling
+		control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
+		control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
+		control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
+		control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
+		control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
+		control->registerWrite(board_id, 45, 0, regValReadback); //Reset Event builder
+		control->registerWriteReadback(board_id, 51, 0x200, regValReadback); //enable ASICs for readout
+		control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
+		control->registerWriteReadback(board_id, 53, 0, regValReadback); //set trigger delay
+		control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
+		control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
+		control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
+		control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
+		control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
+		control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
+		control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
+		control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
+	//	control->registerWrite(board_id, 72, 0x000, regValReadback); //enable trigger bits
+		control->registerWrite(board_id, 61, 0xF00, regValReadback); //ramp length- working on 40us ish
+		control->registerWrite(board_id,38,0b0000010000000000,regValReadback);//setting for using only the trig decision logic
+	//	control->registerWrite(board_id,38,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
 
 	//define output file		
 	ofstream dataFile;

@@ -51,13 +51,13 @@ int main(int argc, char** argv)
 	fprintf(fout,"threshold,cardno,chno,hval,count\n");
 
 	//iterate over channels, vary thresholds each iteration. Automatically test all DC on MB each iteration
-//	const int NCards=10;int Cards[NCards]={0,1,2,3,4,5,6,7,8,9};
-	const int NCards=1;int Cards[NCards]={9};
+	const int NCards=10;int Cards[NCards]={0,1,2,3,4,5,6,7,8,9};
+//	const int NCards=1;int Cards[NCards]={9};
 
 //	const int Nhval=7;int hval[Nhval]={25,50,60,70,80,90,100};
-	const int Nhval=1;int hval[Nhval]={25};
-	//const int Nhval=5;int hval[Nhval]={1,50,100,50,1};
-	//const int Nhval=4;int hval[Nhval]={1,10,50,100};
+//	const int Nhval=1;int hval[Nhval]={25};
+//	const int Nhval=5;int hval[Nhval]={1,50,100,50,1};
+	const int Nhval=7;int hval[Nhval]={1,10,50,100,150,200,250};
 	//const int Nhval=6;int hval[Nhval]={10,20,40,60,80,100};
 //	const int Nhval=30;int hval[Nhval]; for (int i=0;i<Nhval;i++) hval[i]=i*3;
 

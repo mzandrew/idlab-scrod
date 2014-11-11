@@ -22,6 +22,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
+use work.all;
 use work.readout_definitions.all;
     use work.tdc_pkg.all;
    use work.time_order_pkg.all;
@@ -30,7 +31,7 @@ use work.readout_definitions.all;
 --use work.asic_definitions_irs2_carrier_revA.all;
 --use work.CarrierRevA_DAC_definitions.all;
 
-entity scrod_top_A4 is
+entity scrod_top2_A4 is
 	   generic(
     NUM_GTS                     : integer := 1;
 	 -- uncomment one of these lines only to comiple with the given configuration
@@ -163,7 +164,6 @@ entity scrod_top_A4 is
 		TDC8_TRG							 : in STD_LOGIC_VECTOR(4 downto 0);
 		TDC9_TRG							 : in STD_LOGIC_VECTOR(4 downto 0);
 		TDC10_TRG						 : in STD_LOGIC_VECTOR(4 downto 0);
-		
 		--- SciFi Tracker only: (comment out for KLM MB compile)
 ----		GPIO								: in std_logic_vector(23 downto 0);
 --		FPGA_GCLK_N						: in std_logic_vector(0 downto 0);
@@ -237,9 +237,9 @@ entity scrod_top_A4 is
 		TDC_MON_TIMING						: in STD_LOGIC_VECTOR(9 downto 0)-- add the ref to the programming of the TX chip
 
 	);
-end scrod_top_A4;
+end scrod_top2_A4;
 
-architecture Behavioral of scrod_top_A4 is
+architecture Behavioral of scrod_top2_A4 is
 	signal internal_BOARD_CLOCK_OUT      : std_logic;
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_MPPC_DAC  : std_logic;
@@ -251,8 +251,6 @@ architecture Behavioral of scrod_top_A4 is
 	
 	signal WL_CLK_tmp	:std_logic_vector(9 downto 0);
 
-	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);--remove
-	signal internal_CLOCK_8xSST_OBUFDS_P : std_logic_vector(9 downto 0);
 
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
@@ -515,22 +513,52 @@ signal		internal_USB_RDY0                    :  STD_LOGIC:='Z';
 signal		internal_USB_RDY1                    :  STD_LOGIC:='Z';
 signal		internal_USB_WAKEUP                  :  STD_LOGIC:='Z';
 signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
-------------------------------------------
 
-----------Internal Trig_decision Logic:
-	
-signal internal_TRIGDEC_ax						:std_logic_vector(2 downto 0):="000";
-signal internal_TRIGDEC_ay						:std_logic_vector(2 downto 0):="000";
-signal internal_TRIGDEC_asic_enable_bits	:std_logic_vector(9 downto 0):="0000000000";
-signal internal_CMDREG_USE_TRIGDEC			:std_logic:='0';	
-signal internal_TRIGDEC_trig					:std_logic:='0';
-signal internal_CMDREG_TRIGDEC_TRIGMASK	: std_logic_vector(9 downto 0):="1111111111";
+---------------NEW BUSB BUSA signalling:
+
+signal asicy_dig_sr_busy_i:std_logic:='0';
+signal asicx_dig_sr_busy_i:std_logic:='0';
+signal srasicx_i:std_logic_vector(2 downto 0):="000";
+signal srasicy_i:std_logic_vector(2 downto 0):="000";
+
+signal ro_win_start_i:std_logic_vector(8 downto 0);
+signal READOUT_BUSY_i:std_logic;
+signal dig_sr_start_i:std_logic:='0';
+
+	signal BUSA_DIG_RD_ENA_i:std_logic;
+	signal BUSA_cur_ro_win_i:std_logic_vector(8 downto 0);	
+	signal BUSA_DIG_CLR_i:std_logic;
+	signal BUSA_DIG_RAMP_i:std_logic;
+
+	signal BUSB_DIG_RD_ENA_i:std_logic;
+	signal BUSB_cur_ro_win_i:std_logic_vector(8 downto 0);	
+	signal BUSB_DIG_CLR_i:std_logic;
+	signal BUSB_DIG_RAMP_i:std_logic;
 
 	
+	--make serial readout bus signals identical
+	signal BUSA_SAMPLESEL_i:std_logic_vector(4 downto 0);
+	signal BUSA_SR_SEL_i:std_logic;
+	signal BUSA_SR_CLR_i:std_logic;
+	signal BUSA_SR_CLK_i:std_logic;
+	signal BUSA_SAMPLESEL_ANY_i:std_logic;
+	signal BUSB_SAMPLESEL_i:std_logic_vector(4 downto 0);
+	signal BUSB_SR_SEL_i:std_logic;
+	signal BUSB_SR_CLR_i:std_logic;
+	signal BUSB_SR_CLK_i:std_logic;
+	signal BUSB_SAMPLESEL_ANY_i:std_logic;
 	
+	signal ASICX_SROUT_ENABLE_WORD:std_logic_vector(4 downto 0):="00000";
+	signal ASICY_SROUT_ENABLE_WORD:std_logic_vector(4 downto 0):="00000";
+	
+	--Serial readout DO signal switches between buses based on internal_READCTRL_ASIC_NUM signal
+	signal BUSA_dout_i:std_logic_vector(15 downto 0);
+	signal BUSB_dout_i:std_logic_vector(15 downto 0);
 	
 	
 
+
+---------------------------------------
 --module for updating MPPC bias and temp status regs
     COMPONENT update_status_regs
     PORT(
@@ -639,19 +667,69 @@ signal internal_CMDREG_TRIGDEC_TRIGMASK	: std_logic_vector(9 downto 0):="1111111
 		ram_update : OUT std_logic
 		);
 	END COMPONENT;
-
-	COMPONENT TrigDecisionLogic
+	
+COMPONENT ReadoutControl2
 	PORT(
-		tb : IN tb_vec_type;
-		tm : in std_logic_vector(10 downto 1);-- mask
-		TrigOut : OUT std_logic;
-		asicX : OUT std_logic_vector(2 downto 0);
-		asicY : OUT std_logic_vector(2 downto 0)
+		clk : IN std_logic;
+		trig : IN std_logic;
+		dig_offset : IN std_logic_vector(8 downto 0);
+		use_fixed_dig_start_win : IN std_logic_vector(15 downto 0);
+		nwin_read : IN std_logic_vector(2 downto 0);
+		systime : IN std_logic_vector(31 downto 0);
+		curwin : IN std_logic_vector(8 downto 0);
+		asicX : IN std_logic_vector(2 downto 0);
+		asicY : IN std_logic_vector(2 downto 0);
+		DIG_IDLE : IN std_logic;
+		dig_sr_busy : IN std_logic;
+		EVTBUILD_DONE_SENDING_EVENT : IN std_logic;
+		RESET_EVENT_NUM : IN std_logic;
+		fifo_empty : IN std_logic;          
+		trig_ack : OUT std_logic;
+		SRax : OUT std_logic_vector(2 downto 0);
+		SRay : OUT std_logic_vector(2 downto 0);
+		ro_win_start : OUT std_logic_vector(8 downto 0);
+		sr_systime : OUT std_logic_vector(31 downto 0);
+		ro_busy : OUT std_logic;
+		dig_sr_start : OUT std_logic;
+		EVTBUILD_start : OUT std_logic;
+		EVTBUILD_MAKE_READY : OUT std_logic;
+		EVENT_NUM : OUT std_logic_vector(31 downto 0)
 		);
 	END COMPONENT;
-
-
-
+	
+COMPONENT DigSRPedDSP
+	PORT(
+		clk : IN std_logic;
+		start : IN std_logic;
+		ro_win_start : IN std_logic_vector(8 downto 0);
+		win_n : IN std_logic_vector(2 downto 0);
+		asic : IN std_logic_vector(2 downto 0);
+		dig_ramp_length : IN std_logic_vector(11 downto 0);
+		do : IN std_logic_vector(15 downto 0);
+		force_test_pattern : IN std_logic;
+		ram_data : IN std_logic_vector(7 downto 0);
+		ram_busy : IN std_logic;
+		mode : IN std_logic_vector(1 downto 0);          
+		busy : OUT std_logic;
+		dig_rd_ena : OUT std_logic;
+		dig_clr : OUT std_logic;
+		dig_startramp : OUT std_logic;
+		sr_clr : OUT std_logic;
+		sr_clk : OUT std_logic;
+		sr_sel : OUT std_logic;
+		sr_samplesel : OUT std_logic_vector(4 downto 0);
+		sr_samplsl_any : OUT std_logic;
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_update : OUT std_logic;
+		cur_ro_win : OUT std_logic_vector(8 downto 0);
+		pswfifo_en : OUT std_logic;
+		pswfifo_d : OUT std_logic_vector(31 downto 0);
+		pswfifo_clk : OUT std_logic;
+		fifo_en : OUT std_logic;
+		fifo_clk : OUT std_logic;
+		fifo_d : OUT std_logic_vector(31 downto 0)
+		);
+	END COMPONENT;
 	
 begin
 
@@ -666,17 +744,17 @@ begin
    );
 	
 	
--- extrigscrd_IBUF_inst : IBUF
---   generic map (
---      IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
---      IOSTANDARD => "DEFAULT")
---   port map (
---      O => internal_EX_TRIGGER_SCROD,     -- Buffer output
---      I => EX_TRIGGER_SCROD      -- Buffer input (connect directly to top-level port)
---   );
---	
+ extrigscrd_IBUF_inst : IBUF
+   generic map (
+      IBUF_LOW_PWR => FALSE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+      IOSTANDARD => "DEFAULT")
+   port map (
+      O => internal_EX_TRIGGER_SCROD,     -- Buffer output
+      I => EX_TRIGGER_SCROD      -- Buffer input (connect directly to top-level port)
+   );
+	
 
---internal_TRIGGER_ALL <=internal_EX_TRIGGER_SCROD;
+internal_TRIGGER_ALL <=internal_EX_TRIGGER_SCROD;
 
 internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 
@@ -696,17 +774,28 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --  EX_TRIGGER2_MB<='0';-- internal_clock_asic_ctrl;
  -- EX_TRIGGER_SCROD<='0';
 	
-   internal_TXDCTRIG(1)(1) <=TDC1_TRG(0); internal_TXDCTRIG(1)(2) <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC_MON_TIMING(0);
-   internal_TXDCTRIG(2)(1) <=TDC2_TRG(0); internal_TXDCTRIG(2)(2) <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC_MON_TIMING(1);
-   internal_TXDCTRIG(3)(1) <=TDC3_TRG(0); internal_TXDCTRIG(3)(2) <=TDC3_TRG(1);internal_TXDCTRIG(3)(3) <=TDC3_TRG(2);internal_TXDCTRIG(3)(4) <=TDC3_TRG(3);internal_TXDCTRIG(3)(5) <=TDC_MON_TIMING(2);
-   internal_TXDCTRIG(4)(1) <=TDC4_TRG(0); internal_TXDCTRIG(4)(2) <=TDC4_TRG(1);internal_TXDCTRIG(4)(3) <=TDC4_TRG(2);internal_TXDCTRIG(4)(4) <=TDC4_TRG(3);internal_TXDCTRIG(4)(5) <=TDC_MON_TIMING(3);
-   internal_TXDCTRIG(5)(1) <=TDC5_TRG(0); internal_TXDCTRIG(5)(2) <=TDC5_TRG(1);internal_TXDCTRIG(5)(3) <=TDC5_TRG(2);internal_TXDCTRIG(5)(4) <=TDC5_TRG(3);internal_TXDCTRIG(5)(5) <=TDC_MON_TIMING(4);
-   internal_TXDCTRIG(6)(1) <=TDC6_TRG(0); internal_TXDCTRIG(6)(2) <=TDC6_TRG(1);internal_TXDCTRIG(6)(3) <=TDC6_TRG(2);internal_TXDCTRIG(6)(4) <=TDC6_TRG(3);internal_TXDCTRIG(6)(5) <=TDC_MON_TIMING(5);
-   internal_TXDCTRIG(7)(1) <=TDC7_TRG(0); internal_TXDCTRIG(7)(2) <=TDC7_TRG(1);internal_TXDCTRIG(7)(3) <=TDC7_TRG(2);internal_TXDCTRIG(7)(4) <=TDC7_TRG(3);internal_TXDCTRIG(7)(5) <=TDC_MON_TIMING(6);
-   internal_TXDCTRIG(8)(1) <=TDC8_TRG(0); internal_TXDCTRIG(8)(2) <=TDC8_TRG(1);internal_TXDCTRIG(8)(3) <=TDC8_TRG(2);internal_TXDCTRIG(8)(4) <=TDC8_TRG(3);internal_TXDCTRIG(8)(5) <=TDC_MON_TIMING(7);
-   internal_TXDCTRIG(9)(1) <=TDC9_TRG(0); internal_TXDCTRIG(9)(2) <=TDC9_TRG(1);internal_TXDCTRIG(9)(3) <=TDC9_TRG(2);internal_TXDCTRIG(9)(4) <=TDC9_TRG(3);internal_TXDCTRIG(9)(5) <=TDC_MON_TIMING(8);
-   internal_TXDCTRIG(10)(1)<=TDC10_TRG(0); internal_TXDCTRIG(10)(2) <=TDC10_TRG(1);internal_TXDCTRIG(10)(3) <=TDC10_TRG(2);internal_TXDCTRIG(10)(4) <=TDC10_TRG(3);internal_TXDCTRIG(10)(5) <=TDC_MON_TIMING(9);
+   internal_TXDCTRIG(1)(1) <=TDC1_TRG(0) ; internal_TXDCTRIG(1)(2)  <=TDC1_TRG(1);internal_TXDCTRIG(1)(3) <=TDC1_TRG(2);internal_TXDCTRIG(1)(4) <=TDC1_TRG(3);internal_TXDCTRIG(1)(5) <=TDC1_TRG(4);
+   internal_TXDCTRIG(2)(1) <=TDC2_TRG(0) ; internal_TXDCTRIG(2)(2)  <=TDC2_TRG(1);internal_TXDCTRIG(2)(3) <=TDC2_TRG(2);internal_TXDCTRIG(2)(4) <=TDC2_TRG(3);internal_TXDCTRIG(2)(5) <=TDC2_TRG(4);
+   internal_TXDCTRIG(3)(1) <=TDC3_TRG(0) ; internal_TXDCTRIG(3)(2)  <=TDC3_TRG(1);internal_TXDCTRIG(3)(3) <=TDC3_TRG(2);internal_TXDCTRIG(3)(4) <=TDC3_TRG(3);internal_TXDCTRIG(3)(5) <=TDC3_TRG(4);
+   internal_TXDCTRIG(4)(1) <=TDC4_TRG(0) ; internal_TXDCTRIG(4)(2)  <=TDC4_TRG(1);internal_TXDCTRIG(4)(3) <=TDC4_TRG(2);internal_TXDCTRIG(4)(4) <=TDC4_TRG(3);internal_TXDCTRIG(4)(5) <=TDC4_TRG(4);
+   internal_TXDCTRIG(5)(1) <=TDC5_TRG(0) ; internal_TXDCTRIG(5)(2)  <=TDC5_TRG(1);internal_TXDCTRIG(5)(3) <=TDC5_TRG(2);internal_TXDCTRIG(5)(4) <=TDC5_TRG(3);internal_TXDCTRIG(5)(5) <=TDC5_TRG(4);
+   internal_TXDCTRIG(6)(1) <=TDC6_TRG(0) ; internal_TXDCTRIG(6)(2)  <=TDC6_TRG(1);internal_TXDCTRIG(6)(3) <=TDC6_TRG(2);internal_TXDCTRIG(6)(4) <=TDC6_TRG(3);internal_TXDCTRIG(6)(5) <=TDC6_TRG(4);
+   internal_TXDCTRIG(7)(1) <=TDC7_TRG(0) ; internal_TXDCTRIG(7)(2)  <=TDC7_TRG(1);internal_TXDCTRIG(7)(3) <=TDC7_TRG(2);internal_TXDCTRIG(7)(4) <=TDC7_TRG(3);internal_TXDCTRIG(7)(5) <=TDC7_TRG(4);
+   internal_TXDCTRIG(8)(1) <=TDC8_TRG(0) ; internal_TXDCTRIG(8)(2)  <=TDC8_TRG(1);internal_TXDCTRIG(8)(3) <=TDC8_TRG(2);internal_TXDCTRIG(8)(4) <=TDC8_TRG(3);internal_TXDCTRIG(8)(5) <=TDC8_TRG(4);
+   internal_TXDCTRIG(9)(1) <=TDC9_TRG(0) ; internal_TXDCTRIG(9)(2)  <=TDC9_TRG(1);internal_TXDCTRIG(9)(3) <=TDC9_TRG(2);internal_TXDCTRIG(9)(4) <=TDC9_TRG(3);internal_TXDCTRIG(9)(5) <=TDC9_TRG(4);
+   internal_TXDCTRIG(10)(1)<=TDC10_TRG(0); internal_TXDCTRIG(10)(2) <=TDC10_TRG(1);internal_TXDCTRIG(10)(3) <=TDC10_TRG(2);internal_TXDCTRIG(10)(4) <=TDC10_TRG(3);internal_TXDCTRIG(10)(5) <=TDC10_TRG(4);
                                                                                                                                                                                                      
+																																																																	  
+--	internal_TXDCTRIG16(1)<=TDC1_TRG(4);
+--	internal_TXDCTRIG16(2)<=TDC2_TRG(4);
+--	internal_TXDCTRIG16(3)<=TDC3_TRG(4);
+--	internal_TXDCTRIG16(4)<=TDC4_TRG(4);
+--	internal_TXDCTRIG16(5)<=TDC5_TRG(4);
+--	internal_TXDCTRIG16(6)<=TDC6_TRG(4);
+--	internal_TXDCTRIG16(7)<=TDC7_TRG(4);
+--	internal_TXDCTRIG16(8)<=TDC8_TRG(4);
+--	internal_TXDCTRIG16(9)<=TDC9_TRG(4);	
+--	internal_TXDCTRIG16(10)<=TDC10_TRG(4);
 	
 --	 asic_IBUF2_GEN : 
 --    for I in 1 to 10 generate
@@ -725,49 +814,49 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --        );             
 --                
 --    end generate;   
---	 
---	
+	 
 	
---	asic_trig_GGEN: for I in 1 to 10 generate
---	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4);
---end generate;
+	
+	asic_trig_GGEN: for I in 1 to 10 generate
+	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4);
+end generate;
 
-	internal_TRIGGER_ASIC(0) <= TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
-	internal_TRIGGER_ASIC(1) <= TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3);
-	internal_TRIGGER_ASIC(2) <= TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3);
-	internal_TRIGGER_ASIC(3) <= TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3);
-	internal_TRIGGER_ASIC(4) <= TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3);
-	internal_TRIGGER_ASIC(5) <= TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3);
-	internal_TRIGGER_ASIC(6) <= TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3);
-	internal_TRIGGER_ASIC(7) <= TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
-	internal_TRIGGER_ASIC(8) <= TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
-	internal_TRIGGER_ASIC(9) <= TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
-	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
+--	internal_TRIGGER_ASIC(0) <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
+--	internal_TRIGGER_ASIC(1) <= TDC2_TRG_16 OR TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3);
+--	internal_TRIGGER_ASIC(2) <= TDC3_TRG_16 OR TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3);
+--	internal_TRIGGER_ASIC(3) <= TDC4_TRG_16 OR TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3);
+--	internal_TRIGGER_ASIC(4) <= TDC5_TRG_16 OR TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3);
+--	internal_TRIGGER_ASIC(5) <= TDC6_TRG_16 OR TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3);
+--	internal_TRIGGER_ASIC(6) <= TDC7_TRG_16 OR TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3);
+--	internal_TRIGGER_ASIC(7) <= TDC8_TRG_16 OR TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
+--	internal_TRIGGER_ASIC(8) <= TDC9_TRG_16 OR TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
+--	internal_TRIGGER_ASIC(9) <= TDC10_TRG_16 OR TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
+--	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
 
 --	internal_ASIC_TRIG<=internal_TRIGGER_ASIC(9) and internal_TRIGGER_ASIC_control_word(9) ;
 --	internal_TRIGGER_ALL <=EX_TRIGGER2_MB or  (internal_TRIGGER_ASIC(0) --AND internal_TRIGGER_ASIC_control_word(0)
 
 --	)
---	internal_ASIC_TRIG<=(internal_TRIGGER_ASIC(0) and internal_TRIGGER_ASIC_control_word(0) )
---		OR ( internal_TRIGGER_ASIC(1) AND internal_TRIGGER_ASIC_control_word(1)
---		)
---		OR ( internal_TRIGGER_ASIC(2) AND internal_TRIGGER_ASIC_control_word(2) 
---		)
---		OR ( internal_TRIGGER_ASIC(3) AND internal_TRIGGER_ASIC_control_word(3) 
---		)
---		OR ( internal_TRIGGER_ASIC(4) AND internal_TRIGGER_ASIC_control_word(4) 
---		)
---		OR ( internal_TRIGGER_ASIC(5) AND internal_TRIGGER_ASIC_control_word(5) 
---		)
---		OR ( internal_TRIGGER_ASIC(6) AND internal_TRIGGER_ASIC_control_word(6) 
---		)
---		OR ( internal_TRIGGER_ASIC(7) AND internal_TRIGGER_ASIC_control_word(7) 
---		)
---		OR ( internal_TRIGGER_ASIC(8) AND internal_TRIGGER_ASIC_control_word(8) 
---		)
---		OR ( internal_TRIGGER_ASIC(9) AND internal_TRIGGER_ASIC_control_word(9) 
---		);
---	
+	internal_ASIC_TRIG<=(internal_TRIGGER_ASIC(0) and internal_TRIGGER_ASIC_control_word(0) )
+		OR ( internal_TRIGGER_ASIC(1) AND internal_TRIGGER_ASIC_control_word(1)
+		)
+		OR ( internal_TRIGGER_ASIC(2) AND internal_TRIGGER_ASIC_control_word(2) 
+		)
+		OR ( internal_TRIGGER_ASIC(3) AND internal_TRIGGER_ASIC_control_word(3) 
+		)
+		OR ( internal_TRIGGER_ASIC(4) AND internal_TRIGGER_ASIC_control_word(4) 
+		)
+		OR ( internal_TRIGGER_ASIC(5) AND internal_TRIGGER_ASIC_control_word(5) 
+		)
+		OR ( internal_TRIGGER_ASIC(6) AND internal_TRIGGER_ASIC_control_word(6) 
+		)
+		OR ( internal_TRIGGER_ASIC(7) AND internal_TRIGGER_ASIC_control_word(7) 
+		)
+		OR ( internal_TRIGGER_ASIC(8) AND internal_TRIGGER_ASIC_control_word(8) 
+		)
+		OR ( internal_TRIGGER_ASIC(9) AND internal_TRIGGER_ASIC_control_word(9) 
+		);
+	
 
 
 	--RAM_A <=internal_RAM_A;
@@ -843,6 +932,8 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		
 	);  
 
+
+		
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
 	port map ( 
@@ -853,12 +944,21 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		REGISTER_UPDATED             => i_register_update,
 	
 		--NOT original implementation - KLM specific
-		WAVEFORM_FIFO_DATA_IN        => internal_READOUT_DATA_OUT,
-		WAVEFORM_FIFO_EMPTY          => internal_READOUT_EMPTY,
-		WAVEFORM_FIFO_DATA_VALID     => internal_READOUT_DATA_VALID,
-		WAVEFORM_FIFO_READ_CLOCK     => internal_READOUT_READ_CLOCK,
-		WAVEFORM_FIFO_READ_ENABLE    => internal_READOUT_READ_ENABLE,
-		WAVEFORM_PACKET_BUILDER_BUSY => internal_READCTRL_busy_status,
+--		WAVEFORM_FIFO_DATA_IN        => internal_READOUT_DATA_OUT,
+--		WAVEFORM_FIFO_EMPTY          => internal_READOUT_EMPTY,
+--		WAVEFORM_FIFO_DATA_VALID     => internal_READOUT_DATA_VALID,
+--		WAVEFORM_FIFO_READ_CLOCK     => internal_READOUT_READ_CLOCK,
+--		WAVEFORM_FIFO_READ_ENABLE    => internal_READOUT_READ_ENABLE,
+--		WAVEFORM_PACKET_BUILDER_BUSY => internal_READCTRL_busy_status,
+
+		WAVEFORM_FIFO_DATA_IN        => internal_WAVEFORM_FIFO_DATA_OUT,
+		WAVEFORM_FIFO_EMPTY          => internal_WAVEFORM_FIFO_EMPTY,
+		WAVEFORM_FIFO_DATA_VALID     => internal_WAVEFORM_FIFO_DATA_VALID,
+		WAVEFORM_FIFO_READ_CLOCK     => open,
+		WAVEFORM_FIFO_READ_ENABLE    => internal_WAVEFORM_FIFO_READ_ENABLE,
+		WAVEFORM_PACKET_BUILDER_BUSY => READOUT_BUSY_i,
+		
+		
 		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
 		WAVEFORM_PACKET_BUILDER_VETO => internal_EVTBUILD_PACKET_BUILDER_VETO,
 		
@@ -945,8 +1045,8 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
     ttdackn  => RJ45_ACK_N,
 	 b2ttsysclk	=>internal_CLOCK_B2TT_SYS,
 ----     ASIC Interface
-    target_tb  => internal_TXDCTRIG_buf,		--                 : in tb_vec_type; 
-    target_tb16 => internal_TXDCTRIG16_buf,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
+    target_tb  => internal_TXDCTRIG,		--                 : in tb_vec_type; 
+    target_tb16 => internal_TXDCTRIG16,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
     -- SFP interface
     mgttxfault	=>		mgttxfault,  
     mgtmod0		=>		mgtmod0,               
@@ -1015,8 +1115,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	internal_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
 	internal_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(14);	
 	internal_CMDREG_PedDemuxFifoOutputSelect<=internal_OUTPUT_REGISTERS(38)(13 downto 12); --00: disable (regular waveform dump)--01: ped sub, 10: ped only, 11: waveform only
-	internal_CMDREG_USE_TRIGDEC	<=internal_OUTPUT_REGISTERS(39)(15); --'1': only use trigger generated by internal logic , '0'= use trigger generated by HW or SW or anything
-	internal_CMDREG_TRIGDEC_TRIGMASK	<=internal_OUTPUT_REGISTERS(39)(9 downto 0); --Mask the ASICS that we dont want to fire on- due to bad supply
+	
 	
 
 	
@@ -1109,7 +1208,9 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	
 	internal_INPUT_REGISTERS(N_GPR + 30) <= "0000000" & internal_READCTRL_dig_win_start; -- digitizatoin window start
 	internal_INPUT_REGISTERS(N_GPR + 31) <=internal_pswfifo_d(15 downto 0);--internal_INPUT_REGISTERS(31)
-	
+	internal_INPUT_REGISTERS(N_GPR + 32 ) <= "0000000" & BUSA_cur_ro_win_i;
+	internal_INPUT_REGISTERS(N_GPR + 33 ) <= "0000000" & BUSB_cur_ro_win_i;
+
 	-- Status Regs:
 	gen_STAT_REG_INREG: for i in 0 to N_STAT_REG-1 generate
 		gen_BIT2: for j in 0 to 15 generate
@@ -1125,8 +1226,8 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --				internal_INPUT_REGISTERS(N_GPR + i+40)<=x"ABCD"; 
 --	end generate;
 --	--internal_INPUT_REGISTERS(N_GPR + 40) <= 
-
 --status reg update module	
+
 	   uut: update_status_regs PORT MAP (
           clk => internal_CLOCK_FPGA_LOGIC,
           update => internal_CMDREG_UPDATE_STATUS_REGS,
@@ -1156,11 +1257,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	end generate;
 		
 	BUS_REGCLR <= '0';
---	BUSA_REGCLR <= '0';
---	BUSB_REGCLR <= '0';
---	BUSA_SCLK <= internal_DAC_CONTROL_SCLK;
---	BUSB_SCLK <= internal_DAC_CONTROL_SCLK;
-	
+
 	  --ASIC control processes
 	
 	--TARGETX DAC Control
@@ -1182,87 +1279,184 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		PCLK(i) <= internal_DAC_CONTROL_PCLK and internal_DAC_CONTROL_TDCNUM(i);
 		SCLK(i) <= internal_DAC_CONTROL_SCLK and internal_DAC_CONTROL_TDCNUM(i);
 	end generate;
+----------------------------- READOUT CONTROL REV2------------------------------------
+
+Inst_ReadoutControl2: ReadoutControl2 PORT MAP(
+		clk => internal_CLOCK_FPGA_LOGIC,
+		trig => internal_READCTRL_trigger,
+		dig_offset => internal_READCTRL_dig_offset,
+		use_fixed_dig_start_win => internal_CMDREG_READCTRL_use_fixed_dig_start_win,
+		nwin_read => internal_READCTRL_win_num_to_read(2 downto 0),
+		systime => x"12345678",
+		curwin => internal_SMP_MAIN_CNT,
+		asicX => "000",
+		asicY => "101",
+		DIG_IDLE => '1',
+		dig_sr_busy => asicx_dig_sr_busy_i or asicy_dig_sr_busy_i,
+		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
+		RESET_EVENT_NUM => internal_READCTRL_RESET_EVENT_NUM,
+		fifo_empty => internal_WAVEFORM_FIFO_EMPTY,
+		trig_ack => open,
+		SRax => SRasicX_i,
+		SRay => SRasicY_i,
+		ro_win_start => ro_win_start_i,
+		sr_systime => open,
+		ro_busy => READOUT_BUSY_i,
+		dig_sr_start => dig_sr_start_i ,
+		EVTBUILD_start => open,
+		EVTBUILD_MAKE_READY =>open ,
+		EVENT_NUM => internal_READCTRL_EVENT_NUM
+	);
+
+
+-----------------
+--------------------Dig+SRou+Ped+DSP- BUSB
+Inst_DigSRPedDSP_Y: DigSRPedDSP PORT MAP(
+		clk 							=> internal_CLOCK_FPGA_LOGIC,
+		start 						=> dig_sr_start_i,
+		ro_win_start 				=> ro_win_start_i,
+		win_n 						=> internal_READCTRL_win_num_to_read(2 downto 0),
+		asic 							=> SRasicY_i,
+		busy 							=> asicy_dig_sr_busy_i,
+		dig_ramp_length		   => internal_CMDREG_READCTRL_ramp_length(11 downto 0),
+		dig_rd_ena				   => BUSB_DIG_RD_ENA_i,
+		dig_clr 						=> BUSB_DIG_CLR_i,
+		dig_startramp 				=> BUSB_DIG_RAMP_i,
+		do 							=> BUSB_dout_i,
+		force_test_pattern 		=> '0',
+		sr_clr 						=> BUSB_SR_CLR_i,
+		sr_clk 						=> BUSB_SR_CLK_i,
+		sr_sel 						=> BUSB_SR_SEL_i,
+		sr_samplesel 				=> BUSB_SAMPLESEL_i,
+		sr_samplsl_any 			=> BUSB_SAMPLESEL_ANY_i,
+		ram_addr						=>internal_ram_Ain(2),
+		ram_data						=>internal_ram_DRout(2),
+		ram_update					=>internal_ram_update(2),
+		ram_busy						=>internal_ram_busy(2),
+		cur_ro_win 					=> BUSB_cur_ro_win_i,
+		mode 							=> "11",
+		pswfifo_en 					=>open ,
+		pswfifo_d 					=> open,
+		pswfifo_clk 				=> open,
+		fifo_en					   => internal_SROUT_FIFO_WR_EN,
+		fifo_clk 					=> internal_SROUT_FIFO_WR_CLK,
+		fifo_d 						=> internal_SROUT_FIFO_DATA_OUT
+	);
+	
+	
+	
+	
+	--BUSA and BUSB Digitzation signals are identical
+	BUSA_RD_ENA			<= BUSA_DIG_RD_ENA_i;
+	BUSA_RD_ROWSEL_S 	<= BUSA_cur_ro_win_i(2 downto 0);	
+	BUSA_RD_COLSEL_S 	<= BUSA_cur_ro_win_i(8 downto 3); 
+	BUSA_CLR 			<= BUSA_DIG_CLR_i and not internal_CMDREG_SROUT_TPG;
+	BUSA_RAMP 			<= BUSA_DIG_RAMP_i;
+
+	BUSB_RD_ENA			<= BUSB_DIG_RD_ENA_i;
+	BUSB_RD_ROWSEL_S 	<= BUSB_cur_ro_win_i(2 downto 0);
+	BUSB_RD_COLSEL_S 	<= BUSB_cur_ro_win_i(8 downto 3);
+	BUSB_CLR 			<= BUSB_DIG_CLR_i and not internal_CMDREG_SROUT_TPG;
+	BUSB_RAMP 			<= BUSB_DIG_RAMP_i;		
+	--make serial readout bus signals identical
+	BUSA_SAMPLESEL_S 	<= BUSA_SAMPLESEL_i;
+	BUSA_SR_SEL 		<= BUSA_SR_SEL_i;
+	BUSA_SR_CLEAR		<= BUSA_SR_CLR_i;
+	BUSB_SAMPLESEL_S 	<= BUSB_SAMPLESEL_i;
+	BUSB_SR_SEL 		<= BUSB_SR_SEL_i;
+	BUSB_SR_CLEAR		<= BUSB_SR_CLR_i;
+	
+	--Serial readout DO signal switches between buses based on internal_READCTRL_ASIC_NUM signal
+	BUSA_dout_i<=BUSA_DO;
+	BUSB_dout_i<=BUSB_DO;
+	
+	--multiplex DC specific serial readout signal to ASIC specified by internal_READCTRL_ASIC_NUM signal
+
+	ASICX_SROUT_ENABLE_WORD 					<= "00001" when (SRasicX_i = "001") else
+															"00010" when (SRasicX_i = "010") else
+															"00100" when (SRasicX_i = "011") else
+															"01000" when (SRasicX_i = "100") else
+															"10000" when (SRasicX_i = "101") else
+															"00000";
+
+	ASICY_SROUT_ENABLE_WORD 					<= "00001" when (SRasicY_i = "001") else
+															"00010" when (SRasicY_i = "010") else
+															"00100" when (SRasicY_i = "011") else
+															"01000" when (SRasicY_i = "100") else
+															"10000" when (SRasicY_i = "101") else
+															"00000";
+	
+
+	
+	--Only specified DC gets serial data signals, uses bit mask
+
+	gen_BUSA_SAMPLESEL_ANY_CONTROL: for i in 0 to 4 generate
+		SR_CLOCK(i)		<= BUSA_SR_CLK_i			and ASICX_SROUT_ENABLE_WORD(i);
+		SAMPLESEL_ANY(i)<= BUSA_SAMPLESEL_ANY_i 	and ASICX_SROUT_ENABLE_WORD(i);
+	end generate;
+		
+	gen_BUSB_SAMPLESEL_ANY_CONTROL: for i in 0 to 4 generate
+		SR_CLOCK(i+5)			<= BUSB_SR_CLK_i			and ASICY_SROUT_ENABLE_WORD(i);
+		SAMPLESEL_ANY(i+5) 	<= BUSB_SAMPLESEL_ANY_i 	and ASICY_SROUT_ENABLE_WORD(i);
+	end generate;
+
+	
+	
+	
+	
 	
 	--Control the sampling, digitization and serial resout processes following trigger
-	u_ReadoutControl: entity work.ReadoutControl PORT MAP(
-		clk 					=> internal_CLOCK_FPGA_LOGIC,
-		smp_clk 				=> internal_CLOCK_ASIC_CTRL,
-		trigger 				=> internal_READCTRL_trigger,
-		trig_delay 			=> internal_READCTRL_trig_delay,
-		dig_offset 			=> internal_READCTRL_dig_offset,
-		win_num_to_read 	=> internal_READCTRL_win_num_to_read,
-		asic_enable_bits  => internal_READCTRL_asic_enable_bits,
-		SMP_MAIN_CNT 		=> internal_SMP_MAIN_CNT,
-		SMP_IDLE_status 	=> '0',
-		DIG_IDLE_status 	=> internal_DIG_IDLE_status,
-		SROUT_IDLE_status => internal_SROUT_IDLE_status,
-		fifo_empty 			=> internal_WAVEFORM_FIFO_EMPTY,
-		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
-		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
-		dig_win_start			=> internal_READCTRL_dig_win_start,
-		LATCH_DONE 			=> internal_READCTRL_LATCH_DONE,
-		READOUT_RESET 		=> internal_READCTRL_readout_reset,
-		READOUT_CONTINUE 	=> internal_READCTRL_readout_continue,
-		RESET_EVENT_NUM 	=> internal_READCTRL_RESET_EVENT_NUM,
-		use_fixed_dig_start_win=>internal_CMDREG_READCTRL_use_fixed_dig_start_win,
-		ASIC_NUM 			=> internal_READCTRL_ASIC_NUM,
-		busy_status 		=> internal_READCTRL_busy_status,
-		smp_stop 			=> internal_READCTRL_smp_stop,
-		dig_start 			=> internal_READCTRL_dig_start,
-		DIG_RD_ROWSEL_S 	=> internal_READCTRL_DIG_RD_ROWSEL,
-		DIG_RD_COLSEL_S 	=> internal_READCTRL_DIG_RD_COLSEL,
-		srout_start 		=> internal_READCTRL_srout_start,
-		EVTBUILD_start 	=> open,
-		EVTBUILD_MAKE_READY => open,
-		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM,
-		READOUT_DONE 		=> internal_READCTRL_READOUT_DONE
-	);
+--	u_ReadoutControl: entity work.ReadoutControl PORT MAP(
+--		clk 					=> internal_CLOCK_FPGA_LOGIC,
+--		smp_clk 				=> internal_CLOCK_ASIC_CTRL,
+--		trigger 				=> internal_READCTRL_trigger,
+--		trig_delay 			=> internal_READCTRL_trig_delay,
+--		dig_offset 			=> internal_READCTRL_dig_offset,
+--		win_num_to_read 	=> internal_READCTRL_win_num_to_read,
+--		asic_enable_bits  => internal_READCTRL_asic_enable_bits,
+--		SMP_MAIN_CNT 		=> internal_SMP_MAIN_CNT,
+--		SMP_IDLE_status 	=> '0',
+--		DIG_IDLE_status 	=> internal_DIG_IDLE_status,
+--		SROUT_IDLE_status => internal_SROUT_IDLE_status,
+--		fifo_empty 			=> internal_WAVEFORM_FIFO_EMPTY,
+--		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
+--		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
+--		dig_win_start			=> internal_READCTRL_dig_win_start,
+--		LATCH_DONE 			=> internal_READCTRL_LATCH_DONE,
+--		READOUT_RESET 		=> internal_READCTRL_readout_reset,
+--		READOUT_CONTINUE 	=> internal_READCTRL_readout_continue,
+--		RESET_EVENT_NUM 	=> internal_READCTRL_RESET_EVENT_NUM,
+--		use_fixed_dig_start_win=>internal_CMDREG_READCTRL_use_fixed_dig_start_win,
+--		ASIC_NUM 			=> internal_READCTRL_ASIC_NUM,
+--		busy_status 		=> internal_READCTRL_busy_status,
+--		smp_stop 			=> internal_READCTRL_smp_stop,
+--		dig_start 			=> internal_READCTRL_dig_start,
+--		DIG_RD_ROWSEL_S 	=> internal_READCTRL_DIG_RD_ROWSEL,
+--		DIG_RD_COLSEL_S 	=> internal_READCTRL_DIG_RD_COLSEL,
+--		srout_start 		=> internal_READCTRL_srout_start,
+--		EVTBUILD_start 	=> open,
+--		EVTBUILD_MAKE_READY => open,
+--		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM,
+--		READOUT_DONE 		=> internal_READCTRL_READOUT_DONE
+--	);
 	internal_SOFTWARE_TRIGGER_VETO <= internal_CMDREG_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER_ENABLE <= internal_CMDREG_HARDWARE_TRIGGER_ENABLE;
 	internal_SOFTWARE_TRIGGER <= internal_CMDREG_SOFTWARE_trigger;-- AND NOT internal_SOFTWARE_TRIGGER_VETO;
 	internal_HARDWARE_TRIGGER <= internal_TRIGGER_ALL AND internal_HARDWARE_TRIGGER_ENABLE;
-	internal_READCTRL_trigger <= (internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER or internal_ASIC_TRIG) when internal_CMDREG_USE_TRIGDEC='0' else internal_TRIGDEC_trig;
+	internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER or internal_ASIC_TRIG;
 	--internal_READCTRL_trigger <= internal_SOFTWARE_TRIGGER;
 	internal_READCTRL_trig_delay <= internal_CMDREG_READCTRL_trig_delay;
 	internal_READCTRL_dig_offset <= internal_CMDREG_READCTRL_dig_offset;
 	internal_READCTRL_win_num_to_read <= internal_CMDREG_READCTRL_win_num_to_read;
-	internal_READCTRL_asic_enable_bits <= internal_CMDREG_READCTRL_asic_enable_bits when internal_CMDREG_USE_TRIGDEC='0' else internal_TRIGDEC_asic_enable_bits;
-	
-	
+	internal_READCTRL_asic_enable_bits <= internal_CMDREG_READCTRL_asic_enable_bits;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
-	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
-		tb => internal_TXDCTRIG,
-		tm=>internal_CMDREG_TRIGDEC_TRIGMASK,
-		TrigOut => internal_TRIGDEC_trig,
-		asicX => internal_TRIGDEC_ax,
-		asicY => internal_TRIGDEC_ay
-	);
-	
-	internal_TRIGDEC_asic_enable_bits(4 downto 0)<= "00000" when (internal_TRIGDEC_ax="000") else
-																	"00001" when (internal_TRIGDEC_ax="001") else
-																	"00010" when (internal_TRIGDEC_ax="010") else
-																	"00100" when (internal_TRIGDEC_ax="011") else
-																	"01000" when (internal_TRIGDEC_ax="100") else
-																	"10000" when (internal_TRIGDEC_ax="101") else
-																	"00000";
-	
-	internal_TRIGDEC_asic_enable_bits(9 downto 5)<= "00000" when (internal_TRIGDEC_ay="000") else
-																	"00001" when (internal_TRIGDEC_ay="001") else
-																	"00010" when (internal_TRIGDEC_ay="010") else
-																	"00100" when (internal_TRIGDEC_ay="011") else
-																	"01000" when (internal_TRIGDEC_ay="100") else
-																	"10000" when (internal_TRIGDEC_ay="101") else
-																	"00000";
-	
-	--LEDS(0)<=internal_TRIGGER_ALL;-- scope probe here
+	LEDS(0)<=internal_TRIGGER_ALL;-- scope probe here
 	LEDS(1)<=internal_READCTRL_trigger;
 	LEDS(2)<=internal_SMP_MAIN_CNT(4); 
-	LEDS(0)<='0';
-	LEDS(12)<='0';
-
-	--LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
+	
+	LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
 	
 --	 u_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
@@ -1312,7 +1506,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --		
 --		internal_ram_rw(3)<='1';-- always write to this channel	
 --	
---	
+	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
@@ -1328,25 +1522,11 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		wr2_ena 	=> open
 	);
 	
---internal_WR_ENA<= not internal_DIG_IDLE_status;--internal_READCTRL_trigger;-- debug
-internal_WR_ENA<=  internal_READCTRL_READOUT_DONE;--internal_READCTRL_busy;-- debug
-
+	internal_WR_ENA<= not READOUT_BUSY_i;
 	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
 	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
 
-		
---create_ded_wr_addrclr: if (HW_CONF="SA4_MBSF_TX") generate
---	BUSB_DED_WR_ADDRCLR(0)<= internal_WR_ADDRCLR;
---	BUSB_DED_WR_ADDRCLR(1)<= internal_WR_ADDRCLR;
---	BUSB_DED_WR_ADDRCLR(2)<= internal_WR_ADDRCLR;
---	BUSB_DED_WR_ADDRCLR(3)<= internal_WR_ADDRCLR;
---	BUSB_DED_WR_ADDRCLR(4)<= internal_WR_ADDRCLR;
---	BUSA_DED_WR_ADDRCLR(0)<= internal_WR_ADDRCLR;
---	BUSA_DED_WR_ADDRCLR(1)<= internal_WR_ADDRCLR;
---	BUSA_DED_WR_ADDRCLR(2)<= internal_WR_ADDRCLR;
---	BUSA_DED_WR_ADDRCLR(3)<= internal_WR_ADDRCLR;
---	BUSA_DED_WR_ADDRCLR(4)<= internal_WR_ADDRCLR;
---	end generate;
+	
 	
 	--SamplingLgc signals just get fanned out identically to each daughter card
 	gen_SamplingLgcSignals : for i in 0 to 9 generate
@@ -1367,135 +1547,92 @@ gen_sstin : for i in 0 to 9 generate
 end generate;
 
 	--digitizing logic
-	u_DigitizingLgc: entity work.DigitizingLgcTX PORT MAP(
-		clk 				=> internal_CLOCK_FPGA_LOGIC,
-		IDLE_status 	=> internal_DIG_IDLE_status,
-		StartDig 		=> internal_DIG_STARTDIG,
-		ramp_length 	=> internal_CMDREG_READCTRL_ramp_length(12 downto 0),
-		rd_ena 			=> internal_DIG_RD_ENA,
-		clr 				=> internal_DIG_CLR,
-		startramp 		=> internal_DIG_RAMP
-	);
-	internal_DIG_STARTDIG 	<= internal_READCTRL_dig_start;
+--	u_DigitizingLgc: entity work.DigitizingLgcTX PORT MAP(
+--		clk 				=> internal_CLOCK_FPGA_LOGIC,
+--		IDLE_status 	=> internal_DIG_IDLE_status,
+--		StartDig 		=> internal_DIG_STARTDIG,
+--		ramp_length 	=> internal_CMDREG_READCTRL_ramp_length(12 downto 0),
+--		rd_ena 			=> internal_DIG_RD_ENA,
+--		clr 				=> internal_DIG_CLR,
+--		startramp 		=> internal_DIG_RAMP
+--	);
+--	internal_DIG_STARTDIG 	<= internal_READCTRL_dig_start;
 	
-	--BUSA and BUSB Digitzation signals are identical
-	BUSA_RD_ENA			<= internal_DIG_RD_ENA;
-	BUSA_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL;
 	
-	BUSA_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL; 
-	
-	BUSA_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
-	BUSA_RAMP 			<= internal_DIG_RAMP;
-	BUSB_RD_ENA			<= internal_DIG_RD_ENA;
-	BUSB_RD_ROWSEL_S 	<= internal_READCTRL_DIG_RD_ROWSEL;
-	BUSB_RD_COLSEL_S 	<= internal_READCTRL_DIG_RD_COLSEL;
-	BUSB_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
-	BUSB_RAMP 			<= internal_DIG_RAMP;	
-	
-	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
-		clk 			=> internal_CLOCK_FPGA_LOGIC,
-		start		 	=> internal_SROUT_START,
-		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
-		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
-		ASIC_NUM 	=> internal_READCTRL_ASIC_NUM,
-		force_test_pattern =>internal_CMDREG_SROUT_TPG,
-		
-		IDLE_status => internal_SROUT_IDLE_status,
-		busy 			=> open,
-		samp_done 	=> open,
-		dout 			=> internal_SROUT_dout,
-		sr_clr 		=> internal_SROUT_SR_CLR,
-		sr_clk 		=> internal_SROUT_SR_CLK,
-		sr_sel 		=> internal_SROUT_SR_SEL,
-		samplesel 	=> internal_SROUT_SAMPLESEL,
-		smplsi_any 	=> internal_SROUT_SAMPLESEL_ANY,
-		fifo_wr_en 	=> internal_SROUT_FIFO_WR_EN,
-		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
-		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
-		
---		ram_addr=>internal_ram_Ain(2),
---		ram_data=>internal_ram_DRout(2),
---		ram_update=>internal_ram_update(2),
---		ram_busy=>internal_ram_busy(2)
-	);
---	internal_ram_rw(2)<='0'; --only reading from this channel of RAM	
-	internal_SROUT_START <= internal_READCTRL_srout_start;
+--	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
+--		clk 			=> internal_CLOCK_FPGA_LOGIC,
+--		start		 	=> internal_SROUT_START,
+--		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
+--		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+--		ASIC_NUM 	=> internal_READCTRL_ASIC_NUM,
+--		force_test_pattern =>internal_CMDREG_SROUT_TPG,
+--		
+--		IDLE_status => internal_SROUT_IDLE_status,
+--		busy 			=> open,
+--		samp_done 	=> open,
+--		dout 			=> internal_SROUT_dout,
+--		sr_clr 		=> internal_SROUT_SR_CLR,
+--		sr_clk 		=> internal_SROUT_SR_CLK,
+--		sr_sel 		=> internal_SROUT_SR_SEL,
+--		samplesel 	=> internal_SROUT_SAMPLESEL,
+--		smplsi_any 	=> internal_SROUT_SAMPLESEL_ANY,
+--		fifo_wr_en 	=> internal_SROUT_FIFO_WR_EN,
+--		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
+--		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
+--		
+----		ram_addr=>internal_ram_Ain(2),
+----		ram_data=>internal_ram_DRout(2),
+----		ram_update=>internal_ram_update(2),
+----		ram_busy=>internal_ram_busy(2)
+--	);
+----	internal_ram_rw(2)<='0'; --only reading from this channel of RAM	
+--	internal_SROUT_START <= internal_READCTRL_srout_start;
 
-	
-	--make serial readout bus signals identical
-	BUSA_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
-	BUSB_SAMPLESEL_S 	<= internal_SROUT_SAMPLESEL;
-	BUSA_SR_SEL <= internal_SROUT_SR_SEL;
-	BUSB_SR_SEL <= internal_SROUT_SR_SEL;
-	BUSA_SR_CLEAR<= internal_SROUT_SR_CLR;
-	BUSB_SR_CLEAR<= internal_SROUT_SR_CLR;
-	
-	--Serial readout DO signal switches between buses based on internal_READCTRL_ASIC_NUM signal
-	internal_SROUT_dout <= BUSA_DO when (internal_READCTRL_ASIC_NUM < x"6") else
-								BUSB_DO;
-	
-	--multiplex DC specific serial readout signal to ASIC specified by internal_READCTRL_ASIC_NUM signal
-	internal_SROUT_ASIC_CONTROL_WORD 		<= "0000000001" when (internal_READCTRL_ASIC_NUM = x"1") else
-															"0000000010" when (internal_READCTRL_ASIC_NUM = x"2") else
-															"0000000100" when (internal_READCTRL_ASIC_NUM = x"3") else
-															"0000001000" when (internal_READCTRL_ASIC_NUM = x"4") else
-															"0000010000" when (internal_READCTRL_ASIC_NUM = x"5") else
-															"0000100000" when (internal_READCTRL_ASIC_NUM = x"6") else
-															"0001000000" when (internal_READCTRL_ASIC_NUM = x"7") else
-															"0010000000" when (internal_READCTRL_ASIC_NUM = x"8") else
-															"0100000000" when (internal_READCTRL_ASIC_NUM = x"9") else
-															"1000000000" when (internal_READCTRL_ASIC_NUM = x"A") else
-															"0000000000";
-	
-	--Only specified DC gets serial data signals, uses bit mask
-	gen_SAMPLESEL_ANY_CONTROL: for i in 0 to 9 generate
-		SR_CLOCK(i)			<= internal_SROUT_SR_CLK			and internal_SROUT_ASIC_CONTROL_WORD(i);
-		SAMPLESEL_ANY(i) 	<= internal_SROUT_SAMPLESEL_ANY 	and internal_SROUT_ASIC_CONTROL_WORD(i);
-	end generate;
-	
+
+
 	--FIFO receives waveform samples produced by serial readout process
    u_waveform_fifo_wr32_rd32 : waveform_fifo_wr32_rd32
    PORT MAP (
 		rst => internal_WAVEFORM_FIFO_RST,
-		wr_clk => internal_SROUT_FIFO_WR_CLK_waveformfifo,
+		wr_clk => internal_SROUT_FIFO_WR_CLK,
 		rd_clk => internal_WAVEFORM_FIFO_READ_CLOCK,
-		din => internal_SROUT_FIFO_DATA_OUT_waveformfifo,
-		wr_en => internal_SROUT_FIFO_WR_EN_waveformfifo,
+		din => internal_SROUT_FIFO_DATA_OUT,
+		wr_en => internal_SROUT_FIFO_WR_EN,
 		rd_en => internal_WAVEFORM_FIFO_READ_ENABLE,
 		dout => internal_WAVEFORM_FIFO_DATA_OUT,
 		empty => internal_WAVEFORM_FIFO_EMPTY,
 		valid => internal_WAVEFORM_FIFO_DATA_VALID
    );
 
-	internal_SROUT_FIFO_WR_CLK_waveformfifo<= internal_SROUT_FIFO_WR_CLK when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_clk;
-	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
-	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
-	
+--	internal_SROUT_FIFO_WR_CLK_waveformfifo<= internal_SROUT_FIFO_WR_CLK when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_clk;
+--	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
+--	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
+--	
 	
 	
 	
 	--Module reads out from waveform FIFO and places ASIC window-sized packets into buffer FIFO
-	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP(
-		clk => internal_CLOCK_FPGA_LOGIC,
-		REQUEST_PACKET 				=> internal_READCTRL_readout_continue,
-		EVTBUILD_DONE					=> internal_EVTBUILD_DONE_SENDING_EVENT,
-		WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
-		WAVEFORM_FIFO_READ_ENABLE 	=> internal_WAVEFORM_FIFO_READ_ENABLE,
-		WAVEFORM_FIFO_DATA_OUT 		=> internal_WAVEFORM_FIFO_DATA_OUT,
-		WAVEFORM_FIFO_EMPTY 			=> internal_WAVEFORM_FIFO_EMPTY,
-		WAVEFORM_FIFO_DATA_VALID 	=> internal_WAVEFORM_FIFO_DATA_VALID,
-		--WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
-		--WAVEFORM_FIFO_READ_ENABLE 	=> open,
-		--WAVEFORM_FIFO_DATA_OUT 		=> (others=>'0'),
-		--WAVEFORM_FIFO_EMPTY 			=> '1',
-		--WAVEFORM_FIFO_DATA_VALID 	=> '0',
-		BUFFER_FIFO_RESET 	=> internal_BUFFERCTRL_FIFO_RESET,
-		BUFFER_FIFO_WR_CLK 	=> internal_BUFFERCTRL_FIFO_WR_CLK,
-		BUFFER_FIFO_WR_EN 	=> internal_BUFFERCTRL_FIFO_WR_EN,
-		BUFFER_FIFO_DIN 		=> internal_BUFFERCTRL_FIFO_DIN,
-		EVTBUILD_START	 		=> internal_READCTRL_evtbuild_start,
-		EVTBUILD_MAKE_READY	=> internal_READCTRL_evtbuild_make_ready
-	);
+--	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP(
+--		clk => internal_CLOCK_FPGA_LOGIC,
+--		REQUEST_PACKET 				=> internal_READCTRL_readout_continue,
+--		EVTBUILD_DONE					=> internal_EVTBUILD_DONE_SENDING_EVENT,
+--		WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
+--		WAVEFORM_FIFO_READ_ENABLE 	=> internal_WAVEFORM_FIFO_READ_ENABLE,
+--		WAVEFORM_FIFO_DATA_OUT 		=> internal_WAVEFORM_FIFO_DATA_OUT,
+--		WAVEFORM_FIFO_EMPTY 			=> internal_WAVEFORM_FIFO_EMPTY,
+--		WAVEFORM_FIFO_DATA_VALID 	=> internal_WAVEFORM_FIFO_DATA_VALID,
+--		--WAVEFORM_FIFO_READ_CLOCK 	=> internal_WAVEFORM_FIFO_READ_CLOCK,
+--		--WAVEFORM_FIFO_READ_ENABLE 	=> open,
+--		--WAVEFORM_FIFO_DATA_OUT 		=> (others=>'0'),
+--		--WAVEFORM_FIFO_EMPTY 			=> '1',
+--		--WAVEFORM_FIFO_DATA_VALID 	=> '0',
+--		BUFFER_FIFO_RESET 	=> internal_BUFFERCTRL_FIFO_RESET,
+--		BUFFER_FIFO_WR_CLK 	=> internal_BUFFERCTRL_FIFO_WR_CLK,
+--		BUFFER_FIFO_WR_EN 	=> internal_BUFFERCTRL_FIFO_WR_EN,
+--		BUFFER_FIFO_DIN 		=> internal_BUFFERCTRL_FIFO_DIN,
+--		EVTBUILD_START	 		=> internal_READCTRL_evtbuild_start,
+--		EVTBUILD_MAKE_READY	=> internal_READCTRL_evtbuild_make_ready
+--	);
 	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue;
 	
 	--Buffer FIFO, contains up to 512 32-bit words (will not lead to USB packet drops)
@@ -1553,22 +1690,22 @@ end generate;
 		);
 	end generate;
 
------------------------------
----- MPPC Current measurement ADC: MPC3221
------------------------------
---	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
---	port map(
---		clock			 => internal_CLOCK_MPPC_DAC,--internal_CLOCK_FPGA_LOGIC,
---		reset			=>	internal_CurrentADC_reset,
---		
---		sda	=> SDA_MON,--internal_SDA,
---		scl	=> internal_SCL,
---		 
---		runADC		=> internal_runADC,
---		enOutput		=> internal_enOutput,
---		ADCOutput	=> internal_ADCOutput
---
---	);
+---------------------------
+-- MPPC Current measurement ADC: MPC3221
+---------------------------
+	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
+	port map(
+		clock			 => internal_CLOCK_MPPC_DAC,--internal_CLOCK_FPGA_LOGIC,
+		reset			=>	internal_CurrentADC_reset,
+		
+		sda	=> SDA_MON,--internal_SDA,
+		scl	=> internal_SCL,
+		 
+		runADC		=> internal_runADC,
+		enOutput		=> internal_enOutput,
+		ADCOutput	=> internal_ADCOutput
+
+	);
 
 
 	--------------

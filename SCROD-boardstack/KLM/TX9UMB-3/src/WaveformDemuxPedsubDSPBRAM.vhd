@@ -145,8 +145,9 @@ signal dmx_allwin_busy 		: std_logic:='1';
 signal ped_sub_fetch_busy 	: std_logic:='1';
 signal ped_sub_start			:std_logic_vector(1 downto 0):="00";
 signal sapedsub				:std_logic_vector(15 downto 0):=(others=> '0');
-signal jdx						: JDXTempArray;
-signal jdx2						: JDXTempArray;
+--signal jdx						: JDXTempArray;
+--signal jdx2						: JDXTempArray;
+signal jdx1						: std_logic_vector(6 downto 0);
 
 signal dmx_wav					: WaveTempArray:=(x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000",x"0000");
 signal ped_wea			: std_logic_vector(0 downto 0):="0";
@@ -166,11 +167,13 @@ signal ct_lpt		: WaveTempArray:=(x"0000",x"0000",x"0000",x"0000",x"0000",x"0000"
 signal ct_sa		: std_logic_vector(6 downto 0):="0000000";
 signal ct_ch		: integer:=0;
 signal ct_cnt		: integer:=0;
+signal start_tmp2bram_xfer: std_logic:='0';
+
 
 
 signal tmp2bram_ctr	: std_logic_vector(7 downto 0):=x"00";
 
-signal pedarray_tmp2				: WaveTempArray;-- added for pipelining
+signal wavarray_tmp				: WaveTempArray;-- added for pipelining
 
 type ped_state is --pedstals fetch state
 (
@@ -210,9 +213,10 @@ signal pedsub_st : pedsub_state:=pedsub_idle;
 
 type tmp_to_bram_state is
 (
+st_tmp2bram_waitstart,
 st_tmp2bram_check_ctr,
-st_tmp2bram_fetch1,
-st_tmp2bram_fetch2
+st_tmp2bram_store1,
+st_tmp2bram_store2
 );
 
 signal st_tmp2bram				: tmp_to_bram_state:=st_tmp2bram_check_ctr;
@@ -392,6 +396,8 @@ end if;
 
 if (rising_edge(clk)) then
 
+	start_tmp2bram_xfer<='0';
+
 	--start_ped_sub<='0';
 
 	if (fifo_en_i='1' and enable_i='1') then-- data is coming, push into waveform memory
@@ -412,35 +418,48 @@ if (rising_edge(clk)) then
 			
 		elsif (fifo_din_i(31 downto 20)=x"DEF") then
 			
+			dmx_asic<=dmx_asic;
+			dmx_win <=dmx_win;
+			dmx_sa  <=dmx_sa;
+			dmx2_sa<=dmx2_sa;
+			
 			if (fifo_din_i(19 downto 16)="0000") then
 					dmx2_win<=std_logic_vector(to_unsigned(dmx_win,2));
+					start_tmp2bram_xfer<='0';
+					else
+					dmx2_win<=dmx2_win;
+					start_tmp2bram_xfer<=start_tmp2bram_xfer;
 			end if;
 			
-			if (fifo_din_i(19 downto 16)="0001") then -- this is the first bit in the sequence, so prep the address and stuff
+			if (fifo_din_i(19 downto 16)="0111") then -- this is the first bit in the sequence, so prep the address and stuff
 --				jdx(0)<=dmx_sa+dmx_win*NSamplesPerWin+0*NSamplesPerWin*NWWIN;-- tryong to make this in the following lines
-				jdx(0 )<=x"0" & dmx2_win & dmx2_sa;
-				jdx(1 )<=x"1" & dmx2_win & dmx2_sa;
-				jdx(2 )<=x"2" & dmx2_win & dmx2_sa;
-				jdx(3 )<=x"3" & dmx2_win & dmx2_sa;
-				jdx(4 )<=x"4" & dmx2_win & dmx2_sa;
-				jdx(5 )<=x"5" & dmx2_win & dmx2_sa;
-				jdx(6 )<=x"6" & dmx2_win & dmx2_sa;
-				jdx(7 )<=x"7" & dmx2_win & dmx2_sa;
-				jdx(8 )<=x"8" & dmx2_win & dmx2_sa;
-				jdx(9 )<=x"9" & dmx2_win & dmx2_sa;
-				jdx(10)<=x"A" & dmx2_win & dmx2_sa;
-				jdx(11)<=x"B" & dmx2_win & dmx2_sa;
-				jdx(12)<=x"C" & dmx2_win & dmx2_sa;
-				jdx(13)<=x"D" & dmx2_win & dmx2_sa;
-				jdx(14)<=x"E" & dmx2_win & dmx2_sa;
-				jdx(15)<=x"F" & dmx2_win & dmx2_sa;
+				jdx1<=dmx2_win & dmx2_sa;
+--				jdx(0 )<=x"0" & dmx2_win & dmx2_sa;
+--				jdx(1 )<=x"1" & dmx2_win & dmx2_sa;
+--				jdx(2 )<=x"2" & dmx2_win & dmx2_sa;
+--				jdx(3 )<=x"3" & dmx2_win & dmx2_sa;
+--				jdx(4 )<=x"4" & dmx2_win & dmx2_sa;
+--				jdx(5 )<=x"5" & dmx2_win & dmx2_sa;
+--				jdx(6 )<=x"6" & dmx2_win & dmx2_sa;
+--				jdx(7 )<=x"7" & dmx2_win & dmx2_sa;
+--				jdx(8 )<=x"8" & dmx2_win & dmx2_sa;
+--				jdx(9 )<=x"9" & dmx2_win & dmx2_sa;
+--				jdx(10)<=x"A" & dmx2_win & dmx2_sa;
+--				jdx(11)<=x"B" & dmx2_win & dmx2_sa;
+--				jdx(12)<=x"C" & dmx2_win & dmx2_sa;
+--				jdx(13)<=x"D" & dmx2_win & dmx2_sa;
+--				jdx(14)<=x"E" & dmx2_win & dmx2_sa;
+--				jdx(15)<=x"F" & dmx2_win & dmx2_sa;
+				else
+				jdx1<=jdx1;
 			end if;
 			
-			if (fifo_din_i(19 downto 16)="0011") then -- this is the first bit in the sequence, so prep the address and stuff
-					jdx2<=jdx;
-			end if;
-	
-			
+--			if (fifo_din_i(19 downto 16)="0011") then -- this is the first bit in the sequence, so prep the address and stuff
+--					jdx2<=jdx;
+--					else
+--					jdx2<=jdx2;
+--			end if;
+--				
 			
 
 			--demux the 16 ch waveform:
@@ -475,23 +494,27 @@ if (rising_edge(clk)) then
 	
 		if (fifo_din_i2(19 downto 16)="1011") then  -- this is the last sampledo the oed sub
 			
-			pedarray_tmp2((0 ))<=dmx_wav(0  );--pedarray_tmp((0 ));
-			pedarray_tmp2((1 ))<=dmx_wav(1  );--pedarray_tmp((1 ));
-			pedarray_tmp2((2 ))<=dmx_wav(2  );--pedarray_tmp((2 ));
-			pedarray_tmp2((3 ))<=dmx_wav(3  );--pedarray_tmp((3 ));
-			pedarray_tmp2((4 ))<=dmx_wav(4  );--pedarray_tmp((4 ));
-			pedarray_tmp2((5 ))<=dmx_wav(5  );--pedarray_tmp((5 ));
-			pedarray_tmp2((6 ))<=dmx_wav(6  );--pedarray_tmp((6 ));
-			pedarray_tmp2((7 ))<=dmx_wav(7  );--pedarray_tmp((7 ));
-			pedarray_tmp2((8 ))<=dmx_wav(8  );--pedarray_tmp((8 ));
-			pedarray_tmp2((9 ))<=dmx_wav(9  );--pedarray_tmp((9 ));
-			pedarray_tmp2((10))<=dmx_wav(10 );--pedarray_tmp((10));
-			pedarray_tmp2((11))<=dmx_wav(11 );--pedarray_tmp((11));
-			pedarray_tmp2((12))<=dmx_wav(12 );--pedarray_tmp((12));
-			pedarray_tmp2((13))<=dmx_wav(13 );--pedarray_tmp((13));
-			pedarray_tmp2((14))<=dmx_wav(14 );--pedarray_tmp((14));
-			pedarray_tmp2((15))<=dmx_wav(15 );--pedarray_tmp((15));
-			tmp2bram_ctr<=x"10";-- write it all back to bram 
+			wavarray_tmp((0 ))<=dmx_wav(0  );--pedarray_tmp((0 ));
+			wavarray_tmp((1 ))<=dmx_wav(1  );--pedarray_tmp((1 ));
+			wavarray_tmp((2 ))<=dmx_wav(2  );--pedarray_tmp((2 ));
+			wavarray_tmp((3 ))<=dmx_wav(3  );--pedarray_tmp((3 ));
+			wavarray_tmp((4 ))<=dmx_wav(4  );--pedarray_tmp((4 ));
+			wavarray_tmp((5 ))<=dmx_wav(5  );--pedarray_tmp((5 ));
+			wavarray_tmp((6 ))<=dmx_wav(6  );--pedarray_tmp((6 ));
+			wavarray_tmp((7 ))<=dmx_wav(7  );--pedarray_tmp((7 ));
+			wavarray_tmp((8 ))<=dmx_wav(8  );--pedarray_tmp((8 ));
+			wavarray_tmp((9 ))<=dmx_wav(9  );--pedarray_tmp((9 ));
+			wavarray_tmp((10))<=dmx_wav(10 );--pedarray_tmp((10));
+			wavarray_tmp((11))<=dmx_wav(11 );--pedarray_tmp((11));
+			wavarray_tmp((12))<=dmx_wav(12 );--pedarray_tmp((12));
+			wavarray_tmp((13))<=dmx_wav(13 );--pedarray_tmp((13));
+			wavarray_tmp((14))<=dmx_wav(14 );--pedarray_tmp((14));
+			wavarray_tmp((15))<=dmx_wav(15 );--pedarray_tmp((15));
+			start_tmp2bram_xfer<='1';
+			else 
+			wavarray_tmp<=wavarray_tmp;
+			start_tmp2bram_xfer<='0';
+			-- write it all back to bram 
 	end if;
 	
 	
@@ -508,8 +531,8 @@ When pedsub_idle =>
 	if (ped_sub_start="01" and enable_i='1') then 
 		sa_cnt<=0;
 		pswfifo_en<='0';
---		pedsub_st<=pedsub_wait_tmp2bram;
-		pedsub_st<=pedsub_sub;
+		pedsub_st<=pedsub_wait_tmp2bram;
+--		pedsub_st<=pedsub_sub;
 	else 
 	   pswfifo_en<='0';
 		pedsub_st<=pedsub_idle;
@@ -518,6 +541,7 @@ When pedsub_idle =>
 	
 	 when pedsub_wait_tmp2bram=>
 		if (tmp2bram_ctr/=x"00") then 
+			start_tmp2bram_xfer<='0';
 			pedsub_st<=pedsub_wait_tmp2bram;
 		else
 			pedsub_st<=pedsub_sub;
@@ -605,25 +629,34 @@ end if;
 
 if (rising_edge(clk)) then
 
-case st_tmp2bram is-- this is a side working FSM just to fetch and fill the temp sample in the BRAM array
+case st_tmp2bram is-- this is a side working FSM just to store and fill the temp sample in the BRAM array
+
+when st_tmp2bram_waitstart =>
+	if (start_tmp2bram_xfer='0') then
+		tmp2bram_ctr<=x"00";
+		st_tmp2bram<=st_tmp2bram_waitstart;
+	else
+		tmp2bram_ctr<=x"10";
+		st_tmp2bram<=st_tmp2bram_check_ctr;
+	end if;
 
 when st_tmp2bram_check_ctr =>
 	if (tmp2bram_ctr=x"00") then
-		st_tmp2bram<= st_tmp2bram_check_ctr;
+		st_tmp2bram<= st_tmp2bram_waitstart;
 		wav_bram_addra<="00000000000";
 		wav_dina<=x"0000";
 		wav_wea<="0";
 	else
 			-- make sure BRAM is connected to this then read from temp array and fill BRAM
 		tmp2bram_ctr<=std_logic_vector(to_unsigned(to_integer(unsigned(tmp2bram_ctr))-1,8));
-		st_tmp2bram<= st_tmp2bram_fetch1;
+		st_tmp2bram<= st_tmp2bram_store1;
 	end if;
 
-when 	st_tmp2bram_fetch1 =>
+when 	st_tmp2bram_store1 =>
 
-		if (to_integer(unsigned(tmp2bram_ctr))<=15) then
-			wav_bram_addra<=jdx2(to_integer(unsigned(tmp2bram_ctr)));
-			wav_dina<=pedarray_tmp2(to_integer(unsigned(tmp2bram_ctr)));
+		if (to_integer(unsigned(tmp2bram_ctr))<16) then
+			wav_bram_addra<=tmp2bram_ctr(3 downto 0) & jdx1;--(to_integer(unsigned(tmp2bram_ctr)));
+			wav_dina<=wavarray_tmp(to_integer(unsigned(tmp2bram_ctr)));
 			wav_wea<="1";
 			else
 			wav_bram_addra<="00000000000";
@@ -632,10 +665,10 @@ when 	st_tmp2bram_fetch1 =>
 			
 		end if;
 		
-		st_tmp2bram<= st_tmp2bram_fetch2;
+		st_tmp2bram<= st_tmp2bram_store2;
 
 
-when st_tmp2bram_fetch2 =>
+when st_tmp2bram_store2 =>
 	wav_bram_addra<="00000000000";
 	wav_dina<=x"0000";
 	wav_wea<="0";
