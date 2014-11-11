@@ -341,7 +341,7 @@ NET TDC1_TRG<0>				LOC= L9;		# TDC1_TRG_1,	J1_087_G4
 NET TDC1_TRG<1>				LOC= K8;		# TDC1_TRG_2,	J1_089_F3                                
 NET TDC1_TRG<2>				LOC= D3;		# TDC1_TRG_3,	J1_090_E3                                
 NET TDC1_TRG<3>				LOC= L4;		# TDC1_TRG_4,	J1_094_M1                                
-NET TDC1_TRG_16				LOC= G4;		# TDC1_TRG_5,	J1_095_L2                                
+NET TDC1_TRG<4>				LOC= G4;		# TDC1_TRG_5,	J1_095_L2                                
 
 
 ####TARGETX Daughtercard#2
@@ -366,7 +366,7 @@ NET TDC2_TRG<0>				LOC= B2;		# TDC2_TRG_1,	J1_065_AB3
 NET TDC2_TRG<1>				LOC= L8;		# TDC2_TRG_2,	J1_066_AA3                              
 NET TDC2_TRG<2>				LOC= E3;		# TDC2_TRG_3,	J1_067_Y3                                
 NET TDC2_TRG<3>				LOC= M4;		# TDC2_TRG_4,	J1_071_U5                                
-NET TDC2_TRG_16				LOC= J4;		# TDC2_TRG_5,	J1_073_U3                                
+NET TDC2_TRG<4>				LOC= J4;		# TDC2_TRG_5,	J1_073_U3                                
 
 
 ####TARGETX Daughtercard#3
@@ -391,7 +391,7 @@ NET TDC3_TRG<0>				LOC= T8;		# TDC3_TRG_1,	J1_110_D1
 NET TDC3_TRG<1>				LOC= T9;		# TDC3_TRG_2,	J1_111_C2                                
 NET TDC3_TRG<2>				LOC= J2;		# TDC3_TRG_3,	J1_113_C1                                
 NET TDC3_TRG<3>				LOC= J1;		# TDC3_TRG_4,	J1_114_E1                                
-NET TDC3_TRG_16				LOC= K1;		# TDC3_TRG_5,	J1_115_F1                                
+NET TDC3_TRG<4>				LOC= K1;		# TDC3_TRG_5,	J1_115_F1                                
 
 
 ####TARGETX Daughtercard#4
@@ -416,7 +416,7 @@ NET TDC4_TRG<0>				LOC= W2;		# TDC4_TRG_1,	J1_035_J3
 NET TDC4_TRG<1>				LOC= W1;		# TDC4_TRG_2,	J1_036_J5                                
 NET TDC4_TRG<2>				LOC= V6;		# TDC4_TRG_3,	J1_038_K5                                
 NET TDC4_TRG<3>				LOC= V4;		# TDC4_TRG_4,	J1_039_L4                                
-NET TDC4_TRG_16				LOC= W5;		# TDC4_TRG_5,	J1_040_M4                                
+NET TDC4_TRG<4>				LOC= W5;		# TDC4_TRG_5,	J1_040_M4                                
 
 
 ####TARGETX Daughtercard#5
@@ -443,7 +443,7 @@ NET TDC5_TRG<0>				LOC= Y1;		# TDC5_TRG_1,	J1_058_AC3
 NET TDC5_TRG<1>				LOC= AA1;		# TDC5_TRG_2,	J1_059_AD3                              
 NET TDC5_TRG<2>				LOC= R7;		# TDC5_TRG_3,	J3_096_L6                                
 NET TDC5_TRG<3>				LOC= R6;		# TDC5_TRG_4,	J3_097_K7                                
-NET TDC5_TRG_16				LOC= R4;		# TDC5_TRG_5,	J3_098_J7                                
+NET TDC5_TRG<4>				LOC= R4;		# TDC5_TRG_5,	J3_098_J7                                
 
 
 ####TARGETX Daughtercard#6
@@ -468,7 +468,7 @@ NET TDC6_TRG<0>				LOC= W19;		# TDC6_TRG_1,	J4_061_AC23
 NET TDC6_TRG<1>				LOC= V18;		# TDC6_TRG_2,	J4_062_AB24                            
 NET TDC6_TRG<2>				LOC= U22;		# TDC6_TRG_3,	J4_063_AA24                            
 NET TDC6_TRG<3>				LOC= P22;		# TDC6_TRG_4,	J4_065_W24                              
-NET TDC6_TRG_16				LOC= N23;		# TDC6_TRG_5,	J4_066_V24                              
+NET TDC6_TRG<4>				LOC= N23;		# TDC6_TRG_5,	J4_066_V24                              
 
   
 
@@ -494,7 +494,7 @@ NET TDC7_TRG<0>				LOC= R21;		# TDC7_TRG_1,	J4_085_F22
 NET TDC7_TRG<1>				LOC= N21;		# TDC7_TRG_2,	J4_086_F24                              
 NET TDC7_TRG<2>				LOC= R20;		# TDC7_TRG_3,	J4_087_E24                              
 NET TDC7_TRG<3>				LOC= AF22;		# TDC7_TRG_4,	J4_089_D24                              
-NET TDC7_TRG_16				LOC= U20;		# TDC7_TRG_5,	J4_090_C24                              
+NET TDC7_TRG<4>				LOC= U20;		# TDC7_TRG_5,	J4_090_C24                              
 
 
 
@@ -520,7 +520,7 @@ NET TDC8_TRG<0>				LOC= AD26;		# TDC8_TRG_1,	J4_115_P26
 NET TDC8_TRG<1>				LOC= AE26;		# TDC8_TRG_2,	J4_006_A25                              
 NET TDC8_TRG<2>				LOC= AA25;		# TDC8_TRG_3,	J4_007_B26                              
 NET TDC8_TRG<3>				LOC= Y26;		# TDC8_TRG_4,	J4_008_B25                              
-NET TDC8_TRG_16				LOC= W26;		# TDC8_TRG_5,	J4_012_D26                              
+NET TDC8_TRG<4>				LOC= W26;		# TDC8_TRG_5,	J4_012_D26                              
 
 
 ####TARGETX Daughtercard#9
@@ -545,7 +545,7 @@ NET TDC9_TRG<0>				LOC= N26;		# TDC9_TRG_1,	J4_038_H24
 NET TDC9_TRG<1>				LOC= P26;		# TDC9_TRG_2,	J4_039_J24                              
 NET TDC9_TRG<2>				LOC= K26;		# TDC9_TRG_3,	J4_040_J22                              
 NET TDC9_TRG<3>				LOC= J26;		# TDC9_TRG_4,	J4_042_K22                              
-NET TDC9_TRG_16				LOC= J25;		# TDC9_TRG_5,	J4_044_M24                              
+NET TDC9_TRG<4>				LOC= J25;		# TDC9_TRG_5,	J4_044_M24                              
 
 
 ####TARGETX Daughtercard#10
@@ -570,7 +570,7 @@ NET TDC10_TRG<0>				LOC= G24;		# TDC10_TRG_1,	J4_059_AC24
 NET TDC10_TRG<1>				LOC= F22;		# TDC10_TRG_2,	J4_060_AD24                          
 NET TDC10_TRG<2>				LOC= V24;		# TDC10_TRG_3,	J3_068_V21                            
 NET TDC10_TRG<3>				LOC= N24;		# TDC10_TRG_4,	J3_069_K18                            
-NET TDC10_TRG_16				LOC= T24;		# TDC10_TRG_5,	J3_070_M18_SCL                    
+NET TDC10_TRG<4>				LOC= T24;		# TDC10_TRG_5,	J3_070_M18_SCL                    
 
 
 

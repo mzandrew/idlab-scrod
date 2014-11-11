@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
 	usleep(10);
 */
-	int digOffset = 1;
+	int digOffset = 10;
 
 //	control->registerWriteReadback(board_id, 11, 1, regValReadback); //Start sampling
 	control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
@@ -76,12 +76,15 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 1, regValReadback); //set # of windows to read
+	control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
 	control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
 	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
 //	control->registerWrite(board_id, 72, 0x000, regValReadback); //enable trigger bits
 	control->registerWrite(board_id, 61, 0xD00, regValReadback); //ramp length- working on 40us ish
+//	control->registerWrite(board_id,38,0b0000010000000000,regValReadback);//setting for using only the trig decision logic
+	control->registerWrite(board_id,38,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
+
 
 	//define output file		
 	ofstream dataFile;
@@ -93,7 +96,7 @@ int main(int argc, char* argv[]){
 	int samples[10][512][32];
 
 	char ct = 0;
-	control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
+//	control->registerWriteReadback(board_id, 54, digOffset, regValReadback); //set digitization window offset
 	while(ct != 'Q'){
 	//for( int numEv = 0 ; numEv < 10 ; numEv++ ){
 		//std::cout << "Event # " << numEv << std::endl;
@@ -118,9 +121,20 @@ int main(int argc, char* argv[]){
 		//	std::cout << "Send trigger, then enter character" << std::endl;
 		//	std::cin >> ct;
 		//}
+
 		control->sendTrigger(board_id,0);
 		usleep(500);
 		control->registerWriteReadback(board_id, 50, 0, regValReadback);
+
+	/*	control->sendTrigger(board_id,0);// send HW trigger
+		usleep(500);
+		int cnt1,cnt2;
+		control->registerRead(board_id,256+5,cnt1);
+		control->registerRead(board_id,256+30,cnt2);
+		cout<<endl<<"Hard Trig, SMP_Latch: "<<cnt1<<", Dig win start: "<<cnt2;
+*/
+
+
 
 		//hardware trigger only, make sure that pulse occurs
 		//if(1){

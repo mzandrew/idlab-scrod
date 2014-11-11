@@ -8,7 +8,7 @@
 -- \   \   \/     Version    : 14.7
 --  \   \         Application: XILINX CORE Generator
 --  /   /         Filename   : icon_pro.vhd
--- /___/   /\     Timestamp  : Thu Oct 30 11:45:21 Hawaiian Standard Time 2014
+-- /___/   /\     Timestamp  : Sun Nov 09 15:34:56 Hawaiian Standard Time 2014
 -- \   \  /  \
 --  \___\/\___\
 --

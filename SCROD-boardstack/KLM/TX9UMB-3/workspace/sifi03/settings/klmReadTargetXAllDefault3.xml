@@ -644,7 +644,7 @@
 				<register address='31' value='985' />
 				<register address='48' value='1300' />
 				<register address='49' value='0' />
-				<register address='50' value='2800' />
+				<register address='50' value='2900' />
 				<register address='51' value='1100' />
 				<register address='52' value='1500' />
 				<register address='53' value='1300' />

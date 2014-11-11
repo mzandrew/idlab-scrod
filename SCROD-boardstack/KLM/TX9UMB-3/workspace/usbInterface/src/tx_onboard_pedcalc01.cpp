@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
 	TH1F *hSampDist = new TH1F("hSampDist","",110,3000,4100);
 
 	//Initialize
-	//control->sendSamplingReset(board_id);
+	control->sendSamplingReset(board_id);
 	/*
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
 	control->registerWriteReadback(board_id, 10, 1, regValReadback); //Start sampling
@@ -84,15 +84,15 @@ int main(int argc, char* argv[]){
 //	control->registerWriteReadback(board_id, 51, 0x001, regValReadback); //enable ASICs for readout: 7/12/14: IM: changed such that only DC10 is measured
 	control->registerWriteReadback(board_id, 52, 0, regValReadback); //veto hardware triggers
 	control->registerWriteReadback(board_id, 53, 0, regValReadback); //set trigger delay
-	control->registerWriteReadback(board_id, 54, 510, regValReadback); //set digitization window offset: internal_CMDREG_READCTRL_dig_offset
+	control->registerWriteReadback(board_id, 54, 10, regValReadback); //set digitization window offset: internal_CMDREG_READCTRL_dig_offset
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
 	control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read: internal_READCTRL_win_num_to_read
-	control->registerWriteReadback(board_id, 62, 0x8000 | 120, regValReadback); //force start digitization start window to be the fixed value
+	control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
 	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
-	control->registerWrite(board_id, 61, 0xD00, regValReadback); //ramp length- working on 40us ish
+	control->registerWrite(board_id, 61, 0xF00, regValReadback); //ramp length- working on 40us ish
 //	control->registerWrite(board_id,38,0b0101100000000000,regValReadback);//setting for
 	control->registerWrite(board_id,38,0b0011000000000000,regValReadback);//setting for
 //	control->registerWrite(board_id,38,0b0000000000000100,regValReadback);//setting for
@@ -128,6 +128,8 @@ int main(int argc, char* argv[]){
 		//do software trigger
 		if(trigType == 0){
 			control->sendTrigger(board_id,0);
+			control->registerWriteReadback(board_id, 50, 0, regValReadback);
+
 			usleep(5000);
 			int cnt1,cnt2;
 			control->registerRead(board_id,256+5,cnt1);
@@ -136,8 +138,10 @@ int main(int argc, char* argv[]){
 		}
 		//do harware trigger, presumably trigger will occur shortly after hardware veto is disable
 		else{
-			control->sendSamplingReset(board_id);
+			//control->sendSamplingReset(board_id);
 			control->sendTrigger(board_id,1);
+			control->registerWriteReadback(board_id, 50, 0, regValReadback);
+
 			usleep(5000);
 			int cnt1,cnt2;
 			control->registerRead(board_id,256+5,cnt1);
