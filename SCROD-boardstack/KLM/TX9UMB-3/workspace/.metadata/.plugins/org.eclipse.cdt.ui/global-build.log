@@ -1,4 +1,4 @@
-18:57:42 **** Incremental Build of configuration Build (GNU) for project usbInterface ****
+01:22:30 **** Incremental Build of configuration Default for project sifi03 ****
 make all 
-g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/SCRODA4_RAMpattern01.cpp -o work/SCRODA4_RAMpattern01.o
-g++ work/SCRODA4_RAMpattern01.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/SCRODA4_RAMpattern01
+g++ -g -gdwarf-2 -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -I. -c tools/KlmTestSetHVDACs.cpp -o tools/KlmTestSetHVDACs.o
+g++ tools/KlmTestSetHVDACs.o base/KlmSystem.o base/DetectorInterface.o base/UsbInterface.o base/ScrodPacket.o base/KlmModule.o base/tinyxml2.o base/KlmConsumer.o base/KlmFile.o base/CopperInterface.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -lpthread -o bin/KlmTestSetHVDACs

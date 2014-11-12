@@ -831,7 +831,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		--Trigger outputs from FTSW
 		FTSW_TRIGGER      => open,
 		--Select signal between the two
-		USE_LOCAL_CLOCK   => '1',
+		USE_LOCAL_CLOCK   => '0',
 		--General output clocks
 		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
 		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
@@ -945,8 +945,8 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
     ttdackn  => RJ45_ACK_N,
 	 b2ttsysclk	=>internal_CLOCK_B2TT_SYS,
 ----     ASIC Interface
-    target_tb  => internal_TXDCTRIG_buf,		--                 : in tb_vec_type; 
-    target_tb16 => internal_TXDCTRIG16_buf,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
+    target_tb  => internal_TXDCTRIG,		--                 : in tb_vec_type; 
+    target_tb16 => internal_TXDCTRIG16,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
     -- SFP interface
     mgttxfault	=>		mgttxfault,  
     mgtmod0		=>		mgtmod0,               
