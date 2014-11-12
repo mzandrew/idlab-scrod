@@ -6896,6 +6896,9 @@
 </instance>
 <instance id="cdt.managedbuild.toolchain.gnu.base.1254457293;cdt.managedbuild.toolchain.gnu.base.1254457293.1986394741;cdt.managedbuild.tool.gnu.cpp.compiler.base.63425809;cdt.managedbuild.tool.gnu.cpp.compiler.input.1249265800">
 <collector id="org.eclipse.cdt.make.core.PerProjectSICollector">
+<includePath path="/mnt/hgfs/code4/TX9UMB-3/workspace/sifi03/src/lib" removed="true"/>
+<includePath path="/usr/include/libusb-1.0"/>
+<includePath path="/mnt/hgfs/code4/TX9UMB-3/workspace/sifi03"/>
 <includePath path="/usr/include/c++/4.8"/>
 <includePath path="/usr/include/x86_64-linux-gnu/c++/4.8"/>
 <includePath path="/usr/include/c++/4.8/backward"/>
@@ -7150,10 +7153,14 @@
 <definedSymbol symbol="__STDC_IEC_559_COMPLEX__=1"/>
 <definedSymbol symbol="__STDC_ISO_10646__=201103L"/>
 <definedSymbol symbol="__STDC_NO_THREADS__=1"/>
+<definedSymbol symbol="USE_USB=1"/>
 </collector>
 </instance>
 <instance id="cdt.managedbuild.toolchain.gnu.base.1254457293;cdt.managedbuild.toolchain.gnu.base.1254457293.1986394741;cdt.managedbuild.tool.gnu.c.compiler.base.83734307;cdt.managedbuild.tool.gnu.c.compiler.input.145406748">
 <collector id="org.eclipse.cdt.make.core.PerProjectSICollector">
+<includePath path="/mnt/hgfs/code4/TX9UMB-3/workspace/sifi03/src/lib" removed="true"/>
+<includePath path="/usr/include/libusb-1.0"/>
+<includePath path="/mnt/hgfs/code4/TX9UMB-3/workspace/sifi03"/>
 <includePath path="/usr/include/c++/4.8"/>
 <includePath path="/usr/include/x86_64-linux-gnu/c++/4.8"/>
 <includePath path="/usr/include/c++/4.8/backward"/>
@@ -7408,6 +7415,7 @@
 <definedSymbol symbol="__STDC_IEC_559_COMPLEX__=1"/>
 <definedSymbol symbol="__STDC_ISO_10646__=201103L"/>
 <definedSymbol symbol="__STDC_NO_THREADS__=1"/>
+<definedSymbol symbol="USE_USB=1"/>
 </collector>
 </instance>
 </scannerInfo>

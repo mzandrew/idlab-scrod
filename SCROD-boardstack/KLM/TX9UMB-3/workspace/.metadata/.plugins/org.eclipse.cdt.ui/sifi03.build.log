@@ -1,6 +1,7 @@
-20:44:54 **** Clean-only build of configuration Default for project sifi03 ****
-make clean 
-rm -rf base/*.o bin/* tools/*.o
+01:22:30 **** Incremental Build of configuration Default for project sifi03 ****
+make all 
+g++ -g -gdwarf-2 -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -I. -c tools/KlmTestSetHVDACs.cpp -o tools/KlmTestSetHVDACs.o
+g++ tools/KlmTestSetHVDACs.o base/KlmSystem.o base/DetectorInterface.o base/UsbInterface.o base/ScrodPacket.o base/KlmModule.o base/tinyxml2.o base/KlmConsumer.o base/KlmFile.o base/CopperInterface.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -lpthread -o bin/KlmTestSetHVDACs
 
-20:44:54 Build Finished (took 130ms)
+01:22:31 Build Finished (took 848ms)
 
