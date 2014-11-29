@@ -64,7 +64,7 @@ Ytb(3)<=(tb(8 )(1) or tb(8 )(2) or tb(8 )(3) or tb(8 )(4) or tb(8 )(5)) and tm(8
 Ytb(4)<=(tb(9 )(1) or tb(9 )(2) or tb(9 )(3) or tb(9 )(4) or tb(9 )(5)) and tm(9);
 Ytb(5)<=(tb(10)(1) or tb(10)(2) or tb(10)(3) or tb(10)(4) or tb(10)(5)) and tm(10);
 
-trg<= (Xtb(1) or Xtb(2) or Xtb(3) or Xtb(4) or Xtb(5) )  and (Ytb(1) or Ytb(2) or Ytb(3) or Ytb(4) or Ytb(5) );
+trg<= (Xtb(1) or Xtb(2) or Xtb(3) or Xtb(4) or Xtb(5) )  or (Ytb(1) or Ytb(2) or Ytb(3) or Ytb(4) or Ytb(5) );
 
 asicX_i<="001" when (Xtb(1 downto 1)="1"    )	   else
 			"010" when (Xtb(2 downto 1)="10"   ) 		else 

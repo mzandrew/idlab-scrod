@@ -3,6 +3,7 @@ _xmsgs\pn_parser.xmsgs
 runctrl_fifo_wr16_rd32.asy
 runctrl_fifo_wr16_rd32.gise
 runctrl_fifo_wr16_rd32.ngc
+runctrl_fifo_wr16_rd32.sym
 runctrl_fifo_wr16_rd32.vhd
 runctrl_fifo_wr16_rd32.vho
 runctrl_fifo_wr16_rd32.xco

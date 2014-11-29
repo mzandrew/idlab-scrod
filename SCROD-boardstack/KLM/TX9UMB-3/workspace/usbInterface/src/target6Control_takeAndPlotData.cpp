@@ -76,14 +76,15 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 55, 1, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 	control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
-	control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
-	control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
+	control->registerWriteReadback(board_id, 57, 1, regValReadback); //set # of windows to read
+	control->registerWriteReadback(board_id, 62, 0x8000 | 120, regValReadback); //force start digitization start window to be the fixed value
 	control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
 	control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
 //	control->registerWrite(board_id, 72, 0x000, regValReadback); //enable trigger bits
 	control->registerWrite(board_id, 61, 0xD00, regValReadback); //ramp length- working on 40us ish
 //	control->registerWrite(board_id,38,0b0000010000000000,regValReadback);//setting for using only the trig decision logic
 	control->registerWrite(board_id,38,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
+	control->registerWrite(board_id,39,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
 
 
 	//define output file		
@@ -126,8 +127,10 @@ int main(int argc, char* argv[]){
 		usleep(500);
 		control->registerWriteReadback(board_id, 50, 0, regValReadback);
 
+
 	/*	control->sendTrigger(board_id,0);// send HW trigger
-		usleep(500);
+		usleep(5000);
+		control->registerWriteReadback(board_id, 52, 0, regValReadback);
 		int cnt1,cnt2;
 		control->registerRead(board_id,256+5,cnt1);
 		control->registerRead(board_id,256+30,cnt2);
@@ -201,11 +204,11 @@ int main(int argc, char* argv[]){
 					addrNum = ( (eventdatabuf[j] >> 10) & 0x000001FF );
 					asicNum = ( (eventdatabuf[j] >> 6) & 0x0000000F );
 					sampNum = (eventdatabuf[j] & 0x0000001F);
-					//std::cout << "\tSample Packet Header ";
-					//std::cout << "\t\t" << addrNum;			
-					//std::cout << "\t" << asicNum;
-					//std::cout << "\t" << sampNum;
-					//std::cout << std::endl;
+					std::cout << "\tSample Packet Header ";
+					std::cout << "\t\t" << addrNum;
+					std::cout << "\t" << asicNum;
+					std::cout << "\t" << sampNum;
+					std::cout << std::endl;
 					continue;
 				}
 				if( (0xFFF00000 & eventdatabuf[j]) != 0xDEF00000 ){
@@ -223,8 +226,8 @@ int main(int argc, char* argv[]){
 					continue;
 				//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
 				samples[asicNum-1][addrNum][sampNum] 
-//					= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
-				= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00004000) >> 14) & 0x1);
+					= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);
+//				= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00004000) >> 14) & 0x1);
 					//= ((samples[asicNum-1][addrNum][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00000001) >> 0) & 0x1);
 
 				//samples[winNum-1][sampNum] = ((samples[winNum-1][sampNum] << 1) & 0xFFF) | ((( eventdatabuf[j] & 0x00008000) >> 15) & 0x1);

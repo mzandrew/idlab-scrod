@@ -1,5 +1,5 @@
 #ChipScope Core Generator Project File Version 3.0
-#Thu Jun 12 12:41:09 Hawaiian Standard Time 2014
+#Wed Nov 26 11:39:59 Hawaiian Standard Time 2014
 SignalExport.asyncInputWidth=0
 SignalExport.asyncOutputWidth=0
 SignalExport.clockChannel=CLK

@@ -59,9 +59,9 @@ set_property top daq_fifo_top [get_property srcset [current_run]]
 synth_design
 opt_design 
 place_design 
-route_design 
+route_design
+set_param sta.dlyMediator true 
 write_sdf -rename_top_module daq_fifo_top -file routed.sdf 
 write_verilog -nolib -mode sim -sdf_anno false -rename_top_module daq_fifo_top routed.vhd
 report_timing -nworst 30 -path_type full -file routed.twr
 report_drc
-#write_bitstream

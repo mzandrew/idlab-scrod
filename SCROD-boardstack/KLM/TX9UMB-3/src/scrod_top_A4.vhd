@@ -136,9 +136,17 @@ entity scrod_top_A4 is
 		SIN								 : out STD_LOGIC_VECTOR(9 downto 0);
 		PCLK								 : out STD_LOGIC_VECTOR(9 downto 0);
 		SHOUT						 	    : in STD_LOGIC_VECTOR(9 downto 0);--bring SCLOK up here
+		SCLK								: out STD_LOGIC_VECTOR(9 downto 0);
+
 		
-		
-		--Digitization Signals
+		--Digitization and sampling Signals
+		WL_CLK_N								: out STD_LOGIC_VECTOR(9 downto 0);
+		WL_CLK_P								: out STD_LOGIC_VECTOR(9 downto 0);
+		WR1_ENA								: out STD_LOGIC_VECTOR(9 downto 0);--move up
+		WR2_ENA								: out STD_LOGIC_VECTOR(9 downto 0);
+
+		SSTIN_N								 : out STD_LOGIC_VECTOR(9 downto 0);
+		SSTIN_P								 : out STD_LOGIC_VECTOR(9 downto 0);		
 		
 		--Serial Readout Signals
 		SR_CLOCK							 : out STD_LOGIC_VECTOR(9 downto 0);
@@ -147,12 +155,13 @@ entity scrod_top_A4 is
 		-- HV DAC
 		BUSA_SCK_DAC		          : out STD_LOGIC;
 		BUSA_DIN_DAC		          : out STD_LOGIC;
-
 		BUSB_SCK_DAC		          : out STD_LOGIC;
 		BUSB_DIN_DAC		          : out STD_LOGIC;
 	
 		
 		--TRIGGER SIGNALS
+	--	TDC_TRG							 : tb_vec_type;
+		
 		TDC1_TRG							 : in STD_LOGIC_VECTOR(4 downto 0);
 		TDC2_TRG							 : in STD_LOGIC_VECTOR(4 downto 0);
 		TDC3_TRG							 : in STD_LOGIC_VECTOR(4 downto 0);
@@ -222,14 +231,7 @@ entity scrod_top_A4 is
 		RAM_OEn				            : out std_logic := '1';                       
 		RAM_WEn				            : out std_logic := '1';                         
 	            
-		SCLK								: out STD_LOGIC_VECTOR(9 downto 0);
-		WL_CLK_N								: out STD_LOGIC_VECTOR(9 downto 0);
-		WL_CLK_P								: out STD_LOGIC_VECTOR(9 downto 0);
-		WR1_ENA								: out STD_LOGIC_VECTOR(9 downto 0);--move up
-		WR2_ENA								: out STD_LOGIC_VECTOR(9 downto 0);
-
-		SSTIN_N								 : out STD_LOGIC_VECTOR(9 downto 0);
-		SSTIN_P								 : out STD_LOGIC_VECTOR(9 downto 0);
+	
 		
 		SCL_MON								 : out STD_LOGIC;
 		SDA_MON								 : inout STD_LOGIC;
@@ -245,14 +247,10 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CLOCK_MPPC_DAC  : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
 	signal internal_CLOCK_ASIC_CTRL_WILK : std_logic;
-	signal internal_CLOCK_B2TT_SYS	:std_logic;
-	
+	signal internal_CLOCK_B2TT_SYS	:std_logic;	
 	signal internal_CLOCK_MPPC_ADC  : std_logic;
-	
-	signal WL_CLK_tmp	:std_logic_vector(9 downto 0);
+	signal internal_CLOCK_TRIG_SCALER:std_logic;
 
-	signal internal_CLOCK_8xSST_OBUFDS_N : std_logic_vector(9 downto 0);--remove
-	signal internal_CLOCK_8xSST_OBUFDS_P : std_logic_vector(9 downto 0);
 
 	signal internal_OUTPUT_REGISTERS : GPR;
 	signal internal_INPUT_REGISTERS  : RR;
@@ -318,9 +316,10 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_TRIGGER_ASIC_control_word : std_logic_vector(9 downto 0) := "0000000000";
 	signal internal_TRIGCOUNT_ena : std_logic := '0';
 	signal internal_TRIGCOUNT_rst : std_logic := '0';
-	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 16;
+	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 32;
 	type TARGETX_TRIGGER_SCALERS is array(9 downto 0) of std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);	
 	signal internal_TRIGCOUNT_scaler : TARGETX_TRIGGER_SCALERS;
+	signal internal_TRIGCOUNT_scaler_main : std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);
 	signal internal_READ_ENABLE_TIMER : std_logic_vector (9 downto 0);
 	signal internal_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here
 	signal internal_TXDCTRIG16 : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
@@ -526,7 +525,9 @@ signal internal_CMDREG_USE_TRIGDEC			:std_logic:='0';
 signal internal_TRIGDEC_trig					:std_logic:='0';
 signal internal_CMDREG_TRIGDEC_TRIGMASK	: std_logic_vector(9 downto 0):="1111111111";
 
-	
+
+signal internal_CMGREG_TRIG_SCALER_CLK_MAX			:std_logic_vector(15 downto 0):=x"0010";--scaler counter max values
+signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0):=x"0010";
 	
 	
 	
@@ -732,17 +733,21 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4);
 --end generate;
 
-	internal_TRIGGER_ASIC(0) <= TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
-	internal_TRIGGER_ASIC(1) <= TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3);
-	internal_TRIGGER_ASIC(2) <= TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3);
-	internal_TRIGGER_ASIC(3) <= TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3);
-	internal_TRIGGER_ASIC(4) <= TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3);
-	internal_TRIGGER_ASIC(5) <= TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3);
-	internal_TRIGGER_ASIC(6) <= TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3);
-	internal_TRIGGER_ASIC(7) <= TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3);
-	internal_TRIGGER_ASIC(8) <= TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3);
-	internal_TRIGGER_ASIC(9) <= TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3);
-	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1);
+	internal_TRIGGER_ASIC(0) <= TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3) OR TDC1_TRG(4);
+	internal_TRIGGER_ASIC(1) <= TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3) OR TDC2_TRG(4);
+	internal_TRIGGER_ASIC(2) <= TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3) OR TDC3_TRG(4);
+	internal_TRIGGER_ASIC(3) <= TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3) OR TDC4_TRG(4);
+	internal_TRIGGER_ASIC(4) <= TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3) OR TDC5_TRG(4);
+	internal_TRIGGER_ASIC(5) <= TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3) OR TDC6_TRG(4);
+	internal_TRIGGER_ASIC(6) <= TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3) OR TDC7_TRG(4);
+	internal_TRIGGER_ASIC(7) <= TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3) OR TDC8_TRG(4);
+	internal_TRIGGER_ASIC(8) <= TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3) OR TDC9_TRG(4);
+	internal_TRIGGER_ASIC(9) <= TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3) OR TDC10_TRG(4);
+	
+	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1) or internal_TRIGGER_ASIC(2) OR
+	internal_TRIGGER_ASIC(3) OR internal_TRIGGER_ASIC(4) OR internal_TRIGGER_ASIC(5) OR
+	internal_TRIGGER_ASIC(6) OR internal_TRIGGER_ASIC(7) OR internal_TRIGGER_ASIC(8) OR
+	internal_TRIGGER_ASIC(9);
 
 --	internal_ASIC_TRIG<=internal_TRIGGER_ASIC(9) and internal_TRIGGER_ASIC_control_word(9) ;
 --	internal_TRIGGER_ALL <=EX_TRIGGER2_MB or  (internal_TRIGGER_ASIC(0) --AND internal_TRIGGER_ASIC_control_word(0)
@@ -829,19 +834,21 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		--FTSW inputs
 		
 		--Trigger outputs from FTSW
-		FTSW_TRIGGER      => open,
 		--Select signal between the two
-		USE_LOCAL_CLOCK   => '0',
+		USE_LOCAL_CLOCK   => '1',
 		--General output clocks
+		CLOCK_TRIG_SCALER =>internal_CLOCK_TRIG_SCALER,
 		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
 		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
 		CLOCK_MPPC_ADC   => internal_CLOCK_MPPC_ADC,
 		--ASIC control clocks
-		--IM/GSV: Modify to it will run LVDS:
-		CLOCK_ASIC_CTRL_WILK=>internal_CLOCK_ASIC_CTRL_WILK,
-		CLOCK_ASIC_CTRL  => internal_CLOCK_ASIC_CTRL
+		CLOCK_ASIC_CTRL_WILK=>open,--internal_CLOCK_ASIC_CTRL_WILK,
+		CLOCK_ASIC_CTRL  => open--internal_CLOCK_ASIC_CTRL
 		
 	);  
+
+internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
+internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
@@ -1018,6 +1025,9 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	internal_CMDREG_USE_TRIGDEC	<=internal_OUTPUT_REGISTERS(39)(15); --'1': only use trigger generated by internal logic , '0'= use trigger generated by HW or SW or anything
 	internal_CMDREG_TRIGDEC_TRIGMASK	<=internal_OUTPUT_REGISTERS(39)(9 downto 0); --Mask the ASICS that we dont want to fire on- due to bad supply
 	
+	-------------------MAX clock counters for trigger scalers for the trigger scanning mode and the built in trigdec logic
+	internal_CMGREG_TRIG_SCALER_CLK_MAX<=internal_OUTPUT_REGISTERS(47);
+	internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC<=internal_OUTPUT_REGISTERS(48);
 
 	
 	--Event builder signals
@@ -1106,10 +1116,21 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	internal_INPUT_REGISTERS(N_GPR + 18 ) <= internal_TRIGCOUNT_scaler(8)(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 19 ) <= internal_TRIGCOUNT_scaler(9)(15 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 20) <= x"002c"; -- ID of the board
-	
+--	internal_INPUT_REGISTERS(N_GPR + 40 ) <= internal_TRIGCOUNT_scaler(0)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 41 ) <= internal_TRIGCOUNT_scaler(1)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 42 ) <= internal_TRIGCOUNT_scaler(2)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 43 ) <= internal_TRIGCOUNT_scaler(3)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 44 ) <= internal_TRIGCOUNT_scaler(4)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 45 ) <= internal_TRIGCOUNT_scaler(5)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 46 ) <= internal_TRIGCOUNT_scaler(6)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 47 ) <= internal_TRIGCOUNT_scaler(7)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 48 ) <= internal_TRIGCOUNT_scaler(8)(31 downto 16);
+--	internal_INPUT_REGISTERS(N_GPR + 49 ) <= internal_TRIGCOUNT_scaler(9)(31 downto 16);
+--	
 	internal_INPUT_REGISTERS(N_GPR + 30) <= "0000000" & internal_READCTRL_dig_win_start; -- digitizatoin window start
 	internal_INPUT_REGISTERS(N_GPR + 31) <=internal_pswfifo_d(15 downto 0);--internal_INPUT_REGISTERS(31)
-	
+	internal_INPUT_REGISTERS(N_GPR + 32) <=internal_TRIGCOUNT_scaler_main(15 downto 0);-- main trig count scaler
+
 	-- Status Regs:
 	gen_STAT_REG_INREG: for i in 0 to N_STAT_REG-1 generate
 		gen_BIT2: for j in 0 to 15 generate
@@ -1149,7 +1170,6 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
       O => WL_CLK_P(i),    			-- Diff_p output (connect directly to top-level port)
       OB => WL_CLK_N(i),   			-- Diff_n output (connect directly to top-level port)
       I => internal_CLOCK_ASIC_CTRL_WILK      	-- Buffer input 
- --		I  => WL_CLK_tmp(i)        -- 1-bit output data
 
    );
 	
@@ -1234,12 +1254,22 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	
 	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
 		tb => internal_TXDCTRIG,
-		tm=>internal_CMDREG_TRIGDEC_TRIGMASK,
+		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
 		TrigOut => internal_TRIGDEC_trig,
 		asicX => internal_TRIGDEC_ax,
 		asicY => internal_TRIGDEC_ay
 	);
 	
+	u_trig_scaler_multi_ch_w_timing_gen: entity work.trigger_scaler_single_channel_w_timing_gen 	
+	Port Map ( 
+			SIGNAL_TO_COUNT => internal_TRIGDEC_trig,
+			CLOCK           => internal_CLOCK_TRIG_SCALER,
+			CLK_COUNTER_MAX=>unsigned(internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC),
+			RESET_PULSE_COUNTER   => internal_TRIGCOUNT_rst,
+			READ_ENABLE_TIMER => open,
+			SCALER          => internal_TRIGCOUNT_scaler_main
+		);
+		
 	internal_TRIGDEC_asic_enable_bits(4 downto 0)<= "00000" when (internal_TRIGDEC_ax="000") else
 																	"00001" when (internal_TRIGDEC_ax="001") else
 																	"00010" when (internal_TRIGDEC_ax="010") else
@@ -1259,7 +1289,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	--LEDS(0)<=internal_TRIGGER_ALL;-- scope probe here
 	LEDS(1)<=internal_READCTRL_trigger;
 	LEDS(2)<=internal_SMP_MAIN_CNT(4); 
-	LEDS(0)<='0';
+	LEDS(0)<=internal_TRIGDEC_trig;--'0';-- this is for generating a temporary GDL L1 trigger
 	LEDS(12)<='0';
 
 	--LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
@@ -1542,12 +1572,14 @@ end generate;
 	
 	gen_trigger_counters : for i in 0 to 9 generate
 		--u_trigger_scaler_single_channel: entity work.trigger_scaler_single_channel Port Map ( 
-		u_trigger_scaler_single_channel_w_timing_gen: entity work.trigger_scaler_single_channel_w_timing_gen Port Map ( --IM 6/5/14: now using the combined trigger scaler timing gen block inctead
+		u_trigger_scaler_single_channel_w_timing_gen: entity work.trigger_scaler_single_channel_w_timing_gen 
+		Port Map ( --IM 6/5/14: now using the combined trigger scaler timing gen block inctead
 
 			SIGNAL_TO_COUNT => internal_TRIGGER_ASIC(i),
 			CLOCK           => internal_CLOCK_FPGA_LOGIC,
-			READ_ENABLE_IN     => internal_TRIGCOUNT_ena,
-			RESET_COUNTER   => internal_TRIGCOUNT_rst,
+			CLK_COUNTER_MAX=>unsigned(internal_CMGREG_TRIG_SCALER_CLK_MAX),
+
+			RESET_PULSE_COUNTER   => internal_TRIGCOUNT_rst,
 			READ_ENABLE_TIMER => internal_READ_ENABLE_TIMER(i),
 			SCALER          => internal_TRIGCOUNT_scaler(i)
 		);

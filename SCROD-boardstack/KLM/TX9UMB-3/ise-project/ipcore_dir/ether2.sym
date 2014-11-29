@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <symbol version="7" name="ether2">
     <symboltype>BLOCK</symboltype>
-    <timestamp>2014-9-23T2:56:42</timestamp>
+    <timestamp>2014-11-26T22:2:32</timestamp>
     <pin polarity="Input" x="0" y="80" name="glbl_rstn" />
     <pin polarity="Input" x="0" y="112" name="rx_axi_rstn" />
     <pin polarity="Input" x="0" y="144" name="tx_axi_rstn" />

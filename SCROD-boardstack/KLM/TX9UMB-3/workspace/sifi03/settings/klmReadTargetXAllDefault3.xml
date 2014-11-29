@@ -22,6 +22,8 @@
 			<register stage='post' address='57' value='2' /><!--set # of windows to read-->
 			<register stage='post' address='58' value='0' />
 			<register stage='post' address='72' value='0' />
+			<register stage='post' address='48' value='2' />
+			<register stage='post' address='47' value='4' />
 		</registers>
 		<asics>
 			<asic slot='0'>

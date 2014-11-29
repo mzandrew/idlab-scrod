@@ -59,9 +59,9 @@ set_property top FIFO_INP_0_top [get_property srcset [current_run]]
 synth_design
 opt_design 
 place_design 
-route_design 
+route_design
+set_param sta.dlyMediator true 
 write_sdf -rename_top_module FIFO_INP_0_top -file routed.sdf 
 write_verilog -nolib -mode sim -sdf_anno false -rename_top_module FIFO_INP_0_top routed.vhd
 report_timing -nworst 30 -path_type full -file routed.twr
 report_drc
-#write_bitstream

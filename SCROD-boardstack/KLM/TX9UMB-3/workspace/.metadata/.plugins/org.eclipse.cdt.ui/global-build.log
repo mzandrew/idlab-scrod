@@ -1,4 +1,16 @@
-01:22:30 **** Incremental Build of configuration Default for project sifi03 ****
+13:54:44 **** Build of configuration Build (GNU) for project usbInterface ****
 make all 
-g++ -g -gdwarf-2 -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -I. -c tools/KlmTestSetHVDACs.cpp -o tools/KlmTestSetHVDACs.o
-g++ tools/KlmTestSetHVDACs.o base/KlmSystem.o base/DetectorInterface.o base/UsbInterface.o base/ScrodPacket.o base/KlmModule.o base/tinyxml2.o base/KlmConsumer.o base/KlmFile.o base/CopperInterface.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -lpthread -o bin/KlmTestSetHVDACs
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/target6Control_takeAndPlotData.cpp -o work/target6Control_takeAndPlotData.o
+g++ work/target6Control_takeAndPlotData.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/target6Control_takeAndPlotData
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/tx_takedataplot1.cpp -o work/tx_takedataplot1.o
+g++ work/tx_takedataplot1.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/tx_takedataplot1
+17:28:23 **** Incremental Build of configuration Build (GNU) for project usbInterface ****
+make all 
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/target6Control_takeData.cpp -o work/target6Control_takeData.o
+g++ work/target6Control_takeData.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/target6Control_takeData
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/target6Control_takeAndPlotData.cpp -o work/target6Control_takeAndPlotData.o
+g++ work/target6Control_takeAndPlotData.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/target6Control_takeAndPlotData
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/parseTarget6Data3.cxx -o work/parseTarget6Data3.o
+g++ work/parseTarget6Data3.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/parseTarget6Data3
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/tx_takedataplot1.cpp -o work/tx_takedataplot1.o
+g++ work/tx_takedataplot1.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/tx_takedataplot1
