@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 13.2
-# Date: Sat Sep 13 01:23:25 2014
+# Xilinx Core Generator version 14.7
+# Date: Wed Nov 26 21:59:52 2014
 #
 ##############################################################
 #
@@ -48,8 +48,5 @@ CSET sgmii_phy_mode=false
 CSET standard=1000BASEX
 CSET transceiver_tile=A
 # END Parameters
-# BEGIN Extra information
-MISC pkg_timestamp=2011-06-21T06:42:30.000Z
-# END Extra information
 GENERATE
-# CRC: 942bb200
+# CRC: 920ef00e

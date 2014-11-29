@@ -89,13 +89,14 @@ int main(int argc, char* argv[]){
 		control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 		control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
 		control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
-		control->registerWriteReadback(board_id, 62, 0x0000 | 120, regValReadback); //force start digitization start window to be the fixed value
+		control->registerWriteReadback(board_id, 62, 0x8000 | 120, regValReadback); //force start digitization start window to be the fixed value
 		control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
 		control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
 	//	control->registerWrite(board_id, 72, 0x000, regValReadback); //enable trigger bits
 		control->registerWrite(board_id, 61, 0xF00, regValReadback); //ramp length- working on 40us ish
-		control->registerWrite(board_id,38,0b0000010000000000,regValReadback);//setting for using only the trig decision logic
-	//	control->registerWrite(board_id,38,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
+//		control->registerWrite(board_id,38,0b0000010000000000,regValReadback);//setting for using only the trig decision logic
+		control->registerWrite(board_id,38,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
+		control->registerWrite(board_id,39,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
 
 	//define output file		
 	ofstream dataFile;

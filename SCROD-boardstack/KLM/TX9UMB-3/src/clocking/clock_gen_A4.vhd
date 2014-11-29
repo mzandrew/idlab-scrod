@@ -21,19 +21,16 @@ entity clock_gen is
 		BOARD_CLOCKN      : in  STD_LOGIC;
 		BOARD_CLOCK_OUT	: out std_logic;
 		B2TT_SYS_CLOCK		: in std_logic;
-		--FTSW inputs from KLM_SCROD interface
 
-		--Trigger outputs from FTSW
-		FTSW_TRIGGER      : out std_logic;
-		--Select signal between the two
+		--Select signal between the two onboard osc or the b2tt sys clock coming from the FTSW
 		USE_LOCAL_CLOCK   : in  std_logic;
 		--General output clocks
-		CLOCK_FPGA_LOGIC  : out STD_LOGIC; -- around 50 to 62 MHz
-		CLOCK_MPPC_DAC   : out STD_LOGIC; -- around 4 or 5MHz for MPPC DAC read writes
-		CLOCK_MPPC_ADC :out std_logic;
+		CLOCK_TRIG_SCALER		: out std_logic;-- used for counters within the trigger scalers: 
+		CLOCK_FPGA_LOGIC	 : out STD_LOGIC; -- around 62.5 MHz
+		CLOCK_MPPC_DAC  	 : out STD_LOGIC; -- around 4 or 5MHz for MPPC DAC read writes
+		CLOCK_MPPC_ADC		 :out std_logic;
 		--ASIC control clocks
 		CLOCK_ASIC_CTRL_WILK  : out STD_LOGIC; --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
-
 		CLOCK_ASIC_CTRL  : out STD_LOGIC --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
 	);
 end clock_gen;
@@ -43,6 +40,7 @@ architecture Behavioral of clock_gen is
 	signal internal_LOCAL_CLOCK         : std_logic;
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
+	--signal internal_CLOCK_TRIG_SCALER :std_logic;
 	
 --	signal ratio_asic_ctrl_clock :  integer:=4;
 --	signal ratio_fpga_logic_clock : integer:=4;
@@ -53,6 +51,8 @@ architecture Behavioral of clock_gen is
 	signal ratio_fpga_logic_clock : integer:=2;
 	signal ratio_mppc_dac_clock :   integer:=6;
 	signal ratio_mppc_adc_clock :   integer:=6;
+	signal ratio_trig_scaler_clock :   integer:=10;
+
 begin
 	------------------------------------------------------
 	--            Board derived clocking                --
@@ -124,12 +124,7 @@ begin
 		O  => CLOCK_ASIC_CTRL
 	);
 	
---	map_ASIC_CTRL_clock_bufg2 : bufg
---	port map(
---		I  => internal_CLOCK_ASIC_CTRL,
---		O  => CLOCK_ASIC_CTRL_WILK
---	);
-	
+
 	map_MPPC_DAC_clock_enable : entity work.clock_enable_generator
 	generic map (
 		DIVIDE_RATIO => ratio_mppc_dac_clock
@@ -146,6 +141,15 @@ begin
 	port map (
 		CLOCK_IN         => internal_BOARD_CLOCK,
 		CLOCK_ENABLE_OUT => CLOCK_MPPC_ADC
+	);
+	
+	map_trig_scaler_clock_enable : entity work.clock_enable_generator
+	generic map (
+		DIVIDE_RATIO => ratio_trig_scaler_clock
+	)
+	port map (
+		CLOCK_IN         => internal_BOARD_CLOCK,
+		CLOCK_ENABLE_OUT => CLOCK_TRIG_SCALER
 	);
 	
 

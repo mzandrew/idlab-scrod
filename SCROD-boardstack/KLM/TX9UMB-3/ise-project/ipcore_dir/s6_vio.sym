@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <symbol version="7" name="s6_vio">
     <symboltype>BLOCK</symboltype>
-    <timestamp>2014-6-12T22:41:9</timestamp>
+    <timestamp>2014-11-26T21:39:59</timestamp>
     <pin polarity="Output" x="0" y="80" name="control[35:0]" />
     <pin polarity="Input" x="0" y="144" name="sync_in[63:0]" />
     <pin polarity="Input" x="0" y="176" name="clk" />

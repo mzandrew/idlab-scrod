@@ -33,15 +33,15 @@ package asic_definitions_irs2_carrier_revA is
 	type COL_ROW_TRIGGER_BITS is array(ASICS_PER_ROW-1 downto 0) of ROW_TRIGGER_BITS;
 	-------------Trigger scalers-----------------------------
 	--Clock rate that runs the trigger blocks
-	constant TRIGGER_CLOCK_RATE            : real := 50000000.0;
+	--constant TRIGGER_CLOCK_RATE            : real := 50000000.0;
 	--Clock rate for the clock that defines the integration period
-	constant TRIGGER_INTEGRATION_FREQUENCY : real := 10.0;
+--	constant TRIGGER_INTEGRATION_FREQUENCY : real := 10.0;
 	--Calculate how many bits we need in our counter to get the desired enable period.
-	constant TRIGGER_COUNTER_WIDTH         : integer := 2+integer(ceil(log2(TRIGGER_CLOCK_RATE/TRIGGER_INTEGRATION_FREQUENCY)));
+--	constant TRIGGER_COUNTER_WIDTH         : integer := 2+integer(ceil(log2(TRIGGER_CLOCK_RATE/TRIGGER_INTEGRATION_FREQUENCY)));
 	--Calculate the desired counter value that we'll use to get our enable.
-	constant TRIGGER_TARGET_COUNT          : integer := integer(ceil(TRIGGER_CLOCK_RATE/TRIGGER_INTEGRATION_FREQUENCY - 2.0));
+--	constant TRIGGER_TARGET_COUNT          : integer := integer(ceil(TRIGGER_CLOCK_RATE/TRIGGER_INTEGRATION_FREQUENCY - 2.0));
 	--Bit width for the scalers
-	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 16;
+	constant TRIGGER_SCALER_BIT_WIDTH      : integer := 32;--16;
 	--Data type for one asic's worth of trigger scalers
 	type ASIC_TRIGGER_SCALERS is array(TRIGGER_CHANNELS_PER_ASIC-1 downto 0) of std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);	
 	-------------Feedback/monitoring related-----------------

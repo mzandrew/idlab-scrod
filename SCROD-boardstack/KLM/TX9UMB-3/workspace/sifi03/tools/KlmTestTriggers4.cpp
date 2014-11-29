@@ -56,12 +56,13 @@ int main(int argc, char** argv)
 
 //	const int Nhval=7;int hval[Nhval]={25,50,60,70,80,90,100};
 //	const int Nhval=1;int hval[Nhval]={25};
-//	const int Nhval=5;int hval[Nhval]={1,50,100,50,1};
-	const int Nhval=7;int hval[Nhval]={1,10,50,100,150,200,250};
-	//const int Nhval=6;int hval[Nhval]={10,20,40,60,80,100};
-//	const int Nhval=30;int hval[Nhval]; for (int i=0;i<Nhval;i++) hval[i]=i*3;
+//	const int Nhval=6;int hval[Nhval]={1,50,100,50,1,250};
+	const int Nhval=3;int hval[Nhval]={10,100,10};
+//	const int Nhval=7;int hval[Nhval]={1,10,50,100,150,200,250};
+//	const int Nhval=6;int hval[Nhval]={10,20,40,60,80,100};
+//	const int Nhval=31;int hval[Nhval]; for (int i=0;i<Nhval-1;i++) hval[i]=i*5; hval[Nhval-1]=250;//use this as the Vb=off value
 
-	int step_treshold=5;
+	int th_start=3300,th_end=3600,th_step=1;
 	//init all trigger thresholds to 0
 	for(int chno = 0 ; chno< 16 ; chno++)
 	{
@@ -82,17 +83,16 @@ int main(int argc, char** argv)
 			//loop over channel trigger threshold values
 		for(int chno = 0 ; chno< Nch ; chno++)
 		{
-			for(int i = 0 ; i < 500 ; i+=step_treshold)
+			for(int i = th_start ; i < th_end ; i+=th_step)
 			{
-//				int threshold = 1350+i;
-				int threshold = 3300+i;
+				int threshold = i;
 				for(int cardidx = 0 ; cardidx < NCards ; cardidx++)
 				{
 					scrod_register HVval,HVvalout;
 					HVval=(Cards[cardidx]<<12) | (chno <<8) | (hval[ihval]&255);
 					HVvalout=HVval;//(HVval&0x00FF)<<8 | (HVval&0xFF00)>>8;
 					module->write_register(60,HVvalout,true);
-					usleep(500);
+					usleep(5500);
 					//write thresholds - set non-zero threshold for one channel on each daughter card
 					module->write_ASIC_register(Cards[cardidx], chno*2, (threshold)&4095);
 				}
@@ -101,13 +101,15 @@ int main(int argc, char** argv)
 				module->write_register(71, 1, true); //reset counters high
 				module->write_register(71, 0, true); //reset counters low
 
-				usleep(20000);//wait for counters to become valid
+				usleep(120000);//wait for counters to become valid
 				//read scalers - read trigger scaler for each daughter card
 
 				for(int cardidx = 0 ; cardidx < NCards ; cardidx++)
 				{
 					//int count = chno*100+threshold;
-					int count = module->read_register(266 + Cards[cardidx]);
+					int countLo = module->read_register(256 + 10+Cards[cardidx]);
+					int countHi = module->read_register(256 + 40+Cards[cardidx]);
+					int count=countHi*65536+countLo;
 					std::cout << "th: "<< threshold << "\tCard: # " << Cards[cardidx] << ",Channel # " << chno << ",Hval= "<<hval[ihval] << ",Counter=" << count << std::endl;
 					fprintf(fout,"%d, %d, %d, %d, %d\n",threshold,Cards[cardidx],chno,hval[ihval],count);
 				}
@@ -120,7 +122,7 @@ int main(int argc, char** argv)
 				module->write_register(71, 1, true); //reset counters high
 				module->write_register(71, 0, true); //reset counters low
 
-				usleep(20000);
+				usleep(120000);
 
 			}
 

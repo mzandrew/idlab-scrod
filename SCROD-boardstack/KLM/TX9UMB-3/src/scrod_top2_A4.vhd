@@ -514,6 +514,14 @@ signal		internal_USB_RDY1                    :  STD_LOGIC:='Z';
 signal		internal_USB_WAKEUP                  :  STD_LOGIC:='Z';
 signal		internal_USB_CLKOUT		             :  STD_LOGIC:='Z';
 
+----------Internal Trig_decision Logic:
+	
+signal internal_TRIGDEC_ax						:std_logic_vector(2 downto 0):="000";
+signal internal_TRIGDEC_ay						:std_logic_vector(2 downto 0):="000";
+signal internal_TRIGDEC_asic_enable_bits	:std_logic_vector(9 downto 0):="0000000000";
+signal internal_CMDREG_USE_TRIGDEC			:std_logic:='0';	
+signal internal_TRIGDEC_trig					:std_logic:='0';
+signal internal_CMDREG_TRIGDEC_TRIGMASK	: std_logic_vector(9 downto 0):="1111111111";
 ---------------NEW BUSB BUSA signalling:
 
 signal asicy_dig_sr_busy_i:std_logic:='0';
@@ -750,7 +758,7 @@ begin
       IOSTANDARD => "DEFAULT")
    port map (
       O => internal_EX_TRIGGER_SCROD,     -- Buffer output
-      I => EX_TRIGGER_SCROD      -- Buffer input (connect directly to top-level port)
+      I => EX_TRIGGER_SCROD      -- Buffer input (connect directly to top-level port
    );
 	
 
@@ -783,7 +791,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
    internal_TXDCTRIG(7)(1) <=TDC7_TRG(0) ; internal_TXDCTRIG(7)(2)  <=TDC7_TRG(1);internal_TXDCTRIG(7)(3) <=TDC7_TRG(2);internal_TXDCTRIG(7)(4) <=TDC7_TRG(3);internal_TXDCTRIG(7)(5) <=TDC7_TRG(4);
    internal_TXDCTRIG(8)(1) <=TDC8_TRG(0) ; internal_TXDCTRIG(8)(2)  <=TDC8_TRG(1);internal_TXDCTRIG(8)(3) <=TDC8_TRG(2);internal_TXDCTRIG(8)(4) <=TDC8_TRG(3);internal_TXDCTRIG(8)(5) <=TDC8_TRG(4);
    internal_TXDCTRIG(9)(1) <=TDC9_TRG(0) ; internal_TXDCTRIG(9)(2)  <=TDC9_TRG(1);internal_TXDCTRIG(9)(3) <=TDC9_TRG(2);internal_TXDCTRIG(9)(4) <=TDC9_TRG(3);internal_TXDCTRIG(9)(5) <=TDC9_TRG(4);
-   internal_TXDCTRIG(10)(1)<=TDC10_TRG(0); internal_TXDCTRIG(10)(2) <=TDC10_TRG(1);internal_TXDCTRIG(10)(3) <=TDC10_TRG(2);internal_TXDCTRIG(10)(4) <=TDC10_TRG(3);internal_TXDCTRIG(10)(5) <=TDC10_TRG(4);
+   internal_TXDCTRIG(10)(1)<=TDC10_TRG(0); internal_TXDCTRIG(10)(2) <=TDC10_TRG(1);internal_TXDCTRIG(10)(3) <=TDC10_TRG(2);internal_TXDCTRIG(10)(4) <=TDC10_TRG(3);internal_TXDCTRIG(10)(5) <=TDC10_TRG(4)
                                                                                                                                                                                                      
 																																																																	  
 --	internal_TXDCTRIG16(1)<=TDC1_TRG(4);
@@ -818,7 +826,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	
 	
 	asic_trig_GGEN: for I in 1 to 10 generate
-	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4);
+	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4)
 end generate;
 
 --	internal_TRIGGER_ASIC(0) <= TDC1_TRG_16 OR TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3);
@@ -1256,7 +1264,7 @@ end generate;
 	
 	end generate;
 		
-	BUS_REGCLR <= '0';
+	BUS_REGCLR <= '0'
 
 	  --ASIC control processes
 	
@@ -1278,7 +1286,7 @@ end generate;
 		SIN(i)  <= internal_DAC_CONTROL_SIN  and internal_DAC_CONTROL_TDCNUM(i);
 		PCLK(i) <= internal_DAC_CONTROL_PCLK and internal_DAC_CONTROL_TDCNUM(i);
 		SCLK(i) <= internal_DAC_CONTROL_SCLK and internal_DAC_CONTROL_TDCNUM(i);
-	end generate;
+	end generate
 ----------------------------- READOUT CONTROL REV2------------------------------------
 
 Inst_ReadoutControl2: ReadoutControl2 PORT MAP(
@@ -1521,7 +1529,7 @@ Inst_DigSRPedDSP_Y: DigSRPedDSP PORT MAP(
 		wr1_ena 	=> open,--internal_WR_ENA,
 		wr2_ena 	=> open
 	);
-	
+
 	internal_WR_ENA<= not READOUT_BUSY_i;
 	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
 	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
@@ -1557,7 +1565,7 @@ end generate;
 --		startramp 		=> internal_DIG_RAMP
 --	);
 --	internal_DIG_STARTDIG 	<= internal_READCTRL_dig_start;
-	
+
 	
 --	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
 --		clk 			=> internal_CLOCK_FPGA_LOGIC,
@@ -1612,7 +1620,7 @@ end generate;
 	
 	
 	--Module reads out from waveform FIFO and places ASIC window-sized packets into buffer FIFO
---	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP(
+--	u_OutputBufferControl: entity work.OutputBufferControl PORT MAP
 --		clk => internal_CLOCK_FPGA_LOGIC,
 --		REQUEST_PACKET 				=> internal_READCTRL_readout_continue,
 --		EVTBUILD_DONE					=> internal_EVTBUILD_DONE_SENDING_EVENT,
