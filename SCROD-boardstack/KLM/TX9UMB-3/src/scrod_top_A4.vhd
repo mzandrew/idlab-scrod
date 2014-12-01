@@ -1252,14 +1252,14 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
-	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
-		tb => internal_TXDCTRIG,
-		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
-		TrigOut => internal_TRIGDEC_trig,
-		asicX => internal_TRIGDEC_ax,
-		asicY => internal_TRIGDEC_ay
-	);
-	
+--	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
+--		tb => internal_TXDCTRIG,
+--		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
+--		TrigOut => internal_TRIGDEC_trig,
+--		asicX => internal_TRIGDEC_ax,
+--		asicY => internal_TRIGDEC_ay
+--	);
+--	
 	u_trig_scaler_multi_ch_w_timing_gen: entity work.trigger_scaler_single_channel_w_timing_gen 	
 	Port Map ( 
 			SIGNAL_TO_COUNT => internal_TRIGDEC_trig,
@@ -1497,9 +1497,9 @@ end generate;
 		valid => internal_WAVEFORM_FIFO_DATA_VALID
    );
 
-	internal_SROUT_FIFO_WR_CLK_waveformfifo<= internal_SROUT_FIFO_WR_CLK when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_clk;
-	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
-	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
+	internal_SROUT_FIFO_WR_CLK_waveformfifo<= internal_SROUT_FIFO_WR_CLK ;--when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_clk;
+	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN ;--when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
+	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT ;--when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
 	
 	
 	

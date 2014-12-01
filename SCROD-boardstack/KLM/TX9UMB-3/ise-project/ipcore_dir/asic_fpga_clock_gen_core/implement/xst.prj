@@ -1,0 +1,2 @@
+vhdl work ../../asic_fpga_clock_gen_core.vhd
+vhdl work ../example_design/asic_fpga_clock_gen_core_exdes.vhd
