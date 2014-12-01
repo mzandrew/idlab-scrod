@@ -51,9 +51,16 @@ TIMESPEC TS_SYS_CLK2X = PERIOD "SYS_CLK2X" TS_SYS_CLK / 2 HIGH 50%;
 #TIMESPEC "TS_LOCAL_CLOCK" = PERIOD "BOARD_CLOCK" 8 ns HIGH 50%;
 
 #PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug
-PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = false; #for chipscope debug
+PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = true; #for chipscope debug
 #PIN "map_clock_gen/map_ASIC_CTRL_WILK_clock_bufg.O" CLOCK_DEDICATED_ROUTE = TRUE; #for chipscope debug
-PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = false; #for chipscope debug2
+PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = true; #for chipscope debug2
+
+NET "map_clock_gen/CLOCK_ASIC_CTRL" TNM_NET = "ASIC_CLK";
+TIMESPEC TS_ASIC_CLK = PERIOD "ASIC_CLK" 15.7220 ns high 50%;
+
+NET "map_clock_gen/CLOCK_FPGA_LOGIC" TNM_NET = "FPGA_CLK";
+TIMESPEC TS_FPGA_CLK = PERIOD "FPGA_CLK" 15.7220 ns high 50%;
+ 
 
 
 SYSTEM_JITTER=1000 ps;
