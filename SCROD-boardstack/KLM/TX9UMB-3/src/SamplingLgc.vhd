@@ -12,7 +12,7 @@ entity SamplingLgc is
 			reset	    		      : in    std_logic;  -- reset chip counters, it will reset the main counter and tells the TX chip to do so
 			dig_win_start			: in   std_logic_vector(8 downto 0); --COL & ROW of start of the wr ena low (wr disable)- this area is to be protected from being written on
 			dig_win_n				: in   std_logic_vector(8 downto 0); --number of windows to keep wr_ena low 
-			dig_win_ena				: in   std_logic; -- enable the write disable window
+			dig_win_ena				: in   std_logic; -- enable the write disable window-- should be tied to the readout busy signal
 			
 			MAIN_CNT_out			: out   std_logic_vector(8 downto 0); --COL & ROW write address- we just need this to keep track of the last sample taken
 			sstin_out            : out   std_logic; --SCA control signals

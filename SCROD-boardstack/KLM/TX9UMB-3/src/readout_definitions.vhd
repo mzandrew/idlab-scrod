@@ -29,10 +29,15 @@ package readout_definitions is
   type QArray    is array (NRAMCH+2  downto 0) of integer;
 
 
-  type WaveformArray is array (NWWin*NSamplesPerWin*NCHPerTX-1 downto 0) of integer;
+--  type WaveformArray is array (NWWin*NSamplesPerWin*NCHPerTX-1 downto 0) of integer;
 --  type WaveformArray is array (NWWin*NSamplesPerWin*NCHPerTX-1 downto 0) of std_logic_vector(15 downto 0);
 
-  type WaveTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(15 downto 0);
+--  type WaveTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(15 downto 0);
+  type WaveWideTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(19 downto 0);
+  type WaveTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(11 downto 0);
+  type WaveUnsignedTempArray is array (NCHPerTX-1 downto 0) of unsigned(11 downto 0);
+
+  type WaveSignedTempArray is array (NCHPerTX-1 downto 0) of signed(12 downto 0);
   type JDXTempArray is array (NCHPerTX-1 downto 0) of std_logic_vector(10 downto 0);
 
 	type STATREG is array (N_STAT_REG-1 downto 0) of std_logic_vector(15 downto 0);

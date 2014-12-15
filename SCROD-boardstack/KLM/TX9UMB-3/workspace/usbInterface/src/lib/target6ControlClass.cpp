@@ -367,7 +367,8 @@ int target6ControlClass::writeEventToFile(unsigned int eventdatabuf[], int event
 		return 0;
 	}
 
-	dataFile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
+	dataFile.write(reinterpret_cast<char*>(eventdatabuf), eventdataSize*sizeof(unsigned int));
+//	dataFile.write( (unsigned char)*(&eventdatabuf), eventdataSize*sizeof(unsigned int) );
 
 	return 1;
 }

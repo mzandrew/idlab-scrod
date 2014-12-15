@@ -100,7 +100,7 @@ entity scrod_top_A4 is
 		--MB Specific Signals
 		
 		EX_TRIGGER_MB					 : out std_logic;
-		EX_TRIGGER_SCROD	   		 : in STD_LOGIC;
+		EX_TRIGGER_SCROD	   		 : out STD_LOGIC;
 --		EX_TRIGGER2						 : out STD_LOGIC;
 		
 		--Global Bus Signals
@@ -246,7 +246,7 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CLOCK_FPGA_LOGIC : std_logic;
 	signal internal_CLOCK_MPPC_DAC  : std_logic;
 	signal internal_CLOCK_ASIC_CTRL : std_logic;
-	signal internal_CLOCK_ASIC_CTRL_WILK : std_logic;
+	signal internal_CLOCK_ASIC_CTRL_WILK : std_logic_vector(9 downto 0);
 	signal internal_CLOCK_B2TT_SYS	:std_logic;	
 	signal internal_CLOCK_MPPC_ADC  : std_logic;
 	signal internal_CLOCK_TRIG_SCALER:std_logic;
@@ -394,7 +394,8 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_PedCalcNAVG			:std_logic_vector(3 downto 0):=x"3";-- 2**3=8 averages for calculating peds
 	signal internal_CMDREG_PedDemuxFifoEnable		:std_logic:='1';-- this out put will replace the common readout fifo from the SRreadout module
 	signal internal_CMDREG_PedDemuxFifoOutputSelect: std_logic_vector(1 downto 0);
-
+	signal internal_CMDREG_PedSubCalcMode:std_logic_vector(3 downto 0);
+	signal internal_PedCalcNiter: std_logic_vector(15 downto 0):=(others=>'0');
 		
 	--ASIC SAMPLING CONTROL
 	signal internal_SMP_MAIN_CNT 			: std_logic_vector(8 downto 0) := (others => '0');
@@ -488,7 +489,6 @@ architecture Behavioral of scrod_top_A4 is
 	signal RAM_IOw_i:std_logic_vector(7 downto 0);
 	signal RAM_IOr_i:std_logic_vector(7 downto 0);
 	signal RAM_IO_bs_i:std_logic;
-	
 -------------------------------------
 	signal internal_pswfifo_d:std_logic_vector(31 downto 0);
 	signal internal_pswfifo_clk:std_logic;
@@ -597,29 +597,30 @@ signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0
         );
     END COMPONENT;
 	 
-	 COMPONENT WaveformDemuxPedsubDSPBRAM
-    PORT(
-         clk : IN  std_logic;
-			enable 				: in std_logic;  -- '0'= disable, '1'= enable
+	
+	COMPONENT WaveformDemuxPedsubDSPBRAM
+	PORT(
+		clk : IN std_logic;
+		enable : IN std_logic;
+		SMP_MAIN_CNT : IN std_logic_vector(8 downto 0);
+		asic_no : IN std_logic_vector(3 downto 0);
+		win_addr_start : IN std_logic_vector(8 downto 0);
+		trigin : IN std_logic;
+		mode : IN std_logic_vector(1 downto 0);
+		calc_mode : in std_logic_vector(3 downto 0);
+		fifo_en : IN std_logic;
+		fifo_clk : IN std_logic;
+		fifo_din : IN std_logic_vector(31 downto 0);
+		ram_data : IN std_logic_vector(7 downto 0);
+		ram_busy : IN std_logic;          
+		pswfifo_en : OUT std_logic;
+		pswfifo_clk : OUT std_logic;
+		pswfifo_d : OUT std_logic_vector(31 downto 0);
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_update : OUT std_logic
+		);
+	END COMPONENT;
 
-         asic_no : IN  std_logic_vector(3 downto 0);
-         win_addr_start : IN  std_logic_vector(8 downto 0);
-         sr_start : IN  std_logic;
-			mode : in std_logic_vector(1 downto 0);
-			
-			pswfifo_en 			:	out std_logic;
-			pswfifo_clk 		: 	out std_logic;
-			pswfifo_d 			: 	out std_logic_vector(31 downto 0);
-			
-         fifo_en : IN  std_logic;
-         fifo_clk : IN  std_logic;
-         fifo_din : IN  std_logic_vector(31 downto 0);
-         ram_addr : OUT  std_logic_vector(21 downto 0);
-         ram_data : IN  std_logic_vector(7 downto 0);
-         ram_update : OUT  std_logic;
-         ram_busy : IN  std_logic
-        );
-    END COMPONENT;
 
 	COMPONENT WaveformDemuxCalcPedsBRAM
 	PORT(
@@ -627,7 +628,7 @@ signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0
 		reset : IN std_logic;
 		enable : IN std_logic;
 		navg : IN std_logic_vector(3 downto 0);
-		busy:out std_logic;
+		SMP_MAIN_CNT : IN std_logic_vector(8 downto 0);
 		asic_no : IN std_logic_vector(3 downto 0);
 		win_addr_start : IN std_logic_vector(8 downto 0);
 		trigin : IN std_logic;
@@ -635,6 +636,9 @@ signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0
 		fifo_clk : IN std_logic;
 		fifo_din : IN std_logic_vector(31 downto 0);
 		ram_busy : IN std_logic;          
+		busy : OUT std_logic;
+		niter	: out std_logic_vector(15 downto 0); -- route debug info out to top and then a SCROD reg 
+
 		ram_addr : OUT std_logic_vector(21 downto 0);
 		ram_data : OUT std_logic_vector(7 downto 0);
 		ram_update : OUT std_logic
@@ -848,7 +852,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	);  
 
 internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
-internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
+--internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 
 	--Interface to the DAQ devices
 	map_readout_interfaces : entity work.readout_interface
@@ -1022,7 +1026,11 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 	internal_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
 	internal_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(14);	
 	internal_CMDREG_PedDemuxFifoOutputSelect<=internal_OUTPUT_REGISTERS(38)(13 downto 12); --00: disable (regular waveform dump)--01: ped sub, 10: ped only, 11: waveform only
-	internal_CMDREG_USE_TRIGDEC	<=internal_OUTPUT_REGISTERS(39)(15); --'1': only use trigger generated by internal logic , '0'= use trigger generated by HW or SW or anything
+	internal_WAVEFORM_FIFO_RST<=internal_OUTPUT_REGISTERS(38)(11);-- reset the waveform and buffer fifos
+	internal_BUFFERCTRL_FIFO_RESET<=internal_OUTPUT_REGISTERS(38)(11);
+	internal_CMDREG_PedSubCalcMode<=internal_OUTPUT_REGISTERS(38)(10 downto 7);	
+	
+	internal_CMDREG_USE_TRIGDEC	<=internal_OUTPUT_REGISTERS(39)(15); --'1': only use trigger generated by internal trig dec logic , '0'= use trigger generated by HW or SW or anything
 	internal_CMDREG_TRIGDEC_TRIGMASK	<=internal_OUTPUT_REGISTERS(39)(9 downto 0); --Mask the ASICS that we dont want to fire on- due to bad supply
 	
 	-------------------MAX clock counters for trigger scalers for the trigger scanning mode and the built in trigdec logic
@@ -1130,6 +1138,8 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 	internal_INPUT_REGISTERS(N_GPR + 30) <= "0000000" & internal_READCTRL_dig_win_start; -- digitizatoin window start
 	internal_INPUT_REGISTERS(N_GPR + 31) <=internal_pswfifo_d(15 downto 0);--internal_INPUT_REGISTERS(31)
 	internal_INPUT_REGISTERS(N_GPR + 32) <=internal_TRIGCOUNT_scaler_main(15 downto 0);-- main trig count scaler
+	internal_INPUT_REGISTERS(N_GPR + 33) <=internal_PedCalcNiter;
+	
 
 	-- Status Regs:
 	gen_STAT_REG_INREG: for i in 0 to N_STAT_REG-1 generate
@@ -1159,8 +1169,26 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
         );
 
 
+
 	gen_wl_clk_to_asic : for i in 0 to 9 generate
 
+ ODDR2_inst : ODDR2
+   generic map(
+      DDR_ALIGNMENT => "NONE", -- Sets output alignment to "NONE", "C0", "C1" 
+      INIT => '0', -- Sets initial state of the Q output to '0' or '1'
+      SRTYPE => "SYNC") -- Specifies "SYNC" or "ASYNC" set/reset
+   port map (
+      Q => internal_CLOCK_ASIC_CTRL_WILK(i), -- 1-bit output data
+      C0 => internal_CLOCK_FPGA_LOGIC, -- 1-bit clock input
+      C1 => not internal_CLOCK_FPGA_LOGIC, -- 1-bit clock input
+      CE => '1',  -- 1-bit clock enable input
+      D0 => '0',   -- 1-bit data input (associated with C0)
+      D1 => '1',   -- 1-bit data input (associated with C1)
+      R => '0',    -- 1-bit reset input
+      S => '0'     -- 1-bit set input
+   );
+  
+  
 	wilk_OBUFDS_inst : OBUFDS
    generic map (
       --IOSTANDARD => "DEFAULT")
@@ -1169,7 +1197,7 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
    port map (
       O => WL_CLK_P(i),    			-- Diff_p output (connect directly to top-level port)
       OB => WL_CLK_N(i),   			-- Diff_n output (connect directly to top-level port)
-      I => internal_CLOCK_ASIC_CTRL_WILK      	-- Buffer input 
+      I => internal_CLOCK_ASIC_CTRL_WILK (i)     	-- Buffer input 
 
    );
 	
@@ -1252,14 +1280,14 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
---	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
---		tb => internal_TXDCTRIG,
---		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
---		TrigOut => internal_TRIGDEC_trig,
---		asicX => internal_TRIGDEC_ax,
---		asicY => internal_TRIGDEC_ay
---	);
---	
+	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
+		tb => internal_TXDCTRIG,
+		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
+		TrigOut => internal_TRIGDEC_trig,
+		asicX => internal_TRIGDEC_ax,
+		asicY => internal_TRIGDEC_ay
+	);
+	
 	u_trig_scaler_multi_ch_w_timing_gen: entity work.trigger_scaler_single_channel_w_timing_gen 	
 	Port Map ( 
 			SIGNAL_TO_COUNT => internal_TRIGDEC_trig,
@@ -1288,61 +1316,69 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 	
 	--LEDS(0)<=internal_TRIGGER_ALL;-- scope probe here
 	LEDS(1)<=internal_READCTRL_trigger;
-	LEDS(2)<=internal_SMP_MAIN_CNT(4); 
+	EX_TRIGGER_SCROD<= (not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
+				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8)); -- pulse goes up at window=511
 	LEDS(0)<=internal_TRIGDEC_trig;--'0';-- this is for generating a temporary GDL L1 trigger
-	LEDS(12)<='0';
+	LEDS(12)<=internal_SMP_MAIN_CNT(0);
+	LEDS(2)<=(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
+				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8));
 
 	--LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
 	
---	 u_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
---          clk => internal_CLOCK_FPGA_LOGIC,
---			 enable=>internal_PedSubEnable,
---          asic_no => internal_READCTRL_ASIC_NUM,
---          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
---          sr_start => internal_READCTRL_LATCH_DONE,--srout_start,
---			 mode=>internal_CMDREG_PedDemuxFifoOutputSelect,
---
---			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
---			fifo_clk => internal_SROUT_FIFO_WR_CLK,
---			fifo_din => internal_SROUT_FIFO_DATA_OUT,
---
---			pswfifo_d =>internal_pswfifo_d,--internal_INPUT_REGISTERS(31)
---			pswfifo_clk =>internal_pswfifo_clk,
---			pswfifo_en=>internal_pswfifo_en,
---
---          ram_addr => internal_ram_Ain(2),
---          ram_data => internal_ram_DRout(2),
---          ram_update => internal_ram_update(2),
---          ram_busy => internal_ram_busy(2)
---        );
+	 u_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
+          clk => internal_CLOCK_FPGA_LOGIC,
+			 enable=>internal_PedSubEnable,
+			 SMP_MAIN_CNT => internal_SMP_MAIN_CNT,
+          asic_no => internal_READCTRL_ASIC_NUM,
+          win_addr_start => internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+          trigin => internal_READCTRL_LATCH_DONE,--srout_start,
+			 mode=>internal_CMDREG_PedDemuxFifoOutputSelect,
+			calc_mode => internal_CMDREG_PedSubCalcMode,
+
+			fifo_en 	=> internal_SROUT_FIFO_WR_EN,
+			fifo_clk => internal_SROUT_FIFO_WR_CLK,
+			fifo_din => internal_SROUT_FIFO_DATA_OUT,
+
+			pswfifo_d =>internal_pswfifo_d,--internal_INPUT_REGISTERS(31)
+			pswfifo_clk =>internal_pswfifo_clk,
+			pswfifo_en=>internal_pswfifo_en,
+
+          ram_addr => internal_ram_Ain(2),
+          ram_data => internal_ram_DRout(2),
+          ram_update => internal_ram_update(2),
+          ram_busy => internal_ram_busy(2)
+        );
+	
+	
+		internal_ram_rw(2)<='0';-- always reading from this channel
+		internal_PedSubEnable<='0' when  internal_CMDREG_PedDemuxFifoOutputSelect="00" else '1';
 --	
---	
---		internal_ram_rw(2)<='0';-- always reading from this channel
---		internal_PedSubEnable<='0' when  internal_CMDREG_PedDemuxFifoOutputSelect="00" else '1';
---	
---	Inst_WaveformDemuxCalcPedsBRAM: WaveformDemuxCalcPedsBRAM PORT MAP(
---		clk => internal_CLOCK_FPGA_LOGIC,
---		reset => internal_CMDREG_PedCalcReset,
---		enable => internal_CMDREG_PedCalcEnable,
---		navg => internal_CMDREG_PedCalcNAVG,
---		busy=>open,
---		asic_no => internal_READCTRL_ASIC_NUM,
---		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
---		trigin => internal_READCTRL_LATCH_DONE,
---		fifo_en => internal_SROUT_FIFO_WR_EN ,
---		fifo_clk => internal_SROUT_FIFO_WR_CLK,
---		fifo_din => internal_SROUT_FIFO_DATA_OUT,
---		
---		ram_addr => internal_ram_Ain(3),
---		ram_data => internal_ram_DWin(3),
---		ram_update => internal_ram_update(3),
---		ram_busy => internal_ram_busy(3)
---	);
---		
---		internal_ram_rw(3)<='1';-- always write to this channel	
---	
---	
+	Inst_WaveformDemuxCalcPedsBRAM: WaveformDemuxCalcPedsBRAM PORT MAP(
+		clk => internal_CLOCK_FPGA_LOGIC,
+		reset => internal_CMDREG_PedCalcReset,
+		enable => internal_CMDREG_PedCalcEnable,
+		navg => internal_CMDREG_PedCalcNAVG,
+		SMP_MAIN_CNT=> internal_SMP_MAIN_CNT,
+		busy=>open,
+		niter=>	 internal_PedCalcNiter,
+
+		asic_no => internal_READCTRL_ASIC_NUM,
+		win_addr_start =>internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
+		trigin => internal_READCTRL_LATCH_DONE,
+		fifo_en => internal_SROUT_FIFO_WR_EN ,
+		fifo_clk => internal_SROUT_FIFO_WR_CLK,
+		fifo_din => internal_SROUT_FIFO_DATA_OUT,
+		
+		ram_addr => internal_ram_Ain(3),
+		ram_data => internal_ram_DWin(3),
+		ram_update => internal_ram_update(3),
+		ram_busy => internal_ram_busy(3)
+	);
+		
+		internal_ram_rw(3)<='1';-- always write to this channel	
+	
+	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
@@ -1359,7 +1395,8 @@ internal_CLOCK_ASIC_CTRL_WILK<=internal_CLOCK_FPGA_LOGIC;
 	);
 	
 --internal_WR_ENA<= not internal_DIG_IDLE_status;--internal_READCTRL_trigger;-- debug
-internal_WR_ENA<=  internal_READCTRL_READOUT_DONE;--internal_READCTRL_busy;-- debug
+--internal_WR_ENA<=  internal_READCTRL_READOUT_DONE;--internal_READCTRL_busy;-- debug
+internal_WR_ENA<=  not internal_READCTRL_busy_status;-- debug
 
 	BUSA_WR_ADDRCLR 	<= internal_WR_ADDRCLR;
 	BUSB_WR_ADDRCLR 	<= internal_WR_ADDRCLR;	
@@ -1498,8 +1535,8 @@ end generate;
    );
 
 	internal_SROUT_FIFO_WR_CLK_waveformfifo<= internal_SROUT_FIFO_WR_CLK ;--when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_clk;
-	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN ;--when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
-	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT ;--when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
+	internal_SROUT_FIFO_WR_EN_waveformfifo <= internal_SROUT_FIFO_WR_EN when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_en;
+	internal_SROUT_FIFO_DATA_OUT_waveformfifo<= internal_SROUT_FIFO_DATA_OUT when internal_CMDREG_PedDemuxFifoOutputSelect="00" else internal_pswfifo_d;
 	
 	
 	
@@ -1519,7 +1556,7 @@ end generate;
 		--WAVEFORM_FIFO_DATA_OUT 		=> (others=>'0'),
 		--WAVEFORM_FIFO_EMPTY 			=> '1',
 		--WAVEFORM_FIFO_DATA_VALID 	=> '0',
-		BUFFER_FIFO_RESET 	=> internal_BUFFERCTRL_FIFO_RESET,
+		BUFFER_FIFO_RESET 	=> open,--internal_BUFFERCTRL_FIFO_RESET, debug- this reset needs to be implemented ?
 		BUFFER_FIFO_WR_CLK 	=> internal_BUFFERCTRL_FIFO_WR_CLK,
 		BUFFER_FIFO_WR_EN 	=> internal_BUFFERCTRL_FIFO_WR_EN,
 		BUFFER_FIFO_DIN 		=> internal_BUFFERCTRL_FIFO_DIN,

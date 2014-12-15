@@ -87,9 +87,9 @@ IDLE_status <= internal_IDLE_status;
 
 --hardcoded versions of constants
 --time delay between receipt of "Start" and setting rd_en high
-ramp_start <= "0000000010000";
+ramp_start <= "0000000111100";
 --time rd_en is held high before setting ramp, start high
-RDEN_LENGTH <= "0000000100000";
+RDEN_LENGTH <="0000001111000";
 
 --latch stop to local clock domain
 process(Clk)
@@ -105,7 +105,7 @@ if (Clk'event and Clk = '1') then
   
   Case next_state is
   When Idle =>
-    clr_out              <= '1';
+    clr_out              <= '0';
 	 rd_ena_out         <= '0';
 	 startramp_out            	<= '0';
     RAMP_CNT         <= (others=>'0');
@@ -117,7 +117,7 @@ if (Clk'event and Clk = '1') then
     end if;
 
   When WaitAddress =>  --wait for address to settle on ASIC
-    clr_out              <= '0';
+    clr_out              <= '1';
 	 rd_ena_out         <= '0';  -- making guess on how transfer initiated
 	 startramp_out        <= '0';
 	 internal_IDLE_status <= '0';

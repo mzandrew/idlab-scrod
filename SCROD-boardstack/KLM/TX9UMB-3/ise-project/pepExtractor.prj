@@ -1,2 +1,5 @@
-work	"../src/KLM_SCROD_baseline/tdc/source/tdc_pkg.vhd"
-work	"../src/TrigDecisionLogic.vhd"
+work	"../src/WaveformDemuxPedsubDSPBRAM.vhd"
+work	"../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
+work	"../src/readout_definitions.vhd"
+work	"PedRAMaccess.vhd"
+work	"ipcore_dir/blk_mem_gen_v7_3.vhd"

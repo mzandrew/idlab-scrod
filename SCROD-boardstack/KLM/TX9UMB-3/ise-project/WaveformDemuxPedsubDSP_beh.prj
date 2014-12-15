@@ -1,0 +1,3 @@
+vhdl work "../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
+vhdl work "../src/readout_definitions.vhd"
+vhdl work "../src/WaveformDemuxPedsubDSP.vhd"

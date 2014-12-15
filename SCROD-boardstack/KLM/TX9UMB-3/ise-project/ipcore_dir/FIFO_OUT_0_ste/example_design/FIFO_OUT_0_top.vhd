@@ -77,12 +77,12 @@ entity FIFO_OUT_0_top is
       BACKUP                         : IN STD_LOGIC;
       BACKUP_MARKER                  : IN STD_LOGIC;
       DIN                            : IN STD_LOGIC_VECTOR(32-1 downto 0);
-      PROG_EMPTY_THRESH              : IN STD_LOGIC_VECTOR(9-1 downto 0);
-      PROG_EMPTY_THRESH_ASSERT       : IN STD_LOGIC_VECTOR(9-1 downto 0);
-      PROG_EMPTY_THRESH_NEGATE       : IN STD_LOGIC_VECTOR(9-1 downto 0);
-      PROG_FULL_THRESH               : IN STD_LOGIC_VECTOR(9-1 downto 0);
-      PROG_FULL_THRESH_ASSERT        : IN STD_LOGIC_VECTOR(9-1 downto 0);
-      PROG_FULL_THRESH_NEGATE        : IN STD_LOGIC_VECTOR(9-1 downto 0);
+      PROG_EMPTY_THRESH              : IN STD_LOGIC_VECTOR(12-1 downto 0);
+      PROG_EMPTY_THRESH_ASSERT       : IN STD_LOGIC_VECTOR(12-1 downto 0);
+      PROG_EMPTY_THRESH_NEGATE       : IN STD_LOGIC_VECTOR(12-1 downto 0);
+      PROG_FULL_THRESH               : IN STD_LOGIC_VECTOR(12-1 downto 0);
+      PROG_FULL_THRESH_ASSERT        : IN STD_LOGIC_VECTOR(12-1 downto 0);
+      PROG_FULL_THRESH_NEGATE        : IN STD_LOGIC_VECTOR(12-1 downto 0);
       RD_CLK                         : IN STD_LOGIC;
       RD_EN                          : IN STD_LOGIC;
       RD_RST                         : IN STD_LOGIC;
@@ -95,7 +95,7 @@ entity FIFO_OUT_0_top is
       INJECTSBITERR                  : IN STD_LOGIC;
       ALMOST_EMPTY                   : OUT STD_LOGIC;
       ALMOST_FULL                    : OUT STD_LOGIC;
-      DATA_COUNT                     : OUT STD_LOGIC_VECTOR(9-1 downto 0);
+      DATA_COUNT                     : OUT STD_LOGIC_VECTOR(12-1 downto 0);
       DOUT                           : OUT STD_LOGIC_VECTOR(32-1 downto 0);
       EMPTY                          : OUT STD_LOGIC;
       FULL                           : OUT STD_LOGIC;
@@ -103,10 +103,10 @@ entity FIFO_OUT_0_top is
       PROG_EMPTY                     : OUT STD_LOGIC;
       PROG_FULL                      : OUT STD_LOGIC;
       VALID                          : OUT STD_LOGIC;
-      RD_DATA_COUNT                  : OUT STD_LOGIC_VECTOR(9-1 downto 0);
+      RD_DATA_COUNT                  : OUT STD_LOGIC_VECTOR(12-1 downto 0);
       UNDERFLOW                      : OUT STD_LOGIC;
       WR_ACK                         : OUT STD_LOGIC;
-      WR_DATA_COUNT                  : OUT STD_LOGIC_VECTOR(9-1 downto 0);
+      WR_DATA_COUNT                  : OUT STD_LOGIC_VECTOR(12-1 downto 0);
       SBITERR                        : OUT STD_LOGIC;
       DBITERR                        : OUT STD_LOGIC;
       -- AXI Global Signal

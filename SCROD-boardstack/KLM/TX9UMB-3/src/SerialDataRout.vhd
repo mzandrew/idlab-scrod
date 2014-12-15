@@ -41,10 +41,10 @@ end SerialDataRout;
 architecture Behavioral of SerialDataRout is
 	
 	--time samplesel_any is held high
-	constant ADDR_TIME : std_logic_vector(4 downto 0) := "00010";
-	constant LOAD_TIME : std_logic_vector(4 downto 0) := "00010";
-	constant LOAD_TIME1 : std_logic_vector(4 downto 0) := "00010";
-	constant LOAD_TIME2 : std_logic_vector(4 downto 0) := "00010";
+	constant ADDR_TIME : std_logic_vector(4 downto 0) := "00100";
+	constant LOAD_TIME : std_logic_vector(4 downto 0) := "00100";
+	constant LOAD_TIME1 : std_logic_vector(4 downto 0) := "00100";
+	constant LOAD_TIME2 : std_logic_vector(4 downto 0) := "00100";
 	constant CLK_CNT_MAX : std_logic_vector(4 downto 0) := "01100"; -- (11+1)->12 clk -> 12 bits
 
    type sr_overall_type is
@@ -196,11 +196,12 @@ end process;
 process(Clk)
 begin
 if (Clk'event and Clk = '1') then
-  sr_clr            <= '0'; --doesn't do anything
+  --sr_clr            <= '0'; --doesn't do anything
   Case next_state is
   
   When Idle =>
-    sr_clk_i  	       <= '0';
+    sr_clr            <= '1'; --doesn't do anything
+  sr_clk_i  	       <= '0';
     sr_sel  	       <= '0';
     SAMP_DONE_out    <= '0';
     Ev_CNT           <= (others=>'0');
@@ -218,6 +219,8 @@ if (Clk'event and Clk = '1') then
 	 
    --delay some number of clock cycles
    When WaitStart =>
+	  sr_clr            <= '0'; --doesn't do anything
+
     sr_clk_i  	       <= '0';
     sr_sel  	       <= '0';
     SAMP_DONE_out    <= '0';
@@ -301,7 +304,8 @@ if (Clk'event and Clk = '1') then
       next_state 	<= WaitLoad1;
     else
       Ev_CNT           <= (others=>'0');
-      sr_sel  	       <= '1';
+      sr_sel  	       <= '0';
+--      sr_sel  	       <= '1'; this line commented out on 12/4/2014 to make the code resemble the original
 		sr_clk_i  	       <= '0';
       next_state 	<= WaitLoad2;
     end if;

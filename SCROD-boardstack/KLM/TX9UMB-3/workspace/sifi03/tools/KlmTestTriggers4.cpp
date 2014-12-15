@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 //	const int Nhval=6;int hval[Nhval]={10,20,40,60,80,100};
 //	const int Nhval=31;int hval[Nhval]; for (int i=0;i<Nhval-1;i++) hval[i]=i*5; hval[Nhval-1]=250;//use this as the Vb=off value
 
-	int th_start=3300,th_end=3600,th_step=1;
+	int th_start=3300,th_end=3600,th_step=5;
 	//init all trigger thresholds to 0
 	for(int chno = 0 ; chno< 16 ; chno++)
 	{

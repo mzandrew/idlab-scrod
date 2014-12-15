@@ -29,14 +29,31 @@ const int numDC = 10;
 const int numCHAN = 16;//only channel 16 is needed- which is connected to the signal gen
 int ActiveChs[numCHAN]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 const int numADDR = 512;
-const int numSAMP = 32;
-const int numBIT = 12;
-bool waveformValid[numDC][numCHAN][numADDR]; //DC, CHANNEL, ADDRESS
-unsigned int waveformArray[numDC][numCHAN][numADDR][numSAMP]; //DC, CHANNEL, ADDRESS, SAMPLE
+const int numSAMP = 32*2;
+
+class MBevent
+{
+public:
+	unsigned int no;//event number
+	signed int samples[numSAMP];
+	bool isValid;
+	unsigned int dc,ch,digwin,wrwin;//daughter card, channel,...
+	unsigned int t,c;//time and charge
+	void Copy(MBevent e) {
+		for(int i=0;i<numSAMP;i++) samples[i]=e.samples[i];
+		no=e.no;isValid=e.isValid;dc=e.dc;ch=e.ch;digwin=e.digwin;wrwin=e.wrwin;
+		t=e.t;c=e.c;
+	}
+};
+
+
+//bool waveformValid[numDC][numCHAN][numADDR]; //DC, CHANNEL, ADDRESS
+//signed int waveformArray[numDC][numCHAN][numADDR][numSAMP]; //DC, CHANNEL, ADDRESS, SAMPLE
+
 int currentEventNumber;
 
 //Define output tree
-#define POINTS_PER_WAVEFORM    32
+#define POINTS_PER_WAVEFORM    32*4
 #define MEMORY_DEPTH           512
 #define NASICS                 10
 #define NCHS                   numCHAN //only 1 channel is being parsed
@@ -48,8 +65,13 @@ UInt_t scrodId[MaxROI];
 Int_t asicNum[MaxROI];
 Int_t asicCh[MaxROI];
 Int_t windowNum[MaxROI];
+Int_t WRwinNum[MaxROI];
 Int_t samples[MaxROI][POINTS_PER_WAVEFORM];
 bool DecodeTPGflag;
+
+MBevent evts[MaxROI];
+
+
 
 //global TApplication object declared here for simplicity
 TApplication *theApp;
@@ -125,7 +147,6 @@ int main(int argc, char* argv[]){
 
 	//intialize waveform array
 	currentEventNumber = -1;
-	resetWaveformArray();
 	
 	//process file buffer
 	processBuffer(buffer_uint,size_in_bytes/4);
@@ -216,7 +237,7 @@ void saveWaveformArrayToTree(){
 	//loop over all ASICs/channels
 	eventNum = currentEventNumber;
 	Int_t ROI = 0;
-    	for(int d = 0 ; d < numDC ; d++)
+    /*	for(int d = 0 ; d < numDC ; d++)
 	for(int c = 0 ; c < numCHAN ; c++)
   	for(int a = 0 ; a < numADDR ; a++){
 		if( waveformValid[d][c][a] == 0 )
@@ -247,23 +268,13 @@ void saveWaveformArrayToTree(){
 
 		ROI++;
 		
-	}//end of numADDR loop
+	}//end of numADDR loop*/
 	nROI = ROI;
 	tree->Fill();
 	return;
 }	
 
 //reset the array storing waveform data
-void resetWaveformArray(){
-    	for(int d = 0 ; d < numDC ; d++)
-	for(int c = 0 ; c < numCHAN ; c++)
-  	for(int a = 0 ; a < numADDR ; a++)
-  	for(int s = 0 ; s < numSAMP ; s++){
-		waveformValid[d][c][a] = 0;
-		waveformArray[d][c][a][s] = 0;
-	}
-	return;
-}	
 
 //function loops through file buffers, extracts trigger bits from data packet and organizes by event
 void processBuffer(unsigned int *buffer_uint, int sizeInUint32){
@@ -271,7 +282,11 @@ void processBuffer(unsigned int *buffer_uint, int sizeInUint32){
     	// loop through entire file
 	for(int pos = 0 ; pos < sizeInUint32 ; pos++ )
 		parseDataPacket(buffer_uint,pos,sizeInUint32);
-		
+
+	saveWaveformArrayToTree();
+				//reset waveform array
+				//resetWaveformArray();
+
     	delete[] buffer_uint;
 	return;
 }	
@@ -281,11 +296,12 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 	//std::cout << std::hex << buffer_uint[bufPos] << std::dec;
 	//std::cout << std::endl;
 
-	unsigned int bitNum = 0;
 	unsigned int addrNum = 0;
+	unsigned int wraddrNum = 0;
 	unsigned int asicNum = 0;
 	unsigned int sampNum = 0;
 	unsigned int dataWord = 0;
+	unsigned int winNum=0;
 	unsigned int packetEventNum = 0;
 
 	//check for packet header
@@ -309,44 +325,65 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 		packetEventNum = ( buffer_uint[bufPos+5] & 0xFFFFFFFF );
 
 		//check if this is the first event packet
+		int old_currentEventNumber=0;
 		if( currentEventNumber == -1 ){
+			old_currentEventNumber=-1;
 			currentEventNumber = packetEventNum;
 			return;
 		}
 
 		//check if new event - if new event then save old event and reset waveform data storage
-		if( packetEventNum != currentEventNumber){
+		if( packetEventNum != currentEventNumber && old_currentEventNumber!=-1){
 			//save event
 			saveWaveformArrayToTree();
 			//reset waveform array
 			currentEventNumber = packetEventNum;
-			resetWaveformArray();
+			//resetWaveformArray();
 		}
 		return;
 	}
 
 	//check to see if window packet - should be the case at this point
 	//here starts a window of 4 windows for 16 channels
+	MBevent mbe;
 
+	if ((buffer_uint[bufPos+5]& 0xFF000000)!=0xFE000000) return;//some info on start of package and where rd/wr pointers where located
 	//at this point should have window data - loop over window data until encounter end of window packet
 	int count = 0,chanNum=0, offset=6;
+
+	if( (0xFF000000 & buffer_uint[bufPos+5]) == 0xFE000000 ){
+						std::cout << "\nHeader Val:" << std::hex << buffer_uint[bufPos+5] << std::dec << std::endl;
+						addrNum = ( (buffer_uint[bufPos+5] ) & 0x000001FF );
+						wraddrNum = ( (buffer_uint[bufPos+5] >> 9) & 0x000001FF );
+						asicNum = ( (buffer_uint[bufPos+5] >> 20) & 0x0000000F )-1;
+						std::cout << "\nDig Address, Wr addr, Asic: ";
+						std::cout << "\t" << addrNum;
+						std::cout << "\t" << wraddrNum;
+						std::cout << "\t" << asicNum;
+						//std::cout << "\t" << sampNum;
+						std::cout << std::endl;
+	}
+
 	while( (buffer_uint[bufPos+offset+count]& 0xFF000000)==0xBD000000){
 		//std::cout << std::hex << buffer_uint[bufPos+5+count] << std::dec;
 		
 		//Check for sample packet header
 
-			addrNum = ( (buffer_uint[bufPos+offset+count] >> 17) & 0x00000003 );
-			asicNum = 9;
 			chanNum = (buffer_uint[bufPos+offset+count]>>19) & 0x0000000F;
-			sampNum = (buffer_uint[bufPos+offset+count]>>12) & 0x0000001F;
+			winNum =  (buffer_uint[bufPos+offset+count]>>17) & 0x00000003 ;
+			sampNum = (buffer_uint[bufPos+offset+count]>>12) & 0x0000007F;
 			int BDval=(buffer_uint[bufPos+offset+count]>>24) & 0x000000FF;
-/*			std::cout << "\t" << asicNum;
-			std::cout << "\t" << chanNum;
-			std::cout << "\t" << addrNum;
-			std::cout << "\t" << sampNum;
-			std::cout << std::endl;
+	/*		std::cout << "\t" << count;
+			std::cout << ", " << asicNum;
+			std::cout << ", " << chanNum;
+			std::cout << ", " << addrNum;
+			std::cout << ", " << sampNum;
+			//std::cout << std::endl;
 */
-	
+			mbe.digwin=addrNum;
+			mbe.wrwin=wraddrNum;
+			mbe.dc=asicNum;
+
 		//check if errors
 		if( addrNum >= numADDR  || asicNum > numDC || sampNum >= numSAMP || BDval!=0xBD){
 			std::cout << "INVALID SAMPLE INFO, SKIPPING ";
@@ -361,14 +398,25 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 		}
 		
 		//check for sample packet data
+//if (chanNum==15)//only save ch 15 which is hooked to the scope
+{
+int sa_val=(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
+///int v2=0;for (int c=0;c<12;c++) v2=(v2<<1) | ((sa_val>>c) & 1);//reverse the bits if needed- no more
 
 			//at this point have sample bit word, save to waveform array
-				waveformValid[asicNum][chanNum][addrNum] = true;
-				waveformArray[asicNum][chanNum][addrNum][sampNum] =(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
+				mbe.samples[sampNum]=sa_val;
+				//waveformValid[asicNum][chanNum][addrNum] = true;
+				//waveformArray[asicNum][chanNum][addrNum][sampNum] =sa_val;//(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
+}
 
 		//increment position
 		count++;
 	}
+
+	mbe.isValid=true;
+	mbe.no=currentEventNumber;
+
+
 
 	return;
 }

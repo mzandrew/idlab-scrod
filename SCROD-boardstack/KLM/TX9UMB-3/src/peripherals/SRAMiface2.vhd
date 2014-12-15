@@ -137,7 +137,7 @@ if (rising_edge(clk )) then
 	--if(update_i ="01") then
 	if(update ='1' and update_i(0)='0') then
 		--ram_busy_i<=ram_busy;
-		dr<=dr_i;
+		--dr<=dr_i;
 		dw_i<=dw;
 	
 		busy_i<='1';
@@ -216,6 +216,7 @@ if (rising_edge(clk )) then
 	if(cnt_tRDOUT=tRDOUT) then
 		cnt_tRDOUT<=0;
 		dr_i<=IOr;
+		dr<=IOr;
 		next_state<=rWaitEnd;
 	else
 		cnt_tRDOUT<=cnt_tRDOUT+1;
