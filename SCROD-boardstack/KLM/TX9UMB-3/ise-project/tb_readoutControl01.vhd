@@ -129,29 +129,52 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
         );
     END COMPONENT;
  
- COMPONENT WaveformDemuxPedsubDSPBRAM
-    PORT(
-         clk : IN  std_logic;
-			enable : IN std_logic;
-         asic_no : IN  std_logic_vector(3 downto 0);
-         win_addr_start : IN  std_logic_vector(8 downto 0);
-         sr_start : IN  std_logic;
-			mode	: in std_logic_vector(1 downto 0);
-		
-			pswfifo_en 			:	out std_logic;
-			pswfifo_clk 		: 	out std_logic;
-			pswfifo_d 			: 	out std_logic_vector(31 downto 0);
-			
-         fifo_en : IN  std_logic;
-         fifo_clk : IN  std_logic;
-         fifo_din : IN  std_logic_vector(31 downto 0);
-         ram_addr : OUT  std_logic_vector(21 downto 0);
-         ram_data : IN  std_logic_vector(7 downto 0);
-         ram_update : OUT  std_logic;
-         ram_busy : IN  std_logic
-        );
-    END COMPONENT;
-	 
+	COMPONENT WaveformDemuxPedsubDSPBRAM
+	PORT(
+		clk : IN std_logic;
+		enable : IN std_logic;
+		SMP_MAIN_CNT : IN std_logic_vector(8 downto 0);
+		asic_no : IN std_logic_vector(3 downto 0);
+		win_addr_start : IN std_logic_vector(8 downto 0);
+		trigin : IN std_logic;
+		mode : IN std_logic_vector(1 downto 0);
+		calc_mode : in std_logic_vector(3 downto 0);
+
+		fifo_en : IN std_logic;
+		fifo_clk : IN std_logic;
+		fifo_din : IN std_logic_vector(31 downto 0);
+		ram_data : IN std_logic_vector(7 downto 0);
+		ram_busy : IN std_logic;          
+		pswfifo_en : OUT std_logic;
+		pswfifo_clk : OUT std_logic;
+		pswfifo_d : OUT std_logic_vector(31 downto 0);
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_update : OUT std_logic
+		);
+	END COMPONENT;
+
+
+	COMPONENT WaveformDemuxCalcPedsBRAM
+	PORT(
+		clk : IN std_logic;
+		reset : IN std_logic;
+		enable : IN std_logic;
+		navg : IN std_logic_vector(3 downto 0);
+		SMP_MAIN_CNT : IN std_logic_vector(8 downto 0);
+		asic_no : IN std_logic_vector(3 downto 0);
+		win_addr_start : IN std_logic_vector(8 downto 0);
+		trigin : IN std_logic;
+		fifo_en : IN std_logic;
+		fifo_clk : IN std_logic;
+		fifo_din : IN std_logic_vector(31 downto 0);
+		ram_busy : IN std_logic;          
+		busy : OUT std_logic;
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_data : OUT std_logic_vector(7 downto 0);
+		ram_update : OUT std_logic
+		);
+	END COMPONENT;
+ 	 
   COMPONENT SRAMscheduler
     PORT(
          clk : IN  std_logic;
@@ -171,26 +194,6 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
          OEb : OUT  std_logic
         );
     END COMPONENT;
-  COMPONENT WaveformDemuxCalcPedsBRAM
-	PORT(
-		clk : IN std_logic;
-		reset : IN std_logic;
-		enable : IN std_logic;
-		navg : IN std_logic_vector(3 downto 0);
-		asic_no : IN std_logic_vector(3 downto 0);
-					busy					 : out std_logic;
-
-		win_addr_start : IN std_logic_vector(8 downto 0);
-		trigin : IN std_logic;
-		fifo_en : IN std_logic;
-		fifo_clk : IN std_logic;
-		fifo_din : IN std_logic_vector(31 downto 0);
-		ram_busy : IN std_logic;          
-		ram_addr : OUT std_logic_vector(21 downto 0);
-		ram_data : OUT std_logic_vector(7 downto 0);
-		ram_update : OUT std_logic
-		);
-	END COMPONENT;
   
 	
 
@@ -201,7 +204,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    signal trig_delay : std_logic_vector(11 downto 0) := (others => '0');
    signal dig_offset : std_logic_vector(8 downto 0) := "000110100";--(others => '0');
    signal win_num_to_read : std_logic_vector(8 downto 0) := "000000100";
-   signal asic_enable_bits : std_logic_vector(9 downto 0) := "1000000000";
+   signal asic_enable_bits : std_logic_vector(9 downto 0) := "0000000010";
    signal SMP_MAIN_CNT : std_logic_vector(8 downto 0) := "001000000";
    signal SMP_IDLE_status : std_logic := '0';
    signal DIG_IDLE_status : std_logic := '1';
@@ -254,7 +257,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
    --signal EVENT_NUM : std_logic_vector(31 downto 0);
    signal READOUT_DONE : std_logic;
 
-	signal internal_cmdreg_readctrl_use_fixed_dig_start_win : std_logic_vector(15 downto 0):=(others => '0');
+	signal internal_cmdreg_readctrl_use_fixed_dig_start_win : std_logic_vector(15 downto 0):=x"8000" or x"0002";
 
 
    signal internal_ram_Ain : AddrArray;--:= (others => '0');
@@ -389,12 +392,15 @@ BEGIN
 		  
 		  uut_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
           clk => clk,
-			enable => '1',
+			enable => '0',
          asic_no => ASIC_NUM,
           win_addr_start => WIN_ADDR,
 			 mode=>"01",
+ 			 calc_mode =>x"1",
 
-          sr_start => LATCH_DONE,--srout_start,
+		SMP_MAIN_CNT=> SMP_MAIN_CNT,
+
+          trigin => LATCH_DONE,--srout_start,
           fifo_en => fifo_wr_en,
           fifo_clk => fifo_wr_clk,
           fifo_din => fifo_wr_din,
@@ -408,8 +414,9 @@ BEGIN
 	Inst_WaveformDemuxCalcPeds: WaveformDemuxCalcPedsBRAM PORT MAP(
 		clk => clk,
 		reset => PedCalcReset,
-		enable => '0',
-		navg => x"3",
+		enable => '1',
+		navg => x"2",
+		SMP_MAIN_CNT=> SMP_MAIN_CNT,
 		busy=>PedCalcBusy,
 		asic_no => ASIC_NUM,
 		win_addr_start =>WIN_ADDR ,
@@ -537,7 +544,9 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-      wait for clk_period*1;	
+	 internal_cmdreg_readctrl_use_fixed_dig_start_win <=x"8000" or x"01fe";
+
+      wait for clk_period*10;	
 		smp_reset<='1';
      wait for clk_period*1;	
 		smp_reset<='0';
@@ -548,7 +557,8 @@ PedCalcReset<='1';
 PedCalcReset<='0';
 		
 
-		wait for clk_period*10;
+		--wait for clk_period*10;
+		wait for 15.3 us+ 10 ns+ 1114 ns -448 ns + 288 ns -4 *16 ns -8*16 ns-40*16 ns;
 	trigger<='1';
       -- insert stimulus here 
       wait for clk_period*20;

@@ -1,0 +1,6 @@
+vhdl work "ipcore_dir/runctrl_fifo_wr16_rd32.vhd"
+vhdl work "../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
+vhdl work "../src/TARGETX_DAC_CONTROL.vhd"
+vhdl work "../src/readout_definitions.vhd"
+vhdl work "../src/KLMRunControl.vhd"
+vhdl work "../src/tb_klm_runctrl_01.vhd"

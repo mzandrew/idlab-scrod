@@ -1,0 +1,2 @@
+vhdl work "../src/SamplingLgc.vhd"
+vhdl work "tb_samplinglogic_new01.vhd"

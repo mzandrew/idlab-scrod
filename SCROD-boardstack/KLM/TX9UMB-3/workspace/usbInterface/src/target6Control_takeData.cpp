@@ -72,11 +72,12 @@ int main(int argc, char* argv[]){
 	control->registerWriteReadback(board_id, 10, 0, regValReadback); //stop sampling
 	usleep(10);
 */
-	int digOffset = 0;
+	int digOffset = 10;
 
 	//	control->registerWriteReadback(board_id, 11, 1, regValReadback); //Start sampling
 		control->registerWriteReadback(board_id, 20, 0, regValReadback); //Digitization OFF
 		control->registerWriteReadback(board_id, 30, 0, regValReadback); //Serial readout OFF
+		control->registerWriteReadback(board_id, 31, 0, regValReadback); //keep test pattern gen off
 		control->registerWriteReadback(board_id, 50, 0, regValReadback); //readout control start is 0
 		control->registerWrite(board_id, 44, 0, regValReadback); //Stop event builder
 		control->registerWrite(board_id, 45, 1, regValReadback); //Reset Event builder
@@ -89,13 +90,19 @@ int main(int argc, char* argv[]){
 		control->registerWriteReadback(board_id, 55, 0, regValReadback); //reset readout
 		control->registerWriteReadback(board_id, 56, 0, regValReadback); //select readout control module signals
 		control->registerWriteReadback(board_id, 57, 4, regValReadback); //set # of windows to read
-		control->registerWriteReadback(board_id, 62, 0x8000 | 120, regValReadback); //force start digitization start window to be the fixed value
+		control->registerWriteReadback(board_id, 62, 0x8000 | 320, regValReadback); //force start digitization start window to be the fixed value
 		control->registerWrite(board_id, 58, 0, regValReadback); //reset packet request
 		control->registerWrite(board_id, 72, 0x3FF, regValReadback); //enable trigger bits
 	//	control->registerWrite(board_id, 72, 0x000, regValReadback); //enable trigger bits
 		control->registerWrite(board_id, 61, 0xF00, regValReadback); //ramp length- working on 40us ish
 //		control->registerWrite(board_id,38,0b0000010000000000,regValReadback);//setting for using only the trig decision logic
-		control->registerWrite(board_id,38,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
+//		control->registerWrite(board_id,38,0b0001000000000010,regValReadback);//setting for using only the trig decision logic
+		control->registerWrite(board_id,38,0b0000000000000010,regValReadback);//setting for using only the trig decision logic
+		control->registerWrite(board_id,38,0b0000010000000010,regValReadback);//reset buffers
+		control->registerWrite(board_id,38,0b0000000000000010,regValReadback);//setting for using only the trig decision logic
+
+		control->registerWrite(board_id,38,0b0011000000000010,regValReadback);//setting for using only the trig decision logic
+//		control->registerWrite(board_id,38,0b0011000000000010,regValReadback);//setting for using only the trig decision logic
 		control->registerWrite(board_id,39,0b0000000000000000,regValReadback);//setting for using only the trig decision logic
 
 	//define output file		
@@ -103,10 +110,14 @@ int main(int argc, char* argv[]){
   	dataFile.open ("output_target6Control_takeData.dat", ios::out | ios::binary );
 
 	unsigned int eventdatabuf[65536];
-	int eventdataSize = 0;
-	int numIter = 0;
 
-	control->sendSamplingReset(board_id);
+	int eventdataSize = 0;
+  	control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
+  	cout<<eventdataSize;
+
+	int numIter = 0;
+usleep(1000);
+	//control->sendSamplingReset(board_id);
 
 	char ct = 0;
 	//while(ct != 'Q'){
@@ -149,7 +160,7 @@ int main(int argc, char* argv[]){
 	
 			//parse the data packet, look for event packets
 			control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
-		
+		cout<<" Attempt #: "<<numIter<<"\t"<<"packet size: "<<eventdataSize<<"\n";
 			//increment iterate count
 			numIter++;
 
@@ -160,8 +171,10 @@ int main(int argc, char* argv[]){
 				numSmall = 0;
 				control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
 			}
-			else
+			else{
 				numSmall++;
+			//control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
+				}
 		} //end while loop
 		//if( first == 0 )
 		//	std::cout << "\tRecorded waveform data" << std::endl;

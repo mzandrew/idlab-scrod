@@ -129,9 +129,9 @@ case st is
 	end if;
 	
 	when translate_addr =>
-	addrarr(0)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  & '0'))*3+0,22)) ;
-	addrarr(1)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  & '0'))*3+1,22)) ;
-	addrarr(2)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  & '0'))*3+2,22)) ;
+	addrarr(0)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  ))*3+0,22)) ;
+	addrarr(1)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  ))*3+1,22)) ;
+	addrarr(2)<=std_logic_vector(to_unsigned(to_integer(unsigned(addr_i(21 downto 1)  ))*3+2,22)) ;
 --	ram_dataw<=wbytes(23-8*idx downto 16-8*idx);
 --	ram_dataw<=wbytes(23 downto 16);
 	ram_rw<=rw_i;

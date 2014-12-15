@@ -134,7 +134,8 @@ if (clk'event and clk = '1') then
 	 WAVEFORM_FIFO_READ_ENABLE <= '1';
     BUFFER_FIFO_WR_EN 		<= '1';
 	 INTERNAL_COUNTER			<= INTERNAL_COUNTER + 1;
-    if( internal_WAVEFORM_FIFO_DATA_OUT = x"FACEFACE" OR INTERNAL_COUNTER >= x"01F0") then
+--    if( internal_WAVEFORM_FIFO_DATA_OUT = x"FACEFACE" OR INTERNAL_COUNTER >= x"01F0") then
+    if( internal_WAVEFORM_FIFO_DATA_OUT = x"FACEFACE" OR INTERNAL_COUNTER >= x"0FF0") then-- increased output buffer size due to larger packages per event (now reading 4 windows w each event)
 		next_state 	<= START_EVTBUILD;
     else
 		next_state 	<= Load;

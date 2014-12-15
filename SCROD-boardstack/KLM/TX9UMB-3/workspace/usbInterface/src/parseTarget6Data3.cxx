@@ -272,6 +272,11 @@ void processBuffer(unsigned int *buffer_uint, int sizeInUint32){
 	for(int pos = 0 ; pos < sizeInUint32 ; pos++ )
 		parseDataPacket(buffer_uint,pos,sizeInUint32);
 		
+	saveWaveformArrayToTree();
+				//reset waveform array
+			//	currentEventNumber = packetEventNum;
+				resetWaveformArray();
+
     	delete[] buffer_uint;
 	return;
 }	

@@ -1,4 +1,5 @@
 vhdl work "ipcore_dir/blk_mem_gen_v7_3.vhd"
+vhdl work "ipcore_dir/blkmem_pedcalc_tmp.vhd"
 vhdl work "../src/asic_interfaces/asic_definitions_irs2_carrier_revA.vhd"
 vhdl work "../src/readout_definitions.vhd"
 vhdl work "../src/peripherals/SRAMiface2.vhd"

@@ -51,16 +51,18 @@ TIMESPEC TS_SYS_CLK2X = PERIOD "SYS_CLK2X" TS_SYS_CLK / 2 HIGH 50%;
 #TIMESPEC "TS_LOCAL_CLOCK" = PERIOD "BOARD_CLOCK" 8 ns HIGH 50%;
 
 #PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug
-PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = true; #for chipscope debug
+#PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = false; #for chipscope debug
 #PIN "map_clock_gen/map_ASIC_CTRL_WILK_clock_bufg.O" CLOCK_DEDICATED_ROUTE = TRUE; #for chipscope debug
-PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = true; #for chipscope debug2
+#PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = false; #for chipscope debug2
 
 NET "map_clock_gen/CLOCK_ASIC_CTRL" TNM_NET = "ASIC_CLK";
-TIMESPEC TS_ASIC_CLK = PERIOD "ASIC_CLK" 15.7220 ns high 50%;
+#TIMESPEC TS_ASIC_CLK = PERIOD "ASIC_CLK" 15.7220 ns high 50%; # for FTSW derived clock
+TIMESPEC TS_ASIC_CLK = PERIOD "ASIC_CLK" 15.7213 ns high 50%; #for local board clock?
 
 NET "map_clock_gen/CLOCK_FPGA_LOGIC" TNM_NET = "FPGA_CLK";
-TIMESPEC TS_FPGA_CLK = PERIOD "FPGA_CLK" 15.7220 ns high 50%;
- 
+#TIMESPEC TS_FPGA_CLK = PERIOD "FPGA_CLK" 15.7220 ns high 50%; # for FTSW derived clock
+TIMESPEC TS_FPGA_CLK = PERIOD "FPGA_CLK" 15.7213 ns high 50%; #for local board clock?
+
 
 
 SYSTEM_JITTER=1000 ps;
@@ -94,7 +96,7 @@ TIMESPEC TS_CCD_SYS2TDC = FROM "SYS_CLK2X_GRP" TO "SYS_CLK_GRP" TS_SYS_CLK2X DAT
 #Diagnostics on LEDs (2.5 V and 3.3 V )- on the USB daughtercard which sits on MB RevB
 NET LEDS<0>  LOC=E1;# | IOSTANDARD = LVCMOS33; #LEDS<0>
 NET LEDS<1>  LOC=E2;# | IOSTANDARD = LVCMOS33; #LEDS<1>
-NET LEDS<2>  LOC=D1;# | IOSTANDARD = LVCMOS33; #LEDS<2>
+NET LEDS<2>  LOC=D1 | OUT_TERM=UNTUNED_50;# | IOSTANDARD = LVCMOS33; #LEDS<2>
 NET LEDS<3>  LOC=C1;# | IOSTANDARD = LVCMOS33; #LEDS<3>
 NET LEDS<4>  LOC=C2;# | IOSTANDARD = LVCMOS33; #LEDS<4>
 NET LEDS<5>  LOC=B1;# | IOSTANDARD = LVCMOS33; #LEDS<5>
@@ -324,7 +326,7 @@ NET BUSB_WR_ADDRCLR				LOC= M23;		# BUSB_WR_ADDRCLR,	J2_047_AB22
 NET BUS_REGCLR				LOC= M9;         
 
 NET EX_TRIGGER_MB		LOC= V10 ; #Goes to a 2.5 V Bank on teh FPGA                
-NET EX_TRIGGER_SCROD	LOC= D22 | IOSTANDARD = LVCMOS33;  	#The on scrod ex_trigger  
+NET EX_TRIGGER_SCROD	LOC= D22 | IOSTANDARD = LVCMOS33 | OUT_TERM=UNTUNED_50;  	#The on scrod ex_trigger  
 	   
 NET SCL_MON				LOC= A2    | IOSTANDARD = LVCMOS33;		# SCL_MON,	J3_021_H13_SCL0                          
 NET SDA_MON				LOC= A3    | IOSTANDARD = LVCMOS33;		# SDA_MON,	J3_023_F14_SDA0                          
