@@ -1,0 +1,27 @@
+-----------------------2014/12/15 summary:
+A) configuring:
+lsusb
+sudo chmod a+rw /dev/bus/usb/002/003
+depending on the application run either of the settings:
+workspace/sifi03/bin/KlmConfigure workspace/sifi03/settings/set3.xml
+or:
+workspace/sifi03/bin/KlmConfigure workspace/sifi03/settings/set2.xml
+or simply modify for your application
+
+Running trigger scaler tests: (from within workspace/sifi03)
+bin/KlmTestTriggers4 44
+the output will be in text format, which can be parsed and plotted using matlab scripts
+
+B) calculating pedestals for ASIC 9 (0 based):
+1. turn HV off,
+2. from within workspace/usbInterface run:
+bin/tx_onboard_pedcalc01 0 0 511 9
+
+C) taking data
+Data taking without realtime plots: 2000 events, hardware trigger, only from ASIC 9:
+bin/tx_takedatarecord1 2000 1 0 2 9 1
+
+Data taking and realtime plotting:
+bin/tx_takedataplot1 2000 1 0 2 9 1
+
+
