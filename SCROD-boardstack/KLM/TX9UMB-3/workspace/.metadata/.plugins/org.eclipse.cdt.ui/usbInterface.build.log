@@ -1,6 +1,7 @@
-12:27:34 **** Incremental Build of configuration Build (GNU) for project usbInterface ****
+16:08:09 **** Incremental Build of configuration Build (GNU) for project usbInterface ****
 make all 
-make: Nothing to be done for `all'.
+g++ -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-config --cflags `  -c src/parseTXPedSubData01.cxx -o work/parseTXPedSubData01.o
+g++ work/parseTXPedSubData01.o work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6DataClass.o -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs` -o bin/parseTXPedSubData01
 
-12:27:35 Build Finished (took 109ms)
+16:08:11 Build Finished (took 1s.391ms)
 

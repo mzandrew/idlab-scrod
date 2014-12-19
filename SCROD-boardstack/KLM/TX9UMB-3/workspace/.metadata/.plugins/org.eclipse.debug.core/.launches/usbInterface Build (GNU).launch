@@ -17,8 +17,8 @@
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="run"/>
 <booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="output_target6Control_takeData.dat -TPG"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="bin/parseTarget6Data2"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="output_target6Control_takeData.dat"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="bin/parseTarget6Data3"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="usbInterface"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="org.eclipse.linuxtools.cdt.autotools.core.toolChain.1266067"/>
