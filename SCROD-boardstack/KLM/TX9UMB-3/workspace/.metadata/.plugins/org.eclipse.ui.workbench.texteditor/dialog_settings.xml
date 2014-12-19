@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item value="309" key="DIALOG_WIDTH"/>
-		<item value="207" key="DIALOG_Y_ORIGIN"/>
-		<item value="501" key="DIALOG_HEIGHT"/>
+		<item value="295" key="DIALOG_WIDTH"/>
+		<item value="318" key="DIALOG_Y_ORIGIN"/>
+		<item value="420" key="DIALOG_HEIGHT"/>
 		<item value="989" key="DIALOG_X_ORIGIN"/>
-		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<item value="1|Sans|10.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
@@ -13,18 +13,19 @@
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="chno" key="selection"/>
+		<item value="nROI" key="selection"/>
 		<list key="findhistory">
-			<item value="chno"/>
-			<item value="ram"/>
-			<item value="digOffset"/>
-			<item value="FACE"/>
-			<item value="61"/>
-			<item value="printf"/>
-			<item value="cout"/>
-			<item value="waveformArray"/>
+			<item value="nROI"/>
+			<item value="eventNum"/>
+			<item value="GetEntry"/>
+			<item value="get"/>
+			<item value="POINTS_PER_WAVEFORM"/>
+			<item value="plotWaveformTreeFile"/>
+			<item value="numSAMP"/>
+			<item value="getOutputFileName"/>
 		</list>
 		<list key="replacehistory">
+			<item value="POINTS_PER_WAVEFORM2"/>
 			<item value=""/>
 		</list>
 	</section>
