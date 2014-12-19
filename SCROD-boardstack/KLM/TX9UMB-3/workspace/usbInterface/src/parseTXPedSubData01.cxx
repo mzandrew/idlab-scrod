@@ -29,7 +29,10 @@ const int numDC = 10;
 const int numCHAN = 16;//only channel 16 is needed- which is connected to the signal gen
 int ActiveChs[numCHAN]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 const int numADDR = 512;
-const int numSAMP = 32*2;
+const int numSAMP = 32*4;
+int evtSa[128][16];
+int evtCT[2][16];
+
 
 class MBevent
 {
@@ -53,7 +56,7 @@ public:
 int currentEventNumber;
 
 //Define output tree
-#define POINTS_PER_WAVEFORM    32*4
+#define POINTS_PER_WAVEFORM    32
 #define MEMORY_DEPTH           512
 #define NASICS                 10
 #define NCHS                   numCHAN //only 1 channel is being parsed
@@ -75,6 +78,7 @@ MBevent evts[MaxROI];
 
 //global TApplication object declared here for simplicity
 TApplication *theApp;
+FILE*of;
 
 //void parseTarget6Data(std::string inputFileName){
 int main(int argc, char* argv[]){
@@ -137,7 +141,7 @@ int main(int argc, char* argv[]){
 
 	//define output file name
 	TString outputFileName(getOutputFileName(inputFileName));
-	FILE*of=fopen("wave1.txt","wt");
+	of=fopen("wave1.txt","wt");
 
 	std::cout << " outputFileName " << outputFileName << std::endl;
 	TFile g(outputFileName , "RECREATE");
@@ -237,6 +241,26 @@ void saveWaveformArrayToTree(){
 	//loop over all ASICs/channels
 	eventNum = currentEventNumber;
 	Int_t ROI = 0;
+
+	for (int i=0;i<MaxROI; i++)
+	{
+		if (evts[i].isValid)
+		{
+			scrodId[ROI] = 0;
+			asicNum[ROI] = evts[i].dc;
+			asicCh[ROI] = evts[i].ch;
+			windowNum[ROI] = evts[i].digwin;
+			for(int s = 0 ; s < numSAMP ; s++)
+			{
+				samples[ROI][s] = s*10;//evts[i].samples[s];
+			}
+			ROI++;
+		}
+
+	}
+
+
+
     /*	for(int d = 0 ; d < numDC ; d++)
 	for(int c = 0 ; c < numCHAN ; c++)
   	for(int a = 0 ; a < numADDR ; a++){
@@ -296,6 +320,7 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 	//std::cout << std::hex << buffer_uint[bufPos] << std::dec;
 	//std::cout << std::endl;
 
+	static int curEvts=0;
 	unsigned int addrNum = 0;
 	unsigned int wraddrNum = 0;
 	unsigned int asicNum = 0;
@@ -345,7 +370,7 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 
 	//check to see if window packet - should be the case at this point
 	//here starts a window of 4 windows for 16 channels
-	MBevent mbe;
+	MBevent mbe[4];
 
 	if ((buffer_uint[bufPos+5]& 0xFF000000)!=0xFE000000) return;//some info on start of package and where rd/wr pointers where located
 	//at this point should have window data - loop over window data until encounter end of window packet
@@ -364,14 +389,15 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 						std::cout << std::endl;
 	}
 
-	while( (buffer_uint[bufPos+offset+count]& 0xFF000000)==0xBD000000){
+	while( (buffer_uint[bufPos+offset+count]& 0xFF000000)==0xBD000000  || (buffer_uint[bufPos+offset+count]& 0xFF000000)==0xCB000000){
 		//std::cout << std::hex << buffer_uint[bufPos+5+count] << std::dec;
 		
 		//Check for sample packet header
-
+		if ((buffer_uint[bufPos+offset+count]& 0xFF000000)==0xBD000000)
+		{
 			chanNum = (buffer_uint[bufPos+offset+count]>>19) & 0x0000000F;
 			winNum =  (buffer_uint[bufPos+offset+count]>>17) & 0x00000003 ;
-			sampNum = (buffer_uint[bufPos+offset+count]>>12) & 0x0000007F;
+			sampNum = (buffer_uint[bufPos+offset+count]>>12) & 0x0000001F;
 			int BDval=(buffer_uint[bufPos+offset+count]>>24) & 0x000000FF;
 	/*		std::cout << "\t" << count;
 			std::cout << ", " << asicNum;
@@ -380,9 +406,9 @@ void parseDataPacket(unsigned int *buffer_uint, int bufPos, int sizeInUint32){
 			std::cout << ", " << sampNum;
 			//std::cout << std::endl;
 */
-			mbe.digwin=addrNum;
-			mbe.wrwin=wraddrNum;
-			mbe.dc=asicNum;
+			mbe[winNum].digwin=addrNum+winNum;
+			mbe[winNum].wrwin=wraddrNum;
+			mbe[winNum].dc=asicNum;
 
 		//check if errors
 		if( addrNum >= numADDR  || asicNum > numDC || sampNum >= numSAMP || BDval!=0xBD){
@@ -404,17 +430,56 @@ int sa_val=(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
 ///int v2=0;for (int c=0;c<12;c++) v2=(v2<<1) | ((sa_val>>c) & 1);//reverse the bits if needed- no more
 
 			//at this point have sample bit word, save to waveform array
-				mbe.samples[sampNum]=sa_val;
+				mbe[winNum].samples[sampNum]=sa_val;
+				evtSa[winNum*32+sampNum][chanNum]=sa_val;
 				//waveformValid[asicNum][chanNum][addrNum] = true;
 				//waveformArray[asicNum][chanNum][addrNum][sampNum] =sa_val;//(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
 }
+	}
+		if ((buffer_uint[bufPos+offset+count]& 0xFF000000)==0xCB000000)
+		{
+			int k=(0x00F00000 & buffer_uint[bufPos+offset+count])>>20;
+			//	std::cout << "C&T Val:" << std::hex << eventdatabuf[j] << std::dec << std::endl;
+				evtCT[0][k]=buffer_uint[bufPos+offset+count]>>12 & 0x7F;
+				evtCT[1][k]=buffer_uint[bufPos+offset+count] & 0x0FFF;
+
+
+		}
+
 
 		//increment position
 		count++;
 	}
 
-	mbe.isValid=true;
-	mbe.no=currentEventNumber;
+	if (count>2000){
+
+		/*dump to text file for matlab laoding*/
+/*		for (int i=0;i<128;i++)
+		{
+			fprintf(of,"\n%d,%d",addrNum,i);
+			for (int c=0;c<16;c++)
+			{
+				fprintf(of,",%d",evtSa[i][c]);
+			}
+		}
+*/
+
+		fprintf(of,"\n%d,%d",addrNum,128);
+		for (int c=0;c<16;c++) fprintf(of,",%d",evtCT[0][c]);
+		fprintf(of,"\n%d,%d",addrNum,129);
+		for (int c=0;c<16;c++) fprintf(of,",%d",evtCT[1][c]);
+
+
+		for (int i=0;i<4;i++)
+		{
+			mbe[i].isValid=true;
+			mbe[i].no=currentEventNumber;
+			//evts[curEvts+i].Copy(mbe[i]);
+		}
+		//evts[curEvts].Copy(mbe[3]);
+
+		curEvts++;
+	}
 
 
 

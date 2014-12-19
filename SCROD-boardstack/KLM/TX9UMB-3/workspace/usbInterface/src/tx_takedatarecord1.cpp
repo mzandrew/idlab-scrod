@@ -165,7 +165,7 @@ int main(int argc, char* argv[]){
 			}
 
 			if(trigType == 1){
-				control->registerWrite(board_id,39,1<<15 | 0b11111111111,regValReadback);//setting for using only the trig decision logic
+				control->registerWrite(board_id,39,1<<15 | asic[ASICno],regValReadback);//setting for using only the trig decision logic. also mask the not needed ASICs so they wont trigger.
 				//cout<<"\nWaiting for SiPM Trigger...";
 				usleep(10000);
 				//control->registerWrite(board_id,39,0,regValReadback);//setting for using only the trig decision logic
