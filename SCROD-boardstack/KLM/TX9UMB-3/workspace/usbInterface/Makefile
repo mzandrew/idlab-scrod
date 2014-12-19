@@ -2,7 +2,8 @@ COMPILE_FLAGS = -Isrc/lib -I/usr/include/libusb-1.0 -DUSE_USB -DDEBUG -g `root-c
 LINK_OPTIONS = -L/usr/lib/i386-linux-gnu -lusb-1.0 -DDEBUG -g `root-config --glibs`
 
 # things we always need built:
-FINAL_OBJECT_FILES = bin/target6Control_readReg bin/target6Control_writeReg bin/target6Control_writeDacReg bin/target6Control_writeDefaultDacRegs bin/target6Control_test bin/target6Control_testTrigger bin/target6Control_takeData bin/target6Control_takeAndPlotData bin/parseTarget6Data bin/parseTarget6Data3 bin/target6Data_viewWaveformTree bin/target6Data_measurePedestals bin/target6Data_makeHitTree bin/target6Control_RAMtest01 bin/SCRODA4_RAMtest02 bin/SCRODA4_RAMpattern01 bin/tx_onboard_pedcalc01 bin/parseTXPedSubData01 bin/tx_takedataplot1 bin/tx_takedatarecord1 
+FINAL_OBJECT_FILES = bin/target6Control_readReg bin/target6Control_writeReg bin/target6Control_writeDacReg bin/target6Control_writeDefaultDacRegs bin/target6Control_test bin/target6Control_testTrigger bin/target6Control_takeData bin/target6Control_takeAndPlotData bin/parseTarget6Data bin/parseTarget6Data3 bin/target6Data_viewWaveformTree bin/target6Data_measurePedestals bin/target6Data_makeHitTree bin/target6Control_RAMtest01 bin/SCRODA4_RAMtest02 bin/SCRODA4_RAMpattern01 bin/tx_onboard_pedcalc01 bin/parseTXPedSubData01 bin/tx_takedataplot1 bin/tx_takedatarecord1 bin/tx_plotdata1
+
 
 # needed to link all:
 INTERMEDIATE_OBJECT_FILES = work/generic.o work/io_interface.o work/idl_usb.o work/packet_interface.o work/target6ControlClass.o work/target6ControlClass.o work/target6DataClass.o
@@ -65,6 +66,8 @@ bin/parseTXPedSubData01	: work/parseTXPedSubData01.o $(INTERMEDIATE_OBJECT_FILES
 bin/tx_takedataplot1 : work/tx_takedataplot1.o $(INTERMEDIATE_OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
 
 bin/tx_takedatarecord1 : work/tx_takedatarecord1.o $(INTERMEDIATE_OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
+
+bin/tx_plotdata1 : work/tx_plotdata1.o $(INTERMEDIATE_OBJECT_FILES) ; g++ $^ $(LINK_OPTIONS) -o $@
 
 clean: 
 	-rm -rf work/* bin/*

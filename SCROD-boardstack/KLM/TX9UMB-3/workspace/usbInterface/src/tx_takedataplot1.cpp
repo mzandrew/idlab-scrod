@@ -8,6 +8,8 @@
 #include <fstream>
 
 #include <TGraph.h>
+#include <TLegend.h>
+#include <TLatex.h>
 #include <TMultiGraph.h>
 #include <TH1.h>
 #include "TApplication.h"
@@ -93,7 +95,10 @@ int main(int argc, char* argv[]){
 	TH1F *hSampDist = new TH1F("hSampDist","",110,3000,4100);
 	TMultiGraph *mg = new TMultiGraph();
 	  mg->SetTitle("Exclusion graphs");
-
+		TLegend* leg = new TLegend(0.1,0.7,0.48,0.9);
+		TLatex ltxt;
+		ltxt.SetTextSize(0.025);
+		ltxt.SetTextAngle(0.);
 	//Initialize
 	control->sendSamplingReset(board_id);
 
@@ -142,21 +147,23 @@ int main(int argc, char* argv[]){
 	unsigned int eventdatabuf[65536];
 	int eventdataSize = 0;
 	int numIter = 0;
-	int samples[10][512][32];
-	int PeakC=0,PeakT=0;
+	int samples[10][16][4][32];
+	int PeakC[16],PeakT[16];
 
-	TGraph *gPlot[10];
-	for(int a = 0 ; a < 10 ; a++){
-		gPlot[a] = new TGraph();
+	TGraph *gPlot[10][16];
+	TGraph *pPlot[16];//t=new TGraph();
+	for(int a = 0 ; a < 10 ; a++)
+		for (int k=0;k<16;k++) {
+		gPlot[a][k] = new TGraph();
 			//numPoint[a] = 0;
-			gPlot[a]->SetMarkerColor(2);
-			gPlot[a]->SetMarkerStyle(1);
-			gPlot[a]->SetMarkerSize(5.5);
-			gPlot[a]->SetLineStyle(1);
-			gPlot[a]->SetLineColor(1);
-			gPlot[a]->SetLineWidth(3);
+			gPlot[a][k]->SetMarkerColor(2);
+			gPlot[a][k]->SetMarkerStyle(1);
+			gPlot[a][k]->SetMarkerSize(5.5);
+			gPlot[a][k]->SetLineStyle(1);
+			gPlot[a][k]->SetLineColor(1);
+			gPlot[a][k]->SetLineWidth(3);
 	}
-	TGraph *pPlot=new TGraph();
+	for (int k=0;k<16;k++) pPlot[k]=new TGraph();
 
 
 	unsigned int bitNum = 0;
@@ -184,7 +191,7 @@ int main(int argc, char* argv[]){
 			}
 
 			if(trigType == 1){
-				control->registerWrite(board_id,39,1<<15 | 0b11111111111,regValReadback);//setting for using only the trig decision logic
+				control->registerWrite(board_id,39,1<<15 | asic[ASICno],regValReadback);//setting for using only the trig decision logic and mask not needed ASICs
 				//cout<<"\nWaiting for SiPM Trigger...";
 				usleep(10000);
 				//control->registerWrite(board_id,39,0,regValReadback);//setting for using only the trig decision logic
@@ -195,9 +202,10 @@ int main(int argc, char* argv[]){
 		usleep(50000);
 
   		for(int a = 0 ; a < 10 ; a++)
+  	 	for(int k = 0 ; k < 16 ; k++)
   		for(int i = 0 ; i < 512 ; i++)
   		for(int j = 0 ; j < 32 ; j++)
-			samples[a][i][j] = -10000;
+			samples[a][k][i][j] = -10000;
 
 		int first = 1;
 		int numSmall = 0;
@@ -205,13 +213,13 @@ int main(int argc, char* argv[]){
 		int nData=0;
 		int EVTvalid=false;
 
-		while( (eventdataSize > 100 || numSmall < 3 ) && numIter < 25 ){
+		while( (eventdataSize > 100 || numSmall < 10 ) && numIter < 25 ){
 		//while( numIter < 4){
 			//delay, just in case readout is still in progress
 
 			control->continueReadout(board_id);
 
-			//usleep(1000);
+			usleep(10000);
 	
 			//parse the data packet, look for event packets
 			control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
@@ -223,10 +231,12 @@ int main(int argc, char* argv[]){
 			//save data to file
 			//myfile.write(reinterpret_cast<char*>(&eventdatabuf), eventdataSize*sizeof(unsigned int));
 			if( eventdataSize > 100 ){
+				control->registerWrite(board_id,39,0,regValReadback);//setting for using only the trig decision logic
 				first = 0;
 				numSmall = 0;
 				control->writeEventToFile(eventdatabuf, eventdataSize, dataFile );
 				std::cout << "EVENT SIZE " << eventdataSize << ", Event Num="<<nEvt<<std::endl;
+
 				EVTvalid=true;
 				nEvt++;
 			}
@@ -263,11 +273,11 @@ if (EVTvalid=true){
 					nData++;
 					continue;
 				}
-				if( (0xFFF00000 & eventdatabuf[j]) == (0xCB000000 | 0x0<<20)){
-
-					std::cout << "C&T Val:" << std::hex << eventdatabuf[j] << std::dec << std::endl;
-					PeakT=eventdatabuf[j]>>12 & 0x7F;
-					PeakC=eventdatabuf[j] & 0x0FFF;
+				if( (0xFF000000 & eventdatabuf[j]) == 0xCB000000 ){
+					int k=(0x00F00000 & eventdatabuf[j])>>20;
+				//	std::cout << "C&T Val:" << std::hex << eventdatabuf[j] << std::dec << std::endl;
+					PeakT[k]=eventdatabuf[j]>>12 & 0x7F;
+					PeakC[k]=eventdatabuf[j] & 0x0FFF;
 					nData++;
 					continue;
 				}
@@ -291,10 +301,10 @@ if (EVTvalid=true){
 				if( addrNum < 0 || addrNum+winNum > 511  || sampNum < 0 || sampNum > 31 || asicNum < 1 || asicNum > 10 )
 					continue;
 				//samples[sampNum] = (samples[sampNum] | (((eventdatabuf[j] >> 15) & 0x1) <<bitNum) );
-				if (chanNum==0)
+//				if (chanNum==0)
 				{
 					int samp=eventdatabuf[j] & 0x00000FFF;
-					samples[asicNum][addrNum+winNum][sampNum] = samp-3400*(opmode==pedsub);
+					samples[asicNum][chanNum][winNum][sampNum] = samp-3400*(opmode==pedsub);
 					nData++;
 				}
 
@@ -314,44 +324,67 @@ if (EVTvalid=true){
 		if (nData==0) continue;
 
 
-		int numPoint[10];
-		for(int a = 0 ; a < 10 ; a++){
-			numPoint[a] = 0;
-  			gPlot[a]->SetMarkerColor(2);
-  			gPlot[a]->SetMarkerStyle(20);
-  			gPlot[a]->SetMarkerSize(0.6);
-  			gPlot[a]->SetLineStyle(1);
-  			gPlot[a]->SetLineColor(1);
-  			gPlot[a]->SetLineWidth(2);
+		int numPoint[10][16];
+		for(int a = 0 ; a < 10 ; a++)
+		for(int k = 0 ; k < 16 ; k++){
+			numPoint[a][k] = 0;
+  			gPlot[a][k]->SetMarkerColor(2);
+  			gPlot[a][k]->SetMarkerStyle(20);
+  			gPlot[a][k]->SetMarkerSize(0.6);
+  			gPlot[a][k]->SetLineStyle(1);
+  			gPlot[a][k]->SetLineColor(k+1);
+  			gPlot[a][k]->SetLineWidth(2);
 		}		
 
 		//plot samples
 
 		for(int a = 0 ; a < 10 ; a++)
-		for(int i = 0 ; i < 512 ; i++)
+		for(int k = 0 ; k < 16 ; k++)
+		for(int i = 0 ; i < 4 ; i++)
 		for(int j = 0 ; j < 32 ; j++){
-			if( samples[a][i][j] != -10000){
+			if( samples[a][k][i][j] != -10000){
 			//if(1){
 				//std::cout << std::dec << samples[i][j] << std::endl;
-				gPlot[a]->SetPoint(numPoint[a],32*i + j,samples[a][i][j]);
-				numPoint[a]++;
+				gPlot[a][k]->SetPoint(numPoint[a][k],32*(i+addrNum) + j,samples[a][k][i][j]);
+				numPoint[a][k]++;
 			}
   		}
 
-		pPlot->SetMarkerColor(4);
-		pPlot->SetMarkerStyle(20);
-		pPlot->SetMarkerSize(1.5);
-		pPlot->SetPoint(0,PeakT+addrNum*32,PeakC-3400*(opmode==pedsub));
+			leg->Clear();
+
+		for(int k = 0 ; k < 16 ; k++)
+		{
+			pPlot[k]->SetMarkerColor(4);
+			pPlot[k]->SetMarkerStyle(1+k);
+			pPlot[k]->SetMarkerSize(1.5);
+			pPlot[k]->SetPoint(0,PeakT[k]+addrNum*32,PeakC[k]-3400*(opmode==pedsub));
+		}
 
 
 		//gPlot[9]->GetYaxis()->SetRangeUser(0,4100);
 		mg->Clear();
-		mg->Add(gPlot[asicNum]);
-		mg->Add(pPlot);
-		mg->SetMinimum(-2100.);mg->SetMaximum(2100.);
+		for (int k=0;k<16;k++)
+		{
+		mg->Add(gPlot[asicNum][k]);
+		mg->Add(pPlot[k]);
+		}
+		mg->SetMinimum(-2100.);mg->SetMaximum(200.);
 		if (opmode!=pedsub) {mg->SetMinimum(-0000.);mg->SetMaximum(4200.);}
 
 		mg->Draw("APL");
+
+		for (int k=0;k<16;k++) ltxt.DrawLatex(PeakT[k]+addrNum*32+k/2,PeakC[k]+k/2-3400*(opmode==pedsub),Form("%X",k));
+
+
+/*		for(int k = 0 ; k < 16 ; k++)
+		{
+			leg->AddEntry(pPlot[k],"Ch","l");
+		}
+
+		leg->SetHeader("Channels");
+		leg->Draw();
+*/
+
 
 		mg->GetXaxis()->SetTitle("Sample Number");
 		mg->GetXaxis()->SetLimits(addrNum*32,addrNum*32+4*32);
