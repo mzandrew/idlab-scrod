@@ -59,6 +59,10 @@ port(
 		  fifo_clk		 : in  std_logic;
 		  fifo_din		 : in  std_logic_vector(31 downto 0);
 		  
+		  --trig bram access
+		  trig_bram_addr	: out std_logic_vector(8 downto 0);
+		  trig_bram_data	: in  std_logic_vector(49 downto 0);
+		  
 		  -- 12 bit Pedestal RAM Access: only for reading pedestals
 		   ram_addr 	: OUT  std_logic_vector(21 downto 0);
          ram_data 	: IN  std_logic_vector(7 downto 0);
@@ -163,6 +167,13 @@ signal wav_doutb		: STD_LOGIC_VECTOR(11 DOWNTO 0):=x"000";
 signal wav_bram_addra	: std_logic_vector(10 downto 0):="00000000000";
 signal wav_bram_addrb	: std_logic_vector(10 downto 0):="00000000000";
 
+signal trgrec	: std_logic_vector(19 downto 0):=(others=>'0');--a snapshot of the trigger bits for the ASIC of interest: 19 downto 15 is DigWin, 14 downto 10 is DigWin+1, 9 downto 5 is DigWin+2, 4 downto 0 is DigWin+3
+
+signal trig_bram_cnt: integer :=0;
+signal trig_bram_start_addr_i :integer:=0;--(8 downto 0):=(others=>'0');
+signal trig_asic_no_i : integer :=0;
+
+
 signal sapedsub	:unsigned(12 downto 0):=(others=> '0');
 signal samem		: WaveUnsignedTempArray:=(others=> x"000");
 signal ct_lpv		: WaveUnsignedTempArray:=(others=> x"000");
@@ -213,6 +224,7 @@ pedsub_sub1,
 pedsub_sub2,
 pedsub_dumpct,
 pedsub_dumpct2,
+pedsub_dump_trigrec,
 pedsub_dumpfooter,
 pedsub_dumpfooter2
 );
@@ -227,6 +239,17 @@ st_tmp2bram_store2
 );
 
 signal st_tmp2bram				: tmp_to_bram_state:=st_tmp2bram_waitstart;
+
+type trig_rec_state is
+(
+trg_rec_idle,
+trg_rec_win0,
+trg_rec_win1,
+trg_rec_win2,
+trg_rec_win3
+);
+
+signal st_trgrec		: trig_rec_state:=trg_rec_idle;
 
 
 begin
@@ -311,6 +334,55 @@ end process;
 
 process(clk) -- pedestal fetch
 begin
+
+if (rising_edge(clk)) then
+-- take care of trigger 
+case st_trgrec is
+
+	when trg_rec_idle =>
+		trgrec<=trgrec;
+		trig_bram_cnt<=0;
+		if (trigin_i(25 downto 24)="01") then
+			trig_bram_start_addr_i<=to_integer(unsigned(win_addr_start));
+			trig_asic_no_i<=to_integer(unsigned(asic_no));
+			st_trgrec<=trg_rec_win0;
+		else
+			st_trgrec<=trg_rec_idle;
+		end if;
+
+	when trg_rec_win0 =>	
+		trgrec<=trgrec;
+		trig_bram_addr<=std_logic_vector(to_unsigned(trig_bram_start_addr_i+trig_bram_cnt,9));
+		st_trgrec<=trg_rec_win1;
+		
+	when trg_rec_win1 =>
+		trgrec<=trgrec;
+		st_trgrec<=trg_rec_win2;
+
+	when trg_rec_win2 =>
+		trgrec((trig_bram_cnt*5+4) downto (trig_bram_cnt*5))<=trig_bram_data((trig_asic_no_i*5-1) downto (trig_asic_no_i*5-5));
+		trig_bram_cnt<=trig_bram_cnt+1;
+		st_trgrec<=trg_rec_win3;
+
+	when trg_rec_win3 =>
+		trgrec<=trgrec;
+		if (trig_bram_cnt = 5) then
+			st_trgrec<=trg_rec_idle;
+		else
+			st_trgrec<=trg_rec_win0;
+		end if;
+			
+		
+
+end case;
+
+
+end if;
+
+
+
+
+
 
 if (rising_edge(clk)) then
 
@@ -610,7 +682,7 @@ when pedsub_dumpct=>
 		if (ct_cnt<16) then
 			pedsub_st<=pedsub_dumpct2;
 		else
-			pedsub_st<=pedsub_dumpfooter;
+			pedsub_st<=pedsub_dump_trigrec;
 		end if;
 		
 when pedsub_dumpct2=>
@@ -618,6 +690,11 @@ when pedsub_dumpct2=>
 		ct_cnt<=ct_cnt+1;
 		pswfifo_en<='1';
 		pedsub_st<=pedsub_dumpct;
+
+when pedsub_dump_trigrec =>
+		pswfifo_d<=x"CF" & std_logic_vector(to_unsigned(dmx_asic,4)) & trgrec;
+		pswfifo_en<='1';
+		pedsub_st<=pedsub_dumpfooter;
 
 when pedsub_dumpfooter=>
 		pswfifo_en<='1';
