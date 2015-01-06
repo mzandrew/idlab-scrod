@@ -323,8 +323,17 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_READ_ENABLE_TIMER : std_logic_vector (9 downto 0);
 	signal internal_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here
 	signal internal_TXDCTRIG16 : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
-	signal internal_TXDCTRIG_buf : tb_vec_type;-- All triger bits from all ASICs are here
-	signal internal_TXDCTRIG16_buf : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
+--	signal internal_TXDCTRIG_buf : tb_vec_type;-- All triger bits from all ASICs are here
+--	signal internal_TXDCTRIG16_buf : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
+	
+	signal internal_SMP_EXTSYNC	: std_logic:='0';
+	
+	
+	signal internal_TRIG_BRAM_WE	:	std_logic:='0';
+	signal internal_TRIG_BRAM_WEA	:	std_logic_vector(0 downto 0):="0";
+   signal internal_TRIG_BRAM_ADDR:	std_logic_vector(8 downto 0) :=(others=>'0');
+   signal internal_TRIG_BRAM_DATA:	std_logic_vector(49 downto 0) :=(others=>'0');
+	
 	
 	--ASIC DAC CONTROL
 	signal internal_DAC_CONTROL_UPDATE : std_logic := '0';
@@ -576,6 +585,17 @@ signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0
 	);
 	END COMPONENT;
 	
+COMPONENT txtrig_bram
+  PORT (
+    clka : IN STD_LOGIC;
+    wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    addra : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    dina : IN STD_LOGIC_VECTOR(49 DOWNTO 0);
+    clkb : IN STD_LOGIC;
+    addrb : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+    doutb : OUT STD_LOGIC_VECTOR(49 DOWNTO 0)
+  );
+END COMPONENT;	
 	
 	 COMPONENT SRAMscheduler
     PORT(
@@ -611,13 +631,18 @@ signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0
 		fifo_en : IN std_logic;
 		fifo_clk : IN std_logic;
 		fifo_din : IN std_logic_vector(31 downto 0);
-		ram_data : IN std_logic_vector(7 downto 0);
-		ram_busy : IN std_logic;          
+	
 		pswfifo_en : OUT std_logic;
 		pswfifo_clk : OUT std_logic;
 		pswfifo_d : OUT std_logic_vector(31 downto 0);
-		ram_addr : OUT std_logic_vector(21 downto 0);
-		ram_update : OUT std_logic
+		  trig_bram_addr	: out std_logic_vector(8 downto 0);
+		  trig_bram_data	: in  std_logic_vector(49 downto 0);
+		  
+		  -- 12 bit Pedestal RAM Access: only for reading pedestals
+		   ram_addr 	: OUT  std_logic_vector(21 downto 0);
+         ram_data 	: IN  std_logic_vector(7 downto 0);
+         ram_update 	: OUT  std_logic;
+         ram_busy 	: IN  std_logic
 		);
 	END COMPONENT;
 
@@ -647,6 +672,7 @@ signal internal_CMGREG_TRIG_SCALER_CLK_MAX_TRIGDEC	:std_logic_vector(15 downto 0
 
 	COMPONENT TrigDecisionLogic
 	PORT(
+		clk :in std_logic;
 		tb : IN tb_vec_type;
 		tm : in std_logic_vector(10 downto 1);-- mask
 		TrigOut : OUT std_logic;
@@ -1281,6 +1307,7 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
 	i_TrigDecisionLogic: TrigDecisionLogic PORT MAP(
+		clk=>internal_CLOCK_FPGA_LOGIC,
 		tb => internal_TXDCTRIG,
 		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
 		TrigOut => internal_TRIGDEC_trig,
@@ -1316,12 +1343,20 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 	
 	--LEDS(0)<=internal_TRIGGER_ALL;-- scope probe here
 	LEDS(1)<=internal_READCTRL_trigger;
-	EX_TRIGGER_SCROD<= (not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
-				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8)); -- pulse goes up at window=511
+	internal_SMP_EXTSYNC<= '1' when internal_SMP_MAIN_CNT="000000000" else
+								  '1' when internal_SMP_MAIN_CNT="000000001" else
+								  '1' when internal_SMP_MAIN_CNT="000000010" else
+								  '1' when internal_SMP_MAIN_CNT="000000011" else
+								  '1' when internal_SMP_MAIN_CNT="000000100" else
+								  '1' when internal_SMP_MAIN_CNT="000000101" else
+								  '0' ;
+								  
+	EX_TRIGGER_SCROD<= internal_SMP_EXTSYNC;--(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
+--				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8)); -- pulse goes up at window=511
 	LEDS(0)<=internal_TRIGDEC_trig;--'0';-- this is for generating a temporary GDL L1 trigger
 	LEDS(12)<=internal_SMP_MAIN_CNT(0);
-	LEDS(2)<=(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
-				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8));
+	LEDS(2)<=internal_SMP_EXTSYNC;--(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
+--				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8));
 
 	--LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
@@ -1344,10 +1379,14 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 			pswfifo_clk =>internal_pswfifo_clk,
 			pswfifo_en=>internal_pswfifo_en,
 
+		  trig_bram_addr => internal_trig_bram_addr,
+		  trig_bram_data => internal_trig_bram_data,
+
           ram_addr => internal_ram_Ain(2),
           ram_data => internal_ram_DRout(2),
           ram_update => internal_ram_update(2),
           ram_busy => internal_ram_busy(2)
+
         );
 	
 	
@@ -1378,6 +1417,19 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 		
 		internal_ram_rw(3)<='1';-- always write to this channel	
 	
+	internal_TRIG_BRAM_WEA(0) <= internal_TRIG_BRAM_WE and internal_WR_ENA;
+
+u_txtrg_bram: txtrig_bram
+  PORT MAP (
+    clka => internal_CLOCK_ASIC_CTRL,
+    wea => internal_TRIG_BRAM_WEA,
+    addra => internal_SMP_MAIN_CNT,
+    dina => internal_TXDCTRIG(10) & internal_TXDCTRIG(9) & internal_TXDCTRIG(8) & internal_TXDCTRIG(7) & internal_TXDCTRIG(6)
+	       & internal_TXDCTRIG(5) & internal_TXDCTRIG(4) & internal_TXDCTRIG(3) & internal_TXDCTRIG(2) & internal_TXDCTRIG(1),
+    clkb => internal_CLOCK_ASIC_CTRL,
+    addrb => internal_TRIG_BRAM_ADDR,
+    doutb => internal_TRIG_BRAM_DATA
+  );	
 	
 	--sampling logic - specifically SSPIN/SSTIN + write address control
 	u_SamplingLgc : entity work.SamplingLgc
@@ -1387,6 +1439,7 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 		dig_win_start => internal_READCTRL_dig_win_start,
 		dig_win_n => internal_READCTRL_win_num_to_read,-- "00100",
       dig_win_ena => not internal_DIG_IDLE_status,--internal_READCTRL_busy_status,
+		trigram_wea=>internal_TRIG_BRAM_WE,
 		MAIN_CNT_out => internal_SMP_MAIN_CNT,
 		sstin_out 	=> internal_SSTIN,-- GV: 6/9/14 we do not want to shut down this part of the chip!
 		wr_addrclr_out => internal_WR_ADDRCLR,

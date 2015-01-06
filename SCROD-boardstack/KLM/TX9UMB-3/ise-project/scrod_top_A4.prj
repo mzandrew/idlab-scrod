@@ -1,6 +1,7 @@
 vhdl work "ipcore_dir/asic_fpga_clock_gen_core.vhd"
 vhdl work "ipcore_dir/blk_mem_gen_v7_3.vhd"
 vhdl work "ipcore_dir/blkmem_pedcalc_tmp.vhd"
+vhdl work "ipcore_dir/txtrig_bram.vhd"
 vhdl work "../src/KLM_SCROD_baseline/time_order/source/time_order_pkg.vhd"
 vhdl work "../src/aurora_interfaces/base_resources/aurora_interface_0_aurora_pkg.vhd"
 vhdl work "../src/KLM_SCROD_baseline/time_order/source/tom_2_to_1.vhd"

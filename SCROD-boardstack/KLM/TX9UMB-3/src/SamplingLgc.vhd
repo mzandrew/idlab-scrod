@@ -16,6 +16,7 @@ entity SamplingLgc is
 			
 			MAIN_CNT_out			: out   std_logic_vector(8 downto 0); --COL & ROW write address- we just need this to keep track of the last sample taken
 			sstin_out            : out   std_logic; --SCA control signals
+			trigram_wea				: out std_logic;
 			wr_addrclr_out			: out   std_logic;-- write address clear: when asserted, it will reset the row and col on the TX chip
 			wr1_ena					: out   std_logic; --Enable Write 1 procedure
 			wr2_ena              : out   std_logic  --Enable Write 2 procedure
@@ -112,6 +113,7 @@ if (rising_edge(clk)) then
  
    wr_ena<=not dig_win_ena;
 
+--	trigram_wea<='0';
 
  Case next_state is
   
@@ -119,6 +121,7 @@ if (rising_edge(clk)) then
   When resetting =>
 	 --keep wr_addrclr high for afew clock cycles.
 	 wr_addrclr<='1';
+	 		trigram_wea<='0';
 	 started_cntr<=started_cntr+1;
 	 if (started_cntr=4) then 
 	 started_cntr<=0;
@@ -128,6 +131,7 @@ if (rising_edge(clk)) then
 	 next_state<=sampling;
 	 else
 	 next_state<=resetting;
+
    end if;
 	 
 	--Sampling
@@ -135,7 +139,13 @@ if (rising_edge(clk)) then
    --wr_ena<='1';
 	if (clk_cntr="01" or clk_cntr="11") then 
 		MAIN_CNT<=MAIN_CNT+1;
+		trigram_wea<='1';
+	else
+		MAIN_CNT<=MAIN_CNT;
+		trigram_wea<='0';
 	end if;
+	next_state<=sampling;
+
 	
   When Others =>
   MAIN_CNT <= (Others => '0');

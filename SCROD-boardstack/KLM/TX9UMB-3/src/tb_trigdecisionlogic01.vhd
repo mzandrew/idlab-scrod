@@ -42,7 +42,10 @@ ARCHITECTURE behavior OF tb_trigdecisionlogic01 IS
  
     COMPONENT TrigDecisionLogic
     PORT(
+			clk : in std_logic;
          tb : IN  tb_vec_type;
+			  tm : in std_logic_vector(10 downto 1);-- mask
+			
          TrigOut : OUT  std_logic;
          asicX : OUT  std_logic_vector(2 downto 0);
          asicY : OUT  std_logic_vector(2 downto 0)
@@ -66,7 +69,9 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: TrigDecisionLogic PORT MAP (
+			 clk=>clk,
           tb => tb,
+			 tm=>"1111111111",
           TrigOut => TrigOut,
           asicX => asicX,
           asicY => asicY

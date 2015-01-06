@@ -77,6 +77,7 @@ architecture Behavioral of ReadoutControl is
 type SmpClk_state_type is
 	(
 	Idle,
+	WaitWritePointerSafe,
 	WaitReset
 	);
 signal next_SmpClk_state	: SmpClk_state_type;
@@ -150,6 +151,7 @@ signal win_start_i : integer;
 signal win_end_i : integer;
 signal SMP_MAIN_CNT_i : std_logic_vector(8 downto 0);
 signal SMP_MAIN_CNT_carry_i: std_logic_vector(9 downto 0);
+signal internal_LATCH_DONE_TRIG_CLEAR:std_logic:='0';
 
 begin
 
@@ -195,6 +197,19 @@ end process;
 process(smp_clk)
 begin
 if (smp_clk'event and smp_clk = '1') then
+
+	SMP_MAIN_CNT_i<=SMP_MAIN_CNT;
+	if (SMP_MAIN_CNT_carry_i(9)='0') then
+		SMP_MAIN_CNT_carry_i(9)<=(not SMP_MAIN_CNT_i(0)) and (not SMP_MAIN_CNT_i(1)) and (not SMP_MAIN_CNT_i(2)) and (not SMP_MAIN_CNT_i(3))
+								 and (not SMP_MAIN_CNT_i(4)) and (not SMP_MAIN_CNT_i(5)) and (not SMP_MAIN_CNT_i(6)) and (not SMP_MAIN_CNT_i(7))
+								  and (not SMP_MAIN_CNT_i(8));
+	else
+		SMP_MAIN_CNT_carry_i(9)<='1';
+	end if;
+		
+	SMP_MAIN_CNT_carry_i(8 downto 0)<=SMP_MAIN_CNT_i;
+
+
 Case next_SmpClk_state is
 	--detect trigger word
 	When Idle =>
@@ -204,14 +219,52 @@ Case next_SmpClk_state is
 			AND internal_SmpClk_READOUT_RESET = '0' ) then 
 			--latch the SMP_MAIN_CNT at time of trigger, include a configurable digitzation window offset
 			if use_fixed_dig_start_win(15)='0' then
-			internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT);
-				else
-					internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(use_fixed_dig_start_win(8 downto 0)); --SMP_MAIN_CNT is on smp_clk domain
+				internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(SMP_MAIN_CNT);
+				next_SmpClk_state <= WaitReset;
+			else
+				internal_SmpClk_LATCH_SMP_MAIN_CNT <= UNSIGNED(use_fixed_dig_start_win(8 downto 0)); --SMP_MAIN_CNT is on smp_clk domain
+				win_start_i<=to_integer(UNSIGNED(use_fixed_dig_start_win(8 downto 0)))-10+512;
+				win_end_i  <=to_integer(UNSIGNED(use_fixed_dig_start_win(8 downto 0)))+10+512+to_integer(internal_win_num_to_read);
+				SMP_MAIN_CNT_carry_i(9)<='0';
+--				next_SmpClk_state <= Idle; -- abort!
+--				next_SmpClk_state <= WaitWritePointerSafe;
+				next_SmpClk_state <= WaitReset;
+
 			end if;
-			next_SmpClk_state <= WaitReset;
 		else
 			next_SmpClk_state <= Idle;
 		end if;
+	
+	When WaitWritePointerSafe =>
+			if ((to_integer(unsigned(SMP_MAIN_CNT_carry_i))+512) > win_start_i and (to_integer(unsigned(SMP_MAIN_CNT_carry_i))+512)<win_end_i ) then
+				--next_SmpClk_state <= WaitWritePointerSafe;
+				next_SmpClk_state <= Idle; -- abort!
+			else
+				next_SmpClk_state <= WaitReset;
+			end if;
+			
+--		if (to_integer(internal_LATCH_SMP_MAIN_CNT)+to_integer(internal_win_num_to_read) <= 511 ) then -- no wrap around case, just wait here until sampling counter clears the area
+--
+--			if (to_integer(unsigned(SMP_MAIN_CNT))<= to_integer(to_unsigned((to_integer(internal_LATCH_SMP_MAIN_CNT)+to_integer(internal_win_num_to_read)),9)) and 
+--				 to_integer(unsigned(SMP_MAIN_CNT))>= to_integer(internal_LATCH_SMP_MAIN_CNT)
+--			) then
+--				next_trig_state <= WAIT_TRIG_CLEAR;
+--			else
+--				next_trig_state <= WAIT_TRIG_DELAY;
+--			end if;
+--
+--		else	--  wrap around case, here until sampling counter clears the area
+--
+--			if (to_integer(unsigned(SMP_MAIN_CNT))<= to_integer(to_unsigned((to_integer(internal_LATCH_SMP_MAIN_CNT)+to_integer(internal_win_num_to_read)),10)) and 
+--			    to_integer(unsigned(SMP_MAIN_CNT))>= 511-(to_integer(internal_win_num_to_read)) 
+--			) then
+--				next_trig_state <= WAIT_TRIG_CLEAR;
+--			else
+--				next_trig_state <= WAIT_TRIG_DELAY;
+--			end if;
+--
+--		end if;
+
 	
 	When WaitReset =>
 		internal_SmpClk_LATCH_DONE <= '1';
@@ -257,7 +310,6 @@ if (clk'event and clk = '1') then
 	internal_win_num_to_read <= UNSIGNED(win_num_to_read);
 	internal_ASIC_SROUT_ENABLE_BITS <= asic_enable_bits;
 	internal_READOUT_CONTINUE <= READOUT_CONTINUE;
-	SMP_MAIN_CNT_i<=SMP_MAIN_CNT;
 end if;
 end process;
 
@@ -266,16 +318,7 @@ process(clk)
 begin
 if (clk'event and clk = '1') then
 
-	if (SMP_MAIN_CNT_carry_i(9)='0') then
 
-	SMP_MAIN_CNT_carry_i(9)<=(not SMP_MAIN_CNT_i(0)) and (not SMP_MAIN_CNT_i(1)) and (not SMP_MAIN_CNT_i(2)) and (not SMP_MAIN_CNT_i(3))
-								 and (not SMP_MAIN_CNT_i(4)) and (not SMP_MAIN_CNT_i(5)) and (not SMP_MAIN_CNT_i(6)) and (not SMP_MAIN_CNT_i(7))
-								  and (not SMP_MAIN_CNT_i(8));
-	else
-		SMP_MAIN_CNT_carry_i(9)<='1';
-	end if;
-		
-	SMP_MAIN_CNT_carry_i(8 downto 0)<=SMP_MAIN_CNT_i;
 	
 	Case next_trig_state is
 	
@@ -290,47 +333,14 @@ if (clk'event and clk = '1') then
 		internal_win_cnt <= (others=>'0');
 		internal_asic_cnt <= 0;
 		internal_READOUT_DONE <= '0';
-	if( internal_LATCH_DONE = '1') then 
-		if (use_fixed_dig_start_win(15)='1') then
-				win_start_i<=to_integer(internal_LATCH_SMP_MAIN_CNT)-10+512;
-				win_end_i  <=to_integer(internal_LATCH_SMP_MAIN_CNT)+10+512+to_integer(internal_win_num_to_read);
-				SMP_MAIN_CNT_carry_i(9)<='0';
-				next_trig_state <= WAIT_TRIG_CLEAR;
+		internal_LATCH_DONE_TRIG_CLEAR<='0';
+		if( internal_LATCH_DONE = '1') then 
+			next_trig_state <= WAIT_TRIG_DELAY;
 		else
-				next_trig_state <= WAIT_TRIG_DELAY;
+			next_trig_state <= Idle;
 		end if;
-	else
-		next_trig_state <= Idle;
-	end if;
 
-	When WAIT_TRIG_CLEAR =>-- wait for trig write pointer pass the readout area then issue a readout busy and start reading out...just keep in mind that we got here because of fixed window readout
-		if ((to_integer(unsigned(SMP_MAIN_CNT_carry_i))+512) > win_start_i and (to_integer(unsigned(SMP_MAIN_CNT_carry_i))+512)<win_end_i ) then
-				next_trig_state <= WAIT_TRIG_CLEAR;
-			else
-				next_trig_state <= WAIT_TRIG_DELAY;
-			end if;
-			
---		if (to_integer(internal_LATCH_SMP_MAIN_CNT)+to_integer(internal_win_num_to_read) <= 511 ) then -- no wrap around case, just wait here until sampling counter clears the area
---
---			if (to_integer(unsigned(SMP_MAIN_CNT))<= to_integer(to_unsigned((to_integer(internal_LATCH_SMP_MAIN_CNT)+to_integer(internal_win_num_to_read)),9)) and 
---				 to_integer(unsigned(SMP_MAIN_CNT))>= to_integer(internal_LATCH_SMP_MAIN_CNT)
---			) then
---				next_trig_state <= WAIT_TRIG_CLEAR;
---			else
---				next_trig_state <= WAIT_TRIG_DELAY;
---			end if;
---
---		else	--  wrap around case, here until sampling counter clears the area
---
---			if (to_integer(unsigned(SMP_MAIN_CNT))<= to_integer(to_unsigned((to_integer(internal_LATCH_SMP_MAIN_CNT)+to_integer(internal_win_num_to_read)),10)) and 
---			    to_integer(unsigned(SMP_MAIN_CNT))>= 511-(to_integer(internal_win_num_to_read)) 
---			) then
---				next_trig_state <= WAIT_TRIG_CLEAR;
---			else
---				next_trig_state <= WAIT_TRIG_DELAY;
---			end if;
---
---		end if;
+--	When WAIT_TRIG_CLEAR =>-- wait for trig write pointer pass the readout area then issue a readout busy and start reading out...just keep in mind that we got here because of fixed window readout
 		
 		
 		
@@ -339,6 +349,7 @@ if (clk'event and clk = '1') then
 	
 	--optionally delay sampling stop
 	When WAIT_TRIG_DELAY =>
+		internal_LATCH_DONE_TRIG_CLEAR<='1';
 		internal_busy_status <= '1';
 		if( internal_trig_delay > INTERNAL_COUNTER ) then 
 			INTERNAL_COUNTER <= INTERNAL_COUNTER + 1;
@@ -350,6 +361,7 @@ if (clk'event and clk = '1') then
 	
 	--stop sampling
 	When STOP_SAMPLING =>
+		internal_LATCH_DONE_TRIG_CLEAR<='0';
 		internal_smp_stop <= '1';
 		internal_dig_start <= '0';
 		internal_srout_start <= '0';

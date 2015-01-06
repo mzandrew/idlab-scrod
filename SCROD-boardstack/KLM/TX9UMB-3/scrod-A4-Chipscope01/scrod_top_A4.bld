@@ -20,22 +20,9 @@ Loading design module "../ise-project/ipcore_dir/fifo_wr16_rd32.ngc"...
 Loading design module "../ise-project/ipcore_dir/fifo_wr32_rd16.ngc"...
 Loading design module "../ise-project/ipcore_dir/blk_mem_gen_v7_3.ngc"...
 Loading design module "../ise-project/ipcore_dir/blkmem_pedcalc_tmp.ngc"...
+Loading design module "../ise-project/ipcore_dir/txtrig_bram.ngc"...
 Loading design module "../ise-project/ipcore_dir/waveform_fifo_wr32_rd32.ngc"...
 Loading design module "../ise-project/ipcore_dir/buffer_fifo_wr32_rd32.ngc"...
-INFO:NgdBuild:1317 - Using core chipscope_ila_v1 requires a ChipScopePro
-   license.  The following blocks are instances of core chipscope_ila_v1:
-	/scrod_top_A4/U_ila_pro_0
-
------------------------------------------------
-INFO:Security:71 - If a license for part 'xc6slx150t' is available, it will be
-possible to use 'ChipScopePro_TDP' instead of 'ChipScopePro'.
-WARNING:Security:42 - Your license support version '2014.12' for ChipScopePro
-expires in 19 days after which you will not qualify for Xilinx software updates
-or new releases.
-
------------------------------------------------
-
------------------------------------------------
 Gathering constraint information from source properties...
 Done.
 
@@ -1040,10 +1027,10 @@ NGDBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings: 383
 
-Total memory usage is 369484 kilobytes
+Total memory usage is 366564 kilobytes
 
 Writing NGD file "scrod_top_A4.ngd" ...
-Total REAL time to NGDBUILD completion:  33 sec
-Total CPU time to NGDBUILD completion:   29 sec
+Total REAL time to NGDBUILD completion:  39 sec
+Total CPU time to NGDBUILD completion:   35 sec
 
 Writing NGDBUILD log file "scrod_top_A4.bld"...

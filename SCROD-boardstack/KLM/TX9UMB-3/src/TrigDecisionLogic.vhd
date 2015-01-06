@@ -33,6 +33,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity TrigDecisionLogic is
     Port ( 
+			  clk: in std_logic;--clock is used for creating a simulated delay only
 			  tb : in  tb_vec_type;
 			  tm : in std_logic_vector(10 downto 1);-- mask
            TrigOut : out  STD_LOGIC;
@@ -43,11 +44,26 @@ entity TrigDecisionLogic is
 end TrigDecisionLogic;
 
 architecture Behavioral of TrigDecisionLogic is
-signal Xtb : std_logic_vector(5 downto 1):="00000";
-signal Ytb : std_logic_vector(5 downto 1):="00000";
-signal trg:std_logic:='0';
-signal asicX_i :  STD_LOGIC_VECTOR (2 downto 0):="000";
-signal asicY_i :  STD_LOGIC_VECTOR (2 downto 0):="000";
+signal Xtb 		: 	std_logic_vector(5 downto 1):="00000";
+signal Ytb 		: 	std_logic_vector(5 downto 1):="00000";
+signal trg		:	std_logic:='0';
+signal trg_l	:	std_logic:='0';
+signal trg_i	:	std_logic:='0';
+signal asicXY_i :  STD_LOGIC_VECTOR (5 downto 0):="000000";--X is 5 downto 3, Y is 2 downto 0
+signal asicXY_l :  STD_LOGIC_VECTOR (5 downto 0):="000000";
+signal asicXY_l2 :  STD_LOGIC_VECTOR (5 downto 0):="000000";
+signal trgbuf	:	std_logic_vector (1 downto 0):=(others=>'0');-- delay line shiftreg
+signal asicXYbuf1: std_logic_vector(5 downto 0);
+signal asicXYbuf0: std_logic_vector(5 downto 0);
+
+signal cnt		:	integer:=0;
+
+type trgdelay is
+(
+idle,
+countdelay
+);
+signal trgstate: trgdelay:=idle;
 
 
 begin
@@ -64,35 +80,80 @@ Ytb(3)<=(tb(8 )(1) or tb(8 )(2) or tb(8 )(3) or tb(8 )(4) or tb(8 )(5)) and tm(8
 Ytb(4)<=(tb(9 )(1) or tb(9 )(2) or tb(9 )(3) or tb(9 )(4) or tb(9 )(5)) and tm(9);
 Ytb(5)<=(tb(10)(1) or tb(10)(2) or tb(10)(3) or tb(10)(4) or tb(10)(5)) and tm(10);
 
-trg<= (Xtb(1) or Xtb(2) or Xtb(3) or Xtb(4) or Xtb(5) )  or (Ytb(1) or Ytb(2) or Ytb(3) or Ytb(4) or Ytb(5) );
+trg_l<= (Xtb(1) or Xtb(2) or Xtb(3) or Xtb(4) or Xtb(5) )  or (Ytb(1) or Ytb(2) or Ytb(3) or Ytb(4) or Ytb(5) );
 
-asicX_i<="001" when (Xtb(1 downto 1)="1"    )	   else
-			"010" when (Xtb(2 downto 1)="10"   ) 		else 
-			"011" when (Xtb(3 downto 1)="100"  )     else 
-			"100" when (Xtb(4 downto 1)="1000" )     else 
-			"101" when (Xtb(5 downto 1)="10000")     else
-			"000";
-asicY_i<="001" when (Ytb(1 downto 1)="1"    )	   else
-			"010" when (Ytb(2 downto 1)="10"   ) 		else 
-			"011" when (Ytb(3 downto 1)="100"  )     else 
-			"100" when (Ytb(4 downto 1)="1000" )     else 
-			"101" when (Ytb(5 downto 1)="10000") 		else
-			"000";
+asicXY_l(5 downto 3)<=	"001" when (Xtb(1 downto 1)="1"    )	  else
+								"010" when (Xtb(2 downto 1)="10"   ) 	else 
+								"011" when (Xtb(3 downto 1)="100"  )     else 
+								"100" when (Xtb(4 downto 1)="1000" )     else 
+								"101" when (Xtb(5 downto 1)="10000")     else
+								"000";
+								
+asicXY_l(2 downto 0)<=	"001" when (Ytb(1 downto 1)="1"    )	   else
+								"010" when (Ytb(2 downto 1)="10"   ) 		else 
+								"011" when (Ytb(3 downto 1)="100"  )     else 
+								"100" when (Ytb(4 downto 1)="1000" )     else 
+								"101" when (Ytb(5 downto 1)="10000") 		else
+								"000";
 
-TrigOut<=trg;
+TrigOut<=trg_i;
 
-process( trg)
+
+process	(trg_l)
 begin
-if (rising_edge(trg)) then
+	if (rising_edge(trg_l)) then
+		asicXY_l2<=asicXY_l;
+	end if;
+end process;
 
-asicX<=asicX_i;
-asicY<=asicY_i;
+process( trg_i)
+begin
+	if (rising_edge(trg_i)) then
+		asicX<=asicXY_i(5 downto 3);
+		asicY<=asicXY_i(2 downto 0);
+	end if;
+
+end process;
+
+process (clk)
+begin
+
+	if (rising_edge(clk)) then
+		trgbuf<=trgbuf(0) & trg_l;
+		asicXYbuf1<=asicXYbuf0;
+		asicXYbuf0<=asicXY_l2;
+	end if;
+	
+	if (rising_edge(clk)) then
+		
+		case trgstate is
+		
+		when idle=>
+			trg_i<='0';
+			if (trgbuf="01") then
+				cnt<=160;-- count this many clock cycles
+				asicXY_i<=asicXYbuf0;
+				trgstate<=countdelay;
+			else
+				trgstate<=idle;
+			end if;
+			
+		when countdelay=>
+			if (cnt>1) then 
+				cnt<=cnt-1;
+				trgstate<=countdelay;
+			else 
+				trg_i<='1';
+				trgstate<=idle;
+			end if;
+		
+		end case;
+
+	end if;
+
+	
 
 
-
-end if;
-
-   
 end process;
 
 
