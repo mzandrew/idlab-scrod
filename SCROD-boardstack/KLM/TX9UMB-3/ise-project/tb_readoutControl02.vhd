@@ -4,7 +4,7 @@
 --
 -- Create Date:   11:41:30 09/05/2014
 -- Design Name:   
--- Module Name:   C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/tb_readoutControl01.vhd
+-- Module Name:   C:/Users/isar/Documents/code4/TX9UMB-2/ise-project/tb_readoutControl02.vhd
 -- Project Name:  scrod-boardstack-new-daq-interface
 -- Target Device:  
 -- Tool versions:  
@@ -34,10 +34,10 @@ USE ieee.std_logic_1164.ALL;
  
  use work.readout_definitions.all;
 
-ENTITY tb_readoutControl01 IS
-END tb_readoutControl01;
+ENTITY tb_readoutControl02 IS
+END tb_readoutControl02;
  
-ARCHITECTURE behavior OF tb_readoutControl01 IS 
+ARCHITECTURE behavior OF tb_readoutControl02 IS 
  
     -- Component Declaration for the Unit Under Test (UUT)
  
@@ -70,6 +70,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
          DIG_RD_ROWSEL_S : OUT  std_logic_vector(2 downto 0);
          DIG_RD_COLSEL_S : OUT  std_logic_vector(5 downto 0);
          srout_start : OUT  std_logic;
+		  srout_restart : out std_logic;
          EVTBUILD_start : OUT  std_logic;
          EVTBUILD_MAKE_READY : OUT  std_logic;
          EVENT_NUM : OUT  std_logic_vector(31 downto 0);
@@ -90,29 +91,34 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
         );
     END COMPONENT;
     
-	 COMPONENT SerialDataRout
-    PORT(
-         clk : IN  std_logic;
-         start : IN  std_logic;
-         EVENT_NUM : IN  std_logic_vector(31 downto 0);
-         WIN_ADDR : IN  std_logic_vector(8 downto 0);
-         ASIC_NUM : IN  std_logic_vector(3 downto 0);
-         IDLE_status : OUT  std_logic;
-			force_test_pattern : in   std_logic;
+COMPONENT SerialDataRoutDemux
+	PORT(
+		clk : IN std_logic;
+		start : IN std_logic;
+		restart : IN std_logic;
+		EVENT_NUM : IN std_logic_vector(31 downto 0);
+		WIN_ADDR : IN std_logic_vector(8 downto 0);
+		ASIC_NUM : IN std_logic_vector(3 downto 0);
+		force_test_pattern : IN std_logic;
+		dout : IN std_logic_vector(15 downto 0);          
+		IDLE_status : OUT std_logic;
+		busy : OUT std_logic;
+		samp_done : OUT std_logic;
+		sr_clr : OUT std_logic;
+		sr_clk : OUT std_logic;
+		sr_sel : OUT std_logic;
+		samplesel : OUT std_logic_vector(4 downto 0);
+		smplsi_any : OUT std_logic;
+		dmx_allwin_done : OUT std_logic;
+		wav_wea : OUT std_logic_vector(0 to 0);
+		wav_dina : OUT std_logic_vector(11 downto 0);
+		wav_bram_addra : OUT std_logic_vector(10 downto 0);
+		fifo_wr_en : OUT std_logic;
+		fifo_wr_clk : OUT std_logic;
+		fifo_wr_din : OUT std_logic_vector(31 downto 0)
+		);
+	END COMPONENT;
 
-         busy : OUT  std_logic;
-         samp_done : OUT  std_logic;
-         dout : IN  std_logic_vector(15 downto 0);
-         sr_clr : OUT  std_logic;
-         sr_clk : OUT  std_logic;
-         sr_sel : OUT  std_logic;
-         samplesel : OUT  std_logic_vector(4 downto 0);
-         smplsi_any : OUT  std_logic;
-         fifo_wr_en : OUT  std_logic;
-         fifo_wr_clk : OUT  std_logic;
-         fifo_wr_din : OUT  std_logic_vector(31 downto 0)
-        );
-    END COMPONENT;
     
 	 COMPONENT SamplingLgc
     PORT(
@@ -129,7 +135,7 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
         );
     END COMPONENT;
  
-	COMPONENT WaveformDemuxPedsubDSPBRAM
+COMPONENT WaveformPedsubDSP
 	PORT(
 		clk : IN std_logic;
 		enable : IN std_logic;
@@ -138,24 +144,25 @@ ARCHITECTURE behavior OF tb_readoutControl01 IS
 		win_addr_start : IN std_logic_vector(8 downto 0);
 		trigin : IN std_logic;
 		mode : IN std_logic_vector(1 downto 0);
-		calc_mode : in std_logic_vector(3 downto 0);
-		  --trig bram access
-		  trig_bram_addr	: out std_logic_vector(8 downto 0);
-		  trig_bram_data	: in  std_logic_vector(49 downto 0);
-
+		calc_mode : IN std_logic_vector(3 downto 0);
 		fifo_en : IN std_logic;
 		fifo_clk : IN std_logic;
 		fifo_din : IN std_logic_vector(31 downto 0);
+		wav_wea : IN std_logic_vector(0 to 0);
+		wav_dina : IN std_logic_vector(11 downto 0);
+		wav_bram_addra : IN std_logic_vector(10 downto 0);
+		dmx_allwin_done : IN std_logic;
+		trig_bram_data : IN std_logic_vector(49 downto 0);
 		ram_data : IN std_logic_vector(7 downto 0);
 		ram_busy : IN std_logic;          
 		pswfifo_en : OUT std_logic;
 		pswfifo_clk : OUT std_logic;
 		pswfifo_d : OUT std_logic_vector(31 downto 0);
+		trig_bram_addr : OUT std_logic_vector(8 downto 0);
 		ram_addr : OUT std_logic_vector(21 downto 0);
 		ram_update : OUT std_logic
 		);
 	END COMPONENT;
-
 
 	COMPONENT WaveformDemuxCalcPedsBRAM
 	PORT(
@@ -309,6 +316,12 @@ signal sa_val_E: std_logic_vector(11 downto 0):="000000000000";
 signal sa_val_F: std_logic_vector(11 downto 0):="000000000000";
  signal sr_clk_i:std_logic_vector(1 downto 0):="00";
 
+signal internal_wav_wea				: std_logic_vector(0 downto 0):="0";
+	signal internal_wav_dina			: STD_LOGIC_VECTOR(11 DOWNTO 0):=x"000";
+	signal internal_wav_bram_addra	: std_logic_vector(10 downto 0):="00000000000";
+	signal internal_READCTRL_srout_restart  : std_logic := '0';
+signal internal_SROUT_ALLWIN_DONE:std_logic:='0';
+
    -- Clock period definitions
    constant clk_period : time := 16 ns;
  
@@ -356,6 +369,7 @@ BEGIN
           DIG_RD_ROWSEL_S => DIG_RD_ROWSEL_S,
           DIG_RD_COLSEL_S => DIG_RD_COLSEL_S,
           srout_start => srout_start,
+			 srout_restart=>internal_READCTRL_srout_restart,
           EVTBUILD_start => EVTBUILD_start,
           EVTBUILD_MAKE_READY => EVTBUILD_MAKE_READY,
           EVENT_NUM => EVENT_NUM,
@@ -372,9 +386,10 @@ BEGIN
           startramp => dig_startramp
         );
 		  
-		   uut_serread: SerialDataRout PORT MAP (
+		   uut_serread: SerialDataRoutDemux PORT MAP (
           clk => clk,
           start => srout_start,
+			 restart=>internal_READCTRL_srout_restart,
           EVENT_NUM => EVENT_NUM,
           WIN_ADDR => WIN_ADDR,
           ASIC_NUM => ASIC_NUM,
@@ -388,12 +403,18 @@ BEGIN
           sr_sel => sr_sel,
           samplesel => samplesel,
           smplsi_any => smplsi_any,
+			
+			 wav_wea => internal_wav_wea,
+			 wav_dina => internal_wav_dina,
+			 wav_bram_addra => internal_wav_bram_addra,
+		    dmx_allwin_done=>internal_SROUT_ALLWIN_DONE,
+	
           fifo_wr_en => fifo_wr_en,
           fifo_wr_clk => fifo_wr_clk,
           fifo_wr_din => fifo_wr_din
         );
 		  
-		  uut_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
+		  uut_wavedemux: WaveformPedsubDSP PORT MAP (
           clk => clk,
 			enable => '1',
          asic_no => ASIC_NUM,
@@ -404,7 +425,11 @@ BEGIN
 		  trig_bram_addr=>open,
 		  trig_bram_data=>"00" & x"000000000000",
 
-
+		wav_wea => internal_wav_wea,
+			wav_dina => internal_wav_dina,
+			wav_bram_addra => internal_wav_bram_addra,
+		  dmx_allwin_done=>internal_SROUT_ALLWIN_DONE,
+	
 		SMP_MAIN_CNT=> SMP_MAIN_CNT,
 
           trigin => LATCH_DONE,--srout_start,
@@ -552,6 +577,7 @@ BEGIN
    begin		
       -- hold reset state for 100 ns.
 	 internal_cmdreg_readctrl_use_fixed_dig_start_win <=x"8000" or x"01fe";
+--internal_SROUT_ALLWIN_DONE<='0';
 
       wait for clk_period*10;	
 		smp_reset<='1';

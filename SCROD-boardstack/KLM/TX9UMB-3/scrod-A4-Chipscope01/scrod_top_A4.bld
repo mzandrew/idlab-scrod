@@ -1027,10 +1027,10 @@ NGDBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings: 383
 
-Total memory usage is 366564 kilobytes
+Total memory usage is 362276 kilobytes
 
 Writing NGD file "scrod_top_A4.ngd" ...
-Total REAL time to NGDBUILD completion:  39 sec
-Total CPU time to NGDBUILD completion:   35 sec
+Total REAL time to NGDBUILD completion:  32 sec
+Total CPU time to NGDBUILD completion:   29 sec
 
 Writing NGDBUILD log file "scrod_top_A4.bld"...

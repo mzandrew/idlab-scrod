@@ -24,11 +24,11 @@
 --			WD2: (2nd 16b DIN word)	is the 16 bit register value 	
 --			
 -- 	ASIC reg:
--- 		WD1: (1st 16b DIN word) is x"AUVW" where A="A", U="0"-"9" for DC number , VW= 0 - 79 for ASIC register number
+-- 		WD1: (1st 16b DIN word) is x"BUVW" where B="B", U="0"-"9" for DC number , VW= 0 - 79 for ASIC register number
 --			WD2: (2nd 16b DIN word)	is the 16 bit register value (only lower 12 bits are used)
 --
 -- 	MPPC bias point:
--- 		WD1: (1st 16b DIN word) is x"AUVW" where A="A", U="0"-"9" for DC number , VW= 80- 95 for MPPC channel(0-15) on the DC
+-- 		WD1: (1st 16b DIN word) is x"CUVW" where C="C", U="0"-"9" for DC number , VW= 80- 95 for MPPC channel(0-15) on the DC
 --			WD2: (2nd 16b DIN word)	is the 16 bit register value (only lower 12 bits are used)
 --
 -- --------------------------------------------------

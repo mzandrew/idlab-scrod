@@ -1,5 +1,5 @@
 #ChipScope Core Inserter Project File Version 3.0
-#Fri Jan 09 12:25:20 HST 2015
+#Fri Jan 09 16:09:45 HST 2015
 Project.device.designInputFile=C\:\\Users\\isar\\Documents\\code4\\TX9UMB-3\\ise-project\\scrod_top_A4.ngc
 Project.device.designOutputFile=C\:\\Users\\isar\\Documents\\code4\\TX9UMB-3\\ise-project\\scrod_top_A4_csp.ngc
 Project.device.deviceFamily=18
@@ -231,8 +231,6 @@ Project.unit<0>.triggerChannel<1><17>=internal_READCTRL_busy_status
 Project.unit<0>.triggerChannel<1><18>=u_wavedemux dmx_win_1
 Project.unit<0>.triggerChannel<1><19>=u_wavedemux dmx_win_0
 Project.unit<0>.triggerChannel<1><1>=u_wavedemux ped_sub_start<1>
-Project.unit<0>.triggerChannel<1><20>=u_wavedemux dmx2_win<0>
-Project.unit<0>.triggerChannel<1><21>=u_wavedemux ped_sub_fetch_busy
 Project.unit<0>.triggerChannel<1><2>=u_wavedemux ped_wea_0
 Project.unit<0>.triggerChannel<1><3>=u_wavedemux ped_sa_update
 Project.unit<0>.triggerChannel<1><4>=u_wavedemux dmx_allwin_done

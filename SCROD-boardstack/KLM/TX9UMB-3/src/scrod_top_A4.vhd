@@ -361,6 +361,7 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_READCTRL_DIG_RD_ROWSEL : std_logic_vector(2 downto 0) := (others => '0');
 	signal internal_READCTRL_DIG_RD_COLSEL : std_logic_vector(5 downto 0) := (others => '0');
 	signal internal_READCTRL_srout_start  : std_logic := '0';
+	signal internal_READCTRL_srout_restart  : std_logic := '0';
 	signal internal_READCTRL_evtbuild_start  : std_logic := '0';
 	signal internal_READCTRL_evtbuild_make_ready  : std_logic := '0';
 	signal internal_READCTRL_LATCH_SMP_MAIN_CNT : std_logic_vector(8 downto 0) := (others => '0');
@@ -447,6 +448,8 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_SROUT_dout 			: std_logic_vector(15 downto 0) := (others => '0');
 	signal internal_SROUT_ASIC_CONTROL_WORD : std_logic_vector(9 downto 0) := (others => '0');
 	signal internal_CMDREG_SROUT_TPG : std_logic := '0';
+	signal internal_SROUT_ALLWIN_DONE :std_logic:='0';	
+	
 	
 	--WAVEFORM DATA FIFO
 	signal internal_WAVEFORM_FIFO_RST 	: std_logic := '0';
@@ -502,7 +505,10 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_pswfifo_d:std_logic_vector(31 downto 0);
 	signal internal_pswfifo_clk:std_logic;
 	signal internal_pswfifo_en:std_logic;
-	
+	signal internal_wav_wea				: std_logic_vector(0 downto 0):="0";
+	signal internal_wav_dina			: STD_LOGIC_VECTOR(11 DOWNTO 0):=x"000";
+	signal internal_wav_bram_addra	: std_logic_vector(10 downto 0):="00000000000";
+
 	
 	
 -----------------------USB:
@@ -618,7 +624,7 @@ END COMPONENT;
     END COMPONENT;
 	 
 	
-	COMPONENT WaveformDemuxPedsubDSPBRAM
+	COMPONENT WaveformPedsubDSP
 	PORT(
 		clk : IN std_logic;
 		enable : IN std_logic;
@@ -627,25 +633,26 @@ END COMPONENT;
 		win_addr_start : IN std_logic_vector(8 downto 0);
 		trigin : IN std_logic;
 		mode : IN std_logic_vector(1 downto 0);
-		calc_mode : in std_logic_vector(3 downto 0);
+		calc_mode : IN std_logic_vector(3 downto 0);
 		fifo_en : IN std_logic;
 		fifo_clk : IN std_logic;
 		fifo_din : IN std_logic_vector(31 downto 0);
-	
+		wav_wea : IN std_logic_vector(0 to 0);
+		wav_dina : IN std_logic_vector(11 downto 0);
+		wav_bram_addra : IN std_logic_vector(10 downto 0);
+	  dmx_allwin_done	:in std_logic;
+
+		trig_bram_data : IN std_logic_vector(49 downto 0);
+		ram_data : IN std_logic_vector(7 downto 0);
+		ram_busy : IN std_logic;          
 		pswfifo_en : OUT std_logic;
 		pswfifo_clk : OUT std_logic;
 		pswfifo_d : OUT std_logic_vector(31 downto 0);
-		  trig_bram_addr	: out std_logic_vector(8 downto 0);
-		  trig_bram_data	: in  std_logic_vector(49 downto 0);
-		  
-		  -- 12 bit Pedestal RAM Access: only for reading pedestals
-		   ram_addr 	: OUT  std_logic_vector(21 downto 0);
-         ram_data 	: IN  std_logic_vector(7 downto 0);
-         ram_update 	: OUT  std_logic;
-         ram_busy 	: IN  std_logic
+		trig_bram_addr : OUT std_logic_vector(8 downto 0);
+		ram_addr : OUT std_logic_vector(21 downto 0);
+		ram_update : OUT std_logic
 		);
 	END COMPONENT;
-
 
 	COMPONENT WaveformDemuxCalcPedsBRAM
 	PORT(
@@ -1286,6 +1293,8 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 		DIG_RD_ROWSEL_S 	=> internal_READCTRL_DIG_RD_ROWSEL,
 		DIG_RD_COLSEL_S 	=> internal_READCTRL_DIG_RD_COLSEL,
 		srout_start 		=> internal_READCTRL_srout_start,
+	   srout_restart 		=> internal_READCTRL_srout_restart,
+
 		EVTBUILD_start 	=> open,
 		EVTBUILD_MAKE_READY => open,
 		EVENT_NUM 			=> internal_READCTRL_EVENT_NUM,
@@ -1361,7 +1370,7 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 	--LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
 	
-	 u_wavedemux: WaveformDemuxPedsubDSPBRAM PORT MAP (
+	 u_wavepedsub: WaveformPedsubDSP PORT MAP (
           clk => internal_CLOCK_FPGA_LOGIC,
 			 enable=>internal_PedSubEnable,
 			 SMP_MAIN_CNT => internal_SMP_MAIN_CNT,
@@ -1381,7 +1390,11 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 
 		  trig_bram_addr => internal_trig_bram_addr,
 		  trig_bram_data => internal_trig_bram_data,
-
+			wav_wea => internal_wav_wea,
+			wav_dina => internal_wav_dina,
+			wav_bram_addra => internal_wav_bram_addra,
+		  dmx_allwin_done=>internal_SROUT_ALLWIN_DONE,
+		  
           ram_addr => internal_ram_Ain(2),
           ram_data => internal_ram_DRout(2),
           ram_update => internal_ram_update(2),
@@ -1512,9 +1525,10 @@ end generate;
 	BUSB_CLR 			<= internal_DIG_CLR and not internal_CMDREG_SROUT_TPG;
 	BUSB_RAMP 			<= internal_DIG_RAMP;	
 	
-	u_SerialDataRout: entity work.SerialDataRout PORT MAP(
+	u_SerialDataRoutDemux: entity work.SerialDataRoutDemux PORT MAP(
 		clk 			=> internal_CLOCK_FPGA_LOGIC,
 		start		 	=> internal_SROUT_START,
+		restart		=> internal_READCTRL_srout_restart, 
 		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
 		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
 		ASIC_NUM 	=> internal_READCTRL_ASIC_NUM,
@@ -1529,14 +1543,16 @@ end generate;
 		sr_sel 		=> internal_SROUT_SR_SEL,
 		samplesel 	=> internal_SROUT_SAMPLESEL,
 		smplsi_any 	=> internal_SROUT_SAMPLESEL_ANY,
+		dmx_allwin_done=>internal_SROUT_ALLWIN_DONE,
+		wav_wea			=>internal_wav_wea,
+		wav_dina			=>internal_wav_dina,
+		wav_bram_addra =>internal_wav_bram_addra,
+
 		fifo_wr_en 	=> internal_SROUT_FIFO_WR_EN,
 		fifo_wr_clk => internal_SROUT_FIFO_WR_CLK,
 		fifo_wr_din => internal_SROUT_FIFO_DATA_OUT
-		
---		ram_addr=>internal_ram_Ain(2),
---		ram_data=>internal_ram_DRout(2),
---		ram_update=>internal_ram_update(2),
---		ram_busy=>internal_ram_busy(2)
+
+
 	);
 --	internal_ram_rw(2)<='0'; --only reading from this channel of RAM	
 	internal_SROUT_START <= internal_READCTRL_srout_start;
