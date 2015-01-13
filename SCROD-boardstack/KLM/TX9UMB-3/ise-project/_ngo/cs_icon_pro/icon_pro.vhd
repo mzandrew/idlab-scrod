@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
--- Copyright (c) 2014 Xilinx, Inc.
+-- Copyright (c) 2015 Xilinx, Inc.
 -- All Rights Reserved
 -------------------------------------------------------------------------------
 --   ____  ____
@@ -8,7 +8,7 @@
 -- \   \   \/     Version    : 14.7
 --  \   \         Application: XILINX CORE Generator
 --  /   /         Filename   : icon_pro.vhd
--- /___/   /\     Timestamp  : Sun Nov 09 15:34:56 Hawaiian Standard Time 2014
+-- /___/   /\     Timestamp  : Fri Jan 09 16:59:05 Hawaiian Standard Time 2015
 -- \   \  /  \
 --  \___\/\___\
 --

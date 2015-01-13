@@ -149,6 +149,7 @@ int main(int argc, char* argv[]){
 	int numIter = 0;
 	int samples[10][16][4][32];
 	int PeakC[16],PeakT[16];
+	int a0=9,k0=15;
 
 	TGraph *gPlot[10][16];
 	TGraph *pPlot[16];//t=new TGraph();
@@ -173,6 +174,11 @@ int main(int argc, char* argv[]){
 	unsigned int chanNum = 0;
 	unsigned int winNum =0;
 	unsigned int wraddrNum =0;
+	for(int a = a0 ; a < 10 ; a++)
+  	 	for(int k = k0 ; k < 16 ; k++)
+  		for(int i = 0 ; i < 512 ; i++)
+  		for(int j = 0 ; j < 32 ; j++)
+			samples[a][k][i][j] = -10000;
 
 
 	int nEvt = 0;
@@ -199,13 +205,13 @@ int main(int argc, char* argv[]){
 
 
 			//give the trigger some time
-		usleep(50000);
+		usleep(5000);
 
-  		for(int a = 0 ; a < 10 ; a++)
-  	 	for(int k = 0 ; k < 16 ; k++)
+  /*		for(int a = a0 ; a < 10 ; a++)
+  	 	for(int k = k0 ; k < 16 ; k++)
   		for(int i = 0 ; i < 512 ; i++)
   		for(int j = 0 ; j < 32 ; j++)
-			samples[a][k][i][j] = -10000;
+			samples[a][k][i][j] = -10000;*/
 
 		int first = 1;
 		int numSmall = 0;
@@ -219,7 +225,7 @@ int main(int argc, char* argv[]){
 
 			control->continueReadout(board_id);
 
-			usleep(10000);
+			usleep(1000);
 	
 			//parse the data packet, look for event packets
 			control->readPacketFromUSBFifo( eventdatabuf, 65536, eventdataSize );
@@ -325,8 +331,8 @@ if (EVTvalid=true){
 
 
 		int numPoint[10][16];
-		for(int a = 0 ; a < 10 ; a++)
-		for(int k = 0 ; k < 16 ; k++){
+		for(int a = a0 ; a < 10 ; a++)
+		for(int k = k0 ; k < 16 ; k++){
 			numPoint[a][k] = 0;
   			gPlot[a][k]->SetMarkerColor(2);
   			gPlot[a][k]->SetMarkerStyle(20);
@@ -338,8 +344,8 @@ if (EVTvalid=true){
 
 		//plot samples
 
-		for(int a = 0 ; a < 10 ; a++)
-		for(int k = 0 ; k < 16 ; k++)
+		for(int a = a0 ; a < 10 ; a++)
+		for(int k = k0 ; k < 16 ; k++)
 		for(int i = 0 ; i < 4 ; i++)
 		for(int j = 0 ; j < 32 ; j++){
 			if( samples[a][k][i][j] != -10000){
@@ -352,7 +358,7 @@ if (EVTvalid=true){
 
 			leg->Clear();
 
-		for(int k = 0 ; k < 16 ; k++)
+		for(int k = k0 ; k < 16 ; k++)
 		{
 			pPlot[k]->SetMarkerColor(4);
 			pPlot[k]->SetMarkerStyle(1+k);
@@ -363,17 +369,17 @@ if (EVTvalid=true){
 
 		//gPlot[9]->GetYaxis()->SetRangeUser(0,4100);
 		mg->Clear();
-		for (int k=0;k<16;k++)
+		for (int k=k0;k<16;k++)
 		{
 		mg->Add(gPlot[asicNum][k]);
 		mg->Add(pPlot[k]);
 		}
-		mg->SetMinimum(-2100.);mg->SetMaximum(200.);
+		mg->SetMinimum(-2100.);mg->SetMaximum(700.);
 		if (opmode!=pedsub) {mg->SetMinimum(-0000.);mg->SetMaximum(4200.);}
 
 		mg->Draw("APL");
 
-		for (int k=0;k<16;k++) ltxt.DrawLatex(PeakT[k]+addrNum*32+k/2,PeakC[k]+k/2-3400*(opmode==pedsub),Form("%X",k));
+		for (int k=k0;k<16;k++) ltxt.DrawLatex(PeakT[k]+addrNum*32+k/2,PeakC[k]+k/2-3400*(opmode==pedsub),Form("%X",k));
 
 
 /*		for(int k = 0 ; k < 16 ; k++)

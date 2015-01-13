@@ -56,7 +56,7 @@ public:
 int currentEventNumber;
 
 //Define output tree
-#define POINTS_PER_WAVEFORM    32
+#define POINTS_PER_WAVEFORM    32*4
 #define MEMORY_DEPTH           512
 #define NASICS                 10
 #define NCHS                   numCHAN //only 1 channel is being parsed
@@ -69,6 +69,7 @@ Int_t asicNum[MaxROI];
 Int_t asicCh[MaxROI];
 Int_t windowNum[MaxROI];
 Int_t WRwinNum[MaxROI];
+Int_t Time[MaxROI];
 Int_t samples[MaxROI][POINTS_PER_WAVEFORM];
 bool DecodeTPGflag;
 
@@ -454,7 +455,7 @@ int sa_val=(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
 	if (count>2000){
 
 		/*dump to text file for matlab laoding*/
-/*		for (int i=0;i<128;i++)
+		for (int i=0;i<128;i++)
 		{
 			fprintf(of,"\n%d,%d",addrNum,i);
 			for (int c=0;c<16;c++)
@@ -462,7 +463,7 @@ int sa_val=(buffer_uint[bufPos+offset+count]) & 0x00000FFF;
 				fprintf(of,",%d",evtSa[i][c]);
 			}
 		}
-*/
+
 
 		fprintf(of,"\n%d,%d",addrNum,128);
 		for (int c=0;c<16;c++) fprintf(of,",%d",evtCT[0][c]);

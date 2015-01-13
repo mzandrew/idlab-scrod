@@ -65,6 +65,7 @@ entity ReadoutControl is
 			  DIG_RD_ROWSEL_S : out STD_LOGIC_VECTOR(2 downto 0);
 			  DIG_RD_COLSEL_S : out STD_LOGIC_VECTOR(5 downto 0);
            srout_start : out  STD_LOGIC;
+			  srout_restart : out std_logic;
 			  EVTBUILD_start : out  STD_LOGIC;
 			  EVTBUILD_MAKE_READY : out  STD_LOGIC;
 			  EVENT_NUM : out STD_LOGIC_VECTOR(31 downto 0);
@@ -336,16 +337,14 @@ if (clk'event and clk = '1') then
 		internal_LATCH_DONE_TRIG_CLEAR<='0';
 		if( internal_LATCH_DONE = '1') then 
 			next_trig_state <= WAIT_TRIG_DELAY;
+			srout_restart<='1';
 		else
 			next_trig_state <= Idle;
+			srout_restart<='0';
 		end if;
 
 --	When WAIT_TRIG_CLEAR =>-- wait for trig write pointer pass the readout area then issue a readout busy and start reading out...just keep in mind that we got here because of fixed window readout
 		
-		
-		
-		
-
 	
 	--optionally delay sampling stop
 	When WAIT_TRIG_DELAY =>
@@ -367,6 +366,7 @@ if (clk'event and clk = '1') then
 		internal_srout_start <= '0';
 		internal_EVTBUILD_start <= '0';
 		internal_EVTBUILD_MAKE_READY <= '0';
+		srout_restart<='0';
 		internal_dig_win_start <= internal_LATCH_SMP_MAIN_CNT - internal_dig_offset;
 		next_trig_state <= SROUT_ASIC_LOOP;	
 --		next_trig_state <= DIG_WINDOW_LOOP;	
