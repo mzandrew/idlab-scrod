@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readout5_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="conc_intfc_pkg" />
+            <top_module name="klm_scrod_pkg" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_textio" />
+            <top_module name="std_logic_unsigned" />
+            <top_module name="tb_readout5" />
+            <top_module name="tdc_pkg" />
+            <top_module name="textio" />
+            <top_module name="time_order_pkg" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="4" />
+   <wvobject fp_name="/tb_readout5/u_ReadoutControl/trigger" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/internal_waveform_fifo_empty" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_waveform_fifo_empty</obj_property>
+      <obj_property name="ObjectShortName">internal_waveform_fifo_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_ReadoutControl/next_trig_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_trig_state</obj_property>
+      <obj_property name="ObjectShortName">next_trig_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_ReadoutControl/next_smpclk_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_smpclk_state</obj_property>
+      <obj_property name="ObjectShortName">next_smpclk_state</obj_property>
+   </wvobject>
+</wave_config>

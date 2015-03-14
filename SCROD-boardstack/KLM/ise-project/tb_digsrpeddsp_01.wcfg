@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_ReadoutCtrl_DigSRPedDSP_01_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="tb_readoutctrl_digsrpeddsp_01" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="59" />
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/smp_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">smp_clk</obj_property>
+      <obj_property name="ObjectShortName">smp_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/start" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">start</obj_property>
+      <obj_property name="ObjectShortName">start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/trig" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trig</obj_property>
+      <obj_property name="ObjectShortName">trig</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/cur_smp_win" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cur_smp_win[8:0]</obj_property>
+      <obj_property name="ObjectShortName">cur_smp_win[8:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/dig_sr_start" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_sr_start</obj_property>
+      <obj_property name="ObjectShortName">dig_sr_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/win_start" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">win_start[8:0]</obj_property>
+      <obj_property name="ObjectShortName">win_start[8:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/win_n" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">win_n[2:0]</obj_property>
+      <obj_property name="ObjectShortName">win_n[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/asic" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">asic[2:0]</obj_property>
+      <obj_property name="ObjectShortName">asic[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/dig_ramp_length" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_ramp_length[11:0]</obj_property>
+      <obj_property name="ObjectShortName">dig_ramp_length[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/do" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">do[15:0]</obj_property>
+      <obj_property name="ObjectShortName">do[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/force_test_pattern" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">force_test_pattern</obj_property>
+      <obj_property name="ObjectShortName">force_test_pattern</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/ram_data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_data[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/ram_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_busy</obj_property>
+      <obj_property name="ObjectShortName">ram_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/mode" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">mode[1:0]</obj_property>
+      <obj_property name="ObjectShortName">mode[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/st_master" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">st_master</obj_property>
+      <obj_property name="ObjectShortName">st_master</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/dig_rd_ena" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_rd_ena</obj_property>
+      <obj_property name="ObjectShortName">dig_rd_ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/dig_clr" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_clr</obj_property>
+      <obj_property name="ObjectShortName">dig_clr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/dig_startramp" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_startramp</obj_property>
+      <obj_property name="ObjectShortName">dig_startramp</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sr_clr" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_clr</obj_property>
+      <obj_property name="ObjectShortName">sr_clr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/dig_idle_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_idle_status</obj_property>
+      <obj_property name="ObjectShortName">dig_idle_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sr_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_clk</obj_property>
+      <obj_property name="ObjectShortName">sr_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/srout_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">srout_busy</obj_property>
+      <obj_property name="ObjectShortName">srout_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/fifo_wr_din_i" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_wr_din_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">fifo_wr_din_i[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/sr_st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_st</obj_property>
+      <obj_property name="ObjectShortName">sr_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/start_srout" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">start_srout</obj_property>
+      <obj_property name="ObjectShortName">start_srout</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/uut/sr_samplesel_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_samplesel_i</obj_property>
+      <obj_property name="ObjectShortName">sr_samplesel_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sr_sel" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_sel</obj_property>
+      <obj_property name="ObjectShortName">sr_sel</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sr_samplesel" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_samplesel[4:0]</obj_property>
+      <obj_property name="ObjectShortName">sr_samplesel[4:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sr_samplsl_any" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_samplsl_any</obj_property>
+      <obj_property name="ObjectShortName">sr_samplsl_any</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/ram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_addr[21:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_addr[21:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/ram_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_update</obj_property>
+      <obj_property name="ObjectShortName">ram_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/cur_ro_win" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cur_ro_win[8:0]</obj_property>
+      <obj_property name="ObjectShortName">cur_ro_win[8:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/pswfifo_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">pswfifo_en</obj_property>
+      <obj_property name="ObjectShortName">pswfifo_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/pswfifo_d" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">pswfifo_d[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pswfifo_d[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/pswfifo_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">pswfifo_clk</obj_property>
+      <obj_property name="ObjectShortName">pswfifo_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/fifo_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_en</obj_property>
+      <obj_property name="ObjectShortName">fifo_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/fifo_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_clk</obj_property>
+      <obj_property name="ObjectShortName">fifo_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/fifo_d" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_d[31:0]</obj_property>
+      <obj_property name="ObjectShortName">fifo_d[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_0" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_0[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_0[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_1[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_1[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_2[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_2[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_3" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_3[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_3[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_4" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_4[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_4[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_5" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_5[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_5[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_6" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_6[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_6[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_7" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_7[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_7[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_8" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_8[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_8[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_9" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_9[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_9[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_a[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_a[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_b[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_b[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_c" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_c[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_c[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_d" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_e" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_e[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_e[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sa_val_f" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sa_val_f[11:0]</obj_property>
+      <obj_property name="ObjectShortName">sa_val_f[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/sr_clk_i" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_clk_i[1:0]</obj_property>
+      <obj_property name="ObjectShortName">sr_clk_i[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/bit_no" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">bit_no</obj_property>
+      <obj_property name="ObjectShortName">bit_no</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutctrl_digsrpeddsp_01/clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_period</obj_property>
+      <obj_property name="ObjectShortName">clk_period</obj_property>
+   </wvobject>
+</wave_config>

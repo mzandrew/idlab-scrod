@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readoutControl03_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_textio" />
+            <top_module name="std_logic_unsigned" />
+            <top_module name="tb_readoutcontrol03" />
+            <top_module name="textio" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="17" />
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/bram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bram_addr[10:0]</obj_property>
+      <obj_property name="ObjectShortName">bram_addr[10:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/bram_din" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bram_din[19:0]</obj_property>
+      <obj_property name="ObjectShortName">bram_din[19:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/bram_dout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bram_dout[19:0]</obj_property>
+      <obj_property name="ObjectShortName">bram_dout[19:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/bram_we" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bram_we[0:0]</obj_property>
+      <obj_property name="ObjectShortName">bram_we[0:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/tmp2bram_ctr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">tmp2bram_ctr[7:0]</obj_property>
+      <obj_property name="ObjectShortName">tmp2bram_ctr[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/bram2tmp_ctr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bram2tmp_ctr[7:0]</obj_property>
+      <obj_property name="ObjectShortName">bram2tmp_ctr[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/srout_bram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">srout_bram_addr[10:0]</obj_property>
+      <obj_property name="ObjectShortName">srout_bram_addr[10:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/srout_bram_dout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">srout_bram_dout[19:0]</obj_property>
+      <obj_property name="ObjectShortName">srout_bram_dout[19:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/dmx_allwin_done" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dmx_allwin_done</obj_property>
+      <obj_property name="ObjectShortName">dmx_allwin_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/navgcnt" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">navgcnt</obj_property>
+      <obj_property name="ObjectShortName">navgcnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/ncnt" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ncnt</obj_property>
+      <obj_property name="ObjectShortName">ncnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/dmx_win" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dmx_win[1:0]</obj_property>
+      <obj_property name="ObjectShortName">dmx_win[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/dmx_st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">dmx_st</obj_property>
+      <obj_property name="ObjectShortName">dmx_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_wavedemux/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_pedsub_bram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_pedsub_bram_addr[10:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_pedsub_bram_addr[10:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_pedcalc_bram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_pedcalc_bram_addr[10:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_pedcalc_bram_addr[10:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+</wave_config>

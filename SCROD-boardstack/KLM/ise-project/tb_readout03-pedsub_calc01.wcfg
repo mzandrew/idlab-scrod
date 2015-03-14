@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readoutControl03_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_textio" />
+            <top_module name="std_logic_unsigned" />
+            <top_module name="tb_readoutcontrol03" />
+            <top_module name="textio" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="18" />
+   <wvobject fp_name="/tb_readoutcontrol03/readout_continue" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">readout_continue</obj_property>
+      <obj_property name="ObjectShortName">readout_continue</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/readout_reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">readout_reset</obj_property>
+      <obj_property name="ObjectShortName">readout_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/reset_event_num" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">reset_event_num</obj_property>
+      <obj_property name="ObjectShortName">reset_event_num</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/asic_enable_bits" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">asic_enable_bits[9:0]</obj_property>
+      <obj_property name="ObjectShortName">asic_enable_bits[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_asic_srout_enable_bits" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_asic_srout_enable_bits[9:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_asic_srout_enable_bits[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/asic_num" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">asic_num[3:0]</obj_property>
+      <obj_property name="ObjectShortName">asic_num[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_srout_allwin_done" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_srout_allwin_done</obj_property>
+      <obj_property name="ObjectShortName">internal_srout_allwin_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_readctrl_srout_restart" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_readctrl_srout_restart</obj_property>
+      <obj_property name="ObjectShortName">internal_readctrl_srout_restart</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/fifo_wr_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_wr_en</obj_property>
+      <obj_property name="ObjectShortName">fifo_wr_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/trigger" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/next_trig_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_trig_state</obj_property>
+      <obj_property name="ObjectShortName">next_trig_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/readout_done" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">readout_done</obj_property>
+      <obj_property name="ObjectShortName">readout_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_asic_cnt" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_asic_cnt</obj_property>
+      <obj_property name="ObjectShortName">internal_asic_cnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_wavedemux/asic_no_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">asic_no_i</obj_property>
+      <obj_property name="ObjectShortName">asic_no_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_wavedemux/ped_asic" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_asic</obj_property>
+      <obj_property name="ObjectShortName">ped_asic</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_wavedemux/dmx_asic" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">dmx_asic</obj_property>
+      <obj_property name="ObjectShortName">dmx_asic</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_wavedemux/trigin" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trigin</obj_property>
+      <obj_property name="ObjectShortName">trigin</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_wavedemux/busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+</wave_config>

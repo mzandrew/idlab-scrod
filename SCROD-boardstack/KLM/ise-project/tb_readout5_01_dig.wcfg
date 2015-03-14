@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readout5_isim_beh1.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="conc_intfc_pkg" />
+            <top_module name="klm_scrod_pkg" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_textio" />
+            <top_module name="std_logic_unsigned" />
+            <top_module name="tb_readout5" />
+            <top_module name="tdc_pkg" />
+            <top_module name="textio" />
+            <top_module name="time_order_pkg" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="44" />
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/idle_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">idle_status</obj_property>
+      <obj_property name="ObjectShortName">idle_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/startdig" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">startdig</obj_property>
+      <obj_property name="ObjectShortName">startdig</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/ramp_length" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ramp_length[12:0]</obj_property>
+      <obj_property name="ObjectShortName">ramp_length[12:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/rd_ena" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rd_ena</obj_property>
+      <obj_property name="ObjectShortName">rd_ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/clr" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clr</obj_property>
+      <obj_property name="ObjectShortName">clr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/startramp" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">startramp</obj_property>
+      <obj_property name="ObjectShortName">startramp</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/startdig_in" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">startdig_in</obj_property>
+      <obj_property name="ObjectShortName">startdig_in</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/next_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_state</obj_property>
+      <obj_property name="ObjectShortName">next_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/rd_ena_out" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rd_ena_out</obj_property>
+      <obj_property name="ObjectShortName">rd_ena_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/clr_out" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clr_out</obj_property>
+      <obj_property name="ObjectShortName">clr_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/startramp_out" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">startramp_out</obj_property>
+      <obj_property name="ObjectShortName">startramp_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/internal_idle_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_idle_status</obj_property>
+      <obj_property name="ObjectShortName">internal_idle_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/ramp_start" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ramp_start[12:0]</obj_property>
+      <obj_property name="ObjectShortName">ramp_start[12:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/rden_length" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rden_length[12:0]</obj_property>
+      <obj_property name="ObjectShortName">rden_length[12:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_DigitizingLgc/ramp_cnt" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ramp_cnt[12:0]</obj_property>
+      <obj_property name="ObjectShortName">ramp_cnt[12:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/cfg" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cfg[15:0]</obj_property>
+      <obj_property name="ObjectShortName">cfg[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_start" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_start[8:0]</obj_property>
+      <obj_property name="ObjectShortName">dig_win_start[8:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_n" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_n[8:0]</obj_property>
+      <obj_property name="ObjectShortName">dig_win_n[8:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_ena" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_ena</obj_property>
+      <obj_property name="ObjectShortName">dig_win_ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/main_cnt_out" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">main_cnt_out[8:0]</obj_property>
+      <obj_property name="ObjectShortName">main_cnt_out[8:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/sstin_out" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sstin_out</obj_property>
+      <obj_property name="ObjectShortName">sstin_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/trigram_wea" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trigram_wea</obj_property>
+      <obj_property name="ObjectShortName">trigram_wea</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/wr_addrclr_out" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wr_addrclr_out</obj_property>
+      <obj_property name="ObjectShortName">wr_addrclr_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/wr1_ena" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wr1_ena</obj_property>
+      <obj_property name="ObjectShortName">wr1_ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/wr2_ena" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wr2_ena</obj_property>
+      <obj_property name="ObjectShortName">wr2_ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/next_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_state</obj_property>
+      <obj_property name="ObjectShortName">next_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/stop_in" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stop_in</obj_property>
+      <obj_property name="ObjectShortName">stop_in</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/main_cnt" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">main_cnt[8:0]</obj_property>
+      <obj_property name="ObjectShortName">main_cnt[8:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/sstin" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sstin</obj_property>
+      <obj_property name="ObjectShortName">sstin</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/wr_addrclr" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wr_addrclr</obj_property>
+      <obj_property name="ObjectShortName">wr_addrclr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/wr_ena" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wr_ena</obj_property>
+      <obj_property name="ObjectShortName">wr_ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/clk_cntr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_cntr[1:0]</obj_property>
+      <obj_property name="ObjectShortName">clk_cntr[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/started_cntr" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">started_cntr</obj_property>
+      <obj_property name="ObjectShortName">started_cntr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/reset_i" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">reset_i[1:0]</obj_property>
+      <obj_property name="ObjectShortName">reset_i[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_start_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_start_i</obj_property>
+      <obj_property name="ObjectShortName">dig_win_start_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_n_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_n_i</obj_property>
+      <obj_property name="ObjectShortName">dig_win_n_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_end_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_end_i</obj_property>
+      <obj_property name="ObjectShortName">dig_win_end_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_ena_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_ena_i</obj_property>
+      <obj_property name="ObjectShortName">dig_win_ena_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_wrap_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_wrap_i</obj_property>
+      <obj_property name="ObjectShortName">dig_win_wrap_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/dig_win_end2_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">dig_win_end2_i</obj_property>
+      <obj_property name="ObjectShortName">dig_win_end2_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readout5/u_SamplingLgc/cfg_i" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cfg_i[15:0]</obj_property>
+      <obj_property name="ObjectShortName">cfg_i[15:0]</obj_property>
+   </wvobject>
+</wave_config>

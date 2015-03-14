@@ -1,0 +1,4 @@
+MESSAGE "File: source\daq_gen_tb.vhd" 
+MESSAGE "Compile Entity "daq_gen_tb"" 
+MESSAGE "Compile Architecture "behave" of Entity "daq_gen_tb"" 
+SUCCESS "Compile success 0 Errors 0 Warnings  Analysis time :  63.0 [ms]" 
