@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/daq_gen_tb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="daq_gen_tb" />
+            <top_module name="numeric_std" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_unsigned" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="35" />
+   <wvobject fp_name="/daq_gen_tb/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/channel_up" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">channel_up</obj_property>
+      <obj_property name="ObjectShortName">channel_up</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">addr[3:0]</obj_property>
+      <obj_property name="ObjectShortName">addr[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/trigger" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/trgrdy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trgrdy</obj_property>
+      <obj_property name="ObjectShortName">trgrdy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/trgnext" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trgnext</obj_property>
+      <obj_property name="ObjectShortName">trgnext</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/ctime" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ctime[26:0]</obj_property>
+      <obj_property name="ObjectShortName">ctime[26:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/tx_dst_rdy_n" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">tx_dst_rdy_n</obj_property>
+      <obj_property name="ObjectShortName">tx_dst_rdy_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/tx_src_rdy_n" type="logic" db_ref_id="1">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">tx_src_rdy_n</obj_property>
+      <obj_property name="ObjectShortName">tx_src_rdy_n</obj_property>
+      <obj_property name="label">tx_src_rdy_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/tx_sof_n" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">tx_sof_n</obj_property>
+      <obj_property name="ObjectShortName">tx_sof_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/tx_eof_n" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">tx_eof_n</obj_property>
+      <obj_property name="ObjectShortName">tx_eof_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/wd_ctr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">wd_ctr[7:0]</obj_property>
+      <obj_property name="ObjectShortName">wd_ctr[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/tx_d" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">tx_d[15:0]</obj_property>
+      <obj_property name="ObjectShortName">tx_d[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/qt_fifo_rd_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">qt_fifo_rd_en</obj_property>
+      <obj_property name="ObjectShortName">qt_fifo_rd_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/tx_rem" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">tx_rem</obj_property>
+      <obj_property name="ObjectShortName">tx_rem</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/stim_enable" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stim_enable</obj_property>
+      <obj_property name="ObjectShortName">stim_enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/trgfifo" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trgfifo</obj_property>
+      <obj_property name="ObjectShortName">trgfifo</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/dst_reg" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dst_reg[15:0]</obj_property>
+      <obj_property name="ObjectShortName">dst_reg[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/trg_cs" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">trg_cs</obj_property>
+      <obj_property name="ObjectShortName">trg_cs</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/ll_fsm_cs_t" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ll_fsm_cs_t</obj_property>
+      <obj_property name="ObjectShortName">ll_fsm_cs_t</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/daq_fsm_cs_t" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">daq_fsm_cs_t</obj_property>
+      <obj_property name="ObjectShortName">daq_fsm_cs_t</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/bad_sof" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bad_sof</obj_property>
+      <obj_property name="ObjectShortName">bad_sof</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/pds_ctr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">pds_ctr[3:0]</obj_property>
+      <obj_property name="ObjectShortName">pds_ctr[3:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/pds_ctr_lc" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">pds_ctr_lc</obj_property>
+      <obj_property name="ObjectShortName">pds_ctr_lc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/pds_ctr_ld" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">pds_ctr_ld</obj_property>
+      <obj_property name="ObjectShortName">pds_ctr_ld</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/pds_ctr_tc" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">pds_ctr_tc</obj_property>
+      <obj_property name="ObjectShortName">pds_ctr_tc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/UUT/pdw_ctr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">pdw_ctr[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pdw_ctr[1:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/bad_eof" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bad_eof</obj_property>
+      <obj_property name="ObjectShortName">bad_eof</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/bad_len" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bad_len</obj_property>
+      <obj_property name="ObjectShortName">bad_len</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/bad_chg" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">bad_chg</obj_property>
+      <obj_property name="ObjectShortName">bad_chg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/ckper" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ckper</obj_property>
+      <obj_property name="ObjectShortName">ckper</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/ckhper" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ckhper</obj_property>
+      <obj_property name="ObjectShortName">ckhper</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/use_prng" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">use_prng</obj_property>
+      <obj_property name="ObjectShortName">use_prng</obj_property>
+   </wvobject>
+   <wvobject fp_name="/daq_gen_tb/use_lfsr" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">use_lfsr</obj_property>
+      <obj_property name="ObjectShortName">use_lfsr</obj_property>
+   </wvobject>
+</wave_config>

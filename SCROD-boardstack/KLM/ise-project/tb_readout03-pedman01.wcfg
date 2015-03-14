@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_readoutControl03_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_textio" />
+            <top_module name="std_logic_unsigned" />
+            <top_module name="tb_readoutcontrol03" />
+            <top_module name="textio" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="42" />
+   <wvobject fp_name="/tb_readoutcontrol03/internal_readctrl_trigger" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_readctrl_trigger</obj_property>
+      <obj_property name="ObjectShortName">internal_readctrl_trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_pedman_curasicen" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_pedman_curasicen[9:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_pedman_curasicen[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_pedman_readout_reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_pedman_readout_reset</obj_property>
+      <obj_property name="ObjectShortName">internal_pedman_readout_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_cmdreg_pedcalcenable" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_cmdreg_pedcalcenable</obj_property>
+      <obj_property name="ObjectShortName">internal_cmdreg_pedcalcenable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_cmdreg_readctrl_use_fixed_dig_start_win" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_cmdreg_readctrl_use_fixed_dig_start_win[15:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_cmdreg_readctrl_use_fixed_dig_start_win[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_readctrl_asic_enable_bits" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_readctrl_asic_enable_bits[9:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_readctrl_asic_enable_bits[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_readctrl_dig_win_start" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_readctrl_dig_win_start[8:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_readctrl_dig_win_start[8:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_readctrl_readout_reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_readctrl_readout_reset</obj_property>
+      <obj_property name="ObjectShortName">internal_readctrl_readout_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_readctrl_srout_restart" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_readctrl_srout_restart</obj_property>
+      <obj_property name="ObjectShortName">internal_readctrl_srout_restart</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/next_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_state</obj_property>
+      <obj_property name="ObjectShortName">next_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/busy_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy_status</obj_property>
+      <obj_property name="ObjectShortName">busy_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/ped_manager/mng_st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">mng_st</obj_property>
+      <obj_property name="ObjectShortName">mng_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/next_trig_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_trig_state</obj_property>
+      <obj_property name="ObjectShortName">next_trig_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/next_smpclk_state" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_smpclk_state</obj_property>
+      <obj_property name="ObjectShortName">next_smpclk_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_cmdreg_pedcalcasicen" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_cmdreg_pedcalcasicen[9:0]</obj_property>
+      <obj_property name="ObjectShortName">internal_cmdreg_pedcalcasicen[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/trigger" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/srout_bram_dout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">srout_bram_dout[19:0]</obj_property>
+      <obj_property name="ObjectShortName">srout_bram_dout[19:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/srout_bram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">srout_bram_addr[10:0]</obj_property>
+      <obj_property name="ObjectShortName">srout_bram_addr[10:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/dout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dout[15:0]</obj_property>
+      <obj_property name="ObjectShortName">dout[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ped_sa_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_update</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ped_sa_num" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_num[21:0]</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_num[21:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ped_sa_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_busy</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/ped_manager/cur_win_no" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cur_win_no[8:0]</obj_property>
+      <obj_property name="ObjectShortName">cur_win_no[8:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/win_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">win_addr[8:0]</obj_property>
+      <obj_property name="ObjectShortName">win_addr[8:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/ped_manager/cur_asic_en_bits" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cur_asic_en_bits[9:0]</obj_property>
+      <obj_property name="ObjectShortName">cur_asic_en_bits[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/internal_pedman_calc_peds_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_pedman_calc_peds_en</obj_property>
+      <obj_property name="ObjectShortName">internal_pedman_calc_peds_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ped_sa_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_update</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ram_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_update</obj_property>
+      <obj_property name="ObjectShortName">ram_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ram_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_busy</obj_property>
+      <obj_property name="ObjectShortName">ram_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/ped_sa_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa_busy</obj_property>
+      <obj_property name="ObjectShortName">ped_sa_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/navgcnt" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">navgcnt</obj_property>
+      <obj_property name="ObjectShortName">navgcnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/busy_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy_i</obj_property>
+      <obj_property name="ObjectShortName">busy_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut_serread/dmx_allwin_done" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">dmx_allwin_done</obj_property>
+      <obj_property name="ObjectShortName">dmx_allwin_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/u_WaveformPedcalcDSP/busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/ped_manager/busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_smpclk_readout_reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_smpclk_readout_reset</obj_property>
+      <obj_property name="ObjectShortName">internal_smpclk_readout_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_srout_idle_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_srout_idle_status</obj_property>
+      <obj_property name="ObjectShortName">internal_srout_idle_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_smp_idle_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_smp_idle_status</obj_property>
+      <obj_property name="ObjectShortName">internal_smp_idle_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_dig_idle_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_dig_idle_status</obj_property>
+      <obj_property name="ObjectShortName">internal_dig_idle_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_readoutcontrol03/uut/internal_smpclk_trigger" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">internal_smpclk_trigger</obj_property>
+      <obj_property name="ObjectShortName">internal_smpclk_trigger</obj_property>
+   </wvobject>
+</wave_config>

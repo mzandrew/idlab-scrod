@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/tb_wavepeddemux01_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="asic_definitions_irs2_carrier_reva" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="readout_definitions" />
+            <top_module name="std_logic_1164" />
+            <top_module name="tb_wavepeddemux01" />
+            <top_module name="vcomponents" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="21" />
+   <wvobject fp_name="/tb_wavepeddemux01/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/asic_no" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">asic_no[3:0]</obj_property>
+      <obj_property name="ObjectShortName">asic_no[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/win_addr_start" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">win_addr_start[8:0]</obj_property>
+      <obj_property name="ObjectShortName">win_addr_start[8:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/sr_start" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_start</obj_property>
+      <obj_property name="ObjectShortName">sr_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/fifo_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_en</obj_property>
+      <obj_property name="ObjectShortName">fifo_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/fifo_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_clk</obj_property>
+      <obj_property name="ObjectShortName">fifo_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/fifo_din" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">fifo_din[31:0]</obj_property>
+      <obj_property name="ObjectShortName">fifo_din[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/ram_data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_data[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/ram_busy" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_busy</obj_property>
+      <obj_property name="ObjectShortName">ram_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/ram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_addr[21:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_addr[21:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/ram_update" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_update</obj_property>
+      <obj_property name="ObjectShortName">ram_update</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_period</obj_property>
+      <obj_property name="ObjectShortName">clk_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/next_ped_st" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">next_ped_st</obj_property>
+      <obj_property name="ObjectShortName">next_ped_st</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/waveform" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">waveform[2047:0]</obj_property>
+      <obj_property name="ObjectShortName">waveform[2047:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/ped_word" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_word[16:0]</obj_property>
+      <obj_property name="ObjectShortName">ped_word[16:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/ped_asic" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_asic</obj_property>
+      <obj_property name="ObjectShortName">ped_asic</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/ped_ch" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_ch</obj_property>
+      <obj_property name="ObjectShortName">ped_ch</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/ped_win" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_win</obj_property>
+      <obj_property name="ObjectShortName">ped_win</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/ped_sa" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ped_sa</obj_property>
+      <obj_property name="ObjectShortName">ped_sa</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/sr_start_i" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">sr_start_i[1:0]</obj_property>
+      <obj_property name="ObjectShortName">sr_start_i[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_wavepeddemux01/uut/asic_no_i" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">asic_no_i</obj_property>
+      <obj_property name="ObjectShortName">asic_no_i</obj_property>
+   </wvobject>
+</wave_config>

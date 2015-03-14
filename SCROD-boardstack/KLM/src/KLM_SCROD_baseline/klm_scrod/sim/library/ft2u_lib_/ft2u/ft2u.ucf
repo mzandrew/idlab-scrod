@@ -1,0 +1,477 @@
+# 
+# FTSW version 2.1 FPGA XC5VLX30 UCF file for FT2U firmware
+#
+# M. Nakao
+
+net clk_s       PERIOD = 7.8 ns;
+net clk_i       PERIOD = 7.8 ns;
+net clk_l       PERIOD = 31.2 ns;
+
+net f_ick_p clock_dedicated_route = false;
+
+#-- FTSW 2.1 only
+### f_rsv3_n      loc=t19  | iostandard=lvds_25 | diff_term=true;
+### f_rsv3_p      loc=t20  | iostandard=lvds_25 | diff_term=true;
+
+#-- FTSW 3.1 only (dummy in FTSW 2.1)
+# bank3 - F14 E13 E12 F12 E10 E11 F9 F10 E18 F19 F8 E8 F18 F17
+net e_rst_b       loc=f14  | iostandard=lvcmos25;
+net e_txen        loc=e13  | iostandard=lvcmos25;
+net f_led1g       loc=e12  | iostandard=lvcmos25;
+net f_led2y       loc=f12  | iostandard=lvcmos25;
+net f_led2g       loc=e10  | iostandard=lvcmos25;
+net f_prsnt_b     loc=e11  | iostandard=lvcmos25;
+net f_irq         loc=f9   | iostandard=lvcmos25;
+
+#-- local I/O (A16 D32 ADS WR IRQ)
+
+net f_d<0>        loc=aa14 | iostandard=lvttl; # (c_d<0>)
+net f_d<1>        loc=aa13 | iostandard=lvttl; # (c_d<1>)
+net f_d<2>        loc=ab11 | iostandard=lvttl; # (c_d<2>)
+net f_d<3>        loc=aa12 | iostandard=lvttl; # (c_d<3>)
+net f_d<4>        loc=ab14 | iostandard=lvttl; # (c_d<4>)
+net f_d<5>        loc=aa15 | iostandard=lvttl; # (c_d<5>)
+net f_d<6>        loc=y13  | iostandard=lvttl; # (c_d<6>)
+net f_d<7>        loc=y12  | iostandard=lvttl; # (c_d<7>)
+net f_d<8>        loc=n21  | iostandard=lvttl; # (c_d<8>)
+net f_d<9>        loc=m21  | iostandard=lvttl; # (c_d<9>)
+net f_d<10>       loc=h21  | iostandard=lvttl; # (c_d<10>)
+net f_d<11>       loc=k20  | iostandard=lvttl; # (c_d<11>)
+net f_d<12>       loc=j21  | iostandard=lvttl; # (c_d<12>)
+net f_d<13>       loc=h22  | iostandard=lvttl; # (c_d<13>)
+net f_d<14>       loc=g20  | iostandard=lvttl; # (c_d<14>)
+net f_d<15>       loc=h19  | iostandard=lvttl; # (c_d<15>)
+net f_d<16>       loc=m20  | iostandard=lvttl; # (c_d<16>)
+net f_d<17>       loc=g19  | iostandard=lvttl; # (c_d<17>)
+net f_d<18>       loc=h18  | iostandard=lvttl; # (c_d<18>)
+net f_d<19>       loc=g17  | iostandard=lvttl; # (c_d<19>)
+net f_d<20>       loc=h17  | iostandard=lvttl; # (c_d<20>)
+net f_d<21>       loc=h16  | iostandard=lvttl; # (c_d<21>)
+net f_d<22>       loc=g15  | iostandard=lvttl; # (c_d<22>)
+net f_d<23>       loc=h14  | iostandard=lvttl; # (c_d<23>)
+net f_d<24>       loc=y11  | iostandard=lvttl; # (c_d<24>)
+net f_d<25>       loc=y10  | iostandard=lvttl; # (c_d<25>)
+net f_d<26>       loc=y8   | iostandard=lvttl; # (c_d<26>)
+net f_d<27>       loc=p19  | iostandard=lvttl; # (c_d<27>)
+net f_d<28>       loc=n19  | iostandard=lvttl; # (c_d<28>)
+net f_d<29>       loc=m19  | iostandard=lvttl; # (c_d<29>)
+net f_d<30>       loc=l19  | iostandard=lvttl; # (c_d<30>)
+net f_d<31>       loc=l20  | iostandard=lvttl; # (c_d<31>)
+
+net f_a<4>        loc=p20  | iostandard=lvttl; # (f_a<0>)
+net f_a<5>        loc=r22  | iostandard=lvttl; # (f_a<1>)
+net f_a<6>        loc=p23  | iostandard=lvttl; # (f_a<2>)
+net f_a<7>        loc=p21  | iostandard=lvttl; # (f_a<3>)
+net f_a<8>        loc=n23  | iostandard=lvttl; # (f_a<4>)
+net f_a<9>        loc=l22  | iostandard=lvttl; # (f_a<5>)
+net f_a<10>       loc=m22  | iostandard=lvttl; # (f_a<6>)
+net f_a<11>       loc=k21  | iostandard=lvttl; # (f_a<7>)
+net f_a<12>       loc=j23  | iostandard=lvttl; # (f_a<8>)
+net f_a<13>       loc=g22  | iostandard=lvttl; # (f_a<9>)
+net f_a<14>       loc=g21  | iostandard=lvttl; # (f_a<10>)
+net f_a<15>       loc=k23  | iostandard=lvttl; # (f_a<11>)
+
+net f_ads         loc=l23  | iostandard=lvttl;
+net f_wr          loc=k22  | iostandard=lvttl;
+
+#-- misc (id, led, oscillator-enable)
+
+net c_id1         loc=g9   | iostandard=lvttl;
+net c_id2         loc=g10  | iostandard=lvttl;
+net f_led1y_b     loc=g12  | iostandard=lvttl;    # (c_iclkok_b)
+                                                  # f_led1g at g12 in ftsw3
+net f_xen         loc=aa18 | iostandard=lvttl;    # (c_xclken)
+net f_ckmux<0>    loc=h13  | iostandard=lvttl; # (f_reset_b) not in FTSW3
+net f_ckmux<1>    loc=h12  | iostandard=lvttl; # (f_irq)
+
+### f_testin_n    loc=r5   | iostandard=lvds_25;  # (f_rsv_n<2>)
+### f_testin_p    loc=r6   | iostandard=lvds_25;  # (f_rsv_p<2>)
+
+#-- test-jtag-in
+
+net f_tck         loc=h8   | iostandard=lvttl; # f_pin<0>  (3.3V)
+net f_tms         loc=g16  | iostandard=lvttl; # f_pin<1>  (3.3V)
+net f_tdi         loc=j19  | iostandard=lvttl; # f_pin<2>  (3.3V)
+net f_tdo         loc=j20  | iostandard=lvttl; # f_pin<3>  (3.3V)
+
+#-- jitter cleaner control
+
+net j_pd_b        loc=ab17 | iostandard=lvttl;
+net j_plllock     loc=aa17 | iostandard=lvttl;
+net j_spiclk      loc=aa10 | iostandard=lvttl;
+net j_spile       loc=aa9  | iostandard=lvttl;
+net j_spimiso     loc=ab16 | iostandard=lvttl;
+net j_spimosi     loc=ab15 | iostandard=lvttl;
+
+#-- clock input
+
+net f_lck_n       loc=ac12 | iostandard=lvds_25 | diff_term=true; # (f_lclk_n)
+net f_lck_p       loc=ac13 | iostandard=lvds_25 | diff_term=true; # (f_lclk_p)
+net s_jck_n       loc=e17  | iostandard=lvds_25 | diff_term=true; # (j_clk_n)
+net s_jck_p       loc=e16  | iostandard=lvds_25 | diff_term=true; # (j_clk_p)
+net f_ick_n       loc=m7   | iostandard=lvds_25 | diff_term=true; # (f_rsv1_n)
+net f_ick_p       loc=l7   | iostandard=lvds_25 | diff_term=true; # (f_rsv1_p)
+
+#-- RJ-45 AUX port
+
+net o_aux_n<0>    loc=w20  | iostandard=lvds_25;
+net o_aux_p<0>    loc=w21  | iostandard=lvds_25;
+net o_aux_n<1>    loc=w19  | iostandard=lvds_25;
+net o_aux_p<1>    loc=v19  | iostandard=lvds_25;
+### o_aux_n<2>    loc=aa19 | iostandard=lvds_25;
+### o_aux_p<2>    loc=aa20 | iostandard=lvds_25;
+### o_aux_n<3>    loc=ad14 | iostandard=lvds_25;
+### o_aux_p<3>    loc=ad15 | iostandard=lvds_25;
+### i_aux_n<0>    loc=w20  | iostandard=lvds_25 | diff_term=true;
+### i_aux_p<0>    loc=w21  | iostandard=lvds_25 | diff_term=true;
+### i_aux_n<1>    loc=w19  | iostandard=lvds_25 | diff_term=true;
+### i_aux_p<1>    loc=v19  | iostandard=lvds_25 | diff_term=true;
+net i_aux_n<2>    loc=aa19 | iostandard=lvds_25 | diff_term=true;
+net i_aux_p<2>    loc=aa20 | iostandard=lvds_25 | diff_term=true;
+net i_aux_n<3>    loc=ad14 | iostandard=lvds_25 | diff_term=true;
+net i_aux_p<3>    loc=ad15 | iostandard=lvds_25 | diff_term=true;
+
+#-- RJ-45 IN port
+
+net i_trg_n       loc=ac19 | iostandard=lvds_25;
+net i_trg_p       loc=ad19 | iostandard=lvds_25;
+net i_ack_n       loc=ac16 | iostandard=lvds_25 | diff_term=true;
+net i_ack_p       loc=ac17 | iostandard=lvds_25 | diff_term=true;
+### i_rsv_n       loc=ab19 | iostandard=lvds_25;
+### i_rsv_p       loc=ab20 | iostandard=lvds_25;
+
+#-- RJ-45 OUT-CLK port (FTSW 2.1 only)
+
+net o_clk_n<1>    loc=c26  | iostandard=lvds_25;
+net o_clk_p<1>    loc=b26  | iostandard=lvds_25;
+net o_clk_n<2>    loc=d25  | iostandard=lvds_25;
+net o_clk_p<2>    loc=d26  | iostandard=lvds_25;
+net o_clk_n<3>    loc=c24  | iostandard=lvds_25;
+net o_clk_p<3>    loc=d24  | iostandard=lvds_25;
+net o_clk_n<4>    loc=d20  | iostandard=lvds_25;
+net o_clk_p<4>    loc=d21  | iostandard=lvds_25;
+net o_clk_n<5>    loc=a24  | iostandard=lvds_25;
+net o_clk_p<5>    loc=a23  | iostandard=lvds_25;
+net o_clk_n<6>    loc=a25  | iostandard=lvds_25;
+net o_clk_p<6>    loc=b25  | iostandard=lvds_25;
+net o_clk_n<7>    loc=c22  | iostandard=lvds_25;
+net o_clk_p<7>    loc=d23  | iostandard=lvds_25;
+net o_clk_n<8>    loc=c23  | iostandard=lvds_25;
+net o_clk_p<8>    loc=b24  | iostandard=lvds_25;
+net o_clk_n<9>    loc=a19  | iostandard=lvds_25;
+net o_clk_p<9>    loc=a18  | iostandard=lvds_25;
+net o_clk_n<10>   loc=a22  | iostandard=lvds_25;
+net o_clk_p<10>   loc=b22  | iostandard=lvds_25;
+net o_clk_n<11>   loc=b20  | iostandard=lvds_25;
+net o_clk_p<11>   loc=a20  | iostandard=lvds_25;
+net o_clk_n<12>   loc=b21  | iostandard=lvds_25;
+net o_clk_p<12>   loc=c21  | iostandard=lvds_25;
+net o_clk_n<13>   loc=c17  | iostandard=lvds_25;
+net o_clk_p<13>   loc=d18  | iostandard=lvds_25;
+net o_clk_n<14>   loc=d19  | iostandard=lvds_25;
+net o_clk_p<14>   loc=c19  | iostandard=lvds_25;
+net o_clk_n<15>   loc=b16  | iostandard=lvds_25;
+net o_clk_p<15>   loc=b15  | iostandard=lvds_25;
+net o_clk_n<16>   loc=c16  | iostandard=lvds_25;
+net o_clk_p<16>   loc=d16  | iostandard=lvds_25;
+net o_clk_n<17>   loc=a15  | iostandard=lvds_25;
+net o_clk_p<17>   loc=a14  | iostandard=lvds_25;
+net o_clk_n<18>   loc=a17  | iostandard=lvds_25;
+net o_clk_p<18>   loc=b17  | iostandard=lvds_25;
+net o_clk_n<19>   loc=d14  | iostandard=lvds_25;
+net o_clk_p<19>   loc=d13  | iostandard=lvds_25;
+net o_clk_n<20>   loc=e15  | iostandard=lvds_25;
+net o_clk_p<20>   loc=d15  | iostandard=lvds_25;
+
+#-- RJ-45 OUT-TRG port
+
+net o_trg_n<1>    loc=w26  | iostandard=lvds_25;
+net o_trg_p<1>    loc=w25  | iostandard=lvds_25;
+net o_trg_n<2>    loc=y26  | iostandard=lvds_25;
+net o_trg_p<2>    loc=y25  | iostandard=lvds_25;
+net o_trg_n<3>    loc=k26  | iostandard=lvds_25;
+net o_trg_p<3>    loc=k25  | iostandard=lvds_25;
+net o_trg_n<4>    loc=m26  | iostandard=lvds_25;
+net o_trg_p<4>    loc=m25  | iostandard=lvds_25;
+net o_trg_n<5>    loc=h26  | iostandard=lvds_25;
+net o_trg_p<5>    loc=g26  | iostandard=lvds_25;
+net o_trg_n<6>    loc=j26  | iostandard=lvds_25;
+net o_trg_p<6>    loc=j25  | iostandard=lvds_25;
+net o_trg_n<7>    loc=a5   | iostandard=lvds_25;
+net o_trg_p<7>    loc=a4   | iostandard=lvds_25;
+net o_trg_n<8>    loc=a7   | iostandard=lvds_25;
+net o_trg_p<8>    loc=b7   | iostandard=lvds_25;
+net o_trg_n<9>    loc=b2   | iostandard=lvds_25;
+net o_trg_p<9>    loc=b1   | iostandard=lvds_25;
+net o_trg_n<10>   loc=a3   | iostandard=lvds_25;
+net o_trg_p<10>   loc=a2   | iostandard=lvds_25;
+net o_trg_n<11>   loc=e1   | iostandard=lvds_25;
+net o_trg_p<11>   loc=e2   | iostandard=lvds_25;
+net o_trg_n<12>   loc=c1   | iostandard=lvds_25;
+net o_trg_p<12>   loc=d1   | iostandard=lvds_25;
+net o_trg_n<13>   loc=k1   | iostandard=lvds_25;
+net o_trg_p<13>   loc=l2   | iostandard=lvds_25;
+net o_trg_n<14>   loc=h2   | iostandard=lvds_25;
+net o_trg_p<14>   loc=j1   | iostandard=lvds_25;
+net o_trg_n<15>   loc=v1   | iostandard=lvds_25;
+net o_trg_p<15>   loc=v2   | iostandard=lvds_25;
+net o_trg_n<16>   loc=u1   | iostandard=lvds_25;
+net o_trg_p<16>   loc=u2   | iostandard=lvds_25;
+net o_trg_n<17>   loc=ab1  | iostandard=lvds_25;
+net o_trg_p<17>   loc=ab2  | iostandard=lvds_25;
+net o_trg_n<18>   loc=w1   | iostandard=lvds_25;
+net o_trg_p<18>   loc=y1   | iostandard=lvds_25;
+net o_trg_n<19>   loc=ad1  | iostandard=lvds_25;
+net o_trg_p<19>   loc=ae1  | iostandard=lvds_25;
+net o_trg_n<20>   loc=ac1  | iostandard=lvds_25;
+net o_trg_p<20>   loc=ac2  | iostandard=lvds_25;
+
+#-- RJ-45 OUT-ACK port
+
+net o_ack_n<1>    loc=ac22 | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<1>    loc=ac23 | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<2>    loc=y22  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<2>    loc=y23  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<3>    loc=aa25 | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<3>    loc=ab25 | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<4>    loc=v22  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<4>    loc=v21  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<5>    loc=u20  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<5>    loc=u19  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<6>    loc=w23  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<6>    loc=w24  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<7>    loc=t25  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<7>    loc=t24  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<8>    loc=p24  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<8>    loc=p25  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<9>    loc=j24  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<9>    loc=h24  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<10>   loc=g25  | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<10>   loc=g24  | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<11>   loc=d9   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<11>   loc=c9   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<12>   loc=f7   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<12>   loc=e7   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<13>   loc=g7   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<13>   loc=g6   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<14>   loc=g5   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<14>   loc=h6   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<15>   loc=c3   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<15>   loc=c2   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<16>   loc=d4   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<16>   loc=d3   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<17>   loc=f4   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<17>   loc=f5   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<18>   loc=g4   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<18>   loc=h4   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<19>   loc=l3   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<19>   loc=l4   | iostandard=lvds_25 | diff_term=true;
+net o_ack_n<20>   loc=m6   | iostandard=lvds_25 | diff_term=true;
+net o_ack_p<20>   loc=m5   | iostandard=lvds_25 | diff_term=true;
+
+#-- RJ-45 OUT-RSV port
+
+net o_rsv_n<1>    loc=aa22 | iostandard=lvds_25;
+net o_rsv_p<1>    loc=ab22 | iostandard=lvds_25;
+
+net o_rsv_n<2>    loc=y20  | iostandard=lvds_25;
+net o_rsv_p<2>    loc=y21  | iostandard=lvds_25;
+
+net o_rsv_n<3>    loc=t22  | iostandard=lvds_25;
+net o_rsv_p<3>    loc=t23  | iostandard=lvds_25;
+
+net o_rsv_n<4>    loc=aa24 | iostandard=lvds_25;
+net o_rsv_p<4>    loc=aa23 | iostandard=lvds_25;
+
+net o_rsv_n<5>    loc=r20  | iostandard=lvcmos25;
+net o_rsv_p<5>    loc=r21  | iostandard=lvcmos25;
+
+net o_rsv_n<6>    loc=v23  | iostandard=lvds_25;
+net o_rsv_p<6>    loc=v24  | iostandard=lvds_25;
+
+net o_rsv_n<7>    loc=n24  | iostandard=lvcmos25;
+net o_rsv_p<7>    loc=m24  | iostandard=lvcmos25;
+
+net o_rsv_n<8>    loc=l25  | iostandard=lvds_25;
+net o_rsv_p<8>    loc=l24  | iostandard=lvds_25;
+
+net o_rsv_n<9>    loc=a10  | iostandard=lvcmos25;
+net o_rsv_p<9>    loc=b11  | iostandard=lvcmos25;
+
+net o_rsv_n<10>   loc=d10  | iostandard=lvds_25;
+net o_rsv_p<10>   loc=d11  | iostandard=lvds_25;
+
+net o_rsv_n<11>   loc=c8   | iostandard=lvcmos25;
+net o_rsv_p<11>   loc=d8   | iostandard=lvcmos25;
+
+net o_rsv_n<12>   loc=c7   | iostandard=lvds_25;
+net o_rsv_p<12>   loc=c6   | iostandard=lvds_25;
+
+net o_rsv_n<13>   loc=d6   | iostandard=lvcmos25;
+net o_rsv_p<13>   loc=d5   | iostandard=lvcmos25;
+
+net o_rsv_n<14>   loc=b4   | iostandard=lvds_25;
+net o_rsv_p<14>   loc=c4   | iostandard=lvds_25;
+
+net o_rsv_n<15>   loc=j4   | iostandard=lvcmos25;
+net o_rsv_p<15>   loc=j5   | iostandard=lvcmos25;
+
+# <<begin>>
+# 20140105 temporarily o_rsv<16> and i_rsv are swapped
+# to generate trigger output to ttio9107 for TLU from
+# ft2u044 for DESY beam test
+# 20140728 back to original from ft2u059
+# (below is original configuration)
+net o_rsv_n<16>   loc=e5   | iostandard=lvds_25;
+net o_rsv_p<16>   loc=e6   | iostandard=lvds_25;
+net i_rsv_n       loc=ab19 | iostandard=lvds_25;
+net i_rsv_p       loc=ab20 | iostandard=lvds_25;
+# (below is swapped configuration)
+#swap net o_rsv_n<16>   loc=ab19 | iostandard=lvds_25;
+#swap net o_rsv_p<16>   loc=ab20 | iostandard=lvds_25;
+#swap net i_rsv_n       loc=e5   | iostandard=lvds_25;
+#swap net i_rsv_p       loc=e6   | iostandard=lvds_25;
+# 20140105 temporarily o_rsv<16> and i_rsv are swapped
+# to generate trigger output to ttio9107 for TLU from
+# ft2u044 for DESY beam test
+# <<end>>
+
+net o_rsv_n<17>   loc=n6   | iostandard=lvcmos25;
+net o_rsv_p<17>   loc=n7   | iostandard=lvcmos25;
+
+net o_rsv_n<18>   loc=k7   | iostandard=lvds_25;
+net o_rsv_p<18>   loc=k6   | iostandard=lvds_25;
+
+net o_rsv_n<19>   loc=p4   | iostandard=lvcmos25;
+net o_rsv_p<19>   loc=p5   | iostandard=lvcmos25;
+
+net o_rsv_n<20>   loc=n3   | iostandard=lvds_25;
+net o_rsv_p<20>   loc=p3   | iostandard=lvds_25;
+
+#-- RJ-45 IN and OUT LED (yellow / upper)
+
+net i_ledy_b      loc=v26  | iostandard=lvcmos25; # (i_led_g)
+net o_ledy_b<1>   loc=u26  | iostandard=lvcmos25; # (o_led_g<1>)
+net o_ledy_b<2>   loc=r25  | iostandard=lvcmos25; # (o_led_g<2>)
+net o_ledy_b<3>   loc=n26  | iostandard=lvcmos25; # (o_led_g<3>)
+net o_ledy_b<4>   loc=u22  | iostandard=lvcmos25; # (o_led_g<4>)
+net o_ledy_b<5>   loc=a13  | iostandard=lvcmos25; # (o_led_g<5>)
+net o_ledy_b<6>   loc=a12  | iostandard=lvcmos25; # (o_led_g<6>)
+net o_ledy_b<7>   loc=b10  | iostandard=lvcmos25; # (o_led_g<7>)
+net o_ledy_b<8>   loc=a9   | iostandard=lvcmos25; # (o_led_g<8>)
+net o_ledy_b<9>   loc=b6   | iostandard=lvcmos25; # (o_led_g<9>)
+net o_ledy_b<10>  loc=b5   | iostandard=lvcmos25; # (o_led_g<10>)
+net o_ledy_b<11>  loc=g2   | iostandard=lvcmos25; # (o_led_g<11>)
+net o_ledy_b<12>  loc=h1   | iostandard=lvcmos25; # (o_led_g<12>)
+net o_ledy_b<13>  loc=k5   | iostandard=lvcmos25; # (o_led_g<13>)
+net o_ledy_b<14>  loc=j3   | iostandard=lvcmos25; # (o_led_g<14>)
+net o_ledy_b<15>  loc=n2   | iostandard=lvcmos25; # (o_led_g<15>)
+net o_ledy_b<16>  loc=n1   | iostandard=lvcmos25; # (o_led_g<16>)
+net o_ledy_b<17>  loc=r1   | iostandard=lvcmos25; # (o_led_g<17>)
+net o_ledy_b<18>  loc=r2   | iostandard=lvcmos25; # (o_led_g<18>)
+net o_ledy_b<19>  loc=aa2  | iostandard=lvcmos25; # (o_led_g<19>)
+net o_ledy_b<20>  loc=u6   | iostandard=lvcmos25; # (o_led_g<20>)
+
+#-- RJ-45 IN and OUT LED (green / lower)
+
+net i_ledg_b      loc=u25  | iostandard=lvcmos25; # (i_led_y)
+net o_ledg_b<1>   loc=r26  | iostandard=lvcmos25; # (o_led_y<1>)
+net o_ledg_b<2>   loc=p26  | iostandard=lvcmos25; # (o_led_y<2>)
+net o_ledg_b<3>   loc=u21  | iostandard=lvcmos25; # (o_led_y<3>)
+net o_ledg_b<4>   loc=j6   | iostandard=lvcmos25; # (o_led_y<4>)
+net o_ledg_b<5>   loc=b12  | iostandard=lvcmos25; # (o_led_y<5>)
+net o_ledg_b<6>   loc=h7   | iostandard=lvcmos25; # (o_led_y<6>)
+net o_ledg_b<7>   loc=b9   | iostandard=lvcmos25; # (o_led_y<7>)
+net o_ledg_b<8>   loc=a8   | iostandard=lvcmos25; # (o_led_y<8>)
+net o_ledg_b<9>   loc=f2   | iostandard=lvcmos25; # (o_led_y<9>)
+net o_ledg_b<10>  loc=g1   | iostandard=lvcmos25; # (o_led_y<10>)
+net o_ledg_b<11>  loc=f3   | iostandard=lvcmos25; # (o_led_y<11>)
+net o_ledg_b<12>  loc=h3   | iostandard=lvcmos25; # (o_led_y<12>)
+net o_ledg_b<13>  loc=m2   | iostandard=lvcmos25; # (o_led_y<13>)
+net o_ledg_b<14>  loc=m1   | iostandard=lvcmos25; # (o_led_y<14>)
+net o_ledg_b<15>  loc=m4   | iostandard=lvcmos25; # (o_led_y<15>)
+net o_ledg_b<16>  loc=p1   | iostandard=lvcmos25; # (o_led_y<16>)
+net o_ledg_b<17>  loc=t2   | iostandard=lvcmos25; # (o_led_y<17>)
+net o_ledg_b<18>  loc=y2   | iostandard=lvcmos25; # (o_led_y<18>)
+net o_ledg_b<19>  loc=aa5  | iostandard=lvcmos25; # (o_led_y<19>)
+net o_ledg_b<20>  loc=aa4  | iostandard=lvcmos25; # (o_led_y<20>)
+
+#-- FMC control
+
+### m_prsnt       loc=g11  | iostandard=lvttl; # (f_fmcprsnt)
+### m_rst         loc=h11  | iostandard=lvttl; # (f_fmcrst)
+### m_scl         loc=h9   | iostandard=lvttl; # (f_fmcscl)
+### m_sda         loc=g14  | iostandard=lvttl; # (f_fmcsda)
+
+#-- FMC I/O (A7 D8 IO8 LCK ADS WR)
+
+### m_io_n/p in the schematics
+### m_io<3>       loc=ae5  | iostandard=lvcmos25; # (f_fmcio<3>) row-D LA01_N
+### m_io<1>       loc=ae6  | iostandard=lvcmos25; # (f_fmcio<1>) row-D LA01_P
+### m_io<2>       loc=ae2  | iostandard=lvcmos25; # (f_fmcio<2>) row-H LA02_N
+### m_io<0>       loc=af2  | iostandard=lvcmos25; # (f_fmcio<0>) row-H LA02_P
+### m_io<5>       loc=ac3  | iostandard=lvcmos25; # (f_fmcio<5>) row-H LA04_N
+### m_io<4>       loc=ac4  | iostandard=lvcmos25; # (f_fmcio<4>) row-H LA04_P
+net m_d<1>        loc=aa3  | iostandard=lvcmos25; # (f_fmcd<1>)  row-H LA07_N
+### m_io<7>       loc=ab4  | iostandard=lvcmos25; # (f_fmcio<7>) row-H LA07_P
+net m_d<0>        loc=ad5  | iostandard=lvcmos25; # (f_fmcd<0>)  row-G LA08_N
+### m_io<6>       loc=ad6  | iostandard=lvcmos25; # (f_fmcio<6>) row-G LA08_P
+net m_d<4>        loc=ad3  | iostandard=lvcmos25; # (f_fmcd<4>)  row-D LA09_N
+net m_d<2>        loc=ad4  | iostandard=lvcmos25; # (f_fmcd<2>)  row-D LA09_P
+net m_d<5>        loc=y3   | iostandard=lvcmos25; # (f_fmcd<5>)  row-H LA11_N
+net m_d<3>        loc=w3   | iostandard=lvcmos25; # (f_fmcd<3>)  row-H LA11_P
+net m_a<0>        loc=w4   | iostandard=lvcmos25; # (f_fmca<0>)  row-H LA15_N
+net m_d<6>        loc=v4   | iostandard=lvcmos25; # (f_fmcd<6>)  row-H LA15_P
+net m_a<1>        loc=aa7  | iostandard=lvcmos25; # (f_fmca<1>)  row-D LA17_N
+net m_d<7>        loc=y7   | iostandard=lvcmos25; # (f_fmcd<7>)  row-D LA17_P
+net m_a<4>        loc=u7   | iostandard=lvcmos25; # (f_fmca<4>)  row-H LA19_N
+net m_a<2>        loc=t7   | iostandard=lvcmos25; # (f_fmca<2>)  row-H LA19_P
+net m_wr          loc=t4   | iostandard=lvcmos25; # (f_fmcwr)    row-H LA21_N
+net m_a<6>        loc=t5   | iostandard=lvcmos25; # (f_fmca<6>)  row-H LA21_P
+net m_a<5>        loc=ab9  | iostandard=lvcmos25; # (f_fmca<5>)  row-D LA23_N
+net m_a<3>        loc=ab10 | iostandard=lvcmos25; # (f_fmca<3>)  row-D LA23_P
+net m_lck         loc=t3   | iostandard=lvcmos25; # (f_fmclclk)  row-H LA24_N
+net m_ads         loc=r3   | iostandard=lvcmos25; # (f_fmcads)   row-H LA24_P
+
+#-- FMC TRG/ACK ([5..8] in FTSW 2.1 only)
+
+# f_fmc[tr]x_[pn] in schematics/netlist, not in FTSW3
+### m_trg_n<1>    loc=ae3  | iostandard=lvds_25; # CLK0_M2C_N
+### m_trg_p<1>    loc=af3  | iostandard=lvds_25; # CLK0_M2C_P
+### m_trg_n<2>    loc=ac9  | iostandard=lvds_25; # DP0_C2M_N
+### m_trg_p<2>    loc=ac8  | iostandard=lvds_25; # DP0_C2M_P
+### m_trg_n<3>    loc=ac18 | iostandard=lvds_25; # LA06_N
+### m_trg_p<3>    loc=ad18 | iostandard=lvds_25; # LA06_P
+### m_trg_n<4>    loc=r7   | iostandard=lvds_25; # LA03_N
+### m_trg_p<4>    loc=p6   | iostandard=lvds_25; # LA03_P
+### m_trg_n<5>    loc=v7   | iostandard=lvds_25; # LA16_N
+### m_trg_p<5>    loc=v6   | iostandard=lvds_25; # LA16_P
+### m_trg_n<6>    loc=ab7  | iostandard=lvds_25; # LA12_N
+### m_trg_p<6>    loc=ac6  | iostandard=lvds_25; # LA12_P
+### m_trg_n<7>    loc=ac11 | iostandard=lvds_25; # LA22_N
+### m_trg_p<7>    loc=ab12 | iostandard=lvds_25; # LA22_P
+### m_trg_n<8>    loc=ad10 | iostandard=lvds_25; # LA20_N
+### m_trg_p<8>    loc=ad11 | iostandard=lvds_25; # LA20_P
+
+### m_ack_n<1>    loc=ab5  | iostandard=lvds_25 | diff_term=true; # CLK1_M2C_N
+### m_ack_p<1>    loc=ab6  | iostandard=lvds_25 | diff_term=true; # CLK1_M2C_P
+### m_ack_p<2>    loc=ad13 | iostandard=lvds_25 | diff_term=true; # DP0_M2C_P
+### m_ack_n<2>    loc=ac14 | iostandard=lvds_25 | diff_term=true; # DP0_M2C_N
+### m_ack_n<3>    loc=w6   | iostandard=lvds_25 | diff_term=true; # LA00_N
+### m_ack_p<3>    loc=w5   | iostandard=lvds_25 | diff_term=true; # LA00_P
+### m_ack_n<4>    loc=af4  | iostandard=lvds_25 | diff_term=true; # LA05_N
+### m_ack_p<4>    loc=af5  | iostandard=lvds_25 | diff_term=true; # LA05_P
+### m_ack_n<5>    loc=y5   | iostandard=lvds_25 | diff_term=true; # LA13_N
+### m_ack_p<5>    loc=y6   | iostandard=lvds_25 | diff_term=true; # LA13_P
+### m_ack_n<6>    loc=ab21 | iostandard=lvds_25 | diff_term=true; # LA10_N
+### m_ack_p<6>    loc=ac21 | iostandard=lvds_25 | diff_term=true; # LA10_P
+### m_ack_n<7>    loc=ab26 | iostandard=lvds_25 | diff_term=true; # LA18_N
+### m_ack_p<7>    loc=ac26 | iostandard=lvds_25 | diff_term=true; # LA18_P
+### m_ack_n<8>    loc=ac24 | iostandard=lvds_25 | diff_term=true; # LA14_N
+### m_ack_p<8>    loc=ab24 | iostandard=lvds_25 | diff_term=true; # LA14_P
+
+#-- (emacs outline mode setup)
+# Local Variables: ***
+# mode:outline ***
+# outline-regexp:"^#--" ***
+# End: ***
