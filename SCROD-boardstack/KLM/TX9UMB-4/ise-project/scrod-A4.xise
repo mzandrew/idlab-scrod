@@ -485,7 +485,7 @@
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="116"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="116"/>
     </file>
-    <file xil_pn:name="../src/testbenches/SampligLogic-TX.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/SampligLogic-TX.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
@@ -497,7 +497,7 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="49"/>
     </file>
-    <file xil_pn:name="../src/testbenches/TestPatternGen01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/TestPatternGen01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
@@ -597,7 +597,7 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="87"/>
     </file>
-    <file xil_pn:name="../src/testbenches/SRAMscheduler.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/SRAMscheduler.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="109"/>
     </file>
@@ -625,7 +625,7 @@
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="283"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="283"/>
     </file>
-    <file xil_pn:name="../src/testbenches/PedRAMaccess.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/PedRAMaccess.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="83"/>
     </file>
