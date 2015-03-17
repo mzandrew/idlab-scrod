@@ -8,7 +8,7 @@
 -- \   \   \/     Version    : 14.7
 --  \   \         Application: XILINX CORE Generator
 --  /   /         Filename   : myILA.vhd
--- /___/   /\     Timestamp  : Thu Mar 05 18:44:18 Hawaiian Standard Time 2015
+-- /___/   /\     Timestamp  : Tue Mar 17 09:56:50 Hawaiian Standard Time 2015
 -- \   \  /  \
 --  \___\/\___\
 --

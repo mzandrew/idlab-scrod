@@ -7,14 +7,14 @@
 -- \   \   \/     Version: P.20131013
 --  \   \         Application: netgen
 --  /   /         Filename: ether2.vhd
--- /___/   /\     Timestamp: Thu Mar 05 18:34:52 2015
+-- /___/   /\     Timestamp: Tue Mar 17 09:46:34 2015
 -- \   \  /  \ 
 --  \___\/\___\
 --             
--- Command	: -w -sim -ofmt vhdl C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/ipcore_dir/tmp/_cg/ether2.ngc C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/ipcore_dir/tmp/_cg/ether2.vhd 
+-- Command	: -w -sim -ofmt vhdl C:/Users/isar/Documents/code5/TX9UMB-4/ise-project/ipcore_dir/tmp/_cg/ether2.ngc C:/Users/isar/Documents/code5/TX9UMB-4/ise-project/ipcore_dir/tmp/_cg/ether2.vhd 
 -- Device	: 6slx150tfgg676-3
--- Input file	: C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/ipcore_dir/tmp/_cg/ether2.ngc
--- Output file	: C:/Users/isar/Documents/code4/TX9UMB-3/ise-project/ipcore_dir/tmp/_cg/ether2.vhd
+-- Input file	: C:/Users/isar/Documents/code5/TX9UMB-4/ise-project/ipcore_dir/tmp/_cg/ether2.ngc
+-- Output file	: C:/Users/isar/Documents/code5/TX9UMB-4/ise-project/ipcore_dir/tmp/_cg/ether2.vhd
 -- # of Entities	: 1
 -- Design Name	: ether2
 -- Xilinx	: C:\Xilinx\14.7\ISE_DS\ISE\

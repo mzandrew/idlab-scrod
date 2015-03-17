@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <symbol version="7" name="myILA">
     <symboltype>BLOCK</symboltype>
-    <timestamp>2015-3-6T4:44:18</timestamp>
+    <timestamp>2015-3-17T19:56:50</timestamp>
     <pin polarity="Input" x="0" y="80" name="control[35:0]" />
     <pin polarity="Input" x="0" y="112" name="clk" />
     <pin polarity="Input" x="0" y="176" name="trig0[17:0]" />
