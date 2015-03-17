@@ -97,7 +97,7 @@
     </file>
     <file xil_pn:name="../src/daq_fifo_layer.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="98"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="99"/>
     </file>
     <file xil_pn:name="../src/aurora_interfaces/two_lane_aurora_interface.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -133,7 +133,7 @@
     </file>
     <file xil_pn:name="../src/picoblaze/command_interpreter/command_interpreter.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="85"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="86"/>
     </file>
     <file xil_pn:name="../src/readout_definitions.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -141,7 +141,7 @@
     </file>
     <file xil_pn:name="../src/readout_interface.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="111"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="113"/>
     </file>
     <file xil_pn:name="../src/utilities/clock_enable_generator.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -197,7 +197,7 @@
     </file>
     <file xil_pn:name="../src/SamplingLgc.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="110"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="112"/>
     </file>
     <file xil_pn:name="../src/DigitizingLgc.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -209,31 +209,31 @@
     </file>
     <file xil_pn:name="../src/picoblaze/kcpsm6.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="84"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="85"/>
     </file>
     <file xil_pn:name="../src/asic_interfaces/event_builder.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="121"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="123"/>
     </file>
     <file xil_pn:name="ipcore_dir/waveform_fifo_wr32_rd32.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="123"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="124"/>
     </file>
     <file xil_pn:name="../src/mppc_dacs.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="116"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="118"/>
     </file>
     <file xil_pn:name="../src/TDC_MPPC_DAC.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="83"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="84"/>
     </file>
     <file xil_pn:name="../src/edge_detect.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="97"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="98"/>
     </file>
     <file xil_pn:name="../src/pulse_transition.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="113"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="115"/>
     </file>
     <file xil_pn:name="../src/ReadoutControl.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -241,39 +241,39 @@
     </file>
     <file xil_pn:name="../src/OutputBufferControl.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="115"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="117"/>
     </file>
     <file xil_pn:name="ipcore_dir/buffer_fifo_wr32_rd32.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="125"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="126"/>
     </file>
     <file xil_pn:name="../src/asic_interfaces/trigger_scalers.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="120"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="122"/>
     </file>
     <file xil_pn:name="../src/utilities/edge_to_pulse_converter.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="81"/>
     </file>
-    <file xil_pn:name="tb_u_Target6_DAC_CONTROL.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_u_Target6_DAC_CONTROL.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="62"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="62"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="62"/>
     </file>
-    <file xil_pn:name="ub_trigger_scaler_single_channel01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/ub_trigger_scaler_single_channel01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="63"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="63"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="63"/>
     </file>
-    <file xil_pn:name="tb_triggerscalers02.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_triggerscalers02.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="64"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="64"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="64"/>
     </file>
-    <file xil_pn:name="tb_trigger_scaler_single_channel_w_timing_gen02.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_trigger_scaler_single_channel_w_timing_gen02.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="65"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="65"/>
@@ -281,19 +281,19 @@
     </file>
     <file xil_pn:name="../src/peripherals/Module_ADC_MCP3221_I2C_new.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="87"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="88"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/klm_scrod.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="117"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="119"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/timing_ctrl.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="88"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="89"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="96"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="97"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_clk_s6.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -317,7 +317,7 @@
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/klm_aurora_intfc.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="94"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="95"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_aurora/source/klm_aurora.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -397,7 +397,7 @@
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/conc_intfc/source/conc_intfc.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="95"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="96"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/time_order/source/time_order.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -437,15 +437,15 @@
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/frame_gen.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="92"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="93"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/run_ctrl.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="90"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="91"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/sfp_stat_ctrl.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="89"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="90"/>
     </file>
     <file xil_pn:name="ipcore_dir/trig_fifo.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -477,43 +477,43 @@
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/klm_scrod_pkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="91"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="92"/>
     </file>
-    <file xil_pn:name="tb_digitizinglogic01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_digitizinglogic01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="116"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="116"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="116"/>
     </file>
-    <file xil_pn:name="SampligLogic-TX.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/SampligLogic-TX.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="../src/DigitizingLgcTX.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="118"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="120"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/b2tt/b2tt/b2tt_ddr_s6.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="49"/>
     </file>
-    <file xil_pn:name="TestPatternGen01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/TestPatternGen01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
-    <file xil_pn:name="tb_testpatgen01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_testpatgen01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="121"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="121"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="121"/>
     </file>
-    <file xil_pn:name="tb_serialrout01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_serialrout01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="122"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="122"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="122"/>
     </file>
-    <file xil_pn:name="tb_T6DACctrl01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_T6DACctrl01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="123"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="123"/>
@@ -539,19 +539,19 @@
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="130"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="130"/>
     </file>
-    <file xil_pn:name="tb_samplinglogic_new01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_samplinglogic_new01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="131"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="131"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="131"/>
     </file>
-    <file xil_pn:name="tb_readoutControl01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readoutControl01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="132"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="132"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="132"/>
     </file>
-    <file xil_pn:name="tb_samplinglogic_new2.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_samplinglogic_new2.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="133"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="133"/>
@@ -563,9 +563,9 @@
     </file>
     <file xil_pn:name="../src/update_status_regs.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="106"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="107"/>
     </file>
-    <file xil_pn:name="tb_update_status_reg01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_update_status_reg01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="257"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="257"/>
@@ -585,7 +585,7 @@
     </file>
     <file xil_pn:name="../src/TARGETX_DAC_CONTROL.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="108"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="110"/>
     </file>
     <file xil_pn:name="../src/tb_klm_runctrl_01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -595,13 +595,13 @@
     </file>
     <file xil_pn:name="../src/peripherals/SRAMiface2.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="86"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="87"/>
     </file>
-    <file xil_pn:name="SRAMscheduler.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/SRAMscheduler.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="122"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="109"/>
     </file>
-    <file xil_pn:name="tb_sramsched02.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_sramsched02.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="270"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="270"/>
@@ -619,15 +619,15 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
-    <file xil_pn:name="tb_wavepeddemux01.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_wavepeddemux01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="283"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="283"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="283"/>
     </file>
-    <file xil_pn:name="PedRAMaccess.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/PedRAMaccess.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="99"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="83"/>
     </file>
     <file xil_pn:name="../src/WaveformDemuxCalcPeds.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -658,7 +658,7 @@
     </file>
     <file xil_pn:name="../src/TrigDecisionLogic.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="107"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="108"/>
     </file>
     <file xil_pn:name="../src/tb_trigdecisionlogic01.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -682,19 +682,19 @@
     </file>
     <file xil_pn:name="../src/scrod_top_A4.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="126"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="127"/>
     </file>
     <file xil_pn:name="ipcore_dir/asic_fpga_clock_gen_core.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="103"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="104"/>
     </file>
     <file xil_pn:name="ipcore_dir/blk_mem_gen_v7_3.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="102"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="103"/>
     </file>
     <file xil_pn:name="../src/clocking/clock_gen_A4wDCM.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="119"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="121"/>
     </file>
     <file xil_pn:name="ipcore_dir/blkmem_pedcalc_tmp.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
@@ -702,29 +702,29 @@
     </file>
     <file xil_pn:name="ipcore_dir/txtrig_bram.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="124"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="125"/>
     </file>
     <file xil_pn:name="../src/SerialDataRoutDemux.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="109"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="111"/>
     </file>
     <file xil_pn:name="../src/WaveformPedsubDSP.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="104"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="105"/>
     </file>
-    <file xil_pn:name="tb_readoutControl02.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readoutControl02.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="ipcore_dir/srout_bram_blkmem.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="100"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="101"/>
     </file>
     <file xil_pn:name="../src/WaveformPedcalcDSP.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="105"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="106"/>
     </file>
-    <file xil_pn:name="tb_readoutControl03.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readoutControl03.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
@@ -738,29 +738,29 @@
     </file>
     <file xil_pn:name="../src/PedestalManagement.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="114"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="116"/>
     </file>
-    <file xil_pn:name="tb_readout4.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readout4.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="360"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="360"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="360"/>
     </file>
-    <file xil_pn:name="scrod_top_A4_sim.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/scrod_top_A4_sim.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
-    <file xil_pn:name="tb_readout_sim02.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readout_sim02.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="PostMapSimulation" xil_pn:seqID="363"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="363"/>
       <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="363"/>
     </file>
-    <file xil_pn:name="tb_readoutControl04.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readoutControl04.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
-    <file xil_pn:name="tb_readout5.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../src/testbenches/tb_readout5.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
@@ -786,19 +786,19 @@
     </file>
     <file xil_pn:name="ipcore_dir/qt_fifo.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="0"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="101"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="102"/>
     </file>
     <file xil_pn:name="../src/KLM_SCROD_baseline/klm_scrod/source/daq_gen_readout.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="1"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="93"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="94"/>
     </file>
     <file xil_pn:name="../src/ReadoutControl3.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="365"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="112"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="114"/>
     </file>
     <file xil_pn:name="../src/autoinit_definitions.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="215"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="215"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="100"/>
     </file>
     <file xil_pn:name="ipcore_dir/ether2.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>

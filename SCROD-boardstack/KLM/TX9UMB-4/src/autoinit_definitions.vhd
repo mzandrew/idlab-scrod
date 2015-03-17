@@ -16,6 +16,9 @@ package autoinit_definitions is
  type scrodpre is array (0 to scrodpre_len-1) of std_logic_vector(23 downto 0);
  constant init_scrodpre : scrodpre:= (x"050080",x"060140",x"000000");
  
+ 	constant INIT_CNT1_MAX: integer:=1000000;
+	constant WAIT_CNT1_MAX: integer:=1000000;-- wait between regs this long 
+
   constant scrodpost_len : integer :=35;
   type scrodpost is array (0 to scrodpost_len-1) of std_logic_vector(23 downto 0);
  constant init_scrodpost : scrodpost:= (

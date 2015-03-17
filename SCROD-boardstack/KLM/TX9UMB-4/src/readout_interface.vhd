@@ -137,7 +137,6 @@ architecture Behavioral of readout_interface is
 	signal init_cnt1		: integer:=0;
 	signal cnt1				: integer:=0;
 	signal init_precnt   : integer:=0;
-	signal INIT_CNT1_MAX: integer:=10000000;
 	signal cur_scrod_reg	: std_logic_vector(23 downto 0);
 	signal cur_dc			:integer:=0;
 	signal asic_dc_msk	: std_logic_vector(15 downto 0);
@@ -189,27 +188,36 @@ begin
 			case init_st is 
 			when init_st_startup => 
 				init_cnt1<=0;
+				cnt1<=0;
 				init_st<=init_st_cnt1;
 				auto_init_en<='0';
 			
 			when init_st_cnt1 =>
-				cnt1<=cnt1+1;
-				if (cnt1/=INIT_CNT1_MAX) then
+				init_cnt1<=init_cnt1+1;
+				if (init_cnt1/=INIT_CNT1_MAX) then
 					init_st<=init_st_cnt1;
 				else
 					auto_init_en<='1';
 					init_precnt<=0;
+					init_cnt1<=0;
 					init_st<=init_st_setauto_pre0;
 				end if;
 
 			when init_st_setauto_pre0=>
-				init_st<=init_st_setauto_pre;
+				if (cnt1/=WAIT_CNT1_MAX) then 
+					cnt1<=cnt1+1;
+					init_st<=init_st_setauto_pre0;
+				else
+					cnt1<=0;
+					init_st<=init_st_setauto_pre;
+				end if;
 					
 
 			when init_st_setauto_pre=>
 				if (init_precnt<scrodpre_len) then
 					internal_GPR_auto(to_integer(unsigned(init_scrodpre (init_precnt )(23 downto 16))))<=init_scrodpre (init_precnt )(15 downto 0);
 					init_precnt<=init_precnt+1;
+					cnt1<=0;
 					init_st<=init_st_setauto_pre0;
 				else 
 					init_st<=init_st_setauto_asic_setdc;
@@ -271,11 +279,18 @@ begin
 					init_st<=init_st_setauto_asic_setdc;
 				else
 					init_postcnt<=0;
+					cnt1<=0;
 					init_st<=init_st_setauto_post0;
 				end if;
 
 			when init_st_setauto_post0=>
-				init_st<=init_st_setauto_post;
+				if (cnt1/=WAIT_CNT1_MAX) then 
+					cnt1<=cnt1+1;
+					init_st<=init_st_setauto_post0;
+				else
+					cnt1<=0;
+					init_st<=init_st_setauto_post;
+				end if;
 
 			when init_st_setauto_post =>
 				if (init_postcnt<scrodpost_len) then

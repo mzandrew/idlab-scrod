@@ -1,5 +1,5 @@
 #ChipScope Core Generator Project File Version 3.0
-#Thu Mar 05 18:44:18 Hawaiian Standard Time 2015
+#Tue Mar 17 09:56:50 Hawaiian Standard Time 2015
 SignalExport.bus<0000>.channelList=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 SignalExport.bus<0000>.name=TRIG0
 SignalExport.bus<0000>.offset=0.0
