@@ -12,6 +12,7 @@ use IEEE.NUMERIC_STD.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
 use work.readout_definitions.all;
+use work.autoinit_definitions.all;
 
 entity readout_interface is
 	Port ( 
@@ -31,6 +32,7 @@ entity readout_interface is
 		WAVEFORM_FIFO_READ_ENABLE    : out STD_LOGIC;
 		WAVEFORM_PACKET_BUILDER_BUSY : in  STD_LOGIC;
 		WAVEFORM_PACKET_BUILDER_VETO : out STD_LOGIC;
+		tx_dac_busy							: in std_logic;
 	
 		FIBER_0_RXP                 : in  STD_LOGIC;
 		FIBER_0_RXN                 : in  STD_LOGIC;
@@ -117,6 +119,7 @@ architecture Behavioral of readout_interface is
 	signal internal_GPR_DATA_TO_WRITE    : std_logic_vector(15 downto 0);
 	signal internal_GPR_WRITE_STROBE     : std_logic;
 	signal internal_GPR                  : GPR;
+	signal internal_GPR_auto				 : GPR;
 	--Memory mapped address space (Read Only Registers)
 	signal internal_RR_DATA_OUT          : std_logic_vector(15 downto 0);
 	signal internal_RR                   : RR;
@@ -129,6 +132,27 @@ architecture Behavioral of readout_interface is
 	signal i_register_updated : RWT;
 	
 	signal i_wr_en       : std_logic;
+	signal auto_init_en	:std_logic:='0';
+	signal sw2usb			: std_logic_vector(1 downto 0):="00";
+	signal init_cnt1		: integer:=0;
+	signal cnt1				: integer:=0;
+	signal init_precnt   : integer:=0;
+	signal INIT_CNT1_MAX: integer:=10000000;
+	signal cur_scrod_reg	: std_logic_vector(23 downto 0);
+	signal cur_dc			:integer:=0;
+	signal asic_dc_msk	: std_logic_vector(15 downto 0);
+	signal asic_reg_num	: integer:=0;
+--	signal tx_dac_busy	:std_logic:='0';
+	signal init_postcnt	:integer:=0;
+	
+	  type auto_init_st is (init_st_startup,init_st_cnt1,init_st_setauto_pre,init_st_setauto_pre0,init_st_setauto_asic_setdc,
+	  init_st_setauto_asic_setdc2,init_st_setauto_asic_wait1,init_st_setauto_asic_reg,init_st_setauto_asic_reg_wait,
+	  init_st_setauto_asic_reg_wait2,init_st_setauto_asic_reg_wait3,init_st_setauto_asic_reg_inc,init_st_setauto_asic_dc_inc,init_st_setauto_post,init_st_setauto_post0,init_st_done
+			); 
+   signal init_st : auto_init_st := init_st_startup;
+
+
+	
 	
 --	--Chipscope debugging crap
 --	signal internal_CHIPSCOPE_CONTROL : std_logic_vector(35 downto 0);
@@ -136,7 +160,7 @@ architecture Behavioral of readout_interface is
 --	signal internal_CHIPSCOPE_ILA_REG : std_logic_vector(127 downto 0);	
 	
 begin
-	OUTPUT_REGISTERS <= internal_GPR;
+	OUTPUT_REGISTERS <= internal_GPR when auto_init_en='0' else internal_GPR_auto ;
 	internal_RR <= INPUT_REGISTERS;
 
 	--The TRG input/output fifos are a simple loopback right now
@@ -155,6 +179,129 @@ begin
 	internal_PB_CLOCK <= CLOCK;
 	internal_EVT_INP_FIFO_READ_CLOCK  <= internal_PB_CLOCK;
 	---
+
+
+	auto_init_manage : process(CLOCK) begin
+		if (rising_edge(CLOCK)) then
+		
+			sw2usb<=sw2usb(0) & internal_GPR(0)(15);
+		
+			case init_st is 
+			when init_st_startup => 
+				init_cnt1<=0;
+				init_st<=init_st_cnt1;
+				auto_init_en<='0';
+			
+			when init_st_cnt1 =>
+				cnt1<=cnt1+1;
+				if (cnt1/=INIT_CNT1_MAX) then
+					init_st<=init_st_cnt1;
+				else
+					auto_init_en<='1';
+					init_precnt<=0;
+					init_st<=init_st_setauto_pre0;
+				end if;
+
+			when init_st_setauto_pre0=>
+				init_st<=init_st_setauto_pre;
+					
+
+			when init_st_setauto_pre=>
+				if (init_precnt<scrodpre_len) then
+					internal_GPR_auto(to_integer(unsigned(init_scrodpre (init_precnt )(23 downto 16))))<=init_scrodpre (init_precnt )(15 downto 0);
+					init_precnt<=init_precnt+1;
+					init_st<=init_st_setauto_pre0;
+				else 
+					init_st<=init_st_setauto_asic_setdc;
+					cur_dc<=0;
+				end if;
+
+			when init_st_setauto_asic_setdc=>
+				asic_dc_msk<=x"0000";
+				asic_reg_num<=0;
+				init_st<=init_st_setauto_asic_setdc2;
+
+			when init_st_setauto_asic_setdc2=>
+				asic_dc_msk(cur_dc)<='1';
+				init_st<=init_st_setauto_asic_wait1;
+
+			when init_st_setauto_asic_wait1=>
+				if (tx_dac_busy='1') then 
+					init_st<=init_st_setauto_asic_wait1;
+				else
+					init_st<=init_st_setauto_asic_reg;
+				end if;
+
+			when init_st_setauto_asic_reg=>
+				internal_GPR_auto(1)<=x"0000";
+				internal_GPR_auto(2)<="00000000" & init_asicregs(asic_reg_num)(23 downto 16);
+				internal_GPR_auto(3)<=init_asicregs(asic_reg_num)(15 downto 0 );
+				internal_GPR_auto(4)<=asic_dc_msk;
+				init_st<=init_st_setauto_asic_reg_wait;
+
+			when init_st_setauto_asic_reg_wait=>
+				internal_GPR_auto(1)<=x"0001";
+				init_st<=init_st_setauto_asic_reg_wait2;
+
+			when init_st_setauto_asic_reg_wait2=> --wait for busy signal to come up
+				if (tx_dac_busy='0') then 
+					init_st<=init_st_setauto_asic_reg_wait2;
+				else
+					init_st<=init_st_setauto_asic_reg_wait3;
+				end if;
+
+			when init_st_setauto_asic_reg_wait3=> --wait for busy signal to go down
+				if (tx_dac_busy='1') then 
+					init_st<=init_st_setauto_asic_reg_wait3;
+				else
+					init_st<=init_st_setauto_asic_reg_inc;
+				end if;
+
+			when init_st_setauto_asic_reg_inc=> 
+				if (asic_reg_num<asicregs_len) then
+					asic_reg_num<=asic_reg_num+1;
+					init_st<=init_st_setauto_asic_wait1;
+				else
+					init_st<=init_st_setauto_asic_dc_inc;
+				end if;
+
+			when init_st_setauto_asic_dc_inc =>
+				if (cur_dc<9) then 
+					cur_dc<=cur_dc+1;
+					init_st<=init_st_setauto_asic_setdc;
+				else
+					init_postcnt<=0;
+					init_st<=init_st_setauto_post0;
+				end if;
+
+			when init_st_setauto_post0=>
+				init_st<=init_st_setauto_post;
+
+			when init_st_setauto_post =>
+				if (init_postcnt<scrodpost_len) then
+					internal_GPR_auto(to_integer(unsigned(init_scrodpost(init_postcnt)(23 downto 16))))<=init_scrodpost(init_postcnt)(15 downto 0);
+					init_postcnt<=init_postcnt+1;
+					init_st<=init_st_setauto_post0;
+				else 
+					init_st<=init_st_done;
+				end if;
+				
+			when init_st_done=>
+				if (sw2usb="01") then
+					auto_init_en<='0';-- now control is back to USB
+				end if;
+				init_st<=init_st_done;
+				
+			end case;
+			
+		end if;
+	end process;
+
+
+
+
+
+
 	command_interpreter_processor : entity work.kcpsm6
 	generic map(
 		hwbuild                 => x"00",
@@ -411,6 +558,9 @@ begin
 		FIBER_0_LINK_ERR            => FIBER_0_LINK_ERR,
 		FIBER_1_LINK_ERR            => FIBER_1_LINK_ERR
 	);
+
+
+
 	
 --	--DEBUGGING SHIT
 --	map_ILA : entity work.s6_ila

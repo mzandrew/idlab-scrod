@@ -338,6 +338,7 @@ architecture Behavioral of scrod_top_A4 is
 	
 	--ASIC DAC CONTROL
 	signal internal_DAC_CONTROL_UPDATE : std_logic := '0';
+	signal internal_DAC_CONTROL_busy: std_logic:='0';
 	signal internal_DAC_CONTROL_REG_DATA : std_logic_vector(18 downto 0) := (others => '0');
 	signal internal_DAC_CONTROL_TDCNUM : std_logic_vector(9 downto 0) := (others => '0');
 	signal internal_DAC_CONTROL_SIN : std_logic := '0';
@@ -388,10 +389,6 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_CMDREG_READCTRL_asic_enable_bits : std_logic_vector(9 downto 0) := (others => '0');
 	signal internal_CMDREG_READCTRL_readout_reset : std_logic := '0';
 	signal internal_CMDREG_READCTRL_readout_continue : std_logic := '0';
-	signal internal_CMDREG_DIG_STARTDIG : std_logic := '0';
-	signal internal_CMDREG_DIG_RD_ROWSEL_S : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-	signal internal_CMDREG_DIG_RD_COLSEL_S : STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
-	signal internal_CMDREG_SROUT_START : std_logic := '0';
 	signal internal_CMDREG_WAVEFORM_FIFO_RST : std_logic := '0';
 	signal internal_CMDREG_EVTBUILD_START_BUILDING_EVENT : std_logic := '0';
 	signal internal_CMDREG_EVTBUILD_MAKE_READY : std_logic := '0';
@@ -962,6 +959,9 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 		--WAVEFORM_PACKET_BUILDER_BUSY => '0',
 		WAVEFORM_PACKET_BUILDER_VETO => internal_EVTBUILD_PACKET_BUILDER_VETO,
 		
+		tx_dac_busy=>internal_DAC_CONTROL_busy,
+
+		
 		--WAVEFORM ROI readout disable - command packets only
 		--WAVEFORM_FIFO_DATA_IN        => (others=>'0'),
 		--WAVEFORM_FIFO_EMPTY          => '1',
@@ -1112,7 +1112,6 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
   
 	
 	
-	--LEDS <= internal_WAVEFORM_FIFO_EMPTY & internal_SROUT_IDLE_status & internal_DIG_IDLE_status & internal_SMP_IDLE_STATUS & "000" & internal_SMP_MAIN_CNT;
 	
 	--DAC CONTROL SIGNALS
 	internal_DAC_CONTROL_UPDATE <= internal_OUTPUT_REGISTERS(1)(0);
@@ -1126,13 +1125,8 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 	internal_CMDREG_RESET_SAMPLIG_LOGIC <= internal_OUTPUT_REGISTERS(10)(0);
 	internal_CMDREG_SAMPLIG_LOGIC_RESET_PARAMS <= internal_OUTPUT_REGISTERS(11);
 
-	--Digitization Signals
-   internal_CMDREG_DIG_STARTDIG <= internal_OUTPUT_REGISTERS(20)(0);
-   internal_CMDREG_DIG_RD_ROWSEL_S <= internal_OUTPUT_REGISTERS(21)(8 downto 6);
-	internal_CMDREG_DIG_RD_COLSEL_S <= internal_OUTPUT_REGISTERS(21)(5 downto 0);
 	
 	--Serial Readout Signals
-	internal_CMDREG_SROUT_START <=  internal_OUTPUT_REGISTERS(30)(0);
 	internal_CMDREG_SROUT_TPG <= internal_OUTPUT_REGISTERS(31)(0); --'1': force test pattern to output. '0': regular operation
 
 	--RAM Access from USB or anything:
@@ -1347,7 +1341,7 @@ internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 			LATCH_PERIOD 	=> internal_DAC_CONTROL_LATCH_PERIOD,
 			UPDATE 			=> internal_DAC_CONTROL_UPDATE,
 			REG_DATA 		=> internal_DAC_CONTROL_REG_DATA,
-			busy				=>open,
+			busy				=>	internal_DAC_CONTROL_busy,
 			SIN 				=> internal_DAC_CONTROL_SIN,
 			SCLK 				=> internal_DAC_CONTROL_SCLK,
 			PCLK 				=> internal_DAC_CONTROL_PCLK
@@ -1397,7 +1391,7 @@ ped_manager: PedestalManagement PORT MAP(
 		DIG_IDLE_status 	=> internal_DIG_IDLE_status,
 		SROUT_IDLE_status => internal_SROUT_IDLE_status,
 		fifo_empty 			=> '1',--internal_WAVEFORM_FIFO_EMPTY,
-		EVTBUILD_DONE_SENDING_EVENT => internal_EVTBUILD_DONE_SENDING_EVENT,
+		EVTBUILD_DONE_SENDING_EVENT => '0',--internal_EVTBUILD_DONE_SENDING_EVENT,
 		LATCH_SMP_MAIN_CNT => internal_READCTRL_LATCH_SMP_MAIN_CNT,
 		dig_win_start			=> internal_READCTRL_dig_win_start,
 		LATCH_DONE 			=> internal_READCTRL_LATCH_DONE,
