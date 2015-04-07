@@ -29,6 +29,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
  use work.tdc_pkg.all;
+ Library work;
+ use work.all;
 
 
 entity TrigDecisionLogic is
@@ -62,7 +64,8 @@ signal cnt		:	integer:=0;
 type trgdelay is
 (
 idle,
-countdelay
+countdelay,
+counthold
 );
 signal trgstate: trgdelay:=idle;
 
@@ -146,9 +149,21 @@ begin
 		when countdelay=>
 			if (cnt>1) then 
 				cnt<=cnt-1;
+				trg_i<='0';
 				trgstate<=countdelay;
 			else 
 				trg_i<='1';
+				cnt<=5;
+				trgstate<=counthold;
+			end if;
+
+		when counthold=>
+			if (cnt>1) then 
+				cnt<=cnt-1;
+				trg_i<='1';
+				trgstate<=counthold;
+			else 
+				trg_i<='0';
 				trgstate<=idle;
 			end if;
 		

@@ -28,10 +28,10 @@ entity clock_gen is
 		CLOCK_TRIG_SCALER		: out std_logic;-- used for counters within the trigger scalers: 
 		CLOCK_FPGA_LOGIC	 : out STD_LOGIC; -- around 62.5 MHz
 		CLOCK_MPPC_DAC  	 : out STD_LOGIC; -- around 4 or 5MHz for MPPC DAC read writes
-		CLOCK_MPPC_ADC		 :out std_logic;
+		CLOCK_MPPC_ADC		 :out std_logic
 		--ASIC control clocks
-		CLOCK_ASIC_CTRL_WILK  : out STD_LOGIC; --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
-		CLOCK_ASIC_CTRL  : out STD_LOGIC --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
+--		CLOCK_ASIC_CTRL_WILK  : out STD_LOGIC; --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
+--		CLOCK_ASIC_CTRL  : out STD_LOGIC --used to be called SSTx8 ~= 62.5 MHz at half the FTSW clock 
 	);
 end clock_gen;
 
@@ -51,7 +51,7 @@ port
   CLK_IN1_N         : in     std_logic;
   -- Clock out ports
   CLK_OUT1          : out    std_logic;
-  CLK_OUT2          : out    std_logic;
+--  CLK_OUT2          : out    std_logic;
   -- Status and control signals
   RESET             : in     std_logic;
   LOCKED            : out    std_logic
@@ -73,15 +73,16 @@ dcmclkgen : asic_fpga_clock_gen_core
     CLK_IN1_N => BOARD_CLOCKN,
     -- Clock out ports
     CLK_OUT1 => internal_CLOCK_FPGA_LOGIC,
-    CLK_OUT2 => internal_CLOCK_ASIC_CTRL,
+--    CLK_OUT2 => open,--internal_CLOCK_ASIC_CTRL,
     -- Status and control signals
     RESET  => '0',
     LOCKED => open
 	 
 	 );
 	 
+--	 internal_CLOCK_ASIC_CTRL<=internal_CLOCK_FPGA_LOGIC;
 	 CLOCK_FPGA_LOGIC<=internal_CLOCK_FPGA_LOGIC;
-	 CLOCK_ASIC_CTRL<=internal_CLOCK_ASIC_CTRL;
+--	 CLOCK_ASIC_CTRL<=internal_CLOCK_ASIC_CTRL;
 	 
 	--internal_BOARD_CLOCK<=internal_LOCAL_CLOCK when USE_LOCAL_CLOCK='1' else B2TT_SYS_CLOCK;
 	internal_BOARD_CLOCK<=internal_CLOCK_FPGA_LOGIC;--internal_LOCAL_CLOCK when USE_LOCAL_CLOCK='1' else B2TT_SYS_CLOCK;

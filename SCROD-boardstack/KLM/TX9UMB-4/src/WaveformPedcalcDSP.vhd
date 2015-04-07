@@ -31,8 +31,10 @@ use IEEE.NUMERIC_STD.ALL;
 -- any Xilinx primitives in this code.
 library UNISIM;
 use UNISIM.VComponents.all;
+Library work;
 use work.readout_definitions.all;
- 
+use work.all;
+
 -- this will creat pedestals for 4 consequetive windows starting with win_addr_start
 entity WaveformPedcalcDSP is
 port(
@@ -263,6 +265,8 @@ ncnt	<= x"01" when navg_i=x"0" else
 			x"40" when navg_i=x"6" else
 			x"80" when navg_i=x"7" else
 			x"00";
+
+
 
 latch_inputs: process(clk)
 begin

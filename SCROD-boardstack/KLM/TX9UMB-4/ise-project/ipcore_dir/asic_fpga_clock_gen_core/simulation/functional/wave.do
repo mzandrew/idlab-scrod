@@ -50,10 +50,10 @@
 add wave -noupdate -divider {Input clocks}
 add wave -noupdate -format Logic /asic_fpga_clock_gen_core_tb/CLK_IN1
 add wave -noupdate -divider {Output clocks}
-add wave -noupdate -format Literal -expand /asic_fpga_clock_gen_core_tb/dut/clk
+add wave -noupdate -format Logic /asic_fpga_clock_gen_core_tb/dut/clk
 add wave -noupdate -divider Status/control
 add wave -noupdate -format Logic /asic_fpga_clock_gen_core_tb/RESET
 add wave -noupdate -format Logic /asic_fpga_clock_gen_core_tb/LOCKED
 add wave -noupdate -divider Counters
 add wave -noupdate -format Literal -radix hexadecimal /asic_fpga_clock_gen_core_tb/COUNT
-add wave -noupdate -format Literal -radix hexadecimal -expand /asic_fpga_clock_gen_core_tb/dut/counter
+add wave -noupdate -format Literal -radix hexadecimal /asic_fpga_clock_gen_core_tb/dut/counter

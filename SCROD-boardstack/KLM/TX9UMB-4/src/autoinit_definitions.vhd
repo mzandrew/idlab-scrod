@@ -29,21 +29,21 @@ package autoinit_definitions is
  x"2C0000",
  x"2D0001",
  x"2D0000",
- x"3303FF",
+ x"3301E7",
  x"340000",
  x"350000",
- x"360004",
+ x"3600A0",	-- digitization window offset (aka look back- LKBK)
  x"370001",
  x"370000",
  x"380000",
  x"390004",
  x"3A0000",
- x"4803FF",
+ x"4801E7",
  x"3D0F00",
  x"260000",
  x"260800",
  x"260000",
- x"2630A0",
+ x"2610A0",
  x"270000",
  x"0B8001",
  x"0A0000",
@@ -55,8 +55,49 @@ package autoinit_definitions is
  x"470001",
  x"470000",
  x"460001",
- x"27C1FF",
+ x"27C1E7",-- Mask DCs that are not connected
  x"007FFF"
+ );
+
+  constant scrodpeds_len : integer :=33;
+  type scrodpeds is array (0 to scrodpeds_len-1) of std_logic_vector(23 downto 0);
+ constant init_scrodpeds : scrodpeds:= (
+ x"140000",
+ x"1E0000",
+ x"320000",
+ x"2C0000",
+ x"2D0001",
+ x"2D0000",
+ x"3303FF",
+ x"340000",
+ x"350000",
+ x"360000",	
+ x"370001",
+ x"370000",
+ x"380000",
+ x"390004",
+ x"3A0000",
+ x"4803FF",
+ x"3D0F00",
+ x"260000",
+ x"260800",
+ x"260000",
+
+ x"0B8001",
+ x"0A0000",
+ x"0A0001",
+ x"0A0000",
+
+ x"260000",
+ x"264000",
+ x"26C000",
+ x"264000",
+ x"270000",
+
+ x"2AFE00",
+ x"2903FF",
+ x"2983FF",
+ x"2903FF"
  );
 
 
@@ -104,7 +145,7 @@ package autoinit_definitions is
  x"33" & x"044C",
  x"34" & x"05DC",
  x"35" & x"0426",
- x"36" & x"0DAC",
+ x"36" & x"04B9",
  x"37" & x"0000",
  x"38" & x"0480",
  x"39" & x"0000",

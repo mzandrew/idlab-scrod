@@ -92,6 +92,8 @@ type trig_state_type is
 	WAIT_TRIG_CLEAR,
 	WAIT_TRIG_DELAY,
 	STOP_SAMPLING,
+	wait_ped_sub_busy_empty_packet_busy_hi,
+	wait_ped_sub_busy_empty_packet_busy_low,
 	WAIT_SAMPLING_IDLE,
 	send_pedsub_start,
 	DIG_WINDOW_LOOP,
@@ -159,6 +161,8 @@ signal SMP_MAIN_CNT_i : std_logic_vector(8 downto 0);
 signal SMP_MAIN_CNT_carry_i: std_logic_vector(9 downto 0);
 signal internal_LATCH_DONE_TRIG_CLEAR:std_logic:='0';
 signal internal_cnt_reset:integer:=0;
+signal internal_n_asics:integer:=0;
+
 
 begin
 
@@ -306,6 +310,16 @@ begin
 end process;
 
 --latch signals to local clock domain
+internal_n_asics<=
+	to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(0 downto 0)))+to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(1 downto 1)))+
+	to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(2 downto 2)))+to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(3 downto 3)))+
+	to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(4 downto 4)))+to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(5 downto 5)))+
+	to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(6 downto 6)))+to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(7 downto 7)))+
+	to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(8 downto 8)))+to_integer(unsigned(internal_ASIC_SROUT_ENABLE_BITS(9 downto 9)));
+
+
+  
+
 process(clk)
 begin
 if (clk'event and clk = '1') then
@@ -379,7 +393,33 @@ if (clk'event and clk = '1') then
 		internal_EVTBUILD_MAKE_READY <= '0';
 		srout_restart<='0';
 		internal_dig_win_start <= internal_LATCH_SMP_MAIN_CNT - internal_dig_offset;
-		next_trig_state <= SROUT_ASIC_LOOP;	
+
+		if (internal_ASIC_SROUT_ENABLE_BITS="0000000000") then -- we know no ASICs had hits, so just signal such that it will send a dummy packet
+			ped_sub_start<='1';
+			srout_restart<='1';
+			next_trig_state <= wait_ped_sub_busy_empty_packet_busy_hi;
+		else
+			next_trig_state <= SROUT_ASIC_LOOP;
+		end if;
+
+	When wait_ped_sub_busy_empty_packet_busy_hi =>
+			ped_sub_start<='0';
+			srout_restart<='0';
+			if (ped_sub_busy='0') then 
+				next_trig_state <= wait_ped_sub_busy_empty_packet_busy_hi;
+			else
+				next_trig_state <= wait_ped_sub_busy_empty_packet_busy_low;
+			end if;
+
+	When wait_ped_sub_busy_empty_packet_busy_low =>
+		if (ped_sub_busy='1') then 
+				next_trig_state <= wait_ped_sub_busy_empty_packet_busy_low;
+			else
+				next_trig_state <= WAIT_READOUT_RESET;
+			end if;
+			
+	
+
 --		next_trig_state <= DIG_WINDOW_LOOP;	
 	--LOOP OVER ASICs in SERIAL READOUT
 	--first check if asic cnt > 10, if yes then done serail readout, goto DIG_WINDOW_LOOP

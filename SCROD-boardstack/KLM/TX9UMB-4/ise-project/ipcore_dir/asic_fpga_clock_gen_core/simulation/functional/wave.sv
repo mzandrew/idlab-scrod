@@ -89,16 +89,16 @@ group set -comment {}
 group clear 0 end
 
 group insert \
-    {asic_fpga_clock_gen_core_tb.dut.clk[1]} \
-    {asic_fpga_clock_gen_core_tb.dut.clk[2]} 
+    {asic_fpga_clock_gen_core_tb.dut.clk} \
+
 group using {Counters}
 group set -overlay 0
 group set -comment {}
 group clear 0 end
 
 group insert \
-    {asic_fpga_clock_gen_core_tb.dut.counter[1]} \
-    {asic_fpga_clock_gen_core_tb.dut.counter[2]} 
+    {asic_fpga_clock_gen_core_tb.dut.counter} \
+
 group using {Status/control}
 group set -overlay 0
 group set -comment {}
