@@ -33,6 +33,7 @@ entity readout_interface is
 		WAVEFORM_PACKET_BUILDER_BUSY : in  STD_LOGIC;
 		WAVEFORM_PACKET_BUILDER_VETO : out STD_LOGIC;
 		tx_dac_busy							: in std_logic;
+		pedman_busy							: in std_logic;
 	
 		FIBER_0_RXP                 : in  STD_LOGIC;
 		FIBER_0_RXN                 : in  STD_LOGIC;
@@ -143,10 +144,12 @@ architecture Behavioral of readout_interface is
 	signal asic_reg_num	: integer:=0;
 --	signal tx_dac_busy	:std_logic:='0';
 	signal init_postcnt	:integer:=0;
-	
+	signal init_pedscnt	:integer:=0;
 	  type auto_init_st is (init_st_startup,init_st_cnt1,init_st_setauto_pre,init_st_setauto_pre0,init_st_setauto_asic_setdc,
 	  init_st_setauto_asic_setdc2,init_st_setauto_asic_wait1,init_st_setauto_asic_reg,init_st_setauto_asic_reg_wait,
-	  init_st_setauto_asic_reg_wait2,init_st_setauto_asic_reg_wait3,init_st_setauto_asic_reg_inc,init_st_setauto_asic_dc_inc,init_st_setauto_post,init_st_setauto_post0,init_st_done
+	  init_st_setauto_asic_reg_wait2,init_st_setauto_asic_reg_wait3,init_st_setauto_asic_reg_inc,init_st_setauto_asic_dc_inc,
+	  init_st_setauto_peds0,init_st_setauto_peds,init_st_wait_pedsbusy_hi,init_st_wait_pedsbusy_low,
+	  init_st_setauto_post,init_st_setauto_post0,init_st_done
 			); 
    signal init_st : auto_init_st := init_st_startup;
 
@@ -279,8 +282,43 @@ begin
 					init_st<=init_st_setauto_asic_setdc;
 				else
 					init_postcnt<=0;
+					init_pedscnt<=0;
 					cnt1<=0;
+					init_st<=init_st_setauto_peds0;
+				end if;
+
+
+			when init_st_setauto_peds0=>
+				if (cnt1/=WAIT_CNT1_MAX) then 
+					cnt1<=cnt1+1;
+					init_st<=init_st_setauto_peds0;
+				else
+					cnt1<=0;
+					init_st<=init_st_setauto_peds;
+				end if;
+
+			when init_st_setauto_peds=>
+				if (init_pedscnt<scrodpeds_len) then
+					internal_GPR_auto(to_integer(unsigned(init_scrodpeds(init_pedscnt)(23 downto 16))))<=init_scrodpeds(init_pedscnt)(15 downto 0);
+					init_pedscnt<=init_pedscnt+1;
+					init_st<=init_st_setauto_peds0;
+				else 
+					init_st<=init_st_wait_pedsbusy_hi;
+				end if;
+
+			when init_st_wait_pedsbusy_hi=>
+				if (pedman_busy='0') then
+					init_st<=init_st_wait_pedsbusy_hi;
+				else
+					init_st<=init_st_wait_pedsbusy_low;
+				end if;
+				
+			when init_st_wait_pedsbusy_low=>
+				if (pedman_busy='1') then
+					init_st<=init_st_wait_pedsbusy_low;
+				else
 					init_st<=init_st_setauto_post0;
+					init_postcnt<=0;
 				end if;
 
 			when init_st_setauto_post0=>

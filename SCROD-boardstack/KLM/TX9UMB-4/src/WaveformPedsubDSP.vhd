@@ -31,8 +31,9 @@ use IEEE.NUMERIC_STD.ALL;
 -- any Xilinx primitives in this code.
 library UNISIM;
 use UNISIM.VComponents.all;
+Library work;
 use work.readout_definitions.all;
-
+use work.all;
 
 entity WaveformPedsubDSP is
 port(
@@ -44,6 +45,7 @@ port(
 			win_addr_start		 : in std_logic_vector (8 downto 0);
 			trigin				 : in std_logic; -- comes from the readout control module: starts fetching pedestals
 			
+			asic_en_bits		: in std_logic_vector(9 downto 0);
 			busy					 : out std_logic; -- stays '1' until all pedsub samples have been sent out to the FIFO
 			mode	: in std_logic_vector(1 downto 0);
 
@@ -76,7 +78,7 @@ port(
 		  --trig bram access
 		  trig_bram_addr	: out std_logic_vector(8 downto 0);
 		  trig_bram_data	: in  std_logic_vector(49 downto 0);
-		  
+		  trig_bram_sel	: out std_logic;
 		  -- 12 bit Pedestal RAM Access: only for reading pedestals
 		   ram_addr 	: OUT  std_logic_vector(21 downto 0);
          ram_data 	: IN  std_logic_vector(7 downto 0);
@@ -143,7 +145,6 @@ END COMPONENT;
 signal asic_no_i			: integer;--std_logic_vector (3 downto 0);-- latched to trigin
 signal win_addr_start_i	: integer;--std_logic_vector (9 downto 0);
 signal trigin_i			: std_logic_vector(1 downto 0);
-signal ped_fetch_start	: std_logic:='0';
 --signal ped_sa_num_i		: std_logic_vector(21 downto 0);
 signal ped_sa_rval0		: std_logic_vector(11 downto 0);
 signal ped_sa_rval1		: std_logic_vector(11 downto 0);
@@ -229,6 +230,13 @@ signal qt_full		:std_logic:='0';
 signal qt_empty	:std_logic:='0';
 signal qt_almost_empty:std_logic:='0';
 
+signal first_asic_no: std_logic_vector(3 downto 0):=x"0";
+signal last_asic_no : std_logic_vector(3 downto 0):=x"0";
+signal asic_en_bits_i			: std_logic_vector(9 downto 0):="0000000000";
+signal send_empty_packet	: std_logic:='0';
+signal qt_chno:	integer:=0;
+signal qt_axis: std_logic:='0';
+
 
 type ped_state is --pedstals fetch state
 (
@@ -297,6 +305,16 @@ signal st_trgrec		: trig_rec_state:=trg_rec_idle;
 
 
 begin
+
+qt_chno<=(dmx_asic-1)*15+ct_cnt+1 when dmx_asic<=5 	and dmx_asic>=1 	else
+			(dmx_asic-6)*15+ct_cnt+1 when dmx_asic<=10 	and dmx_asic>=6 	else
+			0;
+			
+qt_axis<='0' when dmx_asic<=5 	and dmx_asic>=1 	else
+			'1' when dmx_asic<=10 	and dmx_asic>=6 	else
+			'0';
+
+
 
 pswfifo_clk<=clk;
 bram_addrb<=wav_bram_addrb;
@@ -369,6 +387,32 @@ u_qtfifo : qt_fifo
 --busy<=ped_sub_send_data_busy or ped_sub_fetch_busy;
 busy<=busy_i;
 
+first_asic_no<= 
+			x"1" when asic_en_bits_i(0)='1' else
+			x"2" when asic_en_bits_i(1)='1' else
+			x"3" when asic_en_bits_i(2)='1' else
+			x"4" when asic_en_bits_i(3)='1' else
+			x"5" when asic_en_bits_i(4)='1' else
+			x"6" when asic_en_bits_i(5)='1' else
+			x"7" when asic_en_bits_i(6)='1' else
+			x"8" when asic_en_bits_i(7)='1' else
+			x"9" when asic_en_bits_i(8)='1' else
+			x"A" when asic_en_bits_i(9)='1' else
+			x"0";
+
+last_asic_no<= 
+			x"A" when asic_en_bits_i(9)='1' else
+			x"9" when asic_en_bits_i(8)='1' else
+			x"8" when asic_en_bits_i(7)='1' else
+			x"7" when asic_en_bits_i(6)='1' else
+			x"6" when asic_en_bits_i(5)='1' else
+			x"5" when asic_en_bits_i(4)='1' else
+			x"4" when asic_en_bits_i(3)='1' else
+			x"3" when asic_en_bits_i(2)='1' else
+			x"2" when asic_en_bits_i(1)='1' else
+			x"1" when asic_en_bits_i(0)='1' else
+			x"0";
+
 
 process(clk)
 begin
@@ -381,9 +425,9 @@ begin
 	trig_ctime_i<=trig_ctime;
 	
 	
-	
 	if (trigin_i(1 downto 0) = "01") then
 		SMP_MAIN_CNT_i<=SMP_MAIN_CNT;
+		asic_en_bits_i<=asic_en_bits;
 	end if;
 
 	end if;
@@ -401,9 +445,11 @@ case st_trgrec is
 	when trg_rec_idle =>
 		trgrec<=trgrec;
 		trig_bram_cnt<=0;
-		if (trigin_i="01"  and enable_i='1') then
+		if (trigin_i="01"  and enable_i='1' and asic_no/=x"0") then
 			st_trgrec<=trg_rec_win00;
+			trig_bram_sel<='1';
 		else
+			trig_bram_sel<='0';
 			st_trgrec<=trg_rec_idle;
 		end if;
 		
@@ -451,7 +497,7 @@ if (rising_edge(clk)) then
 	case next_ped_st is 
 
 	When PedsIdle =>
-	if (trigin_i="01"  and enable_i='1') then
+	if (trigin_i="01"  and enable_i='1' and asic_no/=x"0") then
 		ped_asic<=to_integer(unsigned(asic_no));
 		ped_ch  <=0;
 		ped_win <=0;
@@ -546,13 +592,18 @@ if (rising_edge(clk)) then
 	-- give it enough time till the win addr and other information become available
 	
 	if (trigin_i="01" and enable_i='1') then
-		busy_i<='1';
-		asic_no_i<=to_integer(unsigned(asic_no));
-		win_addr_start_i<=to_integer(unsigned(win_addr_start));
-		ped_fetch_start<='1';
-		ped_sub_fetch_done<='0';
-		dmx_asic<=to_integer(unsigned(asic_no));
-		--dmx_allwin_done<='0';
+			busy_i<='1';
+			asic_no_i<=to_integer(unsigned(asic_no));
+			win_addr_start_i<=to_integer(unsigned(win_addr_start));
+			ped_sub_fetch_done<='0';
+			dmx_asic<=to_integer(unsigned(asic_no));
+
+--		if (asic_no=x"0") then
+--			send_empty_packet<='1';
+--		else
+--			send_empty_packet<='0';
+--		end if;
+		
 	end if;
 
 	ped_sub_start(1)<=ped_sub_start(0);
@@ -567,16 +618,24 @@ When pedsub_idle =>
 	ped_bram_addrb<="00000000000";
 	qt_wr_en	<='0';
 	qt_fifo_evt_rdy<='0';
-
-	if (ped_sub_start="01" and enable_i='1') then 
-		sa_cnt<=0;
-		pswfifo_en<='0';
-		ped_sub_send_data_busy<='1';
-		pedsub_st<=pedsub_sub_pre;
-	else 
-	   pswfifo_en<='0';
-		ped_sub_send_data_busy<='0';
-		pedsub_st<=pedsub_idle;
+	if (asic_no/=x"0") then 
+		if (ped_sub_start="01" and enable_i='1') then 
+			sa_cnt<=0;
+			pswfifo_en<='0';
+			ped_sub_send_data_busy<='1';
+			pedsub_st<=pedsub_sub_pre;
+		else 
+			pswfifo_en<='0';
+			ped_sub_send_data_busy<='0';
+			pedsub_st<=pedsub_idle;
+		end if;
+	else
+		if (trigin_i="01" and enable_i='1') then
+			ped_sub_send_data_busy<='1';
+			ct_cnt<=0;
+			pedsub_st<=pedsub_dump_qt1;
+		end if;
+		
 	end if;
 	
 		
@@ -699,34 +758,49 @@ when pedsub_dumpfooter2=>
 		ct_cnt<=0;
 		pedsub_st<=pedsub_dump_qt1;
 
+
 when pedsub_dump_qt1=>
 		pswfifo_en<='0';
 		qt_wr_en	<='1';
---		qt_din	<=x"00" & std_logic_vector(to_unsigned(dmx_asic,4)) & std_logic_vector(to_unsigned(ct_cnt,4));
-		if ct_cnt/=0 then
-			qt_din	<="11" & x"FE" & std_logic_vector(to_unsigned(dmx_asic,4)) & std_logic_vector(to_unsigned(ct_cnt,4));
+		if ct_cnt=0 and std_logic_vector(to_unsigned(dmx_asic,4))=first_asic_no then
+--			qt_din	<="10" & x"FE" & std_logic_vector(to_unsigned(dmx_asic,4)) & std_logic_vector(to_unsigned(ct_cnt,4));
+			qt_din	<="10" & x"80" & qt_axis & std_logic_vector(to_unsigned(qt_chno,7));
 		else
-			qt_din	<="10" & x"FE" & std_logic_vector(to_unsigned(dmx_asic,4)) & std_logic_vector(to_unsigned(ct_cnt,4));
+			qt_din	<="11" & x"80" & qt_axis & std_logic_vector(to_unsigned(qt_chno,7));
 		end if;
 		pedsub_st<=pedsub_dump_qt2;
 
 when pedsub_dump_qt2=>
 		qt_wr_en	<='1';
-		qt_din	<="11" & trig_ctime_i;
+--		if (asic_no/=x"0") then 
+			qt_din	<="11" & trig_ctime_i;
+--		else 
+--			qt_din	<="11" & x"ABC0";
+--		end if;
+		
 		pedsub_st<=pedsub_dump_qt3;
 
 when pedsub_dump_qt3=>
 		qt_wr_en	<='1';
-		qt_din	<="11" & std_logic_vector(to_unsigned(win_addr_start_i,9)) & std_logic_vector(ct_lpt(ct_cnt)(6 downto 0));
+		if (asic_no/=x"0") then 
+			qt_din	<="11" & std_logic_vector(to_unsigned(win_addr_start_i,9)) & std_logic_vector(ct_lpt(ct_cnt)(6 downto 0));
+		else 
+			qt_din	<="11" & x"DEF1";
+		end if;
+		
 		pedsub_st<=pedsub_dump_qt4;
 
 when pedsub_dump_qt4=>
 		qt_wr_en	<='1';
 --		qt_din	<="0000" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
-		if ct_cnt/=15 then
-			qt_din	<="11" & x"D" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
-		else
+		if ct_cnt=15 and std_logic_vector(to_unsigned(dmx_asic,4))=last_asic_no then
 			qt_din	<="01" & x"0E0A";-- end of asic
+		else
+			if (asic_no/=x"0") then 
+				qt_din	<=	"11" & x"D" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
+			else
+				qt_din	<=	"11" & x"BAC2";
+			end if;
 		end if;
 			
 		ct_cnt<=ct_cnt+1;
@@ -748,7 +822,11 @@ when pedsub_dump_qt_footer=>
 		pedsub_st<=pedsub_dump_qt_evt_rdy;
 
 when pedsub_dump_qt_evt_rdy=>
-		qt_fifo_evt_rdy<='1';
+		if std_logic_vector(to_unsigned(dmx_asic,4))=last_asic_no then
+			qt_fifo_evt_rdy<='1';
+		else 
+			qt_fifo_evt_rdy<='0';
+		end if;
 		qt_wr_en	<='0';
 		pedsub_st<=pedsub_dump_qt_evt_rdy2;
 
