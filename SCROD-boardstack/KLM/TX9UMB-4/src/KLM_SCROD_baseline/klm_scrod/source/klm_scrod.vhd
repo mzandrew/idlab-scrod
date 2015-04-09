@@ -38,12 +38,12 @@
 --    register in the timing_ctrl entity to distribute the FFs across the chip.
 -- 3) The asynchronous nature of tx_dst_rdy_n may cause issues in the conc_intfc
 --    state machine.
--- 4) The Aurora core is modified; the files in the ipore directory are not used
+-- 4) The Aurora core is modified; the files in the ipcore directory are not used
 --    during implementation.
 -- 5) Search on --? or --! for other important notes.
 --
 -- Issues:
--- 1) Will only work when the FTSW clock is used for both the MGT and 
+-- 1) Will only work when the FTSW clock is used for both the MGT and
 --    TXUSERCLK/TXUSERCLK2 (the onboard oscillator cannot be used). The GTPOUTCLK
 --    will need to be used for all Aurora logic to use oscillator - requires clock
 --    domain crossing.
@@ -103,22 +103,22 @@ port(
     mgttxp                      : out std_logic;
     mgttxn                      : out std_logic;
     ex_trig1                    : in std_logic;--fake address bit
+    exttb                       : out tb_vec_type;
     status_fake                 : out std_logic;
     control_fake                : out std_logic;
-	 scint_trg							: out std_logic;
-	 scint_trg_ctime					: out std_logic_vector(15 downto 0);
-	 scint_missed_trg					:out std_logic_vector(15 downto 0);
-	 scint_trg_rdy						: in std_logic;
-	 qt_fifo_rd_clk					:out std_logic;
-	 qt_fifo_rd_en						:out std_logic;
-	 qt_fifo_rd_d						:in std_logic_vector(17 downto 0);
-	 qt_fifo_empty						: in std_logic;
-	 qt_fifo_almost_empty			: in std_logic;
-	 qt_fifo_evt_rdy					: in std_logic;
-	 zlt									: in std_logic
-	 );
+    scint_trg                   : out std_logic;
+    scint_trg_ctime             : out std_logic_vector(15 downto 0);
+    scint_missed_trg            : out std_logic_vector(15 downto 0);
+    scint_trg_rdy               : in std_logic;
+    qt_fifo_rd_clk              : out std_logic;
+    qt_fifo_rd_en               : out std_logic;
+    qt_fifo_rd_d                : in std_logic_vector(17 downto 0);
+    qt_fifo_empty               : in std_logic;
+    qt_fifo_almost_empty        : in std_logic;
+    qt_fifo_evt_rdy             : in std_logic;
+    zlt                         : in std_logic);
 end klm_scrod;
- 
+
 --- architecture -------------------------------------------------------
 architecture behave of klm_scrod is
 
@@ -255,7 +255,7 @@ architecture behave of klm_scrod is
 
 
     component klm_aurora_intfc is
-    generic(        
+    generic(
         SIM_GTPRESET_SPEEDUP    : integer;
         CLK_CORRECT_USE         : boolean);
     port(
@@ -330,6 +330,8 @@ architecture behave of klm_scrod is
         daq_src_rdy_n           : in std_logic;
         daq_data                : in std_logic_vector(15 downto 0);
         -- outputs --------------------------------------------
+        exttrg                  : out std_logic;
+        exttb                   : out tb_vec_type;
         -- Aurora local ouptput local link (to Concentrator)
         tx_dst_rdy_n            : in std_logic;
         tx_sof_n                : out std_logic;
@@ -361,31 +363,31 @@ architecture behave of klm_scrod is
 
     component daq_gen_readout is
     generic(
-        SIM_SPEEDUP     		: in std_logic := '0');
+        SIM_SPEEDUP             : in std_logic := '0');
     port(
-        clk             		: in std_logic;
-        reset           		: in std_logic;
-        channel_up      		: in std_logic;
-        addr            		: in std_logic_vector(3 downto 0);
-        trigger         		: in std_logic;
-        trgrdy          		: in std_logic;
-        trgnext         		: in std_logic;
-        ctime           		: in std_logic_vector(15 downto 0);
-        tx_dst_rdy_n    		: in std_logic;
-        tx_src_rdy_n    		: out std_logic;
-        tx_sof_n        		: out std_logic;
-        tx_eof_n        		: out std_logic;
-        tx_d            		: out std_logic_vector(15 downto 0);
-        tx_rem          		: out std_logic;
-			scint_trg			:out	std_logic;
-			scint_trgrdy		:in	std_logic;
-			missed_trg			:out std_logic_vector(15 downto 0);
-	  	  qt_fifo_rd_en			: out std_logic;
-		  qt_fifo_rd_d				: in std_logic_vector(17 downto 0);
-		  qt_fifo_empty			: in std_logic;
-		  qt_fifo_almost_empty			: in std_logic;
-		  qt_fifo_evt_rdy			: in std_logic;
-		  zlt							: in std_logic);
+        clk                     : in std_logic;
+        reset                   : in std_logic;
+        channel_up              : in std_logic;
+        addr                    : in std_logic_vector(3 downto 0);
+        trigger                 : in std_logic;
+        trgrdy                  : in std_logic;
+        trgnext                 : in std_logic;
+        ctime                   : in std_logic_vector(15 downto 0);
+        tx_dst_rdy_n            : in std_logic;
+        tx_src_rdy_n            : out std_logic;
+        tx_sof_n                : out std_logic;
+        tx_eof_n                : out std_logic;
+        tx_d                    : out std_logic_vector(15 downto 0);
+        tx_rem                  : out std_logic;
+            scint_trg           :out    std_logic;
+            scint_trgrdy        :in std_logic;
+            missed_trg          :out std_logic_vector(15 downto 0);
+          qt_fifo_rd_en         : out std_logic;
+          qt_fifo_rd_d              : in std_logic_vector(17 downto 0);
+          qt_fifo_empty         : in std_logic;
+          qt_fifo_almost_empty          : in std_logic;
+          qt_fifo_evt_rdy           : in std_logic;
+          zlt                           : in std_logic);
     end component;
 
     component run_ctrl is
@@ -417,8 +419,8 @@ architecture behave of klm_scrod is
 
     alias NUM_ASICS is TDC_NUM_CHAN;
 
-    constant NUM_ATBS           : integer                      := 5; --ASIC trigger bits    
-    
+    constant NUM_ATBS           : integer                      := 5; --ASIC trigger bits
+
     --constant REFCLKSEL          : std_logic_vector(2 downto 0) := "000";
 
     signal mgtclk0_i            : std_logic;
@@ -526,8 +528,8 @@ architecture behave of klm_scrod is
     signal los_flag             : std_logic;
     signal mod_flag             : std_logic;
 
-	--for all : daq_gen use entity work.daq_gen(single_trig);
-	for all : daq_gen_readout use entity work.daq_gen_readout(multi_trig);
+    --for all : daq_gen use entity work.daq_gen(single_trig);
+    for all : daq_gen_readout use entity work.daq_gen_readout(multi_trig);
 
 
 begin
@@ -676,12 +678,12 @@ ex_trig1_i<=ex_trig1;
     tmg_ctrl_ins : timing_ctrl
     port map(
         clk                     => sys_clk_ib,
-        clk2x                   => sys_clk2x_ib,        
+        clk2x                   => sys_clk2x_ib,
         tdc_sync                => '0',--tdc_sync,--!
         runreset                => b2tt_runreset,
-        tdcrst                  => b2tt_runreset2x,        
+        tdcrst                  => b2tt_runreset2x,
         tdcce_2x                => tdc_ce
-    );    
+    );
 
     ----------------------------------------------------------------
     -- Timing and trigger distribution interface.
@@ -789,7 +791,7 @@ ex_trig1_i<=ex_trig1;
     -- Aurora Core.
     ----------------------------------------------------------------
     aurora_ins : klm_aurora_intfc
-    generic map(        
+    generic map(
         SIM_GTPRESET_SPEEDUP    => 1,
         CLK_CORRECT_USE         => AURORA_CC_USE)
     port map(
@@ -868,6 +870,8 @@ ex_trig1_i<=ex_trig1;
         daq_src_rdy_n           => daq_src_rdy_n,
         daq_data                => daq_data,
         -- outputs --------------------------------------------
+        exttrg                  => open,
+        exttb                   => exttb,
         -- Aurora local ouptput local link (to Concentrator)
         tx_dst_rdy_n            => tx_dst_rdy_n,
         tx_sof_n                => tx_sof_n,
@@ -907,12 +911,12 @@ ex_trig1_i<=ex_trig1;
     --!A packet is an entire trigger.
     --!Must be synced with b2tt trigger/fifo read.
     ----------------------------------------------------------------
-	 scint_trg_ctime<=b2tt_ctime(15 downto 0);
-	 qt_fifo_rd_clk<=sys_clk_ib;
---	 scint_trgrdy		:in	std_logic;
---	 missed_trg			:out std_logic_vector(15 downto 0);
+     scint_trg_ctime<=b2tt_ctime(15 downto 0);
+     qt_fifo_rd_clk<=sys_clk_ib;
+--   scint_trgrdy       :in std_logic;
+--   missed_trg         :out std_logic_vector(15 downto 0);
 
-	 
+
     PROD_GEN : if LINK_TEST = '0' generate
         daq_gen_ins : daq_gen_readout
         generic map(
@@ -932,15 +936,15 @@ ex_trig1_i<=ex_trig1;
             tx_eof_n            => daq_eof_n,
             tx_d                => daq_data,
             tx_rem              => open,
-				scint_trg				=>	scint_trg,
-				scint_trgrdy		=>scint_trg_rdy,
-				missed_trg			=>scint_missed_trg,
-				qt_fifo_rd_en		=>	qt_fifo_rd_en,
-				qt_fifo_rd_d		=> qt_fifo_rd_d,
-				qt_fifo_empty		=> qt_fifo_empty,
-				qt_fifo_almost_empty		=> qt_fifo_almost_empty,
-				qt_fifo_evt_rdy	=>	qt_fifo_evt_rdy,
-				zlt					=> zlt
+                scint_trg               =>  scint_trg,
+                scint_trgrdy        =>scint_trg_rdy,
+                missed_trg          =>scint_missed_trg,
+                qt_fifo_rd_en       =>  qt_fifo_rd_en,
+                qt_fifo_rd_d        => qt_fifo_rd_d,
+                qt_fifo_empty       => qt_fifo_empty,
+                qt_fifo_almost_empty        => qt_fifo_almost_empty,
+                qt_fifo_evt_rdy =>  qt_fifo_evt_rdy,
+                zlt                 => zlt
         );
     end generate;
 
@@ -999,20 +1003,20 @@ ex_trig1_i<=ex_trig1;
     b2tt_b2plllk <= gtlock;
     b2tt_b2linkwe <= (not tx_src_rdy_n);
     b2tt_regdbg <= X"00";
-    
+
     --------------------------------------
     -- Select MGT clock
-    --------------------------------------    
+    --------------------------------------
     --GCLK (bad idea)
     REVA2_GEN : if REVISION = "A2" generate
         refclksel <= "001";
-    end generate;       
+    end generate;
 
     --GCLK (bad idea)
     REVA3_GEN : if REVISION = "A3" generate
         refclksel <= "001";
-    end generate;       
-    
+    end generate;
+
     --CLK0/CLK1 (dedicated clock pins)
     REVA4_GEN : if REVISION = "A4" generate
         -- Use FTSW clock
@@ -1021,10 +1025,10 @@ ex_trig1_i<=ex_trig1;
         end generate;
         -- Use the onboard oscillator
         CLKSRC2_GEN : if CLKSRC = "OBOSC" generate
-            refclksel <= "100"; --CLK1       
-        end generate;        
-    end generate;       
-    --------------------------------------    
+            refclksel <= "100"; --CLK1
+        end generate;
+    end generate;
+    --------------------------------------
 
 ---------------------------------------------------------------------
 -- Synchronous processes
@@ -1068,6 +1072,6 @@ ex_trig1_i<=ex_trig1;
             ctrl_vec_i <= OR_REDUCE(ctrl_regs(0)) & OR_REDUCE(ctrl_regs(1));
             control_fake_i <= OR_REDUCE(ctrl_vec_i);
         end if;
-    end process;      
-     
+    end process;
+
 end behave;

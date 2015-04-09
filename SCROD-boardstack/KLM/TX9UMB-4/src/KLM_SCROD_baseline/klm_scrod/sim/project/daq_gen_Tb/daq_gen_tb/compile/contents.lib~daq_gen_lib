@@ -1,7 +1,0 @@
-1788
-~E 1 "./../../../source/daq_gen_tc.vhd" 24 daq_gen
-~A 1 "./../../../source/daq_gen.vhd" 406 multi_trig
-~A 1 "./../../../source/daq_gen.vhd" 44 rtl
-~A 1 "./../../../source/daq_gen.vhd" 44 single_trig
-~E 1 "./../../source/daq_gen_tb.vhd" 24 daq_gen_tb
-~A 1 "./../../source/daq_gen_tb.vhd" 27 behave

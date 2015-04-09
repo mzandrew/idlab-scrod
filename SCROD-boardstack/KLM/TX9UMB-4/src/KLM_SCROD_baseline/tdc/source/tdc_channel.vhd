@@ -32,7 +32,7 @@ library unisim;
 
 entity tdc_channel is
 generic(
-    INIT_VAL                     : std_logic_vector(TDC_TWIDTH-1 downto 0));
+    INIT_VAL                    : std_logic_vector(TDC_TWIDTH-1 downto 0));
 port(
 -- Inputs -----------------------------
     tdc_clk                     : in std_logic;
@@ -42,6 +42,7 @@ port(
     tb16                        : in std_logic;--?
     fifo_re                     : in std_logic;
 -- Outputs -----------------------------
+    exttb                       : out std_logic_vector(5 downto 1);
     fifo_ept                    : out std_logic;
     tdc_dout                    : out std_logic_vector(TDC_FWIDTH-1 downto 0));
 end tdc_channel;
@@ -113,6 +114,7 @@ begin
 ----------------------------------------------------------------
 -- Concurrent Statements
 ----------------------------------------------------------------
+    exttb <= tb_q2;--?Maybe this should be registered.
 
     fifo_din <= chan_q1 & counter_q1;
     

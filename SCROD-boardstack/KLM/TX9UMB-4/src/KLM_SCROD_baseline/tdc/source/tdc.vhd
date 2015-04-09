@@ -38,6 +38,7 @@ port(
     tb16                            : in std_logic_vector(1 to TDC_NUM_CHAN);
     fifo_re                         : in std_logic_vector(1 to TDC_NUM_CHAN);
 -- Outputs -----------------------------
+    exttb                           : out tb_vec_type;
     fifo_ept                        : out std_logic_vector(1 to TDC_NUM_CHAN);
     tdc_dout                        : out tdc_dout_type);
 end tdc;
@@ -52,11 +53,12 @@ architecture behave of tdc is
     -- Inputs -----------------------------
         tdc_clk                     : in std_logic;
         reset                       : in std_logic;
-        tdc_clr                        : in std_logic;
+        tdc_clr                     : in std_logic;
         tb                          : in std_logic_vector(5 downto 1);
         tb16                        : in std_logic;
         fifo_re                     : in std_logic;
     -- Outputs -----------------------------
+        exttb                       : out std_logic_vector(5 downto 1);
         fifo_ept                    : out std_logic;
         tdc_dout                    : out std_logic_vector(TDC_FWIDTH-1 downto 0));
     end component;
@@ -90,6 +92,7 @@ begin
             tb16                    => tb16(I),
             fifo_re                 => fifo_re(I),
         -- Outputs -----------------------------
+            exttb                   => exttb(I),
             fifo_ept                => fifo_ept_q0(I),
             tdc_dout                => tdc_dout_q0(I)
         );
