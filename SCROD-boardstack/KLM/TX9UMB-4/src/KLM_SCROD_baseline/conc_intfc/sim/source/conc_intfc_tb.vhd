@@ -34,18 +34,18 @@ architecture behave of conc_intfc_tb is
 
     component b2tt is
         generic(
-            CLKPER                      : time);
+            CLKPER                  : time);
         port(
-            sysclk                      : out std_logic;
-            dblclk                      : out std_logic;
-            runreset                    : out std_logic;
-            trigger                     : out std_logic;
-            trgtag                      : out std_logic_vector(31 downto 0);
-            fifordy                     : out std_logic;
-            fifonext                    : in std_logic;
-            fifodata                    : out std_logic_vector(95 downto 0);
-            ctime                       : out std_logic_vector(26 downto 0);
-            utime                       : out std_logic_vector(31 downto 0));
+            sysclk                  : out std_logic;
+            dblclk                  : out std_logic;
+            runreset                : out std_logic;
+            trigger                 : out std_logic;
+            trgtag                  : out std_logic_vector(31 downto 0);
+            fifordy                 : out std_logic;
+            fifonext                : in std_logic;
+            fifodata                : out std_logic_vector(95 downto 0);
+            ctime                   : out std_logic_vector(26 downto 0);
+            utime                   : out std_logic_vector(31 downto 0));
     end component;
 
     component targetx is
@@ -69,7 +69,7 @@ architecture behave of conc_intfc_tb is
         clk                         : in std_logic;
         reset                       : in std_logic;
         enable                      : in std_logic;
-        trigger                     : in std_logic;        
+        trigger                     : in std_logic;
         ctime                       : in std_logic_vector(26 downto 0);
         dst_rdy_n                   : in std_logic;
         sof_n                       : out std_logic;
@@ -77,7 +77,7 @@ architecture behave of conc_intfc_tb is
         src_rdy_n                   : out std_logic;
         data                        : out std_logic_vector(DWIDTH-1 downto 0));
     end component;
-    
+
     component aurora_model is
     generic(
         USE_LFSR                    : std_logic;
@@ -96,7 +96,7 @@ architecture behave of conc_intfc_tb is
         tx_eof_n                    : out std_logic;
         tx_src_rdy_n                : out std_logic;
         tx_data                     : out std_logic_vector (15 downto 0));
-    end component;    
+    end component;
 
     component conc_intfc is
         port(
@@ -106,7 +106,7 @@ architecture behave of conc_intfc_tb is
         ce                          : in std_logic_vector(1 to 5);
         --B2TT interface
         b2tt_runreset               : in std_logic;
-        b2tt_runreset2x             : in std_logic_vector(1 to 3);      
+        b2tt_runreset2x             : in std_logic_vector(1 to 3);
         b2tt_gtpreset               : in std_logic;
         b2tt_fifordy                : in std_logic;
         b2tt_fifodata               : in std_logic_vector (95 downto 0);
@@ -129,6 +129,8 @@ architecture behave of conc_intfc_tb is
         daq_src_rdy_n               : in std_logic;
         daq_data                    : in std_logic_vector(15 downto 0);
         -- outputs --------------------------------------------
+        exttrg                      : out std_logic;
+        exttb                       : out tb_vec_type;
         -- Aurora local ouptput local link
         tx_dst_rdy_n                : in std_logic;
         tx_sof_n                    : out std_logic;
@@ -166,12 +168,12 @@ architecture behave of conc_intfc_tb is
     signal stim_enable              : std_logic                             := '0';
 
     signal b2tt_runreset            : std_logic;
-    signal b2tt_runreset2x          : std_logic_vector(1 to 3);    
+    signal b2tt_runreset2x          : std_logic_vector(1 to 3);
     signal b2tt_gtpreset            : std_logic;
     signal b2tt_trgtag              : std_logic_vector (31 downto 0)        := (others => '0');
     signal b2tt_ctime               : std_logic_vector (26 downto 0)        := (others => '0');
     signal b2tt_utime               : std_logic_vector (31 downto 0)        := (others => '0');
-    signal b2tt_trgout              : std_logic;        
+    signal b2tt_trgout              : std_logic;
     signal b2tt_fifordy             : std_logic                             := '1';
     signal b2tt_fifodata            : std_logic_vector (95 downto 0)        := (others => '0');
     signal b2tt_fifonext            : std_logic;
@@ -185,6 +187,8 @@ architecture behave of conc_intfc_tb is
     signal daq_eof_n                : std_logic;
     signal daq_src_rdy_n            : std_logic;
     signal daq_data                 : std_logic_vector (15 downto 0);
+    signal exttrg                   : std_logic;
+    signal exttb                    : tb_vec_type;
     signal tx_dst_rdy_n             : std_logic;
     signal tx_sof_n                 : std_logic;
     signal tx_eof_n                 : std_logic;
@@ -197,7 +201,7 @@ architecture behave of conc_intfc_tb is
     signal rcl_data                 : std_logic_vector (15 downto 0);
     signal target_tb                : tb_vec_type;
     signal target_tb16              : std_logic_vector(1 to TDC_NUM_CHAN);
-    signal status_regs              : stat_reg_type;  
+    signal status_regs              : stat_reg_type;
 
 begin
 
@@ -207,7 +211,7 @@ begin
     b2tt_ins : b2tt
     generic map(
         CLKPER                      => CLKPER)
-    port map(                          
+    port map(
         sysclk                      => clk,
         dblclk                      => clk2x,
         runreset                    => b2tt_runreset,
@@ -232,24 +236,24 @@ begin
             clk                     => clk,
             ce                      => ce(6),
             run_reset               => b2tt_runreset,
-            stim_enable             => '0',--stim_enable,
+            stim_enable             => stim_enable,
             tb                      => target_tb(I),
             tb16                    => target_tb16(I));
     end generate;
 
     ------------------------------------------------------------
     -- Provide stimulus for the DAQ interface
-    ------------------------------------------------------------    
+    ------------------------------------------------------------
     stim_ins : daq_stim
     generic map(
         DWIDTH                      => 16,
         SEED                        => 1,
         USE_PAUSE                   => '0')
-    port map(                           
+    port map(
         clk                         => clk,
         reset                       => b2tt_runreset,
         enable                      => stim_enable,
-        trigger                     => b2tt_trgout,        
+        trigger                     => b2tt_trgout,
         ctime                       => b2tt_ctime,
         dst_rdy_n                   => daq_dst_rdy_n,
         sof_n                       => daq_sof_n,
@@ -257,11 +261,11 @@ begin
         src_rdy_n                   => daq_src_rdy_n,
         data                        => daq_data
     );
-    
+
     ------------------------------------------------------------
     -- Instantiate a Data Concentrator Aurora model.
     -- !Should use the real thing.
-    ------------------------------------------------------------    
+    ------------------------------------------------------------
     aurora_model_ins : aurora_model
     generic map(
         USE_LFSR                    => USE_LFSR,
@@ -274,13 +278,13 @@ begin
         rx_sof_n                    => tx_sof_n,
         rx_eof_n                    => tx_eof_n,
         rx_src_rdy_n                => tx_src_rdy_n,
-        rx_data                     => tx_data,        
+        rx_data                     => tx_data,
         tx_dst_rdy_n                => rx_dst_rdy_n,
         tx_sof_n                    => rx_sof_n,
         tx_eof_n                    => rx_eof_n,
         tx_src_rdy_n                => rx_src_rdy_n,
         tx_data                     => rx_data
-    );    
+    );
 
     ------------------------------------------------------------
     -- The unit under test.
@@ -291,7 +295,7 @@ begin
         sys_clk						=> clk,
         tdc_clk                     => clk2x,
         ce                          => ce(1 to 5),
-        --B2TT interface            => ,
+        --B2TT interface
         b2tt_runreset               => b2tt_runreset,
         b2tt_runreset2x             => b2tt_runreset2x,
         b2tt_gtpreset               => b2tt_gtpreset,
@@ -305,27 +309,29 @@ begin
         status_regs                 => status_regs,
         -- Aurora local input local link
         rx_dst_rdy_n                => rx_dst_rdy_n,
-        rx_sof_n                    => rx_sof_n    ,
-        rx_eof_n                    => rx_eof_n    ,
+        rx_sof_n                    => rx_sof_n,
+        rx_eof_n                    => rx_eof_n,
         rx_src_rdy_n                => rx_src_rdy_n,
-        rx_data                     => rx_data     ,
+        rx_data                     => rx_data,
         -- DAQ data local link input
-        daq_dst_rdy_n               => daq_dst_rdy_n ,
-        daq_sof_n                   => daq_sof_n     ,
-        daq_eof_n                   => daq_eof_n     ,
-        daq_src_rdy_n               => daq_src_rdy_n ,
-        daq_data                    => daq_data      ,
+        daq_dst_rdy_n               => daq_dst_rdy_n,
+        daq_sof_n                   => daq_sof_n,
+        daq_eof_n                   => daq_eof_n,
+        daq_src_rdy_n               => daq_src_rdy_n,
+        daq_data                    => daq_data,
         -- outputs --------------------------------------------
+        exttrg                      => exttrg,
+        exttb                       => exttb,
         -- Aurora local ouptput local link
         tx_dst_rdy_n                => tx_dst_rdy_n,
-        tx_sof_n                    => tx_sof_n    ,
-        tx_eof_n                    => tx_eof_n    ,
+        tx_sof_n                    => tx_sof_n,
+        tx_eof_n                    => tx_eof_n,
         tx_src_rdy_n                => tx_src_rdy_n,
-        tx_data                     => tx_data     ,
+        tx_data                     => tx_data,
         -- Run control local link output
         rcl_dst_rdy_n               => rcl_dst_rdy_n,
-        rcl_sof_n                   => rcl_sof_n    ,
-        rcl_eof_n                   => rcl_eof_n    ,
+        rcl_sof_n                   => rcl_sof_n,
+        rcl_eof_n                   => rcl_eof_n,
         rcl_src_rdy_n               => rcl_src_rdy_n,
         rcl_data                    => rcl_data
     );
@@ -339,7 +345,7 @@ begin
     stim_enable <= '0', '1' after CLKPER*16;--not b2tt_runreset'delayed(CLKPER*12);
     ce <= (others => ce_bit);
     rcl_dst_rdy_n <= full_reg(5);
-    
+
     STAT_GEN : for I in 0 to NUM_STAT_REGS-1 generate
         status_regs(I) <= STD_LOGIC_VECTOR(TO_UNSIGNED(I,status_regs(I)'length));
     end generate;

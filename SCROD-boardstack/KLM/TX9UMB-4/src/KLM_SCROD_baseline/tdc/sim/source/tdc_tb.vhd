@@ -37,6 +37,7 @@ architecture behave of tdc_tb is
         tb16                            : in std_logic_vector(1 to TDC_NUM_CHAN);
         fifo_re                         : in std_logic_vector(1 to TDC_NUM_CHAN);
     -- Outputs -----------------------------
+        exttb                           : out tb_vec_type;
         fifo_ept                        : out std_logic_vector(1 to TDC_NUM_CHAN);
         tdc_dout                        : out tdc_dout_type);
     end component;
@@ -46,8 +47,7 @@ architecture behave of tdc_tb is
     constant CLKHPER                    : time                                  := CLKPER/2;
     constant CLKQPER                    : time                                  := CLKPER/4;
     constant USE_PRNG                   : std_logic                             := '0';
-    
-    
+
     signal clk                          : std_logic                             := '1';
     signal clk2x                        : std_logic                             := '1';
     signal ce                           : std_logic_vector(1 to 4)              := (others => '1');
@@ -55,6 +55,7 @@ architecture behave of tdc_tb is
     signal tb                           : tb_vec_type                           := (others => "00000");
     signal tb16                         : std_logic_vector(1 to TDC_NUM_CHAN)   := (others => '0');
     signal fifo_re                      : std_logic_vector(1 to TDC_NUM_CHAN)   := (others => '0');
+    signal exttb                        : tb_vec_type                           := (others => "00000");
     signal fifo_ept                     : std_logic_vector(1 to TDC_NUM_CHAN);
     signal tdc_dout                     : tdc_dout_type;
     -- Test bench signals
@@ -74,10 +75,11 @@ begin
         tb16                            => tb16,
         fifo_re                         => fifo_re,
     -- Outputs -----------------------------
+        exttb                           => exttb,
         fifo_ept                        => fifo_ept,
         tdc_dout                        => tdc_dout
     );
-    
+
     -- Generate clock
     clk <= (not clk) after CLKHPER;
     clk2x <= (not clk2x) after CLKQPER;
@@ -88,7 +90,7 @@ begin
         tb(I) <= tb_ctr(5 downto 1) when USE_PRNG = '0' else tb_prng(5 downto 1);
         tb16(I) <= tb_ctr(6) when USE_PRNG = '0' else tb_prng(6);
     end generate;
-        
+
 
     --------------------------------------------------------------------------
     -- Generate counter for trigger bits.

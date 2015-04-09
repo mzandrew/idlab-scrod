@@ -49,7 +49,7 @@ entity conc_intfc is
     b2tt_gtpreset               : in std_logic;
     b2tt_fifordy                : in std_logic;
     b2tt_fifodata               : in std_logic_vector (95 downto 0);
-    b2tt_fifonext               : out std_logic;
+    b2tt_fifonext               : out std_logic;    
     --TARGET ASIC trigger interface (trigger bits)
     target_tb                   : in tb_vec_type;
     target_tb16                 : in std_logic_vector(1 to TDC_NUM_CHAN);
@@ -68,6 +68,8 @@ entity conc_intfc is
     daq_src_rdy_n               : in std_logic;
     daq_data                    : in std_logic_vector(15 downto 0);
     -- outputs --------------------------------------------
+    exttrg                      : out std_logic                             := '0';
+    exttb                       : out tb_vec_type;
     -- Aurora local ouptput local link (to Concentrator)
     tx_dst_rdy_n                : in std_logic;
     tx_sof_n                    : out std_logic;
@@ -95,6 +97,7 @@ architecture behave of conc_intfc is
         tb16                    : in std_logic_vector(1 to TDC_NUM_CHAN);
         fifo_re                 : in std_logic_vector(1 to TDC_NUM_CHAN);
     -- Outputs -----------------------------
+        exttb                   : out tb_vec_type;    
         fifo_ept                : out std_logic_vector(1 to TDC_NUM_CHAN);
         tdc_dout                : out tdc_dout_type);
     end component;
@@ -162,6 +165,8 @@ architecture behave of conc_intfc is
     type tx_fsm_type is (CLEARS,IDLES,TRGSOFS,TRGPLDS,DAQSOFS,DAQPLDS,TRGEOFS,STATSOFS,STATPLDS);
     type word_shift_type is array (natural range <> ) of std_logic_vector(15 downto 0);
 
+    signal exttrg_ctr           : std_logic_vector(3 downto 0)      := (others => '0');
+    
     signal tdc_rden             : std_logic_vector(1 to TDC_NUM_CHAN);
     signal tdc_epty             : std_logic_vector(1 to TDC_NUM_CHAN);
     signal tdc_dout             : tdc_dout_type;
@@ -265,6 +270,7 @@ begin
         tb16                    => target_tb16,
         fifo_re                 => tdc_rden,
     -- Outputs -----------------------------
+        exttb                   => exttb,
         fifo_ept                => tdc_epty,
         tdc_dout                => tdc_dout
     );
@@ -363,6 +369,33 @@ begin
 -------------------------------------------------------------------------------------------
 
     --------------------------------------------------------------------------
+	-- Generate external trigger
+	--------------------------------------------------------------------------
+    exttrg_pcs : process(tdc_clk)
+    begin
+        if (tdc_clk'event and tdc_clk = '1') then
+            if b2tt_runreset2x(1) = '1' then
+                exttrg_ctr <= (others => '0');
+                exttrg <= '0';
+            else
+                if to_dst_we = '1' then
+                    exttrg_ctr <= (others => '1');
+                    exttrg <= '1';
+                else
+                    if exttrg_ctr = 0 then
+                        exttrg_ctr <= exttrg_ctr;
+                        exttrg <= '0';
+                    else
+                        exttrg_ctr <= exttrg_ctr - 1;
+                        exttrg <= '1';
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+
+
+    --------------------------------------------------------------------------
 	-- Deal with the b2tt interface
 	--------------------------------------------------------------------------
     b2tt_pcs : process(sys_clk)
@@ -377,7 +410,6 @@ begin
             end if;
         end if;
     end process;
-
 
     --------------------------------------------------------------------------
 	-- Write data to the trigger FIFO. Add SOF and EOF in the upper data bits.
