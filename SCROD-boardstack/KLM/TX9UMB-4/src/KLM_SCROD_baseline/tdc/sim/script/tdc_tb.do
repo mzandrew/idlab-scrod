@@ -81,7 +81,7 @@ add wave /tdc_tb/UUT/TDC_CH_GEN__1/tdc_ch_ins/fifo_we_q0
 add wave /tdc_tb/UUT/TDC_CH_GEN__1/tdc_ch_ins/trig_q0
 add wave /tdc_tb/UUT/TDC_CH_GEN__1/tdc_ch_ins/chan_q0
 add wave /tdc_tb/UUT/TDC_CH_GEN__1/tdc_ch_ins/chan_q1
-
+add wave /tdc_tb/UUT/TDC_CH_GEN__1/tdc_ch_ins/extexn
 #-------------------------------------------------------------
 wave -divider "/---------------------------"
 wave -divider "TDC Channel 10"
@@ -112,7 +112,7 @@ add wave /tdc_tb/UUT/TDC_CH_GEN__10/tdc_ch_ins/fifo_we_q0
 add wave /tdc_tb/UUT/TDC_CH_GEN__10/tdc_ch_ins/trig_q0
 add wave /tdc_tb/UUT/TDC_CH_GEN__10/tdc_ch_ins/chan_q0
 add wave /tdc_tb/UUT/TDC_CH_GEN__10/tdc_ch_ins/chan_q1
-
+add wave /tdc_tb/UUT/TDC_CH_GEN__10/tdc_ch_ins/extexn
 
 
 #--------------------------------------------------

@@ -36,17 +36,18 @@ package tdc_pkg is
 
     --------------------------------------------------------------------------
 	-- Type declarations.
-    --------------------------------------------------------------------------
+    --------------------------------------------------------------------------    
     type tb_vec_type is array (1 to TDC_NUM_CHAN) of std_logic_vector(5 downto 1);
     type tdc_dout_type is array (1 to TDC_NUM_CHAN) of std_logic_vector(TDC_FWIDTH - 1 downto 0);
+    type tb_ext_type is array (2 downto 0) of std_logic_vector(5 downto 1);
     --type tdc_hdout_type is array (1 to TDC_NUM_CHAN/2) of std_logic_vector(TDC_WIDTH - 1 downto 0);
 
     --------------------------------------------------------------------------
 	-- Function declarations.
     --------------------------------------------------------------------------
     function TDC_INIT_FUN(cnt_num : integer; size : integer) return std_logic_vector;
-	function BIN_TO_ONEHOT(addr : integer; size : integer) return std_logic_vector;
-    function SWAP_BITS(arg : std_logic_vector) return std_logic_vector;
+    function EXT_REDUCE(a : tb_ext_type) return std_logic_vector;
+
 
 end tdc_pkg;
 
@@ -73,44 +74,18 @@ package body tdc_pkg is
         outp := STD_LOGIC_VECTOR(temp);
 
 		return outp;
-	end TDC_INIT_FUN;    
+	end TDC_INIT_FUN;      
 
-	---------------------------------------------------------
-	-- Generate a one-hot output from binary input
-	--------------------------------------------------------
-	function BIN_TO_ONEHOT(addr : integer; size : integer) return std_logic_vector is
+    function EXT_REDUCE(a : tb_ext_type) return std_logic_vector is
+        variable outp : std_logic_vector(5 downto 1) := (others => '0');
+    begin
+        --for I in a'length-1 downto 0 loop
+        for I in a'range loop
+            outp := outp or a(I);
+        end loop;
 
-		variable temp       : unsigned(size-1 downto 0);
-		variable outp       : std_logic_vector(size-1 downto 0);
-
-	begin
-
-		if addr <= 0 then
-            outp := (others => '0');
-        else
-			temp := SHIFT_LEFT(TO_UNSIGNED(1,size),addr-1);
-            outp := STD_LOGIC_VECTOR(temp);
-        end if;
-
-		return outp;
-	end BIN_TO_ONEHOT;
-    
-	---------------------------------------------------------
-	-- Swap bits in a vector
-	--------------------------------------------------------
-	function SWAP_BITS(arg : std_logic_vector) return std_logic_vector is
-		constant arg_l		: integer := arg'length-1;
-		variable data		: std_logic_vector(arg_l downto 0)	:= (others => '0');
-	begin		
-   		
-		for I in 0 to arg_l loop
-			data(I) := arg(arg_l-I);
-		end loop;			
-					
-		return data;
-		
-	end SWAP_BITS;    
-
+        return outp;        
+    end function EXT_REDUCE;    
 
 end tdc_pkg;
 
