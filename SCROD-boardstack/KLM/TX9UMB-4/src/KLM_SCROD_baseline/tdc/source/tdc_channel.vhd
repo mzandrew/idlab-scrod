@@ -25,6 +25,7 @@
 library ieee;
 	use ieee.std_logic_1164.all;
 	use ieee.std_logic_unsigned.all;
+    use ieee.std_logic_misc.all;
 library work;
    	use work.tdc_pkg.all;
 library unisim;
@@ -64,14 +65,14 @@ architecture behave of tdc_channel is
             full                : out std_logic;
             dout                : out std_logic_vector(DWIDTH-1 downto 0));
     end component;
-    
-    signal tdc_rst_q0           : std_logic := '1';  --?? check timing effects.    
+
+    signal tdc_rst_q0           : std_logic := '1';  --?? check timing effects.
 
     signal tb_q0                : std_logic_vector(5 downto 1);
     signal tb_q1                : std_logic_vector(5 downto 1) := (others => '1');
     signal tb_q2                : std_logic_vector(5 downto 1) := (others => '1');
     signal tb_q3                : std_logic_vector(5 downto 1) := (others => '1');
-    signal tb_q4                : std_logic_vector(5 downto 1) := (others => '0');    
+    signal tb_q4                : std_logic_vector(5 downto 1) := (others => '0');
 
     signal counter              : std_logic_vector(TDC_TWIDTH-1 downto 0)   := INIT_VAL;
     signal counter_q0           : std_logic_vector(TDC_TWIDTH-1 downto 0)   := INIT_VAL;
@@ -84,12 +85,14 @@ architecture behave of tdc_channel is
     signal trig_q0              : std_logic                                 := '0';
     signal chan_q0              : std_logic_vector(TDC_CWIDTH-1 downto 0)   := ("0000");
     signal chan_q1              : std_logic_vector(TDC_CWIDTH-1 downto 0)   := ("0000");
-    
+
+    signal extexn               : tb_ext_type;
+
     for all : tdc_fifo use entity work.tdc_fifo(fwft_arch0);
 
     -- attribute shreg_extract: string;
     -- attribute shreg_extract of counter_q0 : signal is "no";
-    -- attribute shreg_extract of counter_q1 : signal is "no";    
+    -- attribute shreg_extract of counter_q1 : signal is "no";
 
 begin
 
@@ -114,17 +117,16 @@ begin
 ----------------------------------------------------------------
 -- Concurrent Statements
 ----------------------------------------------------------------
-    exttb <= tb_q2;--?Maybe this should be registered.
 
     fifo_din <= chan_q1 & counter_q1;
-    
+
 ----------------------------------------------------------------
 -- Synchronous Logic
 ----------------------------------------------------------------
     --------------------------------------------------
     -- Generate the cross-clock domain FFs. Generate
     -- one clock trigger pulse from arbitrarily long
-    -- triger pulses. Instantiate FFs so we know what
+    -- trigger pulses. Instantiate FFs so we know what
     -- we are getting.
     --?Could use sys clock on first FF if trigger bits
     -- are synchronous.
@@ -194,6 +196,8 @@ begin
             -- pipeline the output
             counter_q0 <= counter;
             counter_q1 <= counter_q0;
+            extexn <= tb_q3 & extexn(extexn'length-1 downto 1);
+            exttb <= EXT_REDUCE(extexn);
         end if;
     end process;
 
@@ -327,7 +331,7 @@ begin
             end case;
         end if;
     end process;
-    
+
 end behave;
 
 
