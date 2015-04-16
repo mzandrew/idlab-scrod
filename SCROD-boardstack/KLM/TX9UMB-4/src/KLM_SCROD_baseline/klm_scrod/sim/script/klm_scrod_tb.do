@@ -1,149 +1,150 @@
-cd C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\klm_scrod\sim
+cd C:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/TX9UMB-4/src/KLM_SCROD_baseline/klm_scrod/sim/
 
 
 ###########################################################
 #FTSW
 ###########################################################
 vlib ft2u_lib "./library/ft2u_lib"
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\coregen\m_icon.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\coregen\m_ila.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_types.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\b2tt_iscan.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\b2tt_ddr_v5.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_utime.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\b2tt_8b10b.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\b2tt_symbols.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\x_decode.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\x_encode.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\o_decode.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_fifo.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_count.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_decode.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_dumtrig.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_encode.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_genbusy.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_gentrig.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_pipeline.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_trgdelay.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_collect.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\m_jtag.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_aux.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_blink.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_dump.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_ictrl.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_ioswitch.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_jitterspi.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_oack.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_oclk.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_orsv.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_otrg.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_phasedet.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_regs.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\tt_tlu.vhd
-vcom -work ft2u_lib .\..\..\..\integration\det_intfc\ft2u\ft2u\ft2u.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/coregen/m_icon.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/coregen/m_ila.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_types.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/b2tt_iscan.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/b2tt_ddr_v5.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_utime.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/b2tt_8b10b.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/b2tt_symbols.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/x_decode.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/x_encode.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/o_decode.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_fifo.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_count.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_decode.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_dumtrig.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_encode.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_genbusy.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_gentrig.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_pipeline.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_trgdelay.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_collect.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/m_jtag.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_aux.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_blink.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_dump.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_ictrl.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_ioswitch.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_jitterspi.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_oack.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_oclk.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_orsv.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_otrg.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_phasedet.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_regs.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/tt_tlu.vhd
+vcom -work ft2u_lib ./../../integration/det_intfc/ft2u/ft2u/ft2u.vhd
 
 ###########################################################
 #Concentrator Interface
 ###########################################################
-vlib klm_scrod_tb "./library/klm_scrod_lib.lib"
+vlib klm_scrod_lib "./library/klm_scrod_lib.lib"
 ###############################
 #IP Cores
 ###############################
-vcom -work klm_scrod_tb .\..\..\ipcore\daq_fifo.vhd
-vcom -work klm_scrod_tb .\..\..\ipcore\trig_fifo.vhd
+vcom -work klm_scrod_lib ./../../ipcore/daq_fifo.vhd
+vcom -work klm_scrod_lib ./../../ipcore/trig_fifo.vhd
 ###############################
 #TDC Files
 ###############################
-vcom -work klm_scrod_tb .\..\..\tdc\source\tdc_pkg.vhd
-vcom -work klm_scrod_tb .\..\..\tdc\source\tdc_fifo.vhd
-vcom -work klm_scrod_tb .\..\..\tdc\source\tdc_channel.vhd
-vcom -work klm_scrod_tb .\..\..\tdc\source\tdc.vhd
+vcom -work klm_scrod_lib ./../../tdc/source/tdc_pkg.vhd
+vcom -work klm_scrod_lib ./../../tdc/source/tdc_fifo.vhd
+vcom -work klm_scrod_lib ./../../tdc/source/tdc_channel.vhd
+vcom -work klm_scrod_lib ./../../tdc/source/tdc.vhd
 ###############################
 #Time Order Files
 ###############################
-vcom -work klm_scrod_tb .\..\..\time_order\source\time_order_pkg.vhd
-vcom -work klm_scrod_tb .\..\..\time_order\source\tom_2_to_1.vhd
-vcom -work klm_scrod_tb .\..\..\time_order\source\tom_3_to_1.vhd
-vcom -work klm_scrod_tb .\..\..\time_order\source\tom_4_to_1.vhd
-vcom -work klm_scrod_tb .\..\..\time_order\source\tom_10_to_1.vhd
-vcom -work klm_scrod_tb .\..\..\time_order\source\time_order.vhd
+vcom -work klm_scrod_lib ./../../time_order/source/time_order_pkg.vhd
+vcom -work klm_scrod_lib ./../../time_order/source/tom_2_to_1.vhd
+vcom -work klm_scrod_lib ./../../time_order/source/tom_3_to_1.vhd
+vcom -work klm_scrod_lib ./../../time_order/source/tom_4_to_1.vhd
+vcom -work klm_scrod_lib ./../../time_order/source/tom_10_to_1.vhd
+vcom -work klm_scrod_lib ./../../time_order/source/time_order.vhd
 
-vcom -work klm_scrod_tb .\..\..\conc_intfc\source\conc_intfc_pkg.vhd
-vcom -work klm_scrod_tb .\..\..\conc_intfc\source\trig_chan_calc.vhd
-vcom -work klm_scrod_tb .\..\..\conc_intfc\source\conc_intfc.vhd
+vcom -work klm_scrod_lib ./../../conc_intfc/source/conc_intfc_pkg.vhd
+vcom -work klm_scrod_lib ./../../conc_intfc/source/trig_chan_calc.vhd
+vcom -work klm_scrod_lib ./../../conc_intfc/source/conc_intfc.vhd
 
 ###############################
 #Aurora Core
 ###############################
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\aurora_tile.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\transceiver_wrapper.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\aurora_pkg.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\chbond_count_dec.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\err_detect.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\lane_init_sm.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\sym_dec.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\sym_gen.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\aurora_lane.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\channel_err_detect.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\channel_init_sm.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\idle_and_ver_gen.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\global_logic.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\tx_ll_control.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\tx_ll_datapath.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\tx_ll.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\rx_ll_pdu_datapath.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\rx_ll.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\standard_cc_module.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\klm_aurora.vhd
-vcom -work klm_scrod_tb .\..\..\klm_aurora\source\klm_aurora_intfc.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/aurora_tile.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/transceiver_wrapper.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/aurora_pkg.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/chbond_count_dec.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/err_detect.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/lane_init_sm.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/sym_dec.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/sym_gen.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/aurora_lane.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/channel_err_detect.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/channel_init_sm.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/idle_and_ver_gen.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/global_logic.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/tx_ll_control.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/tx_ll_datapath.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/tx_ll.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/rx_ll_pdu_datapath.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/rx_ll.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/standard_cc_module.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/klm_aurora.vhd
+vcom -work klm_scrod_lib ./../../klm_aurora/source/klm_aurora_intfc.vhd
 
 ###############################
 #B2TT
 ###############################
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_symbols.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_iscan.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_ddr_s6.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_clk_s6.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_fifo_s6.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_8b10b.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_encode.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_payload.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt_decode.vhd
-vcom -work klm_scrod_tb .\..\..\b2tt\b2tt\b2tt.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_symbols.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_iscan.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_ddr_s6.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_clk_s6.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_fifo_s6.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_8b10b.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_encode.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_payload.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt_decode.vhd
+vcom -work klm_scrod_lib ./../../b2tt/b2tt/b2tt.vhd
 
 ###############################
 #Top Level
 ###############################					   
-vcom -work klm_scrod_tb .\..\source\klm_scrod_pkg.vhd
-vcom -work klm_scrod_tb .\..\source\frame_gen.vhd
-vcom -work klm_scrod_tb .\..\source\daq_gen.vhd
-vcom -work klm_scrod_tb .\..\source\run_ctrl.vhd
-vcom -work klm_scrod_tb .\..\source\sfp_stat_ctrl.vhd
-vcom -work klm_scrod_tb .\..\source\timing_ctrl_pkg.vhd
-vcom -work klm_scrod_tb .\..\source\timing_ctrl.vhd
-vcom -work klm_scrod_tb .\..\source\klm_scrod.vhd
+vcom -work klm_scrod_lib ./../source/klm_scrod_pkg.vhd
+vcom -work klm_scrod_lib ./../source/frame_gen.vhd
+vcom -work klm_scrod_lib ./../source/daq_gen.vhd
+vcom -work klm_scrod_lib ./../source/daq_gen_readout.vhd
+vcom -work klm_scrod_lib ./../source/run_ctrl.vhd
+vcom -work klm_scrod_lib ./../source/sfp_stat_ctrl.vhd
+vcom -work klm_scrod_lib ./../source/timing_ctrl_pkg.vhd
+vcom -work klm_scrod_lib ./../source/timing_ctrl.vhd
+vcom -work klm_scrod_lib ./../source/klm_scrod.vhd
 
 ###########################################################
 #Models and testbench
 ###########################################################
-#vcom -work klm_scrod_tb .\source\frame_check.vhd;
-#vcom -work klm_scrod_tb .\source\frame_gen.vhd;
+#vcom -work klm_scrod_lib ./source/frame_check.vhd;
+#vcom -work klm_scrod_lib ./source/frame_gen.vhd;
 
 
-vcom -work klm_scrod_tb .\source\targetx.vhd
-vcom -work klm_scrod_tb .\source\run_ctrl_stim.vhd
-#vcom -work klm_scrod_tb .\source\aurora_model.vhd
+vcom -work klm_scrod_lib ./source/targetx.vhd
+vcom -work klm_scrod_lib ./source/run_ctrl_stim.vhd
+#vcom -work klm_scrod_lib ./source/aurora_model.vhd
 
-vcom -work klm_scrod_tb .\source\klm_scrod_tb.vhd;
+vcom -work klm_scrod_lib ./source/klm_scrod_tb.vhd;
 
-vsim klm_scrod_tb -t 1ps -ieee_nowarn
+vsim -lib klm_scrod_lib klm_scrod_tb -t 1ps -ieee_nowarn +access +r
 
 @transcript off
 
 #-----------------------------------------------------------------------------------------------------------
-wave -divider "/---------------------------" -color 255,255,255
-wave -divider "Testbench Signals" -color 255,255,255
-wave -divider "/---------------------------" -color 255,255,255
+wave -divider "/---------------------------"
+wave -divider "Testbench Signals"
+wave -divider "/---------------------------"
 #-----------------------------------------------------------------------------------------------------------
 add wave -noreg -logic {/klm_scrod_tb/stim_enable}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/full_reg}
@@ -254,21 +255,47 @@ add wave -noreg -logic {/klm_scrod_tb/scrod_mgtrxn}
 add wave -noreg -logic {/klm_scrod_tb/scrod_mgttxp}
 add wave -noreg -logic {/klm_scrod_tb/scrod_mgttxn}
 add wave -noreg -logic {/klm_scrod_tb/scrod_ex_trig1}
+add wave -noreg -logic {/klm_scrod_tb/scrod_ftsw_aux}
 add wave -noreg -logic {/klm_scrod_tb/scrod_status}
 add wave -noreg -logic {/klm_scrod_tb/scrod_control}
 
 
 
 #-----------------------------------------------------------------------------------------------------------
-wave -divider "/---------------------------" -color 255,255,255
-wave -divider "UUT" -color 255,255,255
-wave -divider "/---------------------------" -color 255,255,255
+wave -divider "/---------------------------"
+wave -divider "UUT"
+wave -divider "/---------------------------"
 #-----------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
-wave -divider "/---------------------------" -color 255,255,255
-wave -divider "Top Level" -color 255,255,255
-wave -divider "/---------------------------" -color 255,255,255
+wave -divider "/---------------------------"
+wave -divider "Top Level"
+wave -divider "/---------------------------"
 #-----------------------------------------------------------------------------------
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdclkp}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdclkn}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdtrgp}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdtrgn}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdrsvp}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdrsvn}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdackp}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ttdackn}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/target_tb}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/target_tb16}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgttxfault}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod0}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtlos}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgttxdis}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod2}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod1}
+add wave -noreg -logic {/klm_scrod_tb/UUT/mgtrxp}
+add wave -noreg -logic {/klm_scrod_tb/UUT/mgtrxn}
+add wave -noreg -logic {/klm_scrod_tb/UUT/mgttxp}
+add wave -noreg -logic {/klm_scrod_tb/UUT/mgttxn}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ex_trig1}
+add wave -noreg -logic {/klm_scrod_tb/UUT/exttb}
+add wave -noreg -logic {/klm_scrod_tb/UUT/ftsw_aux}
+add wave -noreg -logic {/klm_scrod_tb/UUT/status_fake}
+add wave -noreg -logic {/klm_scrod_tb/UUT/control_fake}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgttxfault_i}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod0_i}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtlos_i}
@@ -351,35 +378,11 @@ add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/rcl_data}
 add wave -noreg -logic {/klm_scrod_tb/UUT/fault_flag}
 add wave -noreg -logic {/klm_scrod_tb/UUT/los_flag}
 add wave -noreg -logic {/klm_scrod_tb/UUT/mod_flag}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdclkp}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdclkn}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdtrgp}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdtrgn}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdrsvp}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdrsvn}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdackp}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ttdackn}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/target_tb}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/target_tb16}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgttxfault}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod0}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtlos}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgttxdis}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod2}
-add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/mgtmod1}
-add wave -noreg -logic {/klm_scrod_tb/UUT/mgtrxp}
-add wave -noreg -logic {/klm_scrod_tb/UUT/mgtrxn}
-add wave -noreg -logic {/klm_scrod_tb/UUT/mgttxp}
-add wave -noreg -logic {/klm_scrod_tb/UUT/mgttxn}
-add wave -noreg -logic {/klm_scrod_tb/UUT/ex_trig1}
-add wave -noreg -logic {/klm_scrod_tb/UUT/status_fake}
-add wave -noreg -logic {/klm_scrod_tb/UUT/control_fake}
-
 
 #-----------------------------------------------------------------------------------
-wave -divider "/---------------------------" -color 255,255,255
-wave -divider "Data Concentrator Interface" -color 255,255,255
-wave -divider "/---------------------------" -color 255,255,255
+wave -divider "/---------------------------"
+wave -divider "Data Concentrator Interface"
+wave -divider "/---------------------------"
 #-----------------------------------------------------------------------------------
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/sys_clk}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/tdc_clk}
@@ -403,6 +406,8 @@ add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/daq_sof_n}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/daq_eof_n}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/daq_src_rdy_n}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/daq_data}
+add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/exttrg}
+add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/exttb}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/tx_dst_rdy_n}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/tx_sof_n}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/tx_eof_n}
@@ -417,6 +422,7 @@ add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/tdc_rden
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/tdc_epty}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/tdc_dout}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/to_dst_we}
+add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/exttrg_ctr}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/to_dout}
 add wave -noreg -hexadecimal -literal {/klm_scrod_tb/UUT/conc_intfc_ins/to_valid}
 add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/trg_fifo_we}
@@ -465,5 +471,5 @@ add wave -noreg -logic {/klm_scrod_tb/UUT/conc_intfc_ins/daq_eof}
 @transcript off
 
 #run 3 ms;
-run 2500 us;
-#run 100 ns;
+#run 2500 us;
+run 1000 ns;
