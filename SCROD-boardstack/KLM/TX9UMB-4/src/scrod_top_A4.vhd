@@ -1011,6 +1011,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
     mgttxn   	=>		mgttxn,               
 	ex_trig1    =>'1',
     exttb       => open,
+    ftsw_aux    => open,
     status_fake =>	status_fake,          
     control_fake => 	control_fake,
 	

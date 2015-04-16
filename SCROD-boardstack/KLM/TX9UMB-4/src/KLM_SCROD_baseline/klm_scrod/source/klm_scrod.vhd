@@ -104,6 +104,7 @@ port(
     mgttxn                      : out std_logic;
     ex_trig1                    : in std_logic;--fake address bit
     exttb                       : out tb_vec_type;
+    ftsw_aux                    : out std_logic;
     status_fake                 : out std_logic;
     control_fake                : out std_logic;
     scint_trg                   : out std_logic;
@@ -444,6 +445,7 @@ architecture behave of klm_scrod is
     signal status_vec_i         : std_logic_vector(1 to NUM_STAT_REGS);
     signal ctrl_vec_i           : std_logic_vector(1 to NUM_CTRL_REGS);
     signal ex_trig1_i           : std_logic;
+    signal ftsw_aux_i           : std_logic;
     signal status_fake_i        : std_logic;
     signal control_fake_i       : std_logic;
 
@@ -461,6 +463,7 @@ architecture behave of klm_scrod is
     signal b2tt_ctime_iq        : std_logic;
     signal status_fake_iq       : std_logic;
     signal control_fake_iq      : std_logic;
+    signal ftsw_aux_iq          : std_logic;
 
     -- B2TT Signals
     signal b2tt_id              : std_logic_vector (B2TT_NBITID-1 downto 0);
@@ -589,6 +592,12 @@ target_tb16_i<=target_tb16;
             I                   => mgtmod0(I)
         );
     end generate;
+    
+    ftsw_aux_OBUF : OBUF
+    port map(
+        O                       => ftsw_aux,
+        I                       => ftsw_aux_iq
+    );    
 
     mgtlos_IBUF_GEN :
     for I in 1 to NUM_GTS generate
@@ -1059,6 +1068,7 @@ ex_trig1_i<=ex_trig1;
     sout_regs : process(sys_clk_ib)
     begin
         if (sys_clk_ib'event and sys_clk_ib = '1') then
+            ftsw_aux_iq <= ftsw_aux_i;
             mgttxdis_iq <= mgttxdis_i;
             mgtmod2_iq <= mgtmod2_i;
             mgtmod1_iq <= mgtmod1_i;

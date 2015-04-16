@@ -13,7 +13,7 @@
 -- Test bench for top level KLM SCROD FPGA.
 --
 -- Deficiencies/Know Issues
--- 
+--
 --*********************************************************************************
 library ieee;
     use ieee.std_logic_1164.all;
@@ -56,11 +56,11 @@ architecture behave of klm_scrod_tb is
         tx_sof_n                    : out std_logic;
         tx_eof_n                    : out std_logic;
         tx_src_rdy_n                : out std_logic;
-        tx_rem                      : out std_logic;        
+        tx_rem                      : out std_logic;
         tx_data                     : out std_logic_vector (15 downto 0));
     end component;
 
-    component klm_aurora_intfc is    generic(        
+    component klm_aurora_intfc is    generic(
         SIM_GTPRESET_SPEEDUP        : integer);
     port(
         refseldypll                 : std_logic_vector(2 downto 0);
@@ -104,13 +104,16 @@ architecture behave of klm_scrod_tb is
     end component;
 
     component klm_scrod is
-        generic(
-        NUM_GTS                     : integer   := 2;
+    generic(
+        NUM_GTS                     : integer;
         REVISION                    : string;  --A2,A3,A4
-        CLKSRC                      : string;--FTSW, OBOSC                
+        CLKSRC                      : string;--FTSW, OBOSC
+        AURORA_CC_USE               : boolean;
         LINK_TEST                   : std_logic;
-        B2TT_SIM_SPEEDUP            : std_logic);
-        port(
+        B2TT_SIM_SPEEDUP            : std_logic;
+        DAQ_GEN_SIM_SPEEDUP         : std_logic);
+    port(
+        --tdc_sync                    : in std_logic;
         -- TTD/FTSW interface
         ttdclkp                     : in std_logic;
         ttdclkn                     : in std_logic;
@@ -121,8 +124,8 @@ architecture behave of klm_scrod_tb is
         ttdackp                     : out std_logic;
         ttdackn                     : out std_logic;
         -- ASIC Interface
-        target_tb                   : in tb_vec_type; 
-        target_tb16                 : in std_logic_vector(1 to TDC_NUM_CHAN);         
+        target_tb                   : in tb_vec_type;
+        target_tb16                 : in std_logic_vector(1 to TDC_NUM_CHAN);
         -- SFP interface
         mgttxfault                  : in std_logic_vector(1 to NUM_GTS);
         mgtmod0                     : in std_logic_vector(1 to NUM_GTS);
@@ -139,8 +142,21 @@ architecture behave of klm_scrod_tb is
         mgttxp                      : out std_logic;
         mgttxn                      : out std_logic;
         ex_trig1                    : in std_logic;--fake address bit
+        exttb                       : out tb_vec_type;
+        ftsw_aux                    : out std_logic;
         status_fake                 : out std_logic;
-        control_fake                : out std_logic);
+        control_fake                : out std_logic;
+        scint_trg                   : out std_logic;
+        scint_trg_ctime             : out std_logic_vector(15 downto 0);
+        scint_missed_trg            : out std_logic_vector(15 downto 0);
+        scint_trg_rdy               : in std_logic;
+        qt_fifo_rd_clk              : out std_logic;
+        qt_fifo_rd_en               : out std_logic;
+        qt_fifo_rd_d                : in std_logic_vector(17 downto 0);
+        qt_fifo_empty               : in std_logic;
+        qt_fifo_almost_empty        : in std_logic;
+        qt_fifo_evt_rdy             : in std_logic;
+        zlt                         : in std_logic);
     end component;
 
     -- Clocks --------------------------------
@@ -160,7 +176,7 @@ architecture behave of klm_scrod_tb is
     constant UCKPER                 : time                          := 8 ns;
     constant UCKHLFPER              : time                          := UCKPER/2;
     constant UCKQTRPER              : time                          := UCKPER/4;
-    constant NUM_MGT                : integer                       := 2;
+    constant NUM_MGT                : integer                       := 1;
     constant CLKSEL                 : std_logic_vector(2 downto 0)  := "010";--PLLCLK (bad idea)
 
     type tb_lld_type is array (1 to NUM_MGT) of std_logic_vector(15 downto 0);
@@ -170,7 +186,7 @@ architecture behave of klm_scrod_tb is
 
     signal stim_enable              : std_logic                             := '0';
     signal full_reg                 : std_logic_vector(15 downto 0);
-    
+
     signal f2tu_f_led1y_b           : std_logic;
     signal f2tu_f_d                 : std_logic_vector(31 downto 0);
     signal f2tu_f_a                 : std_logic_vector(15 downto 4);
@@ -268,7 +284,7 @@ architecture behave of klm_scrod_tb is
     signal scrod_ttdrsv_p           : std_logic;
     signal scrod_ttdrsv_n           : std_logic;
     signal scrod_target_tb          : tb_vec_type;
-    signal scrod_target_tb16        : std_logic_vector(1 to TDC_NUM_CHAN);    
+    signal scrod_target_tb16        : std_logic_vector(1 to TDC_NUM_CHAN);
     signal scrod_mgttxfault         : std_logic_vector(1 to NUM_MGT);
     signal scrod_mgtmod0            : std_logic_vector(1 to NUM_MGT);
     signal scrod_mgtlos             : std_logic_vector(1 to NUM_MGT);
@@ -281,6 +297,8 @@ architecture behave of klm_scrod_tb is
     signal scrod_mgttxp             : std_logic;
     signal scrod_mgttxn             : std_logic;
     signal scrod_ex_trig1           : std_logic;
+    signal scrod_exttb              : tb_vec_type;    
+    signal scrod_ftsw_aux           : std_logic;
     signal scrod_status             : std_logic;
     signal scrod_control            : std_logic;
 
@@ -428,7 +446,7 @@ begin
     -- Fake the Data Concentrator Aurora Core
     ------------------------------------------------------------
     conc_ins : klm_aurora_intfc
-    generic map(        
+    generic map(
         SIM_GTPRESET_SPEEDUP        => 1)
     port map(
         refseldypll                 => CLKSEL,
@@ -473,13 +491,16 @@ begin
 
     ------------------------------------------------------------
     -- KLM SCROD (the unit-under-test)
-    ------------------------------------------------------------    
+    ------------------------------------------------------------
     UUT : klm_scrod
     generic map(
-        REVISION                    => "A2",--A2, A3, A4
+        NUM_GTS                     => NUM_MGT,
+        REVISION                    => "A4",--A2, A3, A4
         CLKSRC                      => "FTSW",--FTSW, OBOSC
+        AURORA_CC_USE               => FALSE,           
         LINK_TEST                   => '0',
-        B2TT_SIM_SPEEDUP            => '1')
+        B2TT_SIM_SPEEDUP            => '1',
+        DAQ_GEN_SIM_SPEEDUP         => '1')                                    
     port map(
         -- TTD/FTSW interface
         ttdclkp                     => scrod_ttdclk_p,
@@ -503,14 +524,27 @@ begin
         mgtclk0p                    => scrod_ttdclk_p,--!add osc to testbench
         mgtclk0n                    => scrod_ttdclk_n,
         mgtclk1p                    => scrod_ttdclk_p,--!add osc to testbench
-        mgtclk1n                    => scrod_ttdclk_n,        
+        mgtclk1n                    => scrod_ttdclk_n,
         mgtrxp                      => scrod_mgtrxp,
         mgtrxn                      => scrod_mgtrxn,
         mgttxp                      => scrod_mgttxp,
         mgttxn                      => scrod_mgttxn,
         ex_trig1                    => scrod_ex_trig1,
+        exttb                       => scrod_exttb,
+        ftsw_aux                    => scrod_ftsw_aux,
         status_fake                 => scrod_status,
-        control_fake                => scrod_control
+        control_fake                => scrod_control,
+        scint_trg                   => open,
+        scint_trg_ctime             => open,
+        scint_missed_trg            => open,
+        scint_trg_rdy               => '0',
+        qt_fifo_rd_clk              => open,
+        qt_fifo_rd_en               => open,
+        qt_fifo_rd_d                => (others => '0'),--"00000000000000000",
+        qt_fifo_empty               => '0',
+        qt_fifo_almost_empty        => '0',
+        qt_fifo_evt_rdy             => '0',
+        zlt                         => '0'
     );
 
     -----------------------------------------------------------------------------------------------
@@ -573,16 +607,16 @@ begin
     -- Generate clock
     conc_user_clk <= ft2u_o_clk_p(7);
     conc_sync_clk <= conc_user_clk xor conc_user_clk'delayed(FLCKPER/4);
-    
+
     conc_reset <= '1', '0' after FLCKPER*4;
     conc_gt_reset <= '1', '0' after FLCKPER*2;
-    conc_plllock <= '0', '1' after FLCKPER*8; 
-    
-    conc_powerdown <= '0'; 
+    conc_plllock <= '0', '1' after FLCKPER*8;
+
+    conc_powerdown <= '0';
     conc_loopback <= "000";
-    
+
     conc_rxp <= scrod_mgttxp;
-    conc_rxn <= scrod_mgttxn;    
+    conc_rxn <= scrod_mgttxn;
 
     -----------------------------------------------------------------------------------------------
     -- SCROD Stimulus
@@ -593,12 +627,12 @@ begin
     scrod_ttdtrg_n <= ft2u_o_trg_n(5);
     scrod_target_tb <= target_tb;
     scrod_target_tb16 <= target_tb16;
-    
+
     scrod_mgttxfault <= (others => '0');
     scrod_mgtmod0 <= (others => '0');
     scrod_mgtlos <= (others => '0');
     scrod_mgtrxp <= conc_txp;
-    scrod_mgtrxn <= conc_txn;     
+    scrod_mgtrxn <= conc_txn;
     scrod_ex_trig1 <= '0';
 
     -----------------------------------------------------------------------------------------------
