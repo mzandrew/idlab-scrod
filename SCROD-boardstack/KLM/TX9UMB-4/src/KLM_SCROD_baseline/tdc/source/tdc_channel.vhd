@@ -138,10 +138,10 @@ begin
             INIT => '0') -- Initial value of register ('0' or '1')
         port map (
             Q           => tb_q0(I),     -- Data output
-            C           => tb(I),        -- Clock input
+            C           => tdc_clk,--tb(I),        -- Clock input
             CE          => '1',         -- Clock enable input
-            CLR         => tb_q2(I),     -- Asynchronous clear input
-            D           => '1'          -- Data input
+            CLR         => '0',--tb_q2(I),     -- Asynchronous clear input
+            D           => tb(I)--'1'          -- Data input
         );
 
         -- double register the discriminator value --
@@ -196,7 +196,7 @@ begin
             -- pipeline the output
             counter_q0 <= counter;
             counter_q1 <= counter_q0;
-            extexn <= tb_q3 & extexn(extexn'length-1 downto 1);
+            extexn <= tb_q4 & extexn(extexn'length-1 downto 1);
             exttb <= EXT_REDUCE(extexn);
         end if;
     end process;
