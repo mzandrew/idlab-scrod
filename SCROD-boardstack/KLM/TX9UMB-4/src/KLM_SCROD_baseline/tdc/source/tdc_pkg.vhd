@@ -39,7 +39,7 @@ package tdc_pkg is
     --------------------------------------------------------------------------    
     type tb_vec_type is array (1 to TDC_NUM_CHAN) of std_logic_vector(5 downto 1);
     type tdc_dout_type is array (1 to TDC_NUM_CHAN) of std_logic_vector(TDC_FWIDTH - 1 downto 0);
-    type tb_ext_type is array (2 downto 0) of std_logic_vector(5 downto 1);
+    type tb_ext_type is array (3 downto 0) of std_logic_vector(5 downto 1);
     --type tdc_hdout_type is array (1 to TDC_NUM_CHAN/2) of std_logic_vector(TDC_WIDTH - 1 downto 0);
 
     --------------------------------------------------------------------------
