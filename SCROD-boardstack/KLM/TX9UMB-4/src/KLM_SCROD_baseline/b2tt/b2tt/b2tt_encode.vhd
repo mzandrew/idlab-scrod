@@ -153,7 +153,7 @@ begin
       
       -- data to encode
       if (cntoctet = 0 and obusy = '0') or
-         (cntoctet = 1 and sta_defer = '1') then
+         ((cntoctet = 0 or cntoctet = 1) and sta_defer = '1') then
         octet <= K28_1; -- comma
         isk   <= '1';
       elsif cntoctet = 15 and sta_defer = '0' then
@@ -197,6 +197,9 @@ entity b2tt_enbit2 is
     busy     : in  std_logic;
     err      : in  std_logic;
     obusy    : out std_logic;
+    busyup   : out std_logic; -- for debug
+    busydn   : out std_logic; -- for debug
+    orbusy   : out std_logic_vector (3 downto 0); -- for debug
     bit2     : out std_logic_vector (1 downto 0);
     validk   : out std_logic;
     rdnext   : out std_logic;
@@ -208,7 +211,6 @@ architecture implementation of b2tt_enbit2 is
   signal sig_en     : std_logic := '0';
   signal buf_10b    : std_logic_vector (9 downto 0) := "0000000000";
   signal seq_10b    : std_logic_vector (7 downto 0) := "00000000";
-  signal buf_validk : std_logic := '0';
   signal seq_busy   : std_logic_vector (1 downto 0) := "00";
   signal seq_err    : std_logic_vector (1 downto 0) := "00";
   signal sta_err    : std_logic := '0';
@@ -229,6 +231,7 @@ begin
                                          and sta_err = '0' else '0';
   sig_orerr  <= err;
   sig_orbusy <= busy or sig_orerr or seq_orbusy or sta_err;
+  orbusy     <= busy &  sig_orerr &  seq_orbusy &  sta_err;
   
   map_en8b10b: entity work.b2tt_en8b10b
     port map (
@@ -274,10 +277,12 @@ begin
         seq_k285 <= "00000101";
         cnt_k285 <= "100";
         obusy    <= '1';
+        busyup   <= '1';
       elsif sig_busydn = '1' then
         seq_k285 <= "11111010";
         cnt_k285 <= "100";
         obusy    <= '1';
+        busydn   <= '1';
       elsif cnt_k285 /= 0 then
         cnt_k285 <= cnt_k285 - 1;
         seq_k285 <= seq_k285(5 downto 0) & "00";
@@ -285,9 +290,13 @@ begin
       elsif cntbit2 = 3 then
         seq_10b <= buf_10b(7 downto 0);
         obusy    <= '0';
+        busyup   <= '0';
+        busydn   <= '0';
       else
         seq_10b <= seq_10b(5 downto 0) & "00";
         obusy    <= '0';
+        busyup   <= '0';
+        busydn   <= '0';
       end if;
 
     end if;
@@ -318,30 +327,9 @@ entity b2tt_encode is
     clock     : in  std_logic;
     invclock  : in  std_logic;
     frame     : in  std_logic;
-    --id        : in  std_logic_vector (15 downto 0);
-    --myaddr    : in  std_logic_vector (19 downto 0);
-    --b2clkup   : in  std_logic;
-    --b2ttup    : in  std_logic;
-    --b2plllk   : in  std_logic;
-    --b2linkup  : in  std_logic;
-    --b2linkwe  : in  std_logic;
-    --b2lnext   : in  std_logic;
-    --b2lclk    : in  std_logic;
     runreset  : in  std_logic;
-    --stareset  : in  std_logic;
     busy      : in  std_logic;
     err       : in  std_logic;
-    --moreerrs  : in  std_logic_vector (1  downto 0);
-    --tag       : in  std_logic_vector (31 downto 0);
-    --tagerr    : in  std_logic;
-    --fifoerr   : in  std_logic;
-    --fifoful   : in  std_logic;
-    --badver    : in  std_logic;
-    --seu       : in  std_logic_vector (6  downto 0);
-    --cntdelay  : in  std_logic_vector (6  downto 0);
-    --cntwidth  : in  std_logic_vector (5  downto 0);
-    --timerr    : in  std_logic;
-    --regdbg    : in  std_logic_vector (7  downto 0);
     payload   : in  std_logic_vector (111 downto 0);
     fillsig   : out std_logic;
     ackp      : out std_logic;
@@ -350,8 +338,10 @@ entity b2tt_encode is
     cntoctet  : out std_logic_vector (3  downto 0);
     isk       : out std_logic;
     octet     : out std_logic_vector (7  downto 0);
-    bit2      : out std_logic_vector (1  downto 0);
-    bitddr    : out std_logic );
+    busyup    : out std_logic;
+    busydn    : out std_logic;
+    orbusy    : out std_logic_vector (3  downto 0);
+    bit2      : out std_logic_vector (1  downto 0) );
 end b2tt_encode;
 ------------------------------------------------------------------------
 architecture implementation of b2tt_encode is
@@ -398,6 +388,9 @@ begin
       busy      => busy,
       err       => err,
       obusy     => sig_obusy,  -- out
+      busyup    => busyup,     -- out
+      busydn    => busydn,     -- out
+      orbusy    => orbusy,     -- out
       bit2      => sig_bit2,   -- out/async
       validk    => sig_validk, -- out/async
       rdnext    => buf_rdnext, -- out
@@ -412,12 +405,13 @@ begin
       invclock  => invclock,
       mask      => '0',  -- for ftsw only
       bit2      => sig_bit2,
-      bitddr    => bitddr,  -- out
       outp      => ackp,    -- out
       outn      => ackn );  -- out
   
-  -- out
+  -- async-out
   bit2     <= sig_bit2;
+  
+  -- out
   octet    <= buf_octet;
   isk      <= buf_isk;
   cntbit2  <= cnt_bit2;

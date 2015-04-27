@@ -86,15 +86,15 @@ package b2tt_symbols is
   constant PAYLOAD_EMPTY : payload_t := x"0000000000000000000" & '0';
 
   -- - command
-  subtype ttcmd_t  is std_logic_vector (11 downto 0);
-  constant TTPKT_IDLE : ttcmd_t := x"fff"; -- unused
-  constant TTPKT_TTAG : ttcmd_t := x"000";
-  constant TTPKT_FREQ : ttcmd_t := x"001";
-  constant TTPKT_RST  : ttcmd_t := x"002";
-  constant TTPKT_CMD  : ttcmd_t := x"003";
-  constant TTPKT_DISP : ttcmd_t := x"007";
-  constant TTPKT_INJV : ttcmd_t := x"00e";
-  constant TTPKT_SYNC : ttcmd_t := x"00f";
+  subtype ttpkt_t  is std_logic_vector (11 downto 0);
+  constant TTPKT_IDLE : ttpkt_t := x"fff"; -- unused
+  constant TTPKT_TTAG : ttpkt_t := x"000";
+  constant TTPKT_FREQ : ttpkt_t := x"001";
+  constant TTPKT_RST  : ttpkt_t := x"002";
+  constant TTPKT_CMD  : ttpkt_t := x"003";
+  constant TTPKT_DISP : ttpkt_t := x"007";
+  constant TTPKT_INJV : ttpkt_t := x"00e";
+  constant TTPKT_SYNC : ttpkt_t := x"00f";
   
 end package b2tt_symbols;
 

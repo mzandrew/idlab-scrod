@@ -90,7 +90,6 @@ architecture implementation of b2tt_fifo is
   signal sig_dbg    : std_logic_vector (23 downto 0) := (others => '0');
 
   signal open_doa   : std_logic_vector (15 downto 0) := (others => '0');
-  signal open_dob   : std_logic_vector (15 downto 0) := (others => '0');
   signal open_dopa  : std_logic_vector (1  downto 0) := (others => '0');
   signal open_dopb  : std_logic_vector (1  downto 0) := (others => '0');
 begin

@@ -6,6 +6,7 @@
 --  20140722 0.01  copied from hslb_b2tt 0.09
 --  20140808 0.02  b2tt 0.29
 --  20140917 0.03  b2tt 0.31
+--  20150105 0.04  b2tt 0.33
 ------------------------------------------------------------------------
 
 library ieee;
@@ -18,7 +19,7 @@ use unisim.vcomponents.all;
 
 entity cdc_b2tt is
   generic (
-    VERSION : integer := 3;
+    VERSION : integer := 4;
     ID : std_logic_vector (31 downto 0) := x"42325443"; -- "B2TC"
     USE_CHIPSCOPE : std_logic := '1' );
   port (
@@ -157,7 +158,6 @@ begin
       isk => open,
       cntbit2 => open,
       sigbit2 => open,
-      bitddr => open,
       
       dbglink  => sig_dbg,
       dbgerr   => open );

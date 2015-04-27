@@ -9,6 +9,8 @@
 -- 20131013 0.06  unification with s6 as much as possible
 -- 20131101 0.07  no more std_logic_arith
 -- 20140715 0.26  USEPLL is no more used
+-- 20141008 0.08  rawclkg
+-- 20150105 0.09  rawclk after bufg (no more rawclkg) / no more FLIPCLK
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -23,7 +25,6 @@ use unisim.vcomponents.all;
 
 entity b2tt_clk is
   generic (
-    FLIPCLK  : std_logic := '0';
     USEPLL   : std_logic := '1'; -- unused (MMCM is anyway needed)
     USEICTRL : std_logic := '1' );
   port (
@@ -42,7 +43,6 @@ end b2tt_clk;
 architecture implementation of b2tt_clk is
   signal clk_127      : std_logic := '0';
   signal sig_127      : std_logic := '0';
-  signal sig_raw      : std_logic := '0';
 
   signal sig_fbout    : std_logic := '0';
   signal sig_xcm203   : std_logic := '0';
@@ -67,8 +67,8 @@ begin
   ------------------------------------------------------------------------
   -- clock buffers
   ------------------------------------------------------------------------
-  sig_127 <= sig_raw xor FLIPCLK;
-  map_ick: ibufds port map ( o => sig_raw,    i => clkp, ib => clkn );
+  rawclk <= clk_127;
+  map_ick: ibufds port map ( o => sig_127,    i => clkp, ib => clkn );
   map_ig:   bufg  port map ( i => sig_127,    o => clk_127 );
 
   map_fb:   bufg  port map ( i => sig_fbout,  o => clk_fb  );
@@ -76,7 +76,6 @@ begin
 
   invclock <= '0';
   
-  rawclk <= sig_xcm127;
   map_127g: bufg  port map ( i => sig_xcm127, o => clock );
   map_254g: bufg  port map ( i => sig_xcm254, o => dblclock );
   map_254b: bufg  port map ( i => sig_xcm254b, o => dblclockb );

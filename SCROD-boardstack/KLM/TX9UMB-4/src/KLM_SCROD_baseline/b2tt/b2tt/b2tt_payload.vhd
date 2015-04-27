@@ -39,6 +39,7 @@ entity b2tt_payload is
     fifoerr   : in  std_logic;
     fifoful   : in  std_logic;
     badver    : in  std_logic;
+    trgmask   : in  std_logic;
     seu       : in  std_logic_vector (6  downto 0);
     cntdelay  : in  std_logic_vector (6  downto 0);
     cntwidth  : in  std_logic_vector (5  downto 0);
@@ -50,7 +51,6 @@ entity b2tt_payload is
 end b2tt_payload;
 ------------------------------------------------------------------------
 architecture implementation of b2tt_payload is
-  signal seq_b2lwe    : std_logic := '0';
   signal cnt_b2lwe    : std_logic_vector (15 downto 0) := (others => '0');
   signal cnt_b2ltag   : std_logic_vector (15 downto 0) := (others => '0');
   signal seq_seudet   : std_logic_vector (1  downto 0) := (others => '0');
@@ -113,9 +113,6 @@ begin
       --MN elsif seq_b2lwe = '0' and b2linkwe = '1' then
       --MN  cnt_b2lwe <= cnt_b2lwe + 1;
       --MN end if;
-
-      -- seq_b2lwe
-      seq_b2lwe <= b2linkwe;
 
       -- seq_seudet, cnt_seudet
       if seq_seudet = "01" then

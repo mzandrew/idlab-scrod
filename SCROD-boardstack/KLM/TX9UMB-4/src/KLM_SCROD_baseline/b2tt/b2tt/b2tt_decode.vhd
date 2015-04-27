@@ -12,6 +12,9 @@
 --  20131101 no more std_logic_arith
 --  20131126 tagerr fix (debug with c-model)
 --  20140102 ini.value of detag:buf_cnttrg / detrig:cnt_trig to -1
+--  20141128 address setting
+--  20150103 clkfreq
+--  20150110 jtag
 --
 --  eout bit 9 is first transmitted, bit 0 is last transmitted
 --  ein  bit 9 is first received,    bit 0 is last received
@@ -239,11 +242,14 @@ use work.b2tt_symbols.all;
 entity b2tt_detrig is
   port (
     clock      : in  std_logic;
-    en         : in  std_logic;
+    linkup     : in  std_logic;
+    mask       : in  std_logic;
     runreset   : in  std_logic;
     cntbit2    : in  std_logic_vector (2  downto 0);
     octet      : in  std_logic_vector (7  downto 0);
     isk        : in  std_logic;
+    jtag       : out std_logic_vector (2  downto 0);
+    jtagdbg    : out std_logic_vector (9  downto 0);
     trgout     : out std_logic;
     trgtyp     : out std_logic_vector (3  downto 0);
     trgtag     : out std_logic_vector (31 downto 0);
@@ -252,6 +258,7 @@ entity b2tt_detrig is
 end b2tt_detrig;
 ------------------------------------------------------------------------
 architecture implementation of b2tt_detrig is
+  signal sta_en          : std_logic := '0';
   signal sig_trgoctet    : std_logic := '0';
   signal sig_trgout      : std_logic := '0';
   signal sig_trgtim      : std_logic_vector (2  downto 0) := "111";
@@ -259,18 +266,37 @@ architecture implementation of b2tt_detrig is
   signal cnt_trginterval : std_logic_vector (4  downto 0) := "11000";  -- 24
   signal cnt_trig        : std_logic_vector (31 downto 0) := (others => '1');
 
+  signal seq_tck         : std_logic_vector (3 downto 0) := "0000";
+  signal sig_tck         : std_logic := '0';
+  signal sig_tms         : std_logic := '0';
+  signal sig_tdi         : std_logic := '0';
+  
   signal cnt_dbg1 : std_logic_vector (15 downto 0) := (others => '0');
   signal cnt_dbg2 : std_logic_vector (15 downto 0) := (others => '0');
 begin
 
   -- in
+  sta_en  <= linkup and (not mask);
   sig_trgtim   <= octet(6 downto 4);
   sig_trgoctet <= octet(7) and (not isk) when cntbit2 = 1 else '0';
+  sig_tck <= isk when octet(7 downto 4) = "1111" and
+                      octet(1 downto 0) /= 0     and
+                      cntbit2 = 1                else
+             '0';
+  sig_tms <= sig_tck and octet(3) and octet(2) and (octet(1) xor octet(0));
+  sig_tdi <= sig_tck and octet(3) and octet(1) and (octet(2) xor octet(0));
 
+  jtagdbg(9) <= '0';
+  jtagdbg(8 downto 4) <= cnt_trginterval;
+  jtagdbg(3) <= seq_tck(3);
+  jtagdbg(2) <= sig_tck;
+  jtagdbg(1) <= sig_tms;
+  jtagdbg(0) <= sig_tdi;
+  
   proc: process (clock)
   begin
     if clock'event and clock = '1' then
-      if sig_trgout = '1' then
+      if (sig_trgout = '1' or sig_tck = '1') and cnt_trginterval + 1 >= 24 then
         cnt_trginterval <= "00001";
       elsif cnt_trginterval < 23 then
         cnt_trginterval <= cnt_trginterval + 1;
@@ -282,14 +308,27 @@ begin
       -- trgshort:   trigger comes in a too short interval (held until reset)
 
       -- trgshort
-      if en = '0' or runreset = '1' then
+      if sta_en = '0' or runreset = '1' then
         trgshort <= '0';
-      elsif sig_trgoctet = '1' and cnt_trginterval + sig_trgtim < 24 then
+      elsif (sig_trgoctet = '1' or sig_tck = '1') and
+            cnt_trginterval + sig_trgtim < 24 then
         trgshort <= '1';
       end if;
 
+      -- jtag
+      jtag(2) <= seq_tck(3);
+      seq_tck(3 downto 1) <= seq_tck(2 downto 0);
+      if sig_tck = '1' then
+        jtag(1 downto 0) <= sig_tms & sig_tdi;
+      end if;
+      if sig_tck = '1' and cnt_trginterval + 1 >= 24 then
+        seq_tck(0) <= '1';
+      elsif cnt_trginterval >= 16 then
+        seq_tck(0) <= '0';
+      end if;
+      
       -- trgout
-      if en = '0' or runreset = '1' then
+      if sta_en = '0' or runreset = '1' then
         sig_trgout <= '0';
       elsif sig_trgoctet = '1' and sig_trgtim = 1 then
         if cnt_trginterval + 1 >= 24 then
@@ -304,9 +343,9 @@ begin
       end if;
 
       -- cnt_trig
-      if en = '0' or runreset = '1' then
+      if sta_en = '0' or runreset = '1' then
         cnt_trig <= (others => '1');
-        if en = '0' then
+        if sta_en = '0' then
           cnt_dbg1 <= cnt_dbg1 + 1;
         end if;
         if runreset = '1' then
@@ -321,14 +360,14 @@ begin
       end if;
       
       -- buf_trgtyp
-      if en = '0' or runreset = '1' then
+      if sta_en = '0' or runreset = '1' then
         trgtyp <= TTYP_NONE;
       elsif cntbit2 = 1 and sig_trgoctet = '1' then
         trgtyp <= octet(3 downto 0);
       end if;
 
       -- buf_trgtim
-      if en = '0' or runreset = '1' then
+      if sta_en = '0' or runreset = '1' then
         buf_trgtim <= "111";
       elsif sig_trgoctet = '1' then
         if sig_trgtim <= 1 or sig_trgtim > 5 then
@@ -396,9 +435,6 @@ architecture implementation of b2tt_deoctet is
   signal sig_rxerr    : std_logic_vector (5 downto 0) := (others => '0');
 
   signal sta_crc8     : std_logic_vector (7 downto 0) := x"00";
-  signal buf_crc8     : std_logic_vector (7 downto 0) := x"00";
-  signal sig_crc8     : std_logic_vector (7 downto 0) := x"00";
-  signal cnt_crc8ok   : std_logic_vector (6 downto 0) := (others => '0');
   signal sta_crc8ok   : std_logic := '0';
 
   -- from crc8.vhd and comlib.vhd of
@@ -468,14 +504,9 @@ begin
         if cnt_octet = 15 or cnt_octet = 31 then
           sta_crc8 <= crc8_update(x"00", octet);
           sta_crc8ok <= '1';
-        elsif cnt_octet = 14 and octet(7) = '0' and isk = '0' then
-          buf_crc8 <= sta_crc8;
-          sig_crc8 <= octet;
-          if sta_crc8(6 downto 0) /= octet(6 downto 0) then
-            sta_crc8ok <= '0';
-          elsif sta_crc8ok = '0' then
-            cnt_crc8ok <= cnt_crc8ok + 1;
-          end if;
+        elsif cnt_octet = 14 and octet(7) = '0' and isk = '0' and
+              sta_crc8(6 downto 0) /= octet(6 downto 0) then
+          sta_crc8ok <= '0';
         else
           sta_crc8 <= crc8_update(sta_crc8, octet);
         end if;
@@ -505,8 +536,17 @@ begin
                isk = '1' and octet = K28_3 then
           -- valid idle
           cnt_octet <= cnt_octet + 1;
-        elsif isk = '1' then
-          -- invalid K character
+        elsif isk = '1' and
+          ((not octet(7 downto 4)) /= 0 or octet(1 downto 0) = 0) then
+          --
+          -- invalid K symbol (none of comma, acomma, idle, jtag)
+          --
+          -- valid jtag symbols are (tms,tdi)
+          --   00 => K23.7 1111 0111
+          --   01 => K27.7 1111 1011
+          --   10 => K29.7 1111 1101
+          --   11 => K30.7 1111 1110
+          --
           sta_octet <= '0';
           cnt_octet <= "11111";
           sig_rxerr(3) <= '1';
@@ -590,10 +630,10 @@ use work.b2tt_symbols.all;
 
 entity b2tt_depacket is
   generic (
-    VERSION : integer := 0;
-    CLKDIV1 : integer range 0 to 72;
-    CLKDIV2 : integer range 0 to 72;
-    DEFADDR : std_logic_vector (19 downto 0) := x"00000";
+    PROTOCOL : integer := 0;
+    CLKDIV1  : integer range 0 to 72;
+    CLKDIV2  : integer range 0 to 72;
+    DEFADDR  : std_logic_vector (19 downto 0) := x"00000";
     SIM_SPEEDUP : std_logic := '0' );
   port (
     clock      : in  std_logic;
@@ -610,6 +650,7 @@ entity b2tt_depacket is
     divclk1    : out std_logic_vector (1  downto 0);
     divclk2    : out std_logic_vector (1  downto 0);
     cntpacket  : out std_logic_vector (7  downto 0);
+    clkfreq    : out std_logic_vector (26 downto 0);
     utime      : out std_logic_vector (31 downto 0);
     ctime      : out std_logic_vector (26 downto 0);
     cntrevoclk : out std_logic_vector (10 downto 0);
@@ -621,8 +662,13 @@ entity b2tt_depacket is
     incdelay   : out std_logic;
     caldelay   : out std_logic;
     entagerr   : out std_logic;
+    trgmask    : out std_logic;
     stalink    : out std_logic;
     timerr     : out std_logic := '0';
+    --timerr0    : out std_logic_vector (26 downto 0);
+    --timerr1    : out std_logic_vector (26 downto 0);
+    --timerr2    : out std_logic_vector (31 downto 0);
+    --timerr3    : out std_logic_vector (31 downto 0);
     sigerr     : out std_logic_vector (2 downto 0) );
 
 end b2tt_depacket;
@@ -645,17 +691,15 @@ architecture implementation of b2tt_depacket is
   signal cnt_ctime    : std_logic_vector (26 downto 0) := (others => '0');
   signal cnt_timer    : std_logic_vector (3  downto 0) := "0000";
   signal cnt_revoclk  : std_logic_vector (10 downto 0) := "10100000000";
-  signal sig_reset    : std_logic := '0';
+  signal sig_runreset : std_logic := '0';
+  signal sig_stareset : std_logic := '0';
   signal cnt_divseq1  : std_logic_vector (6  downto 0) := (others => '0');
   signal cnt_divseq2  : std_logic_vector (6  downto 0) := (others => '0');
-  signal cnt_dbg1     : std_logic_vector (7  downto 0) := (others => '0');
-  signal cnt_dbg2     : std_logic_vector (7  downto 0) := (others => '0');
-  signal cnt_dbg3     : std_logic_vector (7  downto 0) := (others => '0');
-  signal buf_dbg4     : std_logic_vector (7  downto 0) := (others => '0');
   signal buf_myaddr   : std_logic_vector (19 downto 0) := DEFADDR;
+  signal buf_cmd      : std_logic_vector (7  downto 0) := (others => '0');
   signal reg_clkfreq  : std_logic_vector (26 downto 0) := "111" & x"95297f";
   signal seq_entagerr : std_logic := '0';
-  signal seq_reset    : std_logic := '0';
+  signal seq_runreset : std_logic := '0';
   signal sig_payload  : std_logic := '0';
   signal buf_version  : std_logic_vector (9  downto 0) := (others => '0');
 
@@ -663,6 +707,7 @@ architecture implementation of b2tt_depacket is
   constant CNTLIMIT : std_logic_vector (7 downto 0) :=
     (not SIM_SPEEDUP) & (not SIM_SPEEDUP) & (not SIM_SPEEDUP) & "11111";
 
+  --signal buf_timerr : std_logic := '0';
 begin
   -- in
   buf_bcast   <= payload(76);
@@ -671,6 +716,7 @@ begin
   buf_adata   <= payload(43 downto 0);
   buf_version <= payload(33 downto 24);
   buf_addr    <= payload(63 downto 44);
+  buf_cmd     <= payload(43 downto 36);
   reg_clkfreq <= ("111" & buf_clkfreq) - 1;
   sig_payload <= sigpayload and sta_link;
 
@@ -707,13 +753,16 @@ begin
 
       -- buf_myaddr
       if sig_payload = '1' and buf_ttpkt = TTPKT_RST and
-          buf_adata(38) = '1' then
+          buf_adata(38) = '1' and (buf_myaddr = 0 or buf_addr = 0) then
         buf_myaddr <= buf_addr;
+      elsif sig_payload = '1' and buf_ttpkt = TTPKT_RST and
+          buf_adata(35) = '1' then
+        buf_myaddr <= (others => '0');
       end if;
 
       -- buf_clkfreq
       if sig_payload = '1' and buf_ttpkt = TTPKT_FREQ then
-        if buf_version = VERSION then
+        if buf_version = PROTOCOL then
           badver <= '0';
         else
           badver <= '1';
@@ -730,31 +779,33 @@ begin
         gtpreset <= buf_adata(41);
         incdelay <= buf_adata(40);
         caldelay <= buf_adata(39);
+        sig_stareset <= buf_adata(36);
       else
         feereset <= '0';
         b2lreset <= '0';
         gtpreset <= '0';
         incdelay <= '0';
         caldelay <= '0';
+        sig_stareset <= '0';
       end if;
 
       -- entagerr (don't care bcast or myaddr)
-      if seq_reset = '1' and sig_reset = '0' then
+      if seq_runreset = '1' and sig_runreset = '0' then
         entagerr <= seq_entagerr;
       elsif sig_payload = '1' and buf_ttpkt = TTPKT_RST then
         seq_entagerr <= buf_adata(37);
       end if;
-      seq_reset <= sig_reset;
+      seq_runreset <= sig_runreset;
 
-      -- sig_reset, sig_frame, sig_frame3, sig_frame9
+      -- sig_runreset, sig_frame, sig_frame3, sig_frame9
       if sig_payload = '1' and buf_bcast = '1' and buf_ttpkt = TTPKT_SYNC and
            (cnt_packet = 15 or cnt_packet = CNTLIMIT) then
-        sig_reset  <= buf_bdata(63);
+        sig_runreset  <= buf_bdata(63);
         sig_frame  <= '1';
         sig_frame3 <= buf_bdata(62);
         sig_frame9 <= buf_bdata(61);
       else
-        --sig_reset  <= '0';
+        --sig_runreset  <= '0';
         sig_frame  <= '0';
         sig_frame3 <= '0';
         sig_frame9 <= '0';
@@ -811,13 +862,13 @@ begin
         (cnt_packet = 15 or cnt_packet = CNTLIMIT) then
         buf_utime <= buf_bdata(58 downto 27);
         buf_ctime <= buf_bdata(26 downto  0);
-        cnt_timer <= "0110";
+        cnt_timer <= "0111";
       elsif cnt_timer /= 0 then
         cnt_timer <= cnt_timer - 1;
       end if;
 
       -- cnt_utime, cnt_ctime
-      if cnt_timer = 1 then
+      if cnt_timer = 2 then
         cnt_utime <= buf_utime;
         cnt_ctime <= buf_ctime;
       elsif cnt_ctime = reg_clkfreq then
@@ -828,29 +879,46 @@ begin
       end if;
 
       -- sta_timerr
-      if sig_reset = '1' then
+      if sig_runreset = '1' or sig_stareset = '1' then
         timerr <= '0';
-      elsif cnt_timer = 1 and 
-        (cnt_utime /= buf_utime or cnt_ctime /= buf_ctime + 1) then
+        --buf_timerr <= '0';
+      elsif cnt_timer = 1 and
+        (cnt_utime /= buf_utime or cnt_ctime /= buf_ctime) then
         timerr <= '1';
+        --buf_timerr <= '1';
+        --if buf_timerr = '0' then
+        --  timerr0 <= cnt_ctime;
+        --  timerr1 <= buf_ctime;
+        --  timerr2 <= cnt_utime;
+        --  timerr3 <= buf_utime;
+        --end if;
       end if;
       
       -- cnt_revoclk
-      if cnt_timer = 1 then
+      if cnt_timer = 2 then
         cnt_revoclk <= (others => '0');
       elsif cnt_revoclk /= 1280 then
         cnt_revoclk <= cnt_revoclk + 1;
       end if;
+
+      -- trgmask
+      if sig_payload = '1' and (buf_bcast = '1' or buf_addr = buf_myaddr) and
+         buf_ttpkt = TTPKT_CMD and buf_cmd = x"01" then
+        trgmask <= payload(0);
+      end if;
+      
     end if; -- event
   end process;
 
   -- out
   stalink    <= sta_link;
   cntpacket  <= cnt_packet;
+  clkfreq    <= "111" & buf_clkfreq;
   utime      <= cnt_utime;
   ctime      <= cnt_ctime;
   cntrevoclk <= cnt_revoclk;
-  runreset   <= sig_reset;
+  runreset   <= sig_runreset;
+  stareset   <= sig_stareset;
   frame      <= sig_frame;
   frame3     <= sig_frame3;
   frame9     <= sig_frame9;
@@ -875,6 +943,7 @@ entity b2tt_detag is
     en         : in  std_logic;
     runreset   : in  std_logic;
     entagerr   : in  std_logic;
+    mask       : in  std_logic;
     trgtag     : in  std_logic_vector (31 downto 0);
     sigpayload : in  std_logic;
     payload    : in  std_logic_vector (76 downto 0);
@@ -884,16 +953,11 @@ entity b2tt_detag is
 end b2tt_detag;
 
 architecture implementation of b2tt_detag is
-  signal sig_reset    : std_logic := '0';
   signal sig_bcast    : std_logic := '0';
   signal buf_ttpkt    : std_logic_vector (11 downto 0) := (others => '0');
   signal buf_bdata    : std_logic_vector (63 downto 0) := (others => '0');
-  signal sig_runreset : std_logic := '0';
   signal buf_cnttrig  : std_logic_vector (31 downto 0) := (others => '1');
-  signal cnt_revoclk  : std_logic_vector (10 downto 0) := "11111111111";
   signal buf_exprun   : std_logic_vector (31 downto 0) := x"87654321"; --dbg
-
-  signal cnt_dbg : std_logic_vector (7 downto 0) := (others => '0');
 begin
   
   -- in
@@ -921,13 +985,15 @@ begin
         dbg <= (others => '0');
       elsif sig_bcast = '1' and buf_ttpkt = TTPKT_TTAG then
         buf_exprun <= buf_bdata(63 downto 32);
-        --f_exprun <= cnt_dbg & buf_bdata(63-8 downto 32);
-        cnt_dbg <= cnt_dbg + 1;
         if buf_bdata(31 downto 0) /= buf_cnttrig then
-          tagerr <= entagerr;
-          dbg <= buf_bdata(15 downto 0) & buf_cnttrig(15 downto 0);
+          tagerr <= entagerr and (not mask);
+          dbg(11) <= '1';
+        else
+          dbg(11) <= '0';
         end if;
+        dbg(7 downto 0) <= buf_bdata(3 downto 0) & buf_cnttrig(3 downto 0);
       end if;
+      dbg(10 downto 8) <= trgtag(2 downto 0);
       
     end if; -- event
   end process;
@@ -949,11 +1015,11 @@ use work.b2tt_symbols.all;
 
 entity b2tt_decode is
   generic (
-    VERSION : integer := 0;
-    FLIPTRG : std_logic := '0';
-    DEFADDR : std_logic_vector (19 downto 0) := x"00000";
-    CLKDIV1 : integer range 0 to 72;
-    CLKDIV2 : integer range 0 to 72;
+    PROTOCOL : integer := 0;
+    FLIPTRG  : std_logic := '0';
+    DEFADDR  : std_logic_vector (19 downto 0) := x"00000";
+    CLKDIV1  : integer range 0 to 72;
+    CLKDIV2  : integer range 0 to 72;
     SIM_SPEEDUP : std_logic := '0' );
   port (
     -- input
@@ -966,9 +1032,14 @@ entity b2tt_decode is
     trgn       : in  std_logic;
     
     -- system time
+    clkfreq    : out std_logic_vector (26 downto 0); -- unit: clock
     utime      : out std_logic_vector (31 downto 0); -- unit: second
     ctime      : out std_logic_vector (26 downto 0); -- unit: clock
     timerr     : out std_logic;
+    --timerr0    : out std_logic_vector (26 downto 0);
+    --timerr1    : out std_logic_vector (26 downto 0);
+    --timerr2    : out std_logic_vector (31 downto 0);
+    --timerr3    : out std_logic_vector (31 downto 0);
     
     -- exp- / run-number, my address
     exprun     : out std_logic_vector (31 downto 0);
@@ -980,6 +1051,10 @@ entity b2tt_decode is
     feereset   : out std_logic; -- one clock long
     b2lreset   : out std_logic; -- one clock long
     gtpreset   : out std_logic; -- one clock long
+
+    -- jtag out
+    jtag       : out std_logic_vector (2  downto 0);
+    jtagdbg    : out std_logic_vector (9  downto 0);
     
     -- trigger out
     trgout     : out std_logic; -- one clock long
@@ -987,6 +1062,7 @@ entity b2tt_decode is
     trgtag     : out std_logic_vector (31 downto 0); -- available at trgout
     tagerr     : out std_logic; -- error, held until runreset
     trgshort   : out std_logic; -- error, held until runreset
+    trgmask    : out std_logic;
     
     -- status out
     staoctet   : out std_logic; -- H: valid K-symbols found for 80 clocks
@@ -1022,7 +1098,6 @@ entity b2tt_decode is
     caldelay   : in  std_logic;
     
     -- debug output to investigate link condition
-    bitddr     : out std_logic;
     bit2       : out std_logic_vector (1  downto 0);
     bit10      : out std_logic_vector (9  downto 0);
     cntdelay   : out std_logic_vector (6  downto 0);
@@ -1031,6 +1106,7 @@ entity b2tt_decode is
     starxerr   : out std_logic_vector (8  downto 0);
     comma      : out std_logic;
     iddrdbg    : out std_logic_vector (9  downto 0);
+    tagdbg     : out std_logic_vector (31 downto 0);
     crcdbg     : out std_logic_vector (8  downto 0) );
   
 end b2tt_decode;
@@ -1051,13 +1127,10 @@ architecture implementation of b2tt_decode is
   signal sta_octet     : std_logic := '0';
   signal sig_nocomma   : std_logic := '0';
 
-  signal sig_bitddr    : std_logic := '0';
   signal sig_bit2      : std_logic_vector (1  downto 0) := "00";
   signal sig_bit10     : std_logic_vector (9  downto 0) := (others => '0');
   signal sig_slip      : std_logic := '0';
 
-  signal reg_manual    : std_logic := '0';
-  signal reg_incdelay  : std_logic := '0';
   signal sig_incdelay  : std_logic := '0';
   signal sig_inccmd    : std_logic := '0';
   signal sig_calcmd    : std_logic := '0';  -- spartan6 only
@@ -1079,11 +1152,11 @@ architecture implementation of b2tt_decode is
   
   signal sta_entagerr  : std_logic := '0';
 
+  signal sta_trgmask   : std_logic := '0';
+
   signal cnt_octet     : std_logic_vector (4  downto 0) := (others => '0');
   signal cnt_datoctet  : std_logic_vector (3  downto 0) := (others => '0');
   signal sig_ocerr     : std_logic_vector (5  downto 0) := (others => '0');
-  signal sig_dddbg     : std_logic_vector (31 downto 0) := (others => '0');
-  signal sig_ocdbg     : std_logic_vector (31 downto 0) := (others => '0');
   signal open_trdbg    : std_logic_vector (31 downto 0) := (others => '0');
   signal sig_paerr     : std_logic_vector (2  downto 0) := (others => '0');
   signal open_tadbg    : std_logic_vector (31 downto 0) := (others => '0');
@@ -1111,7 +1184,6 @@ begin
                clrdelay   => clrdelay,
                caldelay   => sig_caldelay,  -- spartan6 only
                staiddr    => sta_iddr,      -- out
-               bitddr     => sig_bitddr,    -- out
                bit2       => sig_bit2,      -- out
                cntdelay   => cntdelay,      -- out
                cntwidth   => cntwidth,      -- out
@@ -1146,11 +1218,14 @@ begin
 
   map_tr: entity work.b2tt_detrig
     port map ( clock      => clock,
-               en         => sta_link,
+               linkup     => sta_link,
+               mask       => sta_trgmask,
                runreset   => sig_runreset,
                cntbit2    => cnt_bit2,
                octet      => buf_octet,
                isk        => buf_isk,
+               jtag       => jtag,         -- out
+               jtagdbg    => jtagdbg,      -- out
                trgout     => sig_trig,     -- out
                trgtyp     => trgtyp,       -- out
                trgtag     => sta_trgtag,   -- out
@@ -1176,10 +1251,10 @@ begin
                crcdbg     => crcdbg );     -- out
 
   map_pa: entity work.b2tt_depacket
-    generic map ( VERSION => VERSION,
-                  CLKDIV1 => CLKDIV1,
-                  CLKDIV2 => CLKDIV2,
-                  DEFADDR => DEFADDR,
+    generic map ( PROTOCOL => PROTOCOL,
+                  CLKDIV1  => CLKDIV1,
+                  CLKDIV2  => CLKDIV2,
+                  DEFADDR  => DEFADDR,
                   SIM_SPEEDUP => SIM_SPEEDUP )
     port map ( clock      => clock,
                staiddr    => sta_iddr,
@@ -1195,6 +1270,7 @@ begin
                divclk1    => divclk1,      -- out
                divclk2    => divclk2,      -- out
                cntpacket  => cnt_packet,   -- out
+               clkfreq    => clkfreq,      -- out
                utime      => sig_utime,    -- out
                ctime      => sig_ctime,    -- out
                cntrevoclk => cnt_revoclk,  -- out
@@ -1206,8 +1282,13 @@ begin
                incdelay   => sig_inccmd,   -- out
                caldelay   => sig_calcmd,   -- out
                entagerr   => sta_entagerr, -- out
+               trgmask    => sta_trgmask,  -- out
                stalink    => sta_link,     -- out
                timerr     => timerr,       -- out
+               --timerr0    => timerr0,      -- out
+               --timerr1    => timerr1,      -- out
+               --timerr2    => timerr2,      -- out
+               --timerr3    => timerr3,      -- out
                sigerr     => sig_paerr );  -- out
   
   map_tt: entity work.b2tt_detag
@@ -1215,12 +1296,13 @@ begin
                cntrevoclk => cnt_revoclk,
                en         => sta_link,
                entagerr   => sta_entagerr,
+               mask       => sta_trgmask,
                runreset   => sig_runreset,
                trgtag     => sta_trgtag,
                sigpayload => sig_payload,
                payload    => buf_payload,
                exprun     => exprun,       -- out
-               dbg        => open_tadbg,          -- out
+               dbg        => tagdbg,       -- out
                tagerr     => tagerr );     -- out
 
   -- out (async)
@@ -1243,7 +1325,6 @@ begin
   cntdato    <= cnt_datoctet;
   cntpacket  <= cnt_packet;
   comma      <= sig_comma;
-  bitddr     <= sig_bitddr;
   bit2       <= sig_bit2;
   bit10      <= sig_bit10;
   payload    <= buf_payload;
@@ -1255,7 +1336,7 @@ begin
   utime      <= sig_utime;
   ctime      <= sig_ctime;
   cntrevoclk <= cnt_revoclk;
-
+  trgmask    <= sta_trgmask;
   
 end implementation;
 
