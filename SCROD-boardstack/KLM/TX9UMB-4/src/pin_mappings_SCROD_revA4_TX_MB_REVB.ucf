@@ -477,19 +477,20 @@ NET PCLK<5>					LOC= U21;								# TDC6_PCLK,
 NET SAMPLESEL_ANY<5>		LOC= AA23;								# TDC6_SAMPLESEL_ANY          
 NET SCLK<5>					LOC= N20;								# TDC6_SCLK,	                  
 NET SHOUT<5>				LOC= P21;								# TDC6_SHOUT,	                 
-NET SIN<5>					LOC= AF23;								# TDC6_SIN,	                  
+NET SIN<5>					LOC= AF23;								# TDC6_SIN,	 # use this for MB Rev B                 
 NET SR_CLOCK<5>				LOC= T23;								# TDC6_SR_CLOCK,	
                      
 NET SSTIN_N<5>				LOC= AB21 | IOSTANDARD = LVDS_25;		# TDC6_SSTIN_N,	                  
 NET SSTIN_P<5>				LOC= AA21 | IOSTANDARD = LVDS_25;		# TDC6_SSTIN_P,	                  
 NET WL_CLK_N<5>				LOC= AC22 | IOSTANDARD = LVDS_25;		# TDC6_WL_CLK_N,                   
 NET WL_CLK_P<5>				LOC= AB22 | IOSTANDARD = LVDS_25;		# TDC6_WL_CLK_P,
+NET WL_CLK_P<5>				LOC= AB22 | IOSTANDARD = LVDS_25;		# TDC6_WL_CLK_P,
                    
 NET WR1_ENA<5>				LOC= R23;								# TDC6_WR1_ENA,	                        
 NET WR2_ENA<5>				LOC= P24;								# TDC6_WR2_ENA,	                        
 NET TDC6_TRG<0>				LOC= W19;								# TDC6_TRG_1,	                           
-NET TDC6_TRG<1>				LOC= V18;								# TDC6_TRG_2,	                           
-NET TDC6_TRG<2>				LOC= U22;								# TDC6_TRG_3,	                           
+NET TDC6_TRG<1>				LOC= V18;								# TDC6_TRG_2,	    # use this for MB Rev B                       
+NET TDC6_TRG<2>				LOC= U22;								# TDC6_TRG_3, # use this for MB Rev B	                           
 NET TDC6_TRG<3>				LOC= P22;								# TDC6_TRG_4,	                            
 NET TDC6_TRG<4>				LOC= N23;								# TDC6_TRG_5,	                            
 

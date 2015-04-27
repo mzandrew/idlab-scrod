@@ -33,6 +33,7 @@ entity b2tt_clk is
     reset    : in  std_logic;
     rawclk   : out std_logic;
     clock    : out std_logic;
+	 clk63p5	 : out std_logic;
     invclock : out std_logic;  -- (only for Spartan-6)
     dblclock : out std_logic;  -- (only for Virtex-6)
     dblclockb : out std_logic; -- (only for Virtex-6)
@@ -63,11 +64,14 @@ architecture implementation of b2tt_clk is
   signal sig_xcm127b  : std_logic := '0';
   signal sig_inv127   : std_logic := '0';
   signal sig_xcm254   : std_logic := '0';
+  signal sig_xcm63p5		:std_logic:='0';
 begin
   ------------------------------------------------------------------------
   -- clock buffers
   ------------------------------------------------------------------------
   sig_127 <= sig_raw xor FLIPCLK;
+  clk63p5<=sig_xcm63p5;
+
   
   map_ick: ibufds port map ( o => sig_raw,    i => clkp, ib => clkn );
   map_ig:   bufg  port map ( i => sig_127,    o => clk_127 );
@@ -120,7 +124,7 @@ begin
         CLKOUT1_PHASE  => 180.0,
         CLKOUT2_DIVIDE => 4,    --!uncommment
         CLKOUT2_PHASE  => 0.0,  --!add
-        --CLKOUT3_DIVIDE => 16,
+        CLKOUT3_DIVIDE => 16,
         --CLKOUT4_DIVIDE => 5,
         BANDWIDTH => "OPTIMIZED" )
       port map (
@@ -130,7 +134,7 @@ begin
         clkout0  => sig_xcm127,
         clkout1  => sig_xcm127b,
         clkout2  => sig_xcm254,--!uncomment
-        --clkout3  => sig_clk3,
+        clkout3  => sig_xcm63p5,
         --clkout4  => sig_clk4,
         locked   => sta_xcm,
         clkfbin  => clk_fb );

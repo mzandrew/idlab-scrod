@@ -40,11 +40,11 @@ ARCHITECTURE behavior OF tb_trigdecisionlogic01 IS
  
     -- Component Declaration for the Unit Under Test (UUT)
  
-    COMPONENT TrigDecisionLogic
+    COMPONENT TrigDecisionLogic2
     PORT(
 			clk : in std_logic;
          tb : IN  tb_vec_type;
-			  tm : in std_logic_vector(10 downto 1);-- mask
+			  tm : in std_logic_vector(15 downto 1);-- mask
 			
          TrigOut : OUT  std_logic;
          asicX : OUT  std_logic_vector(2 downto 0);
@@ -68,10 +68,10 @@ ARCHITECTURE behavior OF tb_trigdecisionlogic01 IS
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
-   uut: TrigDecisionLogic PORT MAP (
+   uut: TrigDecisionLogic2 PORT MAP (
 			 clk=>clk,
           tb => tb,
-			 tm=>"1000000000",
+			 tm=>"000001111111111",
           TrigOut => TrigOut,
           asicX => asicX,
           asicY => asicY
@@ -104,6 +104,9 @@ BEGIN
       wait for clk_period*10;
 		--tb (1)<="01100";
 		tb (10)<="10000";
+      wait for clk_period/4;
+		tb (10)<="00000";
+		
 
 
       -- insert stimulus here 
