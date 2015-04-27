@@ -99,6 +99,7 @@ entity b2tt is
     sysclk   : out std_logic;
     rawclk   : out std_logic;
     dblclk   : out std_logic;
+	 clk63p5	 :out std_logic;
     utime    : out std_logic_vector (NBITTIM-1 downto 0);
     ctime    : out std_logic_vector (26 downto 0);
 
@@ -261,6 +262,8 @@ architecture implementation of b2tt is
   signal sta_badver   : std_logic := '0';
 begin
 
+
+
   -- in
   regin <= regdbg(5 downto 0);
   reg_imanual  <= regin(0);
@@ -286,6 +289,7 @@ begin
         invclock => clk_inv,     -- out
         dblclock => clk_dbl,     -- out
         dblclockb => clk_dblinv,     -- out
+		  clk63p5=>clk63p5,--out
         locked   => sta_dcm,     -- out
         stat     => open_stat ); -- out
   end generate;

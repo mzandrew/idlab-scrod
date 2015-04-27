@@ -102,6 +102,8 @@ port(
     mgtrxn                      : in std_logic;
     mgttxp                      : out std_logic;
     mgttxn                      : out std_logic;
+ 	 clk63p5								 :out std_logic;
+
     ex_trig1                    : in std_logic;--fake address bit
     exttb                       : out tb_vec_type;
     ftsw_aux                    : out std_logic;
@@ -200,6 +202,7 @@ architecture behave of klm_scrod is
         sysclk                  : out std_logic;
         rawclk                  : out std_logic;
         dblclk                  : out std_logic;
+        clk63p5 						:out std_logic;
         utime                   : out std_logic_vector (NBITTIM-1 downto 0);
         ctime                   : out std_logic_vector (26 downto 0);
         -- divided clock
@@ -530,12 +533,15 @@ architecture behave of klm_scrod is
     signal fault_flag           : std_logic;
     signal los_flag             : std_logic;
     signal mod_flag             : std_logic;
-
+		signal sys_clk63p5			: std_logic;
     --for all : daq_gen use entity work.daq_gen(single_trig);
     for all : daq_gen_readout use entity work.daq_gen_readout(multi_trig);
 
 
 begin
+
+
+clk63p5<=sys_clk63p5;
 
     -------------------------------------------------
     -- Input Buffers
@@ -741,6 +747,7 @@ ex_trig1_i<=ex_trig1;
         sysclk                  => sys_clk_ib,
         rawclk                  => open,
         dblclk                  => sys_clk2x_ib,
+        clk63p5						=>sys_clk63p5,
         utime                   => b2tt_utime,
         ctime                   => b2tt_ctime,
         -- divided clock

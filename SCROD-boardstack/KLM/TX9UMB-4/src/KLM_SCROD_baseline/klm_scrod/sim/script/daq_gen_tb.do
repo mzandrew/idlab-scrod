@@ -1,10 +1,10 @@
-cd C:\Users\bkunkler\Documents\CEEM\repos\Belle-II\firmware\KLM_SCROD\klm_scrod\sim
+cd C:/Users/bkunkler/Documents/CEEM/repos/Belle-II/firmware/KLM_SCROD/klm_scrod/sim
 
 vlib daq_gen_lib "./library/daq_gen_lib"
-#vcom -work daq_gen_lib .\..\source\daq_gen_notc.vhd
-vcom -work daq_gen_lib .\..\source\daq_gen.vhd
+#vcom -work daq_gen_lib ./../source/daq_gen_notc.vhd
+vcom -work daq_gen_lib ./../source/daq_gen.vhd
 
-vcom -work daq_gen_lib .\source\daq_gen_tb.vhd
+vcom -work daq_gen_lib ./source/daq_gen_tb.vhd
 
 vsim daq_gen_tb -t 1ps -ieee_nowarn
 

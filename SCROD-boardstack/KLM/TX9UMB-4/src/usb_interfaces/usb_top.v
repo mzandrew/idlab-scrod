@@ -91,8 +91,8 @@ assign sl_data_fifo_empty= usb_flagB_in; //connect to the empty flag of EP2
 assign sl_cs_fifo_full= usb_flagC_in; //connect to the full flag of EP8
 assign sl_data_fifo_full= usb_flagD_in; //connect to the full flag of EP6
 
-assign FIFO_CLOCK = usb_locked_ifclk_in; // 150218: im: experimneting with the IFCLK
-//assign FIFO_CLOCK = usb_buffed_ifclk_in;
+//assign FIFO_CLOCK = usb_locked_ifclk_in; // 150218: im: experimneting with the IFCLK
+assign FIFO_CLOCK = usb_buffed_ifclk_in;
 
 assign EP2_DATA = wr_data_fifo_data;
 assign wr_data_fifo_full = EP2_FULL;
@@ -122,6 +122,8 @@ usb_slave_fifo_interface_io u_usb_slave_fifo_interface_io(
     .IFCLK(IFCLK), 
     .usb_buffed_ifclk_in(usb_buffed_ifclk_in), 
     .usb_locked_ifclk_in(usb_locked_ifclk_in), 
+    //.usb_locked_ifclk_in(FIFO_CLOCK), 
+	 
     .usb_ifclk_in_locked(usb_ifclk_in_locked), 
     .CTL0(CTL0), 
     .CTL1(CTL1), 
@@ -154,7 +156,8 @@ usb_slave_fifo_interface_io u_usb_slave_fifo_interface_io(
     );
 
 usb_slave_fifo_interface u_usb_slave_fifo_interface (
-    .clk(usb_locked_ifclk_in), 
+//    .clk(usb_locked_ifclk_in), 
+    .clk(FIFO_CLOCK), 
     .rst(rst), 
 
     .fpga2usb_data_req(fpga2usb_data_req), 

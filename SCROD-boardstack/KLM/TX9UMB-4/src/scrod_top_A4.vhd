@@ -328,6 +328,9 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_TRIGCOUNT_scaler_main : std_logic_vector(TRIGGER_SCALER_BIT_WIDTH-1 downto 0);
 	signal internal_READ_ENABLE_TIMER : std_logic_vector (9 downto 0);
 	signal internal_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here
+	signal internal_ext_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here
+	signal internal_ext_TRIGDEC_TXDCTRIG : tb_vec_type;-- All triger bits from all ASICs are here- they will be extended even more here
+	
 	signal internal_TXDCTRIG16 : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
 --	signal internal_TXDCTRIG_buf : tb_vec_type;-- All triger bits from all ASICs are here
 --	signal internal_TXDCTRIG16_buf : std_logic_vector(1 to TDC_NUM_CHAN);-- All triger bits from all ASICs are here
@@ -596,6 +599,13 @@ signal CONTROL0						:std_logic_vector(35 DOWNTO 0);
 signal vio_ASYNC_IN :  STD_LOGIC_VECTOR(47 DOWNTO 0);
 signal vio_ASYNC_OUT :  STD_LOGIC_VECTOR(47 DOWNTO 0);
 
+signal trg_l_1:tb_vec_type;
+signal trg_l_2:tb_vec_type;
+signal trg_l_3:tb_vec_type;
+signal trg_l_4:tb_vec_type;
+signal trg_l_5:tb_vec_type;
+
+
 
 component myICON1
   PORT (
@@ -769,16 +779,27 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --	internal_TRIGGER_ASIC(I-1) <= internal_TXDCTRIG16_buf(I) OR internal_TXDCTRIG_buf(I)(1) OR internal_TXDCTRIG_buf(I)(2) OR internal_TXDCTRIG_buf(I)(3) OR internal_TXDCTRIG_buf(I)(4);
 --end generate;
 
-	internal_TRIGGER_ASIC(0) <= TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3) OR TDC1_TRG(4);
-	internal_TRIGGER_ASIC(1) <= TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3) OR TDC2_TRG(4);
-	internal_TRIGGER_ASIC(2) <= TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3) OR TDC3_TRG(4);
-	internal_TRIGGER_ASIC(3) <= TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3) OR TDC4_TRG(4);
-	internal_TRIGGER_ASIC(4) <= TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3) OR TDC5_TRG(4);
-	internal_TRIGGER_ASIC(5) <= TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3) OR TDC6_TRG(4);
-	internal_TRIGGER_ASIC(6) <= TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3) OR TDC7_TRG(4);
-	internal_TRIGGER_ASIC(7) <= TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3) OR TDC8_TRG(4);
-	internal_TRIGGER_ASIC(8) <= TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3) OR TDC9_TRG(4);
-	internal_TRIGGER_ASIC(9) <= TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3) OR TDC10_TRG(4);
+--	internal_TRIGGER_ASIC(0) <= TDC1_TRG(0) OR TDC1_TRG(1) OR TDC1_TRG(2) OR TDC1_TRG(3) OR TDC1_TRG(4);
+--	internal_TRIGGER_ASIC(1) <= TDC2_TRG(0) OR TDC2_TRG(1) OR TDC2_TRG(2) OR TDC2_TRG(3) OR TDC2_TRG(4);
+--	internal_TRIGGER_ASIC(2) <= TDC3_TRG(0) OR TDC3_TRG(1) OR TDC3_TRG(2) OR TDC3_TRG(3) OR TDC3_TRG(4);
+--	internal_TRIGGER_ASIC(3) <= TDC4_TRG(0) OR TDC4_TRG(1) OR TDC4_TRG(2) OR TDC4_TRG(3) OR TDC4_TRG(4);
+--	internal_TRIGGER_ASIC(4) <= TDC5_TRG(0) OR TDC5_TRG(1) OR TDC5_TRG(2) OR TDC5_TRG(3) OR TDC5_TRG(4);
+--	internal_TRIGGER_ASIC(5) <= TDC6_TRG(0) OR TDC6_TRG(1) OR TDC6_TRG(2) OR TDC6_TRG(3) OR TDC6_TRG(4);
+--	internal_TRIGGER_ASIC(6) <= TDC7_TRG(0) OR TDC7_TRG(1) OR TDC7_TRG(2) OR TDC7_TRG(3) OR TDC7_TRG(4);
+--	internal_TRIGGER_ASIC(7) <= TDC8_TRG(0) OR TDC8_TRG(1) OR TDC8_TRG(2) OR TDC8_TRG(3) OR TDC8_TRG(4);
+--	internal_TRIGGER_ASIC(8) <= TDC9_TRG(0) OR TDC9_TRG(1) OR TDC9_TRG(2) OR TDC9_TRG(3) OR TDC9_TRG(4);
+--	internal_TRIGGER_ASIC(9) <= TDC10_TRG(0) OR TDC10_TRG(1) OR TDC10_TRG(2) OR TDC10_TRG(3) OR TDC10_TRG(4);
+
+	internal_TRIGGER_ASIC(0) <= internal_ext_TXDCTRIG(1)(1)  OR internal_ext_TXDCTRIG(1)(2) OR internal_ext_TXDCTRIG(1)(3) OR internal_ext_TXDCTRIG(1)(4) OR internal_ext_TXDCTRIG(1)(5);
+	internal_TRIGGER_ASIC(1) <= internal_ext_TXDCTRIG(2)(1)  OR internal_ext_TXDCTRIG(2)(2) OR internal_ext_TXDCTRIG(2)(3) OR internal_ext_TXDCTRIG(2)(4) OR internal_ext_TXDCTRIG(2)(5);
+	internal_TRIGGER_ASIC(2) <= internal_ext_TXDCTRIG(3)(1)  OR internal_ext_TXDCTRIG(3)(2) OR internal_ext_TXDCTRIG(3)(3) OR internal_ext_TXDCTRIG(3)(4) OR internal_ext_TXDCTRIG(3)(5);
+	internal_TRIGGER_ASIC(3) <= internal_ext_TXDCTRIG(4)(1)  OR internal_ext_TXDCTRIG(4)(2) OR internal_ext_TXDCTRIG(4)(3) OR internal_ext_TXDCTRIG(4)(4) OR internal_ext_TXDCTRIG(4)(5);
+	internal_TRIGGER_ASIC(4) <= internal_ext_TXDCTRIG(5)(1)  OR internal_ext_TXDCTRIG(5)(2) OR internal_ext_TXDCTRIG(5)(3) OR internal_ext_TXDCTRIG(5)(4) OR internal_ext_TXDCTRIG(5)(5);
+	internal_TRIGGER_ASIC(5) <= internal_ext_TXDCTRIG(6)(1)  OR internal_ext_TXDCTRIG(6)(2) OR internal_ext_TXDCTRIG(6)(3) OR internal_ext_TXDCTRIG(6)(4) OR internal_ext_TXDCTRIG(6)(5);
+	internal_TRIGGER_ASIC(6) <= internal_ext_TXDCTRIG(7)(1)  OR internal_ext_TXDCTRIG(7)(2) OR internal_ext_TXDCTRIG(7)(3) OR internal_ext_TXDCTRIG(7)(4) OR internal_ext_TXDCTRIG(7)(5);
+	internal_TRIGGER_ASIC(7) <= internal_ext_TXDCTRIG(8)(1)  OR internal_ext_TXDCTRIG(8)(2) OR internal_ext_TXDCTRIG(8)(3) OR internal_ext_TXDCTRIG(8)(4) OR internal_ext_TXDCTRIG(8)(5);
+	internal_TRIGGER_ASIC(8) <= internal_ext_TXDCTRIG(9)(1)  OR internal_ext_TXDCTRIG(9)(2) OR internal_ext_TXDCTRIG(9)(3) OR internal_ext_TXDCTRIG(9)(4) OR internal_ext_TXDCTRIG(9)(5);
+	internal_TRIGGER_ASIC(9) <= internal_ext_TXDCTRIG(10)(1) OR internal_ext_TXDCTRIG(10)(2) OR internal_ext_TXDCTRIG(10)(3) OR internal_ext_TXDCTRIG(10)(4) OR internal_ext_TXDCTRIG(10)(5);
 	
 	internal_TRIGGER_ALL <= internal_TRIGGER_ASIC(0) OR internal_TRIGGER_ASIC(1) or internal_TRIGGER_ASIC(2) OR
 	internal_TRIGGER_ASIC(3) OR internal_TRIGGER_ASIC(4) OR internal_TRIGGER_ASIC(5) OR
@@ -874,7 +895,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		USE_LOCAL_CLOCK   => '1',
 		--General output clocks
 		CLOCK_TRIG_SCALER =>internal_CLOCK_TRIG_SCALER,
-		CLOCK_FPGA_LOGIC  => internal_CLOCK_FPGA_LOGIC,
+		CLOCK_FPGA_LOGIC  => open,--internal_CLOCK_FPGA_LOGIC,
 		CLOCK_MPPC_DAC   => internal_CLOCK_MPPC_DAC,
 		CLOCK_MPPC_ADC   => internal_CLOCK_MPPC_ADC
 		--ASIC control clocks
@@ -1010,11 +1031,11 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
     mgttxp    	=>		mgttxp,                
     mgttxn   	=>		mgttxn,               
 	ex_trig1    =>'1',
-    exttb       => open,
+    exttb       => internal_ext_TXDCTRIG,
     ftsw_aux    => open,
     status_fake =>	status_fake,          
     control_fake => 	control_fake,
-	
+	clk63p5=>internal_CLOCK_FPGA_LOGIC,
 	scint_missed_trg	=>internal_KLM_SCINT_MISSED_TRG,
 
 	 scint_trg	 		=> internal_klm_trig,
@@ -1416,9 +1437,9 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset when internal_CMDREG_PedCalcEnable='0' else internal_PEDMAN_readout_reset ;
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
-	i_TrigDecisionLogic: entity work.TrigDecisionLogic PORT MAP(
+	i_TrigDecisionLogic: entity work.TrigDecisionLogic2 PORT MAP(
 		clk=>internal_CLOCK_FPGA_LOGIC,
-		tb => internal_TXDCTRIG,
+		tb => internal_ext_TRIGDEC_TXDCTRIG,
 		tm =>internal_CMDREG_TRIGDEC_TRIGMASK,
 		TrigOut => internal_TRIGDEC_trig,
 		asicX => internal_TRIGDEC_ax,
@@ -1480,6 +1501,7 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 	EX_TRIGGER_SCROD<= internal_SMP_EXTSYNC;--(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
 --				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8)); -- pulse goes up at window=511
 	LEDS(12)<=internal_SMP_MAIN_CNT(0);
+--Testing Rev C FW: (comment LEDS(2) for RevC MB)
 	LEDS(2)<=internal_SMP_EXTSYNC;--(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
 --				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8));
 
@@ -1541,25 +1563,110 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 		internal_TRIG_BRAM_WEA(0) <= internal_TRIG_BRAM_WE and internal_WR_ENA;
 
 
-internal_alltb<=internal_TXDCTRIG(10) & internal_TXDCTRIG(9) & internal_TXDCTRIG(8) & internal_TXDCTRIG(7) & internal_TXDCTRIG(6)
-	       & internal_TXDCTRIG(5) & internal_TXDCTRIG(4) & internal_TXDCTRIG(3) & internal_TXDCTRIG(2) & internal_TXDCTRIG(1);
-			 
-gen_trig_latch : for i in 0 to 49 generate
- 
- trig_latch_LDCE_inst : LDCE
+--internal_alltb<=internal_ext_TXDCTRIG(10) & internal_ext_TXDCTRIG(9) & internal_ext_TXDCTRIG(8) & internal_ext_TXDCTRIG(7) & internal_ext_TXDCTRIG(6)
+--	       & internal_ext_TXDCTRIG(5) & internal_ext_TXDCTRIG(4) & internal_ext_TXDCTRIG(3) & internal_ext_TXDCTRIG(2) & internal_ext_TXDCTRIG(1);
+	
+--internal_TRIG_BRAM_DINA<=	internal_alltb;
+
+
+gen_trig_latch 	: for i in 1 to 10 generate
+
+gen_trig_latch2 	: for j in 1 to 5 generate
+
+LDCE_inst : LDCE
    generic map (
       INIT => '0') -- Initial value of latch ('0' or '1')  
    port map (
-      Q => internal_TRIG_BRAM_DINA(i),      -- Data output
-      CLR => not internal_TRIG_BRAM_WEA(0) ,  -- Asynchronous clear/reset input
-      D => internal_alltb(i),      -- Data input
-      G => '1',      -- Gate input
-      GE => '1'     -- Gate enable input
+      Q => trg_l_1(i)(j),      -- Data output
+      CLR => trg_l_5(i)(j),  -- Asynchronous clear/reset input
+      D => internal_ext_TXDCTRIG(i)(j),      -- Data input
+      G => '0',      -- Gate input
+      GE => '0'     -- Gate enable input
    );
 
 
+--  FDCE_inst0 : FDCE
+--   generic map (
+--      INIT => '0') -- Initial value of register ('0' or '1')  
+--   port map (
+--      Q => trg_l_1(i)(j),      -- Data output
+--      C => internal_ext_TXDCTRIG(i)(j),      -- Clock input
+--      CE => '1',    -- Clock enable input
+--      CLR => trg_l_5(i)(j),  -- Asynchronous clear input
+--      D => '1'       -- Data input
+--   );
+-- 
+   FDCE_inst1 : FDCE
+   generic map (
+      INIT => '0') -- Initial value of register ('0' or '1')  
+   port map (
+      Q => trg_l_2(i)(j),      -- Data output
+      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
+      CE => '1',    -- Clock enable input
+      CLR => '0',  -- Asynchronous clear input
+      D => trg_l_1(i)(j)       -- Data input
+   );
+ 
+   FDCE_inst2 : FDCE
+   generic map (
+      INIT => '0') -- Initial value of register ('0' or '1')  
+   port map (
+      Q => trg_l_3(i)(j),      -- Data output
+      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
+      CE => '1',    -- Clock enable input
+      CLR => '0',  -- Asynchronous clear input
+      D => trg_l_2(i)(j)       -- Data input
+   );
+
+
+   FDCE_inst3 : FDCE
+   generic map (
+      INIT => '0') -- Initial value of register ('0' or '1')  
+   port map (
+      Q => trg_l_4(i)(j),      -- Data output
+      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
+      CE => '1',    -- Clock enable input
+      CLR => '0',  -- Asynchronous clear input
+      D => trg_l_3(i)(j)       -- Data input
+   );
+
+   FDCE_inst4 : FDCE
+   generic map (
+      INIT => '0') -- Initial value of register ('0' or '1')  
+   port map (
+      Q => trg_l_5(i)(j),      -- Data output
+      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
+      CE => '1',    -- Clock enable input
+      CLR => '0',  -- Asynchronous clear input
+      D => trg_l_4(i)(j)       -- Data input
+   );
+
+
+--internal_TRIG_BRAM_DINA((i-1)*5+(j-1))<=trg_l_1(i)(j);
+internal_TRIG_BRAM_DINA((i-1)*5+(j-1))<=internal_ext_TXDCTRIG(i)(j);
+
 end generate;
-		 
+end generate;
+--internal_ext_TRIGDEC_TXDCTRIG<=trg_l_1;
+
+internal_ext_TRIGDEC_TXDCTRIG<=internal_ext_TXDCTRIG;
+
+--gen_trig_latch : for i in 0 to 49 generate
+-- 
+-- trig_latch_LDCE_inst : LDCE
+--   generic map (
+--      INIT => '0') -- Initial value of latch ('0' or '1')  
+--   port map (
+--      Q => internal_TRIG_BRAM_DINA(i),      -- Data output
+--      CLR => not internal_TRIG_BRAM_WEA(0) ,  -- Asynchronous clear/reset input
+--      D => internal_alltb(i),      -- Data input
+--      G => '1',      -- Gate input
+--      GE => '1'     -- Gate enable input
+--   );
+--
+--
+--end generate;
+--		 
 
 
 u_txtrg_bram: txtrig_bram
