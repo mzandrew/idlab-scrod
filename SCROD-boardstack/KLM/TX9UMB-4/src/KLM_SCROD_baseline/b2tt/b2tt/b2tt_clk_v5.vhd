@@ -11,6 +11,8 @@
 -- 20131012 0.05  unification with v6 as much as possible
 -- 20131013 0.06  unification with s6 as much as possible
 -- 20131101 0.07  no more std_logic_arith
+-- 20141008 0.08  rawclkg
+-- 20150105 0.09  rawclk after bufg (no more rawclkg) / no more FLIPCLK
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -25,8 +27,7 @@ use unisim.vcomponents.all;
 
 entity b2tt_clk is
   generic (
-    FLIPCLK  : std_logic := '0';
-    USEPLL   : std_logic := '0';
+    USEPLL   : std_logic := '0'; -- PLL is unused in v5 by default
     USEICTRL : std_logic := '1' );
   port (
     clkp     : in  std_logic;
@@ -44,7 +45,6 @@ end b2tt_clk;
 architecture implementation of b2tt_clk is
   signal clk_127      : std_logic := '0';
   signal sig_127      : std_logic := '0';
-  signal sig_raw      : std_logic := '0';
 
   signal sig_fbout    : std_logic := '0';
   signal sig_xcm203   : std_logic := '0';
@@ -60,7 +60,7 @@ architecture implementation of b2tt_clk is
   signal cnt_ictrl    : std_logic_vector (9  downto 0) := (others => '0');
 
   signal sig_xcm127   : std_logic := '0';
-  signal sig_xcm254   : std_logic := '0';
+  --signal sig_xcm254   : std_logic := '0';
 
   signal sta_dcm      : std_logic := '0';
   signal sta_pll      : std_logic := '0';
@@ -70,8 +70,8 @@ begin
   ------------------------------------------------------------------------
   -- clock buffers
   ------------------------------------------------------------------------
-  sig_127 <= sig_raw xor FLIPCLK;
-  map_ick: ibufds port map ( o => sig_raw,    i => clkp, ib => clkn );
+  rawclk  <= clk_127;
+  map_ick: ibufds port map ( o => sig_127,    i => clkp, ib => clkn );
   map_ig:   bufg  port map ( i => sig_127,    o => clk_127 );
 
   map_fb:   bufg  port map ( i => sig_fbout,  o => clk_fb  );
@@ -80,17 +80,15 @@ begin
   ------------------------------------------------------------------------
   -- PLL
   ------------------------------------------------------------------------
-  invclock <= '0';
-  dblclock <= '0';
+  invclock  <= '0';
+  dblclock  <= '0';
   dblclockb <= '0';
   
   gen_pll0: if USEPLL = '0' generate
-    rawclk <= sig_127;
-    clock  <= clk_127;
+    clock   <= clk_127;
     sta_xcm <= sta_dcm;
   end generate;
   gen_pll1: if USEPLL = '1' generate
-    rawclk <= sig_xcm127;
     sta_xcm <= sta_dcm and sta_pll;
     map_127g: bufg  port map ( i => sig_xcm127, o => clock );
     --map_254g: bufg  port map ( i => sig_xcm254, o => clk254 );

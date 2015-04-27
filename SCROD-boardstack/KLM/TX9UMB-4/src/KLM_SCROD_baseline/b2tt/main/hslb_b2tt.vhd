@@ -14,6 +14,7 @@
 --  20140722 0.09  b2tt 0.27
 --  20140808 0.10  b2tt 0.29
 --  20140917 0.11  b2tt 0.31
+--  20150105 0.12  b2tt 0.33
 ------------------------------------------------------------------------
 
 library ieee;
@@ -28,7 +29,7 @@ use work.mytypes.all;
 
 entity hslb_b2tt is
   generic (
-    VERSION : integer := 11;
+    VERSION : integer := 12;
     ID : std_logic_vector (31 downto 0) := x"42325448"; -- "B2TH"
     USE_CHIPSCOPE : std_logic := '1' );
   port (
@@ -264,7 +265,6 @@ begin
       isk => open,
       cntbit2 => open,
       sigbit2 => open,
-      bitddr => open,
       
       dbglink  => sig_dbg,
       dbgerr   => open );

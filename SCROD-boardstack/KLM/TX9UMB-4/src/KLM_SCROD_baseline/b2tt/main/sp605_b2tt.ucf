@@ -47,8 +47,8 @@ net ext_p<1> loc=u14  | iostandard=lvcmos25;
 net ext_n<1> loc=u13  | iostandard=lvcmos25;
 net ext_p<2> loc=u9   | iostandard=lvcmos25;
 net ext_n<2> loc=v9   | iostandard=lvcmos25;
-net clkout_p loc=t12  | iostandard=lvds_25;
-net clkout_n loc=u12  | iostandard=lvds_25;
+### clkout_p loc=t12  | iostandard=lvds_25;
+### clkout_n loc=u12  | iostandard=lvds_25;
 
 # net user_clock loc=ab13 | iostandard=lvcmos25;
 net sma_gpio_p loc=b3 | iostandard=lvcmos25;

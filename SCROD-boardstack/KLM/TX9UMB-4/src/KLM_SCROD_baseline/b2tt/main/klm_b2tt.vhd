@@ -10,6 +10,7 @@
 -- 20140724 0.04  b2tt 0.27 again
 -- 20140808 0.05  b2tt 0.29
 -- 20140917 0.06  b2tt 0.31
+-- 20150105 0.07  b2tt 0.33
 ------------------------------------------------------------------------
 
 library ieee;
@@ -26,7 +27,7 @@ use unisim.vcomponents.ALL;
 ------------------------------------------------------------------------
 entity klm_b2tt is
   generic (
-    VERSION : integer := 6;
+    VERSION : integer := 7;
     ID : std_logic_vector (31 downto 0) := x"4b4c4d54";  -- "KLMT"
     USE_CHIPSCOPE : std_logic := '1' );
 
@@ -83,7 +84,6 @@ architecture implementation of klm_b2tt is
   signal sig_trgtag    : std_logic_vector (31 downto 0) := (others => '0');
 
   signal sig_test      : std_logic := '0';
-  signal sig_bitddr    : std_logic := '0';
 
   signal reg_dbg       : std_logic_vector (7  downto 0) := (others => '0');
   signal cnt_delay     : std_logic_vector (6  downto 0) := (others => '0');
@@ -127,7 +127,6 @@ begin
   -- clock and LED (lclk, jclk)
   ----------------------------------------------------------------------
   ---_ods: obufds port map ( i => sig_test, o => clkout_p, ob => clkout_n );
-  ---_ods: obufds port map ( i => sig_bitddr, o => clkout_p, ob => clkout_n );
 
   --led(7 downto 4) <= sig_dbg(3 downto 0);
 
@@ -286,7 +285,6 @@ begin
       isk      => open_isk,
       cntbit2  => open_cntbit2,
       sigbit2  => open_sigbit2,
-      bitddr   => sig_bitddr,
       dbglink  => sig_dbg,
       dbgerr   => open );
       --dbgerr   => sig_dbg,

@@ -7,6 +7,7 @@
 -- 20140722 0.01  copied from sp605_b2tt 0.15
 -- 20140808 0.02  b2tt 0.29
 -- 20140917 0.03  b2tt 0.31
+-- 20150105 0.04  b2tt 0.33
 ------------------------------------------------------------------------
 
 library ieee;
@@ -24,7 +25,7 @@ use unisim.vcomponents.ALL;
 ------------------------------------------------------------------------
 entity ecl_b2tt is
   generic (
-    VERSION : integer := 3;
+    VERSION : integer := 4;
     ID : std_logic_vector (31 downto 0) := x"45434c54";  -- "ECLT"
     USE_CHIPSCOPE : std_logic := '1' );
 
@@ -60,7 +61,6 @@ architecture implementation of ecl_b2tt is
 
   signal sig_trgtag    : std_logic_vector (31 downto 0) := (others => '0');
 
-  signal sig_bitddr    : std_logic := '0';
   signal reg_dbg       : std_logic_vector (7  downto 0) := (others => '0');
   
   signal open_utime    : std_logic_vector (31 downto 0) := (others => '0');
@@ -180,7 +180,6 @@ begin
       isk      => open_isk,
       cntbit2  => open_cntbit2,
       sigbit2  => open_sigbit2,
-      bitddr   => sig_bitddr,
       dbglink  => sig_dbg,
       dbgerr   => open );
       --dbgerr   => sig_dbg,

@@ -10,6 +10,8 @@
 -- 20131011 0.04  renamed to b2tt_clk_v5 for virtex5
 -- 20131012 0.05  unification with v6 as much as possible
 -- 20131101 0.06  no more std_logic_arith
+-- 20141008 0.08  rawclkg
+-- 20150105 0.09  rawclk after bufg (no more rawclkg) / no more FLIPCLK
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -24,8 +26,7 @@ use unisim.vcomponents.all;
 
 entity b2tt_clk is
   generic (
-    FLIPCLK  : std_logic := '0';
-    USEPLL   : std_logic := '1'; -- always PLL is used for s6
+    USEPLL   : std_logic := '1'; -- unused flag, PLL is always used in s6
     USEICTRL : std_logic := '0' );
   port (
     clkp     : in  std_logic;
@@ -33,10 +34,10 @@ entity b2tt_clk is
     reset    : in  std_logic;
     rawclk   : out std_logic;
     clock    : out std_logic;
-	 clk63p5	 : out std_logic;
     invclock : out std_logic;  -- (only for Spartan-6)
     dblclock : out std_logic;  -- (only for Virtex-6)
     dblclockb : out std_logic; -- (only for Virtex-6)
+    hlfclock : out std_logic;
     locked   : out std_logic;
     stat     : out std_logic_vector (1 downto 0) );
 end b2tt_clk;
@@ -44,7 +45,6 @@ end b2tt_clk;
 architecture implementation of b2tt_clk is
   signal clk_127      : std_logic := '0';
   signal sig_127      : std_logic := '0';
-  signal sig_raw      : std_logic := '0';
 
   signal sig_fbout    : std_logic := '0';
   signal sig_xcm203   : std_logic := '0';
@@ -64,81 +64,57 @@ architecture implementation of b2tt_clk is
   signal sig_xcm127b  : std_logic := '0';
   signal sig_inv127   : std_logic := '0';
   signal sig_xcm254   : std_logic := '0';
-  signal sig_xcm63p5		:std_logic:='0';
+  signal sig_clk3     : std_logic := '0';  --!add
 begin
   ------------------------------------------------------------------------
   -- clock buffers
   ------------------------------------------------------------------------
-  sig_127 <= sig_raw xor FLIPCLK;
-  clk63p5<=sig_xcm63p5;
-
-  
-  map_ick: ibufds port map ( o => sig_raw,    i => clkp, ib => clkn );
+  rawclk <= clk_127;
+  map_ick: ibufds port map ( o => sig_127,    i => clkp, ib => clkn );
   map_ig:   bufg  port map ( i => sig_127,    o => clk_127 );
 
   map_fb:   bufg  port map ( i => sig_fbout,  o => clk_fb  );
   map_203g: bufg  port map ( i => sig_xcm203, o => clk_203 );
   
   ------------------------------------------------------------------------
-  -- PLL
+  -- PLL (always needed in Spartan 6)
   ------------------------------------------------------------------------
 
   -- unused in the Spartan 6 design
---  dblclock  <= '0';
+  dblclock  <= '0';
   dblclockb <= '0';
   
-  -- PROBABLY USEPLL = '0' DOES NOT WORK FOR SPARTAN 6
-    
-  -- gen_pll0: if USEPLL = '0' generate
-  --   sig_inv127 <= not sig_127;
-  --   rawclk <= sig_127;
-  --   clock  <= clk_127;
-  --   map_invg: bufg  port map ( i => sig_inv127, o => invclock );
-  -- end generate;
-
-  --gen_pll1: if USEPLL = '1' generate
-    -- (bufpll is needed if iserdes2 is used)
-    -- map_254: bufpll
-    --   generic map ( DIVIDE => 2 )
-    --   port map (
-    --     pllin  => sig_xcm254,
-    --     gclk   => clk_xcm127,
-    --     locked => sta_xcm,
-    --     ioclk  => clk254,          -- out
-    --     lock   => sta_ictrl,       -- out (use it here since no idelayctrl)
-    --     serdesstrobe => clk254s ); -- out
-
-    clock  <= clk_xcm127;
-    rawclk <= sig_xcm127;
-    map_127g: bufg  port map ( i => sig_xcm127,  o => clk_xcm127 );
-    map_invg: bufg  port map ( i => sig_xcm127b, o => invclock );
-    map_254g: bufg  port map ( i => sig_xcm254, o => dblclock );--!add
+  clock  <= clk_xcm127;
+  map_127g: bufg  port map ( i => sig_xcm127,  o => clk_xcm127 );
+  map_invg: bufg  port map ( i => sig_xcm127b, o => invclock );
+  map_254g: bufg  port map ( i => sig_xcm254, o => dblclock );--!add  
+  map_64g: bufg  port map ( i => sig_clk3, o => hlfclock );--!add  
   
-    map_pll: pll_base
-      generic map (
-        CLKIN_PERIOD   => 7.8,  -- F_VCO has to be between 400 - 1000 MHz
-        CLKFBOUT_MULT  => 8,    -- F_VCO = F_CLKIN * CLKFBOUT_MULT
-        DIVCLK_DIVIDE  => 1,    --         / DIVCLK_DIVIDE
-        CLKOUT0_DIVIDE => 8,    -- F_OUT = F_VCO / CLKOUTn_DIVIDE
-        CLKOUT1_DIVIDE => 8,
-        CLKOUT1_PHASE  => 180.0,
-        CLKOUT2_DIVIDE => 4,    --!uncommment
-        CLKOUT2_PHASE  => 0.0,  --!add
-        CLKOUT3_DIVIDE => 16,
-        --CLKOUT4_DIVIDE => 5,
-        BANDWIDTH => "OPTIMIZED" )
-      port map (
-        clkin    => clk_127,
-        rst      => reset,
-        clkfbout => sig_fbout,
-        clkout0  => sig_xcm127,
-        clkout1  => sig_xcm127b,
-        clkout2  => sig_xcm254,--!uncomment
-        clkout3  => sig_xcm63p5,
-        --clkout4  => sig_clk4,
-        locked   => sta_xcm,
-        clkfbin  => clk_fb );
-  --end generate;
+  map_pll: pll_base
+    generic map (
+      CLKIN_PERIOD   => 7.8,  -- F_VCO has to be between 400 - 1000 MHz
+      CLKFBOUT_MULT  => 8,    -- F_VCO = F_CLKIN * CLKFBOUT_MULT
+      DIVCLK_DIVIDE  => 1,    --         / DIVCLK_DIVIDE
+      CLKOUT0_DIVIDE => 8,    -- F_OUT = F_VCO / CLKOUTn_DIVIDE
+      CLKOUT1_DIVIDE => 8,
+      CLKOUT1_PHASE  => 180.0,
+      CLKOUT2_DIVIDE => 4,    --!uncommment
+      CLKOUT2_PHASE  => 0.0,  --!add
+      CLKOUT3_DIVIDE => 16,   --!uncommment
+      CLKOUT3_PHASE  => 0.0,  --!add      
+      --CLKOUT4_DIVIDE => 5,
+      BANDWIDTH => "OPTIMIZED" )
+    port map (
+      clkin    => clk_127,
+      rst      => reset,
+      clkfbout => sig_fbout,
+      clkout0  => sig_xcm127,
+      clkout1  => sig_xcm127b,
+      clkout2  => sig_xcm254,
+      clkout3  => sig_clk3,
+      --clkout4  => sig_clk4,
+      locked   => sta_xcm,
+      clkfbin  => clk_fb );
 
   ------------------------------------------------------------------------
   -- no idelayctrl for Spartan 6

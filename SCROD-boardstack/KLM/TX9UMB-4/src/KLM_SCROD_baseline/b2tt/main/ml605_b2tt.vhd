@@ -29,6 +29,7 @@
 -- 20140722 0.23  b2tt 0.27
 -- 20140723 0.24  b2tt 0.29
 -- 20140917 0.25  b2tt 0.31
+-- 20150105 0.26  b2tt 0.33
 ------------------------------------------------------------------------
 
 library ieee;
@@ -46,7 +47,7 @@ use unisim.vcomponents.ALL;
 ------------------------------------------------------------------------
 entity ml605_b2tt is
   generic (
-    VERSION : integer := 25;
+    VERSION : integer := 26;
     ID : std_logic_vector (31 downto 0) := x"4d363035";   -- "M605"
     USE_CHIPSCOPE : std_logic := '1' );
 
@@ -60,8 +61,8 @@ entity ml605_b2tt is
     clk_n      : in    std_logic;
     clk_p      : in    std_logic;
 
-    clkout_n   : out   std_logic;  -- to measure jitter
-    clkout_p   : out   std_logic;
+    --clkout_n   : out   std_logic;  -- to measure jitter
+    --clkout_p   : out   std_logic;
     ext_n      : out   std_logic_vector (2 downto 0);
     ext_p      : out   std_logic_vector (2 downto 0);
     
@@ -102,7 +103,6 @@ architecture implementation of ml605_b2tt is
   signal sig_trgtag    : std_logic_vector (31 downto 0) := (others => '0');
 
   signal sig_test      : std_logic := '0';
-  signal sig_bitddr    : std_logic := '0';
 
   signal reg_dbg       : std_logic_vector (7  downto 0) := (others => '0');
   signal cnt_delay     : std_logic_vector (6  downto 0) := (others => '0');
@@ -144,7 +144,6 @@ begin
   -- clock and LED (lclk, jclk)
   ----------------------------------------------------------------------
   ---_ods: obufds port map ( i => sig_test, o => clkout_p, ob => clkout_n );
-  map_ods: obufds port map ( i => sig_bitddr, o => clkout_p, ob => clkout_n );
 
   proc_test: process (clk_127)
   begin
@@ -222,11 +221,8 @@ begin
   ----------------------------------------------------------------------
   -- test input / output
   ----------------------------------------------------------------------
-  --sma_gpio_p <= sig_trg;
-  --sma_gpio_n <= sig_revo;
   sma_gpio_p <= sig_raw127;
-  sma_gpio_n <= sig_bitddr;
-  
+  sma_gpio_n <= sig_trg;
   
   map_b2tt: entity work.b2tt
     generic map (
@@ -318,7 +314,6 @@ begin
       isk      => open_isk,
       cntbit2  => open_cntbit2,
       sigbit2  => open_sigbit2,
-      bitddr   => sig_bitddr,
       dbglink  => sig_dbg,
       dbgerr   => open );
       --dbgerr   => sig_dbg,

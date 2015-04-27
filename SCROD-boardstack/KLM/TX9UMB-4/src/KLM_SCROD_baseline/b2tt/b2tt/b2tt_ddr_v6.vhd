@@ -56,7 +56,6 @@ entity b2tt_iddr is
     clrdelay  : in  std_logic;
     caldelay  : in  std_logic; -- spartan6 only (or for v6 iserdes bitflip)
     staiddr   : out std_logic_vector (1  downto 0);
-    bitddr    : out std_logic;
     bit2      : out std_logic_vector (1  downto 0);
     cntdelay  : out std_logic_vector (6  downto 0);
     cntwidth  : out std_logic_vector (5  downto 0);
@@ -72,6 +71,7 @@ architecture implementation of b2tt_iddr is
   signal sig_islip   : std_logic := '0';
   signal clr_islip   : std_logic := '0';
   signal sig_raw4    : std_logic_vector (3  downto 0) := "0000";
+  signal open_bitddr : std_logic := '0';
 begin
   mpa_ibufds: ibufds
     port map ( o => sig_i, i => inp, ib => inn );
@@ -112,7 +112,7 @@ begin
       q3   => sig_raw4(2),
       q4   => sig_raw4(3),
       d    => '0',
-      o    => bitddr,
+      o    => open_bitddr,
       ddly => sig_q,
       ce1  => '1',
       ce2  => '1',
@@ -178,7 +178,6 @@ entity b2tt_oddr is
     invclock : in  std_logic; -- only for s6
     mask     : in  std_logic;
     bit2     : in  std_logic_vector (1 downto 0);
-    bitddr   : out std_logic;
     outp     : out std_logic;
     outn     : out std_logic );
 
@@ -226,8 +225,5 @@ begin
       r  => '0',
       q  => sig_oq );
 
-  -- out
-  bitddr <= sig_o;
-  
 end implementation;
 

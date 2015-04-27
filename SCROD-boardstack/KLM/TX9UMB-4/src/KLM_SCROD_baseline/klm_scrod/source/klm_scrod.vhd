@@ -159,25 +159,27 @@ architecture behave of klm_scrod is
     end component;
 
     component b2tt is
-    generic(
-        DEFADDR                 : std_logic_vector (19 downto 0);
-        FLIPCLK                 : std_logic;
-        FLIPTRG                 : std_logic;
-        FLIPACK                 : std_logic;
-        USEFIFO                 : std_logic;
-        CLKDIV1                 : integer range 1 to 72;
-        CLKDIV2                 : integer range 1 to 72;
-        USEPLL                  : std_logic;
-        USEICTRL                : std_logic;
-        NBITTIM                 : integer range 1 to 32;
-        NBITTAG                 : integer range 4 to 32;
-        NBITID                  : integer range 4 to 32;
-        B2LRATE                 : integer;  -- 127 Mbyte / s
-        USEEXTCLK               : std_logic;
-        SIM_SPEEDUP             : std_logic);
-    port(
+    generic (
+        VERSION                 : integer := 37;
+        PROTOCOL                : integer := 29;
+        DEFADDR                 : std_logic_vector (19 downto 0) := x"00000";
+        FLIPCLK                 : std_logic := '0';  -- no more used
+        FLIPTRG                 : std_logic := '0';
+        FLIPACK                 : std_logic := '0';
+        USEFIFO                 : std_logic := '1';
+        CLKDIV1                 : integer range 1 to 72 := 3;
+        CLKDIV2                 : integer range 1 to 72 := 4;
+        USEPLL                  : std_logic := '0';
+        USEICTRL                : std_logic := '1';
+        NBITTIM                 : integer range 1 to 32 := 32;
+        NBITTAG                 : integer range 4 to 32 := 32;
+        NBITID                  : integer range 4 to 32 := 16;
+        B2LRATE                 : integer := 4;  -- 127 Mbyte / s
+        USEEXTCLK               : std_logic := '0';
+        SIM_SPEEDUP             : std_logic := '0' );
+      port (
         -- b2tt version
-        b2ttver                 : out std_logic_vector (15 downto 0);
+        b2ttver                 : out std_logic_vector (15 downto 0);        
         -- RJ-45
         clkp                    : in  std_logic;
         clkn                    : in  std_logic;
@@ -194,7 +196,7 @@ architecture behave of klm_scrod is
         extdblinv               : in std_logic;
         extclklck               : in std_logic;
         -- board id
-        id                      : in  std_logic_vector (B2TT_NBITID-1 downto 0);
+        id                      : in  std_logic_vector (NBITID-1 downto 0);
         -- link status
         b2clkup                 : out std_logic;
         b2ttup                  : out std_logic;
@@ -202,30 +204,31 @@ architecture behave of klm_scrod is
         sysclk                  : out std_logic;
         rawclk                  : out std_logic;
         dblclk                  : out std_logic;
-        clk63p5 						:out std_logic;
+        hlfclk                  : out std_logic;
         utime                   : out std_logic_vector (NBITTIM-1 downto 0);
         ctime                   : out std_logic_vector (26 downto 0);
         -- divided clock
         divclk1                 : out std_logic_vector (1 downto 0);
         divclk2                 : out std_logic_vector (1 downto 0);
         -- exp- / run-number
-        exprun                  : out std_logic_vector (31 downto 0);
+        exprun                  : out std_logic_vector (31 downto 0);        
         -- run reset
         runreset                : out std_logic;
         feereset                : out std_logic;
         b2lreset                : out std_logic;
-        gtpreset                : out std_logic;
+        gtpreset                : out std_logic;        
         -- trigger
         trgout                  : out std_logic;
         trgtyp                  : out std_logic_vector (3  downto 0);
         trgtag                  : out std_logic_vector (31 downto 0);
+        trgmask                 : out std_logic;
         -- revolution
         revo                    : out std_logic;
         --revo3                 : out std_logic;
         revo9                   : out std_logic;
         revoclk                 : out std_logic_vector (10 downto 0);
         revogap                 : out std_logic;                       -- TBI
-        injveto                 : out std_logic_vector (1 downto 0);   -- TBI
+        injveto                 : out std_logic_vector (1 downto 0);   -- TBI        
         -- busy and status return
         busy                    : in  std_logic; -- to suspend the trigger
         err                     : in  std_logic; -- to stop the run
@@ -241,7 +244,7 @@ architecture behave of klm_scrod is
         seuscan                 : in  std_logic;  -- end_of_scan
         seudet                  : in  std_logic;  -- seu_detect
         seucrc                  : in  std_logic;  -- crc_error
-        seumbe                  : in  std_logic;  -- mbe
+        seumbe                  : in  std_logic;  -- mbe        
         -- data for Belle2link header
         fifordy                 : out std_logic;
         fifodata                : out std_logic_vector (95 downto 0);
@@ -252,11 +255,9 @@ architecture behave of klm_scrod is
         isk                     : out std_logic;                      -- decode
         cntbit2                 : out std_logic_vector (2 downto 0);  -- decode
         sigbit2                 : out std_logic_vector (1 downto 0);  -- decode
-        bitddr                  : out std_logic;                      -- encode
         dbglink                 : out std_logic_vector (95 downto 0);
-        dbgerr                  : out std_logic_vector (95 downto 0) );
-    end component;
-
+        dbgerr                  : out std_logic_vector (95 downto 0));
+    end component;        
 
     component klm_aurora_intfc is
     generic(
@@ -705,6 +706,8 @@ ex_trig1_i<=ex_trig1;
     ----------------------------------------------------------------
     b2tt_ins : b2tt
     generic map(
+        VERSION                 => B2TT_VERSION,
+        PROTOCOL                => B2TT_PROTOCOL,
         DEFADDR                 => B2TT_DEFADDR,
         FLIPCLK                 => B2TT_FLIPCLK,
         FLIPTRG                 => B2TT_FLIPTRG,
@@ -720,9 +723,9 @@ ex_trig1_i<=ex_trig1;
         B2LRATE                 => B2TT_B2LRATE,
         USEEXTCLK               => B2TT_USEEXTCLK,
         SIM_SPEEDUP             => B2TT_SIM_SPEEDUP)
-    port map(
+      port map(
         -- b2tt version
-        b2ttver                 => b2tt_b2ttver,
+        b2ttver                 => b2tt_b2ttver,      
         -- RJ-45
         clkp                    => ttdclkp,
         clkn                    => ttdclkn,
@@ -745,32 +748,34 @@ ex_trig1_i<=ex_trig1;
         b2ttup                  => b2tt_b2ttup,
         -- system clock and time
         sysclk                  => sys_clk_ib,
-        rawclk                  => open,
+        rawclk                  => open,                
         dblclk                  => sys_clk2x_ib,
-        clk63p5						=>sys_clk63p5,
+        hlfclk                  => sys_clk63p5,
         utime                   => b2tt_utime,
         ctime                   => b2tt_ctime,
+                                
         -- divided clock
         divclk1                 => b2tt_divclk1,--does not work for factor of 2
         divclk2                 => b2tt_divclk2,
         -- exp- / run-number
-        exprun                  => b2tt_exprun,
+        exprun                  => b2tt_exprun,        
         -- run reset
         runreset                => b2tt_runreset,
         feereset                => b2tt_feereset,
         b2lreset                => b2tt_b2lreset,
-        gtpreset                => b2tt_gtpreset,
+        gtpreset                => b2tt_gtpreset,       
         -- trigger
         trgout                  => b2tt_trgout,
         trgtyp                  => open,
         trgtag                  => b2tt_trgtag,
+        trgmask                 => open,
         -- revolution
         revo                    => open,
         --revo3                 => open,
         revo9                   => open,
         revoclk                 => open,
         revogap                 => open, -- TBI
-        injveto                 => open, -- TBI
+        injveto                 => open, -- TBI     
         -- busy and status return
         busy                    => '0',  -- to suspend the trigger
         err                     => '0',  -- to stop the run
@@ -786,7 +791,7 @@ ex_trig1_i<=ex_trig1;
         seuscan                 => '0',  -- end_of_scan
         seudet                  => '0',  -- seu_detect
         seucrc                  => '0',  -- crc_error
-        seumbe                      => '0',  -- mbe
+        seumbe                  => '0',  -- mbe
         -- data for Belle2link header
         fifordy                 => b2tt_fifordy,
         fifodata                => b2tt_fifodata,
@@ -797,12 +802,10 @@ ex_trig1_i<=ex_trig1;
         isk                     => open,  -- decode
         cntbit2                 => open,  -- decode
         sigbit2                 => open,  -- decode
-        bitddr                  => open,  -- encode
-        -- debug signals
-        dbglink                 => open,
+        dbglink                 => open,  -- encode              
         dbgerr                  => open
-    );
-
+    );    
+    
     ----------------------------------------------------------------
     -- Aurora Core.
     ----------------------------------------------------------------

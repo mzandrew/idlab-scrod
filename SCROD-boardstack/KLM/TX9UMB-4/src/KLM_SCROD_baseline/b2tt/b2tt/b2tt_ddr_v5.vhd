@@ -54,7 +54,6 @@ entity b2tt_iddr is
     clrdelay  : in  std_logic;
     caldelay  : in  std_logic; -- spartan6 only
     staiddr   : out std_logic_vector (1  downto 0);
-    bitddr    : out std_logic;
     bit2      : out std_logic_vector (1  downto 0);
     cntdelay  : out std_logic_vector (6  downto 0);
     cntwidth  : out std_logic_vector (5  downto 0);
@@ -183,7 +182,6 @@ entity b2tt_oddr is
     invclock : in  std_logic; -- only for s6
     mask     : in  std_logic;
     bit2     : in  std_logic_vector (1 downto 0);
-    bitddr   : out std_logic;
     outp     : out std_logic;
     outn     : out std_logic );
 
@@ -232,8 +230,5 @@ begin
       r  => '0',
       q  => sig_oq );
 
-  -- out
-  bitddr <= sig_o;
-  
 end implementation;
 

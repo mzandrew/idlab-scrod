@@ -49,3 +49,19 @@ b2tt firmware component
   sim_speedup option to bypass most of the iscan initialization code
   clock may be provided from an external source instead of clk_p/clk_n
   from RJ45 poart.
+
+* version 0.34 - 2015.01.14 Mikihiko Nakao
+  - gtpreset is generated when clk is lost and recovered
+  - no more raw ddr signal out, rawclk now goes through bufg
+  - jtag handling code added
+  - trigger mask control from ftsw
+  - cleanup unused signals
+
+* version 0.36 - 2015.02.27 Mikihiko Nakao
+  - several serious bug fix, to fix tagerr and timerr
+  - to be compatible with latest ftsw firmware
+  - this version is not fully compatible with ft2u065 and earlier
+
+* version 0.37 - 2015.03.10 Mikihiko Nakao
+  - stareset signal was not properly implemented -> fixed
+  - clraddr feature to fix incorrectly assigned address
