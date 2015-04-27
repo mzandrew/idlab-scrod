@@ -81,7 +81,7 @@ begin
   ------------------------------------------------------------------------
 
   -- unused in the Spartan 6 design
-  dblclock  <= '0';
+--  dblclock  <= '0'; --!comment
   dblclockb <= '0';
   
   clock  <= clk_xcm127;
