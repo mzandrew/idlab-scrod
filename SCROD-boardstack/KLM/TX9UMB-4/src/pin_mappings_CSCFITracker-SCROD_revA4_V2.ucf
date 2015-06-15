@@ -1,5 +1,5 @@
 ###########################################################################
-#Pin mappings and timing constraints here are based on the SCROD_revA2.   #
+#Pin mappings and timing constraints here are based on the SCROD_revA4/A5.   #
 #Please update the pin mappings if using a different board, and add the   #
 #file with a new name in the repository.                                  #
 #If you are not compiling in USB or fiberoptic functionality, you will    #
@@ -32,8 +32,8 @@ NET BOARD_CLOCKN LOC=T1;	#SPARE CLOCKN: U24
 NET "map_clock_gen/internal_BOARD_CLOCK" TNM_NET = BOARD_CLOCK;
 TIMESPEC "TS_BOARD_CLOCK" = PERIOD "BOARD_CLOCK" 8 ns HIGH 50%;
 
-PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug
-PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug2
+#PIN "map_clock_gen/map_ASIC_CTRL_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug
+#PIN "map_clock_gen/map_FPGA_LOGIC_clock_bufg.O" CLOCK_DEDICATED_ROUTE = FALSE; #for chipscope debug2
 
 ######################################Overloaded LEDs on the Interconnect########################################
 ## Comments  --xs 10/4/2014

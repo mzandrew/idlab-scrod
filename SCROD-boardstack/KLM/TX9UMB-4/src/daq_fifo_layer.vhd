@@ -102,28 +102,6 @@ entity daq_fifo_layer is
 end daq_fifo_layer;
 
 architecture Behavioral of daq_fifo_layer is
-
-component myChpscp
-  PORT (
-    CONTROL0 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
-    CONTROL1 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0));
-
-end component;
-
-component myILA
-  PORT (
-    CONTROL : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
-    CLK : IN STD_LOGIC;
-    TRIG0 : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
-    TRIG1 : IN STD_LOGIC_VECTOR(17 DOWNTO 0));
-
-end component;
-
-	----- Chipscope debug:
-	signal CONTROL0: STD_LOGIC_VECTOR(35 DOWNTO 0);
-	signal CONTROL1: STD_LOGIC_VECTOR(35 DOWNTO 0);
-	
-
 	signal internal_TOGGLE_DAQ_TO_FIBER  : std_logic;
 
 	signal internal_USB_PRESENT          : std_logic;
@@ -694,24 +672,6 @@ begin
 			EP8_FULL         => internal_CYPRESS_EP8_FULL
 		);
 
- 
-
---usb_dbg_icon : myChpscp
---  port map (
---    CONTROL0 => CONTROL0,
---    CONTROL1 => CONTROL1
---	 );
---
---usb_dbg_ila : myILA
---  port map (
---    CONTROL => CONTROL,
---    CLK => CLK,
---    TRIG0 => TRIG0,
---    TRIG1 => TRIG1
---	 );
-
-
-
 	map_detect_usb : entity work.detect_usb
 	port map(
 		USB_CLOCK    => internal_USB_CLOCK,
@@ -719,7 +679,6 @@ begin
 		USB_PRESENT  => internal_USB_PRESENT
 	);
 
-	
 	end generate synthesize_with_usb;
 	
 	synthesize_without_usb : if INCLUDE_USB = 0 generate

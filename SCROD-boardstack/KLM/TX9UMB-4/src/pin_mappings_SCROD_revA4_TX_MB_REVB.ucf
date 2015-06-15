@@ -158,7 +158,16 @@ NET mgtclk1n      LOC = C11 | IOSTANDARD = LVDS_25;
 ####################USB IOs and timing constraints###########################
 NET USB_IFCLK   LOC = "C13" | IOSTANDARD = LVCMOS33; # on SCROD revA2, IFCLK is connected to b14
 NET "map_readout_interfaces/map_daq_fifo_layer/internal_USB_CLOCK" TNM_NET = IFCLK_48M;
-TIMESPEC "TS_IFCLK_48M" = PERIOD "IFCLK_48M" 20.833 ns HIGH 50%;
+TIMEGRP "GRP_IFCLK_48M" = "IFCLK_48M";
+TIMESPEC "TS_IFCLK_48M" = PERIOD "GRP_IFCLK_48M" 20.833 ns HIGH 50%;
+
+NET "map_readout_interfaces/map_daq_fifo_layer/USB_FIFO_CLOCK" TNM_NET = FIFO_CLK;
+TIMEGRP "GRP_FIFO_CLK" = "FIFO_CLK";
+TIMESPEC TS_FIFO_CLK_I = PERIOD "GRP_FIFO_CLK" 20.833 ns HIGH 50%;# IM: 1/28/2015: brought out and measured on scope. it is 
+
+TIMESPEC "TS_if2fifo" = from IFCLK_48M to FIFO_CLK 7.5 ns;
+TIMESPEC "TS_if2fifo" = from FIFO_CLK  to IFCLK_48M 7.5 ns;
+
 NET USB_CLKOUT  LOC = "A13" | IOSTANDARD = LVCMOS33; # on SCROD revA2, CLKOUT is connected to e13
 NET USB_FDD<0>  LOC = "G10"  | IOSTANDARD = LVCMOS33;
 NET USB_FDD<1>  LOC = "F11"  | IOSTANDARD = LVCMOS33;
