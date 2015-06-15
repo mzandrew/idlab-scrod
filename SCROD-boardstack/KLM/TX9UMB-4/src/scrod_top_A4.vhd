@@ -25,6 +25,8 @@ use UNISIM.VComponents.all;
 Library UNIMACRO;
 use UNIMACRO.vcomponents.all;
 
+use work.all;
+
 use work.readout_definitions.all;
     use work.tdc_pkg.all;
    use work.time_order_pkg.all;
@@ -36,12 +38,12 @@ use work.readout_definitions.all;
 entity scrod_top_A4 is
 	   generic(
     NUM_GTS                     : integer := 1;
-	 -- uncomment one of these lines only to comiple with the given configuration
+	 	 -- uncomment one of these lines only to comiple with the given configuration
 --	 HW_CONF						: string :="SA4_MBA_DCA_RB_I" --SCROD A4, MB A, TXDC A, RHIC B, with Interconnect board
 --	 HW_CONF						: string :="SA4_MBSF_TX" --SCROD A4, MB SciFi, TX SificDC 
 --	 HW_CONF						: string :="SA3_MBA_DCA_RB" 	 --SCROD A3, MB A, TXDC A, RHIC B
-	 HW_CONF						: string :="SA4_MBB_DCA_RB" 	 --SCROD A4, MB B, TXDC A, RHIC B
-	 
+--	 HW_CONF						: string :="SA4_MBB_DCB_RB" 	 --SCROD A4, MB B, TXDC A, RHIC B
+	 HW_CONF						: string :="SA5_MBC_DCC_RC" 	 --SCROD A5, MB C, TXDC C, RHIC C
 	 );
 	 Port(
 		BOARD_CLOCKP                : in  STD_LOGIC;
@@ -391,6 +393,14 @@ architecture Behavioral of scrod_top_A4 is
 	signal internal_PEDSUB_start:std_logic :='0';
 	signal internal_PEDSUB_busy:std_logic :='0';
 	
+	----readout trigger modes and signals
+	signal internal_TRIG_SW			:std_logic :='0';
+	signal internal_TRIG_KLM1		:std_logic :='0';
+	signal internal_TRIG_KLM2		:std_logic :='0';
+	signal internal_TRIG_HW1		:std_logic :='0';
+	signal internal_TRIG_PEDMAN	:std_logic :='0';
+	
+	
 	signal internal_CMDREG_RESET_SAMPLIG_LOGIC :std_logic :='0';
 	signal internal_CMDREG_SAMPLIG_LOGIC_RESET_PARAMS :std_logic_vector(15 downto 0) :=(others => '0');
 	signal internal_CMDREG_SOFTWARE_trigger : std_logic := '0';
@@ -414,7 +424,7 @@ architecture Behavioral of scrod_top_A4 is
 
 	--pedestal handling unit using command regs
 	signal internal_CMDREG_PedCalcReset			:std_logic:='0';
-	signal internal_CMDREG_PedCalcEnable			:std_logic:='0';
+	signal internal_CMDREG_PedmanEnable			:std_logic:='0';
 	signal internal_PedSubEnable			:std_logic:='0';
 	signal internal_CMDREG_PedCalcNAVG			:std_logic_vector(3 downto 0):=x"3";-- 2**3=8 averages for calculating peds
 	signal internal_CMDREG_PedDemuxFifoEnable		:std_logic:='1';-- this out put will replace the common readout fifo from the SRreadout module
@@ -542,7 +552,33 @@ architecture Behavioral of scrod_top_A4 is
 	signal	internal_qt_fifo_rd_en	:	std_logic;
 	signal   internal_qt_fifo_evt_rdy	:std_logic;
 	signal	internal_trig_ctime		:	std_logic_vector(15 downto 0):=x"0000";
-	
+	signal internal_TRIG_EVENT_NO		:	std_logic_vector(15 downto 0):=x"0000";
+	signal 	internal_scint_b2tt_runreset:std_logic:='0';
+
+
+signal internal_mgttxfault	: std_logic_vector(1 to NUM_GTS);
+signal internal_mgtmod0	: std_logic_vector(1 to NUM_GTS);         
+signal internal_mgtlos	:	std_logic_vector(1 to NUM_GTS);         
+signal internal_mgttxdis:	std_logic_vector(1 to NUM_GTS);      
+signal internal_mgtmod2  : 	std_logic_vector(1 to NUM_GTS);         
+signal internal_mgtmod1  :	std_logic_vector(1 to NUM_GTS);         
+signal internal_mgtclk0p   : std_logic :='0';
+signal internal_mgtclk0n   : std_logic :='0';
+signal internal_mgtclk1p   : std_logic :='0';
+signal internal_mgtclk1n   : std_logic :='0';
+signal internal_mgtrxp    	: std_logic :='0';           
+signal internal_mgtrxn   	: std_logic :='0';           
+signal internal_mgttxp    	: std_logic :='0';           
+signal internal_mgttxn   	: std_logic :='0';          
+
+signal internal_RJ45_CLK_P : std_logic:='0';
+signal internal_RJ45_CLK_N : std_logic:='0';
+signal internal_RJ45_TRG_P : std_logic:='0';
+signal internal_RJ45_TRG_N : std_logic:='0';
+signal internal_RJ45_RSV_P : std_logic:='0';
+signal internal_RJ45_RSV_N : std_logic:='0';
+signal internal_RJ45_ACK_P : std_logic:='0';
+signal internal_RJ45_ACK_N : std_logic:='0';
 	
 -----------------------USB:
 signal		internal_USB_IFCLK                   :  STD_LOGIC:='Z';
@@ -607,20 +643,20 @@ signal trg_l_5:tb_vec_type;
 
 
 
-component myICON1
-  PORT (
-    CONTROL0 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0)
-	 );
+--component myICON1
+--  PORT (
+--    CONTROL0 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0)
+--	 );
+--
+--end component;
 
-end component;
-
-component myVIO1
-  PORT (
-    CONTROL : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
-    ASYNC_IN : IN STD_LOGIC_VECTOR(47 DOWNTO 0);
-    ASYNC_OUT : OUT STD_LOGIC_VECTOR(47 DOWNTO 0));
-
-end component;
+--component myVIO1
+--  PORT (
+--    CONTROL : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+--    ASYNC_IN : IN STD_LOGIC_VECTOR(47 DOWNTO 0);
+--    ASYNC_OUT : OUT STD_LOGIC_VECTOR(47 DOWNTO 0));
+--
+--end component;
 
 
 --module for updating MPPC bias and temp status regs
@@ -691,15 +727,15 @@ END COMPONENT;
 	
 begin
 
-inst_myicon1 : myICON1
-  port map (
-    CONTROL0 => CONTROL0);
-
-your_instance_name : myVIO1
-  port map (
-    CONTROL => CONTROL0,
-    ASYNC_IN => vio_ASYNC_IN,
-    ASYNC_OUT => vio_ASYNC_OUT);
+--inst_myicon1 : myICON1
+--  port map (
+--    CONTROL0 => CONTROL0);
+--
+--your_instance_name : myVIO1
+--  port map (
+--    CONTROL => CONTROL0,
+--    ASYNC_IN => vio_ASYNC_IN,
+--    ASYNC_OUT => vio_ASYNC_OUT);
 
 
 	extrig_OBUF_inst : OBUF
@@ -993,9 +1029,38 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 		USB_CLKOUT		             =>USB_CLKOUT,
 		USB_FIFO_CLOCK		=>internal_USB_FIFO_CLOCK
 );
+
+
 ---------------------------------------------------------------
 ---------KLM_SCROD: interface for Trigger using FTSW-----------
 ---------------------------------------------------------------
+internal_RJ45_CLK_P<=RJ45_CLK_P;
+internal_RJ45_CLK_N<=RJ45_CLK_N;
+internal_RJ45_TRG_P<=RJ45_TRG_P;
+internal_RJ45_TRG_N<=RJ45_TRG_N;
+RJ45_RSV_P<=internal_RJ45_RSV_P;
+RJ45_RSV_N<=internal_RJ45_RSV_N;
+RJ45_ACK_P<=internal_RJ45_ACK_P;
+RJ45_ACK_N<=internal_RJ45_ACK_N;
+
+	
+internal_mgttxfault	<=mgttxfault;  
+internal_mgtmod0	<=mgtmod0;               
+internal_mgtlos		<=mgtlos;               
+mgttxdis<=internal_mgttxdis;              
+mgtmod2<=internal_mgtmod2;               
+mgtmod1<=internal_mgtmod1;              
+internal_mgtclk0p   <=mgtclk0p;
+internal_mgtclk0n   <=mgtclk0n;
+internal_mgtclk1p   <=mgtclk1p;
+internal_mgtclk1n   <=mgtclk1n;
+internal_mgtrxp    	<=mgtrxp;                
+internal_mgtrxn   	<=mgtrxn;                
+mgttxp<=internal_mgttxp;                
+mgttxn<=internal_mgttxn;               
+
+
+
 
 	klm_scrod_trig_interface : entity work.KLM_SCROD
 	generic map(NUM_GTS=>1)
@@ -1003,43 +1068,45 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	
 			
 --			    TTD/FTSW interface
-    ttdclkp  => RJ45_CLK_P,
-    ttdclkn  => RJ45_CLK_N,
-    ttdtrgp  => RJ45_TRG_P,
-    ttdtrgn  => RJ45_TRG_N,    
-    ttdrsvp  => RJ45_RSV_P,  
-    ttdrsvn  => RJ45_RSV_N,
-    ttdackp  => RJ45_ACK_P,
-    ttdackn  => RJ45_ACK_N,
+    ttdclkp  => internal_RJ45_CLK_P,
+    ttdclkn  => internal_RJ45_CLK_N,
+    ttdtrgp  => internal_RJ45_TRG_P,
+    ttdtrgn  => internal_RJ45_TRG_N,    
+    ttdrsvp  => internal_RJ45_RSV_P,  
+    ttdrsvn  => internal_RJ45_RSV_N,
+    ttdackp  => internal_RJ45_ACK_P,
+    ttdackn  => internal_RJ45_ACK_N,
 --	 b2ttsysclk	=>internal_CLOCK_B2TT_SYS,
 ----     ASIC Interface
     target_tb  => internal_TXDCTRIG,		--                 : in tb_vec_type; 
     target_tb16 => internal_TXDCTRIG16,	--                : in std_logic_vector(1 to TDC_NUM_CHAN); 
     -- SFP interface
-    mgttxfault	=>		mgttxfault,  
-    mgtmod0		=>		mgtmod0,               
-    mgtlos		=>		mgtlos,                
-    mgttxdis	=>		mgttxdis,              
-    mgtmod2   	=>		mgtmod2,               
-    mgtmod1  	=>		mgtmod1,              
-	 mgtclk0p   =>		mgtclk0p,
-	 mgtclk0n   =>		mgtclk0n,
-	 mgtclk1p   =>		mgtclk1p,
-	 mgtclk1n   =>		mgtclk1n,
-    mgtrxp    	=>		mgtrxp,                
-    mgtrxn   	=>		mgtrxn,                
-    mgttxp    	=>		mgttxp,                
-    mgttxn   	=>		mgttxn,               
+    mgttxfault	=>	internal_mgttxfault,  
+    mgtmod0		=>	internal_mgtmod0,               
+    mgtlos		=>	internal_mgtlos,               
+    mgttxdis	=>	internal_mgttxdis,              
+    mgtmod2   	=>	internal_mgtmod2,               
+    mgtmod1  	=>	internal_mgtmod1,              
+	 mgtclk0p   =>	internal_mgtclk0p,
+	 mgtclk0n   =>	internal_mgtclk0n,
+	 mgtclk1p   =>	internal_mgtclk1p,
+	 mgtclk1n   =>	internal_mgtclk1n,
+    mgtrxp    	=>	internal_mgtrxp,                
+    mgtrxn   	=>	internal_mgtrxn,                
+    mgttxp    	=>	internal_mgttxp,                
+    mgttxn   	=>	internal_mgttxn,              
 	ex_trig1    =>'1',
     exttb       => internal_ext_TXDCTRIG,
     ftsw_aux    => open,
     status_fake =>	status_fake,          
     control_fake => 	control_fake,
 	clk63p5=>internal_CLOCK_FPGA_LOGIC,
+	 scint_b2tt_runreset=>internal_scint_b2tt_runreset,
+
 	scint_missed_trg	=>internal_KLM_SCINT_MISSED_TRG,
 
 	 scint_trg	 		=> internal_klm_trig,
-	 scint_trg_ctime	=>	internal_klm_trig_ctime,
+	 scint_trg_ctime	=>	internal_trig_ctime,
 	 scint_trg_rdy		=> not internal_READCTRL_busy_status,
 	 qt_fifo_rd_clk	=>	internal_qt_fifo_rd_clk,
 	 qt_fifo_rd_en		=>	internal_qt_fifo_rd_en,
@@ -1049,10 +1116,22 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	 qt_fifo_evt_rdy	=> internal_qt_fifo_evt_rdy,
 	zlt					=> internal_READCTRL_busy_status
 			);
-			
-
-
-
+		
+ 
+ gen_FDSE_inst_trig_ctime:  for i in 0 to 15 generate
+   FDSE_inst_trig_ctime : FDSE
+   generic map (
+      INIT => '0') -- Initial value of register ('0' or '1')  
+   port map (
+      Q => internal_klm_trig_ctime(i),      -- Data output
+      C => internal_klm_trig,      -- Clock input
+      CE => '1',    -- Clock enable input
+      S => '0',      -- Synchronous Set input
+      D => internal_trig_ctime(i)       -- Data input
+   );
+  	
+  
+  end generate;	
 
 	--------------------------------------------------
 	-------General registers interfaced to DAQ -------
@@ -1097,7 +1176,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
    );
   
 	
-	
+
 	
 	--DAC CONTROL SIGNALS
 	internal_DAC_CONTROL_UPDATE <= internal_OUTPUT_REGISTERS(1)(0);
@@ -1112,7 +1191,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	internal_CMDREG_SAMPLIG_LOGIC_RESET_PARAMS <= internal_OUTPUT_REGISTERS(11);
 
 	
-	--Serial Readout Signals
+	--Serial Readout Signal
 	internal_CMDREG_SROUT_TPG <= internal_OUTPUT_REGISTERS(31)(0); --'1': force test pattern to output. '0': regular operation
 
 	--RAM Access from USB or anything:
@@ -1127,7 +1206,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 
 	internal_CMDREG_PedCalcNAVG	<=internal_OUTPUT_REGISTERS(38)(3 downto 0); -- 2**NAVG= number of averages for calculating peds
 	internal_CMDREG_PedCalcReset 	<=internal_OUTPUT_REGISTERS(38)(15);
-	internal_CMDREG_PedCalcEnable 	<=internal_OUTPUT_REGISTERS(38)(14);	
+	internal_CMDREG_PedmanEnable 	<=internal_OUTPUT_REGISTERS(38)(14);	
 	internal_CMDREG_PedDemuxFifoOutputSelect<=internal_OUTPUT_REGISTERS(38)(13 downto 12); --00: disable (regular waveform dump)--01: ped sub, 10: ped only, 11: waveform only
 	internal_WAVEFORM_FIFO_RST<=internal_OUTPUT_REGISTERS(38)(11);-- reset the waveform and buffer fifos
 	internal_BUFFERCTRL_FIFO_RESET<=internal_OUTPUT_REGISTERS(38)(11);
@@ -1170,17 +1249,20 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 	--Internal current readout ADC connecitons:
 --	internal_CurrentADC_reset	<= intenal_STATREG_CurrentADC_reset;--internal_OUTPUT_REGISTERS(63)(0) when internal_CMDREG_SW_STATUS_READ ='1' else '0' ;
 --	internal_runADC	<= intenal_STATREG_runADC;--internal_OUTPUT_REGISTERS(63)(1);
-	internal_CMDREG_UPDATE_STATUS_REGS <=internal_OUTPUT_REGISTERS(63)(0);
-	--internal_SDA  <=SDA_MON;
-	--SCL_MON <=internal_SCL;
+--	internal_CMDREG_UPDATE_STATUS_REGS <=internal_OUTPUT_REGISTERS(63)(0);
+	internal_SDA  <=SDA_MON;
+	SCL_MON <=internal_SCL;
 --	internal_enOutput	<= internal_OUTPUT_REGISTERS(63)(2);
 --	internal_ADCOutput 	<= internal_OUTPUT_REGISTERS(64)(11 downto 0);
 	internal_INPUT_REGISTERS(N_GPR + 21)(11 downto 0) <= internal_ADCOutput(11 downto 0);--no need any more
 	internal_INPUT_REGISTERS(N_GPR + 21)(12) <= internal_enOutput;
 
 --uncomment forTX KLM MB operation
-	TDC_AMUX_S   <= internal_AMUX_S(3 downto 0);--internal_NCH_AMUX_S;--internal_OUTPUT_REGISTERS(62)(3 downto 0);--channel within a daughtercard
-	TOP_AMUX_S   <= internal_AMUX_S(7 downto 4);--internal_NDC_AMUX_S;--internal_OUTPUT_REGISTERS(62)(7 downto 4);-- Daughter Card Number
+--	TDC_AMUX_S   <= internal_AMUX_S(3 downto 0);--internal_NCH_AMUX_S;--internal_OUTPUT_REGISTERS(62)(3 downto 0);--channel within a daughtercard
+--	TOP_AMUX_S   <= internal_AMUX_S(7 downto 4);--internal_NDC_AMUX_S;--internal_OUTPUT_REGISTERS(62)(7 downto 4);-- Daughter Card Number
+	TDC_AMUX_S   		<= internal_OUTPUT_REGISTERS(63)(3 downto 0);--channel within a daughtercard
+	TOP_AMUX_S  	 	<= internal_OUTPUT_REGISTERS(63)(7 downto 4);-- Daughter Card Number
+	internal_runADC	<= internal_OUTPUT_REGISTERS(63)(8);
 
 	internal_INPUT_REGISTERS(N_GPR+23)(7 downto 0)<=internal_CMDREG_RAMDATARD;
 	internal_INPUT_REGISTERS(N_GPR+23)(8)<=internal_CMDREG_RAMBUSY;
@@ -1269,17 +1351,17 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 --	end generate;
 --	--internal_INPUT_REGISTERS(N_GPR + 40) <= 
 
---status reg update module	
-	   uut: update_status_regs PORT MAP (
-          clk => internal_CLOCK_FPGA_LOGIC,
-          update => internal_CMDREG_UPDATE_STATUS_REGS,
-          status_regs => internal_STATREG_REGISTERS,
-          busy => open,
-          AMUX => internal_AMUX_S,
-          SDA_MON => SDA_MON,
-          SCL_MON => SCL_MON
-        );
-
+----status reg update module	
+--	   uut: update_status_regs PORT MAP (
+--          clk => internal_CLOCK_FPGA_LOGIC,
+--          update => internal_CMDREG_UPDATE_STATUS_REGS,
+--          status_regs => internal_STATREG_REGISTERS,
+--          busy => open,
+--          AMUX => internal_AMUX_S,
+--          SDA_MON => SDA_MON,
+--          SCL_MON => SCL_MON
+--        );
+--
 
 
 	gen_wl_clk_to_asic : for i in 0 to 9 generate
@@ -1345,7 +1427,7 @@ internal_EX_TRIGGER_MB<=internal_TRIGGER_ALL;
 
 ped_manager: entity work.PedestalManagement PORT MAP(
 		clk => internal_CLOCK_FPGA_LOGIC,
-		enable => internal_CMDREG_PedCalcEnable,
+		enable => internal_CMDREG_PedmanEnable,
 		start => internal_CMDREG_PedCalcStart,
 		win_len_start => internal_CMDREG_PedCalcWinLen,
 		asic_en_mask => internal_CMDREG_PedCalcASICen,
@@ -1363,7 +1445,21 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 	);
 	
 
-	
+  event_cntr : COUNTER_LOAD_MACRO
+   generic map (
+      COUNT_BY => X"000000000001", -- Count by value
+      DEVICE => "SPARTAN6",         -- Target Device: "VIRTEX5", "VIRTEX6", "SPARTAN6" 
+      WIDTH_DATA => 16)            -- Counter output bus width, 1-48
+   port map (
+      Q => internal_TRIG_EVENT_NO,                 -- Counter output, width determined by WIDTH_DATA generic 
+      CLK => internal_CLOCK_FPGA_LOGIC,             -- 1-bit clock input
+      CE => internal_READCTRL_trigger,               -- 1-bit clock enable input
+      DIRECTION => '1', -- 1-bit up/down count direction input, high is count up
+      LOAD => '0',           -- 1-bit active high load input
+      LOAD_DATA => x"0000", -- Counter load data, width determined by WIDTH_DATA generic 
+      RST => internal_scint_b2tt_runreset              -- 1-bit active high synchronous reset
+   );
+
 	
 	
 	--Control the sampling, digitization and serial resout processes following trigger
@@ -1409,7 +1505,7 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 	internal_HARDWARE_TRIGGER <= internal_TRIGGER_ALL AND internal_HARDWARE_TRIGGER_ENABLE;
 --	internal_READCTRL_trigger <= (internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER or internal_ASIC_TRIG) when internal_CMDREG_USE_TRIGDEC='0' else internal_TRIGDEC_trig;
 	internal_READCTRL_trigger <= 
-		internal_PEDMAN_ReadoutTrig																		when internal_CMDREG_PedCalcEnable='1' else
+		internal_PEDMAN_ReadoutTrig																		when internal_CMDREG_PedmanEnable='1' else
 		internal_klm_trig																						when internal_CMDREG_USE_KLMTRIG='1'	else
 		(internal_SOFTWARE_TRIGGER OR internal_HARDWARE_TRIGGER or internal_ASIC_TRIG)	when internal_CMDREG_USE_TRIGDEC='0'	else
 		internal_TRIGDEC_trig and not internal_READCTRL_busy_status;
@@ -1421,20 +1517,20 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 	
 	internal_READCTRL_asic_enable_bits <= 
 				internal_LKBK_READCTRL_ASIC_ENABLE_BITS		when internal_CMDREG_USE_KLMTRIG='1' 													else
-				internal_CMDREG_READCTRL_asic_enable_bits 	when internal_CMDREG_USE_TRIGDEC='0' and internal_CMDREG_PedCalcEnable='0' else
-				internal_TRIGDEC_asic_enable_bits			  	when internal_CMDREG_USE_TRIGDEC='1' and internal_CMDREG_PedCalcEnable='0' else
-				internal_PEDMAN_CurASICen							when internal_CMDREG_PedCalcEnable='1' else
+				internal_CMDREG_READCTRL_asic_enable_bits 	when internal_CMDREG_USE_TRIGDEC='0' and internal_CMDREG_PedmanEnable='0' else
+				internal_TRIGDEC_asic_enable_bits			  	when internal_CMDREG_USE_TRIGDEC='1' and internal_CMDREG_PedmanEnable='0' else
+				internal_PEDMAN_CurASICen							when internal_CMDREG_PedmanEnable='1' else
 				"1111111111";
 													  
 	
 	
 	
-	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue when internal_CMDREG_PedCalcEnable='0' else internal_PEDMAN_readout_continue;
+	internal_READCTRL_readout_continue <= internal_CMDREG_READCTRL_readout_continue when internal_CMDREG_PedmanEnable='0' else internal_PEDMAN_readout_continue;
 
-	internal_READCTRL_use_fixed_dig_start_win<= internal_CMDREG_READCTRL_use_fixed_dig_start_win when internal_CMDREG_PedCalcEnable='0' else
+	internal_READCTRL_use_fixed_dig_start_win<= internal_CMDREG_READCTRL_use_fixed_dig_start_win when internal_CMDREG_PedmanEnable='0' else
 																"1000000" & internal_PEDMAN_CurWin;
 	
-	internal_READCTRL_readout_reset <= internal_CMDREG_READCTRL_readout_reset when internal_CMDREG_PedCalcEnable='0' else internal_PEDMAN_readout_reset ;
+	internal_READCTRL_readout_reset <= (internal_CMDREG_READCTRL_readout_reset or internal_scint_b2tt_runreset)	when internal_CMDREG_PedmanEnable='0' else internal_PEDMAN_readout_reset; 
 	internal_READCTRL_RESET_EVENT_NUM <= internal_CMDREG_READCTRL_RESET_EVENT_NUM;
 	
 	i_TrigDecisionLogic: entity work.TrigDecisionLogic2 PORT MAP(
@@ -1498,8 +1594,7 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 								  '1' when internal_SMP_MAIN_CNT="000000101" else
 								  '0' ;
 								  
-	EX_TRIGGER_SCROD<= internal_SMP_EXTSYNC;--(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
---				and (not internal_SMP_MAIN_CNT(5)) and (not internal_SMP_MAIN_CNT(6)) and (not internal_SMP_MAIN_CNT(7)) and (not internal_SMP_MAIN_CNT(8)); -- pulse goes up at window=511
+	EX_TRIGGER_SCROD<= internal_SMP_EXTSYNC; -- pulse goes up at window=0-5
 	LEDS(12)<=internal_SMP_MAIN_CNT(0);
 --Testing Rev C FW: (comment LEDS(2) for RevC MB)
 	LEDS(2)<=internal_SMP_EXTSYNC;--(not internal_SMP_MAIN_CNT(0)) and (not internal_SMP_MAIN_CNT(1)) and (not internal_SMP_MAIN_CNT(2)) and (not internal_SMP_MAIN_CNT(3)) and (not internal_SMP_MAIN_CNT(4))
@@ -1508,7 +1603,11 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 	--LEDS(12)<=internal_EX_TRIGGER_SCROD or internal_TRIGGER_ALL or internal_READCTRL_trigger or internal_SMP_MAIN_CNT(4);
 	--demux and ped sub logic:
 	
-	 u_wavepedsub: entity work.WaveformPedsubDSP PORT MAP (
+	 u_wavepedsub: entity work.WaveformPedsubDSP 
+	 generic map (
+	 PDAQ_DATA_MODE=>1
+	 )
+	 PORT MAP (
           clk => internal_CLOCK_FPGA_LOGIC,
 			 enable=>internal_PedSubEnable,
 			 SMP_MAIN_CNT => internal_SMP_MAIN_CNT,
@@ -1563,91 +1662,15 @@ ped_manager: entity work.PedestalManagement PORT MAP(
 		internal_TRIG_BRAM_WEA(0) <= internal_TRIG_BRAM_WE and internal_WR_ENA;
 
 
---internal_alltb<=internal_ext_TXDCTRIG(10) & internal_ext_TXDCTRIG(9) & internal_ext_TXDCTRIG(8) & internal_ext_TXDCTRIG(7) & internal_ext_TXDCTRIG(6)
---	       & internal_ext_TXDCTRIG(5) & internal_ext_TXDCTRIG(4) & internal_ext_TXDCTRIG(3) & internal_ext_TXDCTRIG(2) & internal_ext_TXDCTRIG(1);
-	
---internal_TRIG_BRAM_DINA<=	internal_alltb;
-
-
 gen_trig_latch 	: for i in 1 to 10 generate
 
 gen_trig_latch2 	: for j in 1 to 5 generate
 
-LDCE_inst : LDCE
-   generic map (
-      INIT => '0') -- Initial value of latch ('0' or '1')  
-   port map (
-      Q => trg_l_1(i)(j),      -- Data output
-      CLR => trg_l_5(i)(j),  -- Asynchronous clear/reset input
-      D => internal_ext_TXDCTRIG(i)(j),      -- Data input
-      G => '0',      -- Gate input
-      GE => '0'     -- Gate enable input
-   );
-
-
---  FDCE_inst0 : FDCE
---   generic map (
---      INIT => '0') -- Initial value of register ('0' or '1')  
---   port map (
---      Q => trg_l_1(i)(j),      -- Data output
---      C => internal_ext_TXDCTRIG(i)(j),      -- Clock input
---      CE => '1',    -- Clock enable input
---      CLR => trg_l_5(i)(j),  -- Asynchronous clear input
---      D => '1'       -- Data input
---   );
--- 
-   FDCE_inst1 : FDCE
-   generic map (
-      INIT => '0') -- Initial value of register ('0' or '1')  
-   port map (
-      Q => trg_l_2(i)(j),      -- Data output
-      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
-      CE => '1',    -- Clock enable input
-      CLR => '0',  -- Asynchronous clear input
-      D => trg_l_1(i)(j)       -- Data input
-   );
- 
-   FDCE_inst2 : FDCE
-   generic map (
-      INIT => '0') -- Initial value of register ('0' or '1')  
-   port map (
-      Q => trg_l_3(i)(j),      -- Data output
-      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
-      CE => '1',    -- Clock enable input
-      CLR => '0',  -- Asynchronous clear input
-      D => trg_l_2(i)(j)       -- Data input
-   );
-
-
-   FDCE_inst3 : FDCE
-   generic map (
-      INIT => '0') -- Initial value of register ('0' or '1')  
-   port map (
-      Q => trg_l_4(i)(j),      -- Data output
-      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
-      CE => '1',    -- Clock enable input
-      CLR => '0',  -- Asynchronous clear input
-      D => trg_l_3(i)(j)       -- Data input
-   );
-
-   FDCE_inst4 : FDCE
-   generic map (
-      INIT => '0') -- Initial value of register ('0' or '1')  
-   port map (
-      Q => trg_l_5(i)(j),      -- Data output
-      C => internal_CLOCK_FPGA_LOGIC,      -- Clock input
-      CE => '1',    -- Clock enable input
-      CLR => '0',  -- Asynchronous clear input
-      D => trg_l_4(i)(j)       -- Data input
-   );
-
-
---internal_TRIG_BRAM_DINA((i-1)*5+(j-1))<=trg_l_1(i)(j);
 internal_TRIG_BRAM_DINA((i-1)*5+(j-1))<=internal_ext_TXDCTRIG(i)(j);
 
 end generate;
 end generate;
---internal_ext_TRIGDEC_TXDCTRIG<=trg_l_1;
+
 
 internal_ext_TRIGDEC_TXDCTRIG<=internal_ext_TXDCTRIG;
 
@@ -1739,7 +1762,7 @@ gen_LKBK_FDCE_logic : for i in 0 to 9 generate
 	u_WaveformPedcalcDSP: entity work.WaveformPedcalcDSP PORT MAP(
 		clk => internal_CLOCK_FPGA_LOGIC,
 		reset => internal_CMDREG_PedCalcReset,
-		enable => internal_PEDMAN_calc_peds_en,--internal_CMDREG_PedCalcEnable,
+		enable => internal_PEDMAN_calc_peds_en,--internal_CMDREG_PedmanEnable,
 		navg => internal_CMDREG_PedCalcNAVG,
 		SMP_MAIN_CNT=> internal_SMP_MAIN_CNT,
 		busy=>internal_PEDCALC_PedCalcBusy,
@@ -1768,7 +1791,7 @@ gen_LKBK_FDCE_logic : for i in 0 to 9 generate
 	u_SamplingLgc : entity work.SamplingLgc
    Port map (
 		clk 			=> internal_CLOCK_FPGA_LOGIC,
-		reset => internal_CMDREG_RESET_SAMPLIG_LOGIC,
+		reset => internal_scint_b2tt_runreset or internal_CMDREG_RESET_SAMPLIG_LOGIC,
 		cfg => internal_CMDREG_SAMPLIG_LOGIC_RESET_PARAMS,
 		dig_win_start => internal_READCTRL_dig_win_start,
 		dig_win_n => internal_READCTRL_win_num_to_read,-- "00100",
@@ -1847,13 +1870,13 @@ end generate;
 	BUSB_RAMP 			<= internal_DIG_RAMP;	
 
 
-internal_bram_rd_addr<=internal_pedsub_bram_addr when internal_CMDREG_PedCalcEnable='0' else internal_pedcalc_bram_addr;
+internal_bram_rd_addr<=internal_pedsub_bram_addr when internal_CMDREG_PedmanEnable='0' else internal_pedcalc_bram_addr;
 	
 	u_SerialDataRoutDemux: entity work.SerialDataRoutDemux PORT MAP(
 		clk 			=> internal_CLOCK_FPGA_LOGIC,
 		start		 	=> internal_SROUT_START,
 		restart		=> internal_READCTRL_srout_restart,
-		calc_peds_en	=>	internal_PEDMAN_calc_peds_en,--internal_CMDREG_PedCalcEnable
+		calc_peds_en	=>	internal_PEDMAN_calc_peds_en,--internal_CMDREG_PedmanEnable
 		navg => internal_CMDREG_PedCalcNAVG,
 		EVENT_NUM 	=> internal_READCTRL_EVENT_NUM,
 		WIN_ADDR 	=> internal_READCTRL_DIG_RD_COLSEL & internal_READCTRL_DIG_RD_ROWSEL,
@@ -2089,28 +2112,28 @@ internal_bram_rd_addr<=internal_pedsub_bram_addr when internal_CMDREG_PedCalcEna
 --		DIN => LEDS(7)
 --	);
 
------------------------------
----- MPPC Current measurement ADC: MPC3221
------------------------------
---	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
---	port map(
---		clock			 => internal_CLOCK_MPPC_DAC,--internal_CLOCK_FPGA_LOGIC,
---		reset			=>	internal_CurrentADC_reset,
---		
---		sda	=> SDA_MON,--internal_SDA,
---		scl	=> internal_SCL,
---		 
---		runADC		=> internal_runADC,
---		enOutput		=> internal_enOutput,
---		ADCOutput	=> internal_ADCOutput
---
---	);
+---------------------------
+-- MPPC Current measurement ADC: MPC3221
+---------------------------
+	inst_mpc_adc: entity work.Module_ADC_MCP3221_I2C_new
+	port map(
+		clock			 =>internal_CLOCK_FPGA_LOGIC,-- internal_CLOCK_MPPC_DAC,--internal_CLOCK_FPGA_LOGIC,
+		reset			=>	internal_CurrentADC_reset,
+		
+		sda	=> SDA_MON,--internal_SDA,
+		scl	=> internal_SCL,
+		 
+		runADC		=> internal_runADC,
+		enOutput		=> internal_enOutput,
+		ADCOutput	=> internal_ADCOutput
+
+	);
 
 
 	--------------
 	-- MPPC DACs
 	--------------
-	inst_mpps_dacs : entity work.mppc_dacs
+	inst_mpps_dacs : entity work.mppc_dacs_wrapper_dac088s085
 	Port map(
 		------------CLOCK-----------------
 		CLOCK			 => internal_CLOCK_MPPC_DAC,

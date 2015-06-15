@@ -62,6 +62,9 @@ library work;
 -- synthesis translate_off
 library unisim;
     use unisim.vcomponents.all;
+	 Library UNIMACRO;
+use UNIMACRO.vcomponents.all;
+
 -- synthesis translate_on
 
 entity klm_scrod is
@@ -102,7 +105,8 @@ port(
     mgtrxn                      : in std_logic;
     mgttxp                      : out std_logic;
     mgttxn                      : out std_logic;
- 	 clk63p5								 :out std_logic;
+ 	 clk63p5							 :out std_logic;
+	 scint_b2tt_runreset			: out std_logic;
 
     ex_trig1                    : in std_logic;--fake address bit
     exttb                       : out tb_vec_type;
@@ -148,6 +152,19 @@ architecture behave of klm_scrod is
         I                       : in std_logic);  -- buffer input (connect directly to top-level port)
     end component;
 
+  component FDSE is
+   generic  (
+      INIT : std_logic );
+   port  (
+      Q: out std_logic;
+      C: in std_logic;
+      CE: in std_logic;
+      S: in std_logic;
+      D : in std_logic);
+		
+		end component;
+  
+  
     component timing_ctrl is
         port(
         clk                     : in std_logic;
@@ -543,6 +560,21 @@ begin
 
 
 clk63p5<=sys_clk63p5;
+
+
+ FDSE_inst_b2tt_runreset : FDSE
+   generic map (
+      INIT => '0') -- Initial value of register ('0' or '1')  
+   port map (
+      Q => scint_b2tt_runreset,      -- Data output
+      C => sys_clk63p5,      -- Clock input
+      CE => '1',    -- Clock enable input
+      S => '0',      -- Synchronous Set input
+      D => b2tt_runreset       -- Data input
+   );
+  
+
+ 
 
     -------------------------------------------------
     -- Input Buffers

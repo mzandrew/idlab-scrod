@@ -192,7 +192,8 @@ begin
 			when init_st_startup => 
 				init_cnt1<=0;
 				cnt1<=0;
-				init_st<=init_st_cnt1;
+				init_st<=init_st_startup;
+--				init_st<=init_st_cnt1;
 				auto_init_en<='0';
 			
 			when init_st_cnt1 =>

@@ -36,9 +36,13 @@ use work.readout_definitions.all;
 use work.all;
 
 entity WaveformPedsubDSP is
+generic(
+    PDAQ_DATA_MODE		        : integer   := 1	--0: only charge and times, 1: full waveform
+	 );
 port(
 			clk		 			 : in   std_logic;
 			enable 				: in std_logic;  -- '0'= disable, '1'= enable
+			
 			--these two signals com form the ReadoutControl module and as soon as they are set and the SR Readout start is asserted, it goes and finds the proper pedestals from SRAM and populates buffer
 			SMP_MAIN_CNT		: in std_logic_vector(8 downto 0);-- just to keep track of the sampling window number being written to at the time of trigger
 			asic_no				 : in std_logic_vector(3 downto 0);
@@ -142,7 +146,7 @@ END COMPONENT;
 
 
 --Latch to clock or trigin
-signal asic_no_i			: integer;--std_logic_vector (3 downto 0);-- latched to trigin
+signal asic_no_i			: std_logic_vector (3 downto 0);-- latched to trigin
 signal win_addr_start_i	: integer;--std_logic_vector (9 downto 0);
 signal trigin_i			: std_logic_vector(1 downto 0);
 --signal ped_sa_num_i		: std_logic_vector(21 downto 0);
@@ -178,7 +182,6 @@ signal enable_i				: std_logic:='0';
 signal start_ped_sub			: std_logic :='0';
 signal sa_cnt					: integer 	:=0;
 signal dmx_allwin_busy 		: std_logic:='1';
-signal ped_sub_fetch_busy 	: std_logic:='1';
 signal ped_sub_start			:std_logic_vector(1 downto 0):="00";
 --signal jdx						: JDXTempArray;
 --signal jdx2						: JDXTempArray;
@@ -236,9 +239,17 @@ signal asic_en_bits_i			: std_logic_vector(9 downto 0):="0000000000";
 signal send_empty_packet	: std_logic:='0';
 signal qt_chno:	integer:=0;
 signal qt_axis: std_logic:='0';
+signal swd_cnt : integer:=0;
+signal qtwav: std_logic_vector(47 downto 0);
 
+type pedwork_state is --overal managing process
+(
+PWidle
+);
 
-type ped_state is --pedstals fetch state
+signal pw_st : pedwork_state:=PWidle;
+
+type pedfetch_state is --pedstals fetch state
 (
 PedsIdle,				  -- Idling until command start bit and store asic no and win addr no	
 PedsFetchPedVal,
@@ -252,19 +263,13 @@ PedsFetchCheckWin,
 PedsFetchCheckCH,
 PedsFetchDone
 );
-signal next_ped_st					: ped_state := PedsIdle;
+signal next_ped_st					: pedfetch_state := PedsIdle;
 
-type dmx_state is -- demux state
-(
-dmxIdle,				 
-dmxAction,
-dmxDone
-);
-signal next_dmx_st					: dmx_state := dmxIdle;
 
 type pedsub_state is
 (
 pedsub_idle,
+pedsub_sub_pre_chk_empty,
 pedsub_sub_pre,
 pedsub_sub_pre2,
 pedsub_sub,
@@ -278,12 +283,30 @@ pedsub_dumpct2,
 pedsub_dump_trigrec,
 pedsub_dumpfooter,
 pedsub_dumpfooter2,
+pedsub_dump_type,
+pedsub_dump_qt_chk_empty,
 pedsub_dump_qt1,
 pedsub_dump_qt2,
 pedsub_dump_qt3,
 pedsub_dump_qt4,
 pedsub_dump_qt_chk,
 pedsub_dump_qt_footer,
+pedsub_dump_wav_qt_hdr1,
+pedsub_dump_wav_qt_hdr2,
+pedsub_dump_wav_qt_hdr3,
+pedsub_dump_wav_qt_hdr4,
+pedsub_dump_wav0,
+pedsub_dump_wav0_fetch,
+pedsub_dump_wav0_wait0,
+pedsub_dump_wav0_wait1,
+pedsub_dump_wav0_wait2,
+pedsub_dump_wav0_dmp,
+pedsub_dump_wav0_inc,
+pedsub_dump_wav0_chk,
+pedsub_dump_wav_qt1,
+pedsub_dump_wav_qt2,
+pedsub_dump_wav_qt3,
+pedsub_dump_wav_qt4,
 pedsub_dump_qt_evt_rdy,
 pedsub_dump_qt_evt_rdy2,
 pedsub_dump_qt_evt_rdy3
@@ -371,20 +394,9 @@ u_qtfifo : qt_fifo
 
   );
   
---u_wavarr : blk_mem_gen_v7_3
---  PORT MAP (
---    clka => clk,
---    wea => wav_wea,
---    addra => wav_bram_addra,
---    dina => wav_dina(11 DOWNTO 0),
---    clkb => clk,
---    addrb => wav_bram_addrb,
---    doutb => wav_doutb(11 DOWNTO 0)
---  );
 
 
 -- INST_TAG_END ------ End INSTANTIATION Template ------------
---busy<=ped_sub_send_data_busy or ped_sub_fetch_busy;
 busy<=busy_i;
 
 first_asic_no<= 
@@ -413,21 +425,54 @@ last_asic_no<=
 			x"1" when asic_en_bits_i(0)='1' else
 			x"0";
 
+sapedsub<=	unsigned('0' & wav_doutb)+('0' & x"D48")-unsigned('0' & ped_doutb)	when mode="01" and ct_ch/=15 	else-- if it is mmppc pulse, then subtract 3400
+				unsigned('0' & wav_doutb)+('0' & x"800")-unsigned('0' & ped_doutb)	when mode="01" and ct_ch=15 	else-- if it is calibration ch., then subtract 2048
+				unsigned('0' & ped_doutb) 															when mode="10" else
+				unsigned('0' & wav_doutb)															when mode="11"	else
+				'0' & x"FED";
 
-process(clk)
+--managing_proc: process(cls)
+--begin
+--
+--	if (rising_edge(clk)) then
+--
+--		case pw_st is
+--
+--			when PWidle =>
+--				if (trigin_i(1 downto 0) = "01" and enable_i = '1') then
+--					pw_st<=PWreset;-- reset the sub processes
+--				else
+--					pw_st<=PWidle;
+--				end if;
+--			
+--			when PWreset =>
+--				pw_st<=PWcheckempty
+--				
+--			when PWcheckempty =>
+--				
+--				
+--
+--
+--		end case;
+--
+--
+--	end if;
+--
+--end process;
+
+
+latchsig_proc: process(clk)
 begin
 
 	if (rising_edge(clk)) then
-	fifo_en_i<=fifo_en;
-	fifo_din_i<=fifo_din;
 	enable_i<=enable;
 	calc_mode_i<=calc_mode;
 	trig_ctime_i<=trig_ctime;
 	
-	
 	if (trigin_i(1 downto 0) = "01") then
 		SMP_MAIN_CNT_i<=SMP_MAIN_CNT;
 		asic_en_bits_i<=asic_en_bits;
+		
 	end if;
 
 	end if;
@@ -435,7 +480,7 @@ begin
 end process;
 
 
-process(clk) -- pedestal fetch
+process(clk) -- trigs fetch
 begin
 
 if (rising_edge(clk)) then
@@ -445,17 +490,17 @@ case st_trgrec is
 	when trg_rec_idle =>
 		trgrec<=trgrec;
 		trig_bram_cnt<=0;
-		if (trigin_i="01"  and enable_i='1' and asic_no/=x"0") then
-			st_trgrec<=trg_rec_win00;
-			trig_bram_sel<='1';
-		else
-			trig_bram_sel<='0';
-			st_trgrec<=trg_rec_idle;
-		end if;
+--		if (trigin_i="01"  and enable_i='1' and asic_no/=x"0") then
+--			st_trgrec<=trg_rec_win00;
+--			trig_bram_sel<='1';
+--		else
+--			trig_bram_sel<='0';
+--			st_trgrec<=trg_rec_idle;
+--		end if;
 		
 	when trg_rec_win00 =>
 			trig_bram_start_addr_i<=win_addr_start_i;
-			trig_asic_no_i<=asic_no_i;
+			trig_asic_no_i<=to_integer(unsigned(asic_no_i));
 			st_trgrec<=trg_rec_win0;
 
 	when trg_rec_win0 =>	
@@ -497,18 +542,22 @@ if (rising_edge(clk)) then
 	case next_ped_st is 
 
 	When PedsIdle =>
-	if (trigin_i="01"  and enable_i='1' and asic_no/=x"0") then
-		ped_asic<=to_integer(unsigned(asic_no));
-		ped_ch  <=0;
-		ped_win <=0;
-		ped_sa  <=0;
-		ped_sub_fetch_busy<='0';
-		next_ped_st<=PedsFetchPedVal;
+	if (trigin_i="01"  and enable_i='1') then
+		if (asic_no/=x"0") then
+			ped_asic<=to_integer(unsigned(asic_no));
+			ped_ch  <=0;
+			ped_win <=0;
+			ped_sa  <=0;
+			next_ped_st<=PedsFetchPedVal;
+		else 
+			next_ped_st<=PedsFetchDone;
+		end if;
+	else
+		next_ped_st<=PedsIdle;
 	end if ;
 
 	When PedsFetchPedVal =>
-		ped_sub_fetch_busy<='1';
-		ped_sa_num(21 downto 18)<=std_logic_vector(to_unsigned(asic_no_i-1,4));--		: std_logic_vector(21 downto 0);
+		ped_sa_num(21 downto 18)<=std_logic_vector(to_unsigned(dmx_asic-1,4));--		: std_logic_vector(21 downto 0);
 		ped_sa_num(17 downto 14)<=std_logic_vector(to_unsigned(ped_ch,4));--		: std_logic_vector(21 downto 0);
 		ped_sa_num(13 downto 5) <=std_logic_vector(to_unsigned(ped_win+win_addr_start_i,9));
 		ped_sa_num(4  downto 0) <=std_logic_vector(to_unsigned(ped_sa,5));
@@ -569,7 +618,6 @@ if (rising_edge(clk)) then
 			end if;
 					
 	When PedsFetchDone =>
-		ped_sub_fetch_busy<='0';
 		ped_sub_fetch_done<='1';
 		next_ped_st<=PedsIdle;
 	--done Fetching pedestals
@@ -593,17 +641,11 @@ if (rising_edge(clk)) then
 	
 	if (trigin_i="01" and enable_i='1') then
 			busy_i<='1';
-			asic_no_i<=to_integer(unsigned(asic_no));
+			asic_no_i<=asic_no;
 			win_addr_start_i<=to_integer(unsigned(win_addr_start));
 			ped_sub_fetch_done<='0';
 			dmx_asic<=to_integer(unsigned(asic_no));
-
---		if (asic_no=x"0") then
---			send_empty_packet<='1';
---		else
---			send_empty_packet<='0';
---		end if;
-		
+	
 	end if;
 
 	ped_sub_start(1)<=ped_sub_start(0);
@@ -613,31 +655,34 @@ if (rising_edge(clk)) then
 case pedsub_st is
 
 When pedsub_idle =>
---	qt_wr_en	<='1';
 	wav_bram_addrb<="00000000000";
 	ped_bram_addrb<="00000000000";
 	qt_wr_en	<='0';
 	qt_fifo_evt_rdy<='0';
-	if (asic_no/=x"0") then 
+	sa_cnt<=0;
+	ct_cnt<=0;
+	pswfifo_en<='0';
+	if (trigin_i="01" and enable_i='1' and asic_no=x"0") then
+		ped_sub_send_data_busy<='1';
+		pedsub_st<=pedsub_sub_pre_chk_empty;
+	else
 		if (ped_sub_start="01" and enable_i='1') then 
-			sa_cnt<=0;
-			pswfifo_en<='0';
 			ped_sub_send_data_busy<='1';
-			pedsub_st<=pedsub_sub_pre;
+			pedsub_st<=pedsub_sub_pre_chk_empty;
 		else 
-			pswfifo_en<='0';
 			ped_sub_send_data_busy<='0';
 			pedsub_st<=pedsub_idle;
 		end if;
-	else
-		if (trigin_i="01" and enable_i='1') then
-			ped_sub_send_data_busy<='1';
-			ct_cnt<=0;
-			pedsub_st<=pedsub_dump_qt1;
-		end if;
-		
 	end if;
 	
+
+When pedsub_sub_pre_chk_empty =>
+		if (asic_no_i=x"0") then 
+			pedsub_st<=pedsub_dump_qt_chk_empty;
+		else
+			pedsub_st<=pedsub_sub_pre;
+		end if;
+
 		
 When pedsub_sub_pre =>
 		pswfifo_d<=x"FE" & std_logic_vector(to_unsigned(dmx_asic,4)) & "00" & SMP_MAIN_CNT_i & std_logic_vector(to_unsigned(win_addr_start_i,9)) ;
@@ -670,16 +715,6 @@ When pedsub_sub0=>
 	   pswfifo_en<='0';
 		ct_ch<=to_integer(unsigned(wav_bram_addrb(10 downto 7)));
 		ct_sa<=wav_bram_addrb(6 downto 0);
-		if (mode="01") then 
---			sapedsub<=(to_signed(to_integer(unsigned(wav_doutb))-to_integer(unsigned(ped_doutb)),12 ));
-			sapedsub<=(unsigned('0' & wav_doutb)+('0' & x"D48")-unsigned('0' & ped_doutb));
-		end if;
-		if (mode="10") then 
-			sapedsub<=unsigned('0' & ped_doutb);
-		end if;
-		if (mode="11") then 
-			sapedsub<=unsigned('0' & wav_doutb);
-		end if;
  		pedsub_st<=pedsub_sub1;
 
 When pedsub_sub1=>
@@ -756,14 +791,32 @@ when pedsub_dumpfooter2=>
 		pswfifo_en<='1';
 		pswfifo_d<=x"FACEFACE";
 		ct_cnt<=0;
-		pedsub_st<=pedsub_dump_qt1;
+		pedsub_st<=pedsub_dump_qt_chk_empty;
+		
+when pedsub_dump_qt_chk_empty=> -- check empty package to concentrator if there is no ASIC with valid trigger bits to be read from 
+		pswfifo_en<='0';
+		qt_wr_en	<='0';
+		if (asic_no_i=x"0") then 
+			qt_wr_en	<='1';
+			qt_din	<="00" & x"0000";
+			pedsub_st<=pedsub_dump_qt_footer;
+		else
+			pedsub_st<=pedsub_dump_type;
+		end if;
+
+when pedsub_dump_type=>
+		pswfifo_en<='0';
+		sa_cnt<=0;
+		if (PDAQ_DATA_MODE=0) then 
+			pedsub_st<=pedsub_dump_qt1;--just send QT values to the data concentrator
+		else
+			pedsub_st<=pedsub_dump_wav_qt_hdr1;--send full wave values to the data concentrator
+		end if;
 
 
 when pedsub_dump_qt1=>
-		pswfifo_en<='0';
 		qt_wr_en	<='1';
-		if ct_cnt=0 and std_logic_vector(to_unsigned(dmx_asic,4))=first_asic_no then
---			qt_din	<="10" & x"FE" & std_logic_vector(to_unsigned(dmx_asic,4)) & std_logic_vector(to_unsigned(ct_cnt,4));
+		if ct_cnt=0 and asic_no_i=first_asic_no then
 			qt_din	<="10" & x"80" & qt_axis & std_logic_vector(to_unsigned(qt_chno,7));
 		else
 			qt_din	<="11" & x"80" & qt_axis & std_logic_vector(to_unsigned(qt_chno,7));
@@ -772,44 +825,28 @@ when pedsub_dump_qt1=>
 
 when pedsub_dump_qt2=>
 		qt_wr_en	<='1';
---		if (asic_no/=x"0") then 
-			qt_din	<="11" & trig_ctime_i;
---		else 
---			qt_din	<="11" & x"ABC0";
---		end if;
-		
+		qt_din	<="11" & trig_ctime_i;
 		pedsub_st<=pedsub_dump_qt3;
 
 when pedsub_dump_qt3=>
 		qt_wr_en	<='1';
-		if (asic_no/=x"0") then 
-			qt_din	<="11" & std_logic_vector(to_unsigned(win_addr_start_i,9)) & std_logic_vector(ct_lpt(ct_cnt)(6 downto 0));
-		else 
-			qt_din	<="11" & x"DEF1";
-		end if;
-		
+		qt_din	<="11" & std_logic_vector(to_unsigned(win_addr_start_i,9)) & std_logic_vector(ct_lpt(ct_cnt)(6 downto 0));
 		pedsub_st<=pedsub_dump_qt4;
 
 when pedsub_dump_qt4=>
 		qt_wr_en	<='1';
---		qt_din	<="0000" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
-		if ct_cnt=15 and std_logic_vector(to_unsigned(dmx_asic,4))=last_asic_no then
-			qt_din	<="01" & x"0E0A";-- end of asic
+		if ct_cnt=14 and asic_no_i=last_asic_no then
+			qt_din	<="01" & x"0" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
 		else
-			if (asic_no/=x"0") then 
-				qt_din	<=	"11" & x"D" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
-			else
-				qt_din	<=	"11" & x"BAC2";
-			end if;
+			qt_din	<="11" & x"0" & std_logic_vector(ct_lpv(ct_cnt)(11 downto 0));
 		end if;
-			
 		ct_cnt<=ct_cnt+1;
 		pedsub_st<=pedsub_dump_qt_chk;
 
 when pedsub_dump_qt_chk=>
 		qt_wr_en	<='0';
 		qt_fifo_evt_rdy<='0';
-		if (ct_cnt/=16) then 
+		if (ct_cnt/=15) then 
 			pedsub_st<=pedsub_dump_qt1;
 		else
 			pedsub_st<=pedsub_dump_qt_footer;
@@ -817,18 +854,120 @@ when pedsub_dump_qt_chk=>
 
 when pedsub_dump_qt_footer=>
 		qt_wr_en	<='0';
---		qt_din	<=x"0E0A";-- end of asic
 		qt_fifo_evt_rdy<='0';
 		pedsub_st<=pedsub_dump_qt_evt_rdy;
 
+when pedsub_dump_wav_qt_hdr1=>
+		qt_wr_en	<='1';
+		if sa_cnt=0 and asic_no_i=first_asic_no then
+			qt_din	<="10" & x"80" & asic_no_i & x"0";
+		else
+			qt_din	<="11" & x"80" & asic_no_i & x"0";
+		end if;
+		pedsub_st<=pedsub_dump_wav_qt_hdr2;
+
+when pedsub_dump_wav_qt_hdr2=>
+		qt_wr_en	<='1';
+		qt_din	<="11" & x"ABC0"; --ASIC Waveform Start
+		pedsub_st<=pedsub_dump_wav_qt_hdr3;
+
+when pedsub_dump_wav_qt_hdr3=>
+		qt_wr_en	<='1';
+		qt_din	<="11" & trig_ctime_i; --Trigger CTime
+		pedsub_st<=pedsub_dump_wav_qt_hdr4;
+
+when pedsub_dump_wav_qt_hdr4=>
+		qt_wr_en	<='1';
+		qt_din	<="11" & "0000000" & std_logic_vector(to_unsigned(win_addr_start_i,9));
+		sa_cnt	<=0;
+		pedsub_st<=pedsub_dump_wav0;
+
+when pedsub_dump_wav0=>
+		qt_wr_en	<='0';
+		swd_cnt<=0;
+		pedsub_st<=pedsub_dump_wav0_fetch;
+		
+when pedsub_dump_wav0_fetch=>
+		qt_wr_en	<='0';
+		wav_bram_addrb<=std_logic_vector(to_unsigned(sa_cnt,11));
+		ped_bram_addrb<=std_logic_vector(to_unsigned(sa_cnt,11));
+		pedsub_st<=pedsub_dump_wav0_wait0;
+
+when pedsub_dump_wav0_wait0=>
+		qt_wr_en	<='0';
+		pedsub_st<=pedsub_dump_wav0_wait1;
+
+when pedsub_dump_wav0_wait1=>
+		qt_wr_en	<='0';
+		pedsub_st<=pedsub_dump_wav0_wait2;
+
+when pedsub_dump_wav0_wait2=>
+		qt_wr_en	<='0';
+		pedsub_st<=pedsub_dump_wav0_dmp;
+
+		
+when pedsub_dump_wav0_dmp=>
+		qt_wr_en	<='0';
+		qtwav((3-swd_cnt)*12+11 downto (3-swd_cnt)*12)<=std_logic_vector(sapedsub(11 downto 0));
+		pedsub_st<=pedsub_dump_wav0_inc;
+		
+when pedsub_dump_wav0_inc=>
+		qt_wr_en	<='0';
+		swd_cnt<=swd_cnt+1;
+		sa_cnt<=sa_cnt+1;
+		pedsub_st<=pedsub_dump_wav0_chk;
+		
+when pedsub_dump_wav0_chk=>
+		qt_wr_en	<='0';
+		if (swd_cnt<4) then
+			pedsub_st<=pedsub_dump_wav0_fetch;
+		else
+			pedsub_st<=pedsub_dump_wav_qt1;
+		end if;
+
+when pedsub_dump_wav_qt1=>
+		qt_wr_en	<='1';
+		qt_din	<="11" & x"80" & std_logic_vector(to_unsigned(dmx_asic,4)) & x"0";
+		pedsub_st<=pedsub_dump_wav_qt2;
+
+when pedsub_dump_wav_qt2=>
+		qt_wr_en	<='1';
+		qt_din	<="11" & qtwav(47 downto 32);
+		pedsub_st<=pedsub_dump_wav_qt3;
+		
+when pedsub_dump_wav_qt3=>
+		qt_wr_en	<='1';
+		qt_din	<="11" & qtwav(31 downto 16);
+		pedsub_st<=pedsub_dump_wav_qt4;
+	
+when pedsub_dump_wav_qt4=>
+		qt_wr_en	<='1';
+		if (sa_cnt>=128) then
+			if asic_no_i=last_asic_no then
+				qt_din	<="01" & qtwav(15 downto 0);-- last wd of the packet
+			else
+				qt_din	<="11" & qtwav(15 downto 0);
+			end if;
+			pedsub_st<=pedsub_dump_qt_evt_rdy;
+		else
+			qt_din	<="11" & qtwav(15 downto 0);
+			pedsub_st<=pedsub_dump_wav0;
+		end if;
+
+
+
 when pedsub_dump_qt_evt_rdy=>
-		if std_logic_vector(to_unsigned(dmx_asic,4))=last_asic_no then
+	if (asic_no_i/=x"0") then 
+		if asic_no_i=last_asic_no then
 			qt_fifo_evt_rdy<='1';
 		else 
 			qt_fifo_evt_rdy<='0';
 		end if;
-		qt_wr_en	<='0';
-		pedsub_st<=pedsub_dump_qt_evt_rdy2;
+	else
+		qt_fifo_evt_rdy<='1';
+	end if;
+	qt_wr_en	<='0';
+	pedsub_st<=pedsub_dump_qt_evt_rdy2;
 
 when pedsub_dump_qt_evt_rdy2=>
 		pedsub_st<=pedsub_dump_qt_evt_rdy3;

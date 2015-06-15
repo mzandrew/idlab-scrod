@@ -79,8 +79,8 @@ architecture Behavioral of Module_ADC_MCP3221_I2C_new is
 		constant AddrBitA7T			: std_logic_vector(2 downto 0):= "111";
 		
 		----------------------------------------------------------------
---		constant DeviceAddress				: STD_LOGIC_VECTOR(6 DOWNTO 0) := DevCode & AddrBitA7T;
-		constant DeviceAddress				: STD_LOGIC_VECTOR(6 DOWNTO 0) := DevCode & AddrBitA5T;
+		constant DeviceAddress				: STD_LOGIC_VECTOR(6 DOWNTO 0) := DevCode & AddrBitA7T;
+--		constant DeviceAddress				: STD_LOGIC_VECTOR(6 DOWNTO 0) := DevCode & AddrBitA5T;
 		signal	dataToWrite					: std_logic_vector(7 downto 0) := DeviceAddress & '1'; --read mode
 		signal	dataToRead					: std_logic_vector(7 downto 0);
 		

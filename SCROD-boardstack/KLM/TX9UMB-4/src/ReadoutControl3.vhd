@@ -281,7 +281,8 @@ Case next_SmpClk_state is
 	
 	When WaitReset =>
 		internal_SmpClk_LATCH_DONE <= '1';
-		if( internal_SmpClk_READOUT_RESET = '1' or internal_cnt_reset = 0) then
+--		if( internal_SmpClk_READOUT_RESET = '1' or internal_cnt_reset = 0) then
+		if( internal_SmpClk_READOUT_RESET = '1' ) then
 			next_SmpClk_state <= Idle;
 		else
 			internal_cnt_reset<=internal_cnt_reset-1;

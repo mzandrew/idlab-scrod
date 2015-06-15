@@ -226,7 +226,7 @@ if rising_edge(clk) then
 		
 
 	When check_win=>
-		if ((win_start_i+win_cnt)<win_end_i) then
+		if ((win_start_i+win_cnt)<=win_end_i) then
 			mng_st<=reset_pedcalc0;
 		else
 			mng_st<=asic_inc;
