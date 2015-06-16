@@ -21,7 +21,7 @@ package klm_scrod_pkg is
     --------------------------------------------------------------------------
     -- Constant declarations.
     --------------------------------------------------------------------------    
-    constant B2TT_VERSION           : integer                           := 37;
+    constant B2TT_VERSION           : integer                           := 40;
     constant B2TT_PROTOCOL          : integer                           := 29;
     constant B2TT_DEFADDR           : std_logic_vector (19 downto 0)    := x"00000";
     constant B2TT_FLIPCLK           : std_logic                         := '0';  -- no more used

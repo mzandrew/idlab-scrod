@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <symbol version="7" name="asic_fpga_clock_gen_core">
     <symboltype>BLOCK</symboltype>
-    <timestamp>2015-3-28T1:12:12</timestamp>
+    <timestamp>2015-6-16T16:24:11</timestamp>
     <pin polarity="Input" x="0" y="112" name="clk_in1_p" />
     <pin polarity="Input" x="0" y="144" name="clk_in1_n" />
     <pin polarity="Input" x="0" y="432" name="reset" />

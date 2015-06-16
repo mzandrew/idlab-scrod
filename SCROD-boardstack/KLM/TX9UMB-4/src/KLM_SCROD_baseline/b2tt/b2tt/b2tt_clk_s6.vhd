@@ -63,7 +63,7 @@ architecture implementation of b2tt_clk is
   signal sig_xcm127   : std_logic := '0';
   signal sig_xcm127b  : std_logic := '0';
   signal sig_inv127   : std_logic := '0';
-  signal sig_xcm254   : std_logic := '0';
+  signal sig_xcm254   : std_logic := '0';  --!uncomment
   signal sig_clk3     : std_logic := '0';  --!add
 begin
   ------------------------------------------------------------------------
@@ -88,7 +88,7 @@ begin
   map_127g: bufg  port map ( i => sig_xcm127,  o => clk_xcm127 );
   map_invg: bufg  port map ( i => sig_xcm127b, o => invclock );
   map_254g: bufg  port map ( i => sig_xcm254, o => dblclock );--!add  
-  map_64g: bufg  port map ( i => sig_clk3, o => hlfclock );--!add  
+  map_64g: bufg  port map ( i => sig_clk3, o => hlfclock );--!add
   
   map_pll: pll_base
     generic map (
@@ -98,10 +98,10 @@ begin
       CLKOUT0_DIVIDE => 8,    -- F_OUT = F_VCO / CLKOUTn_DIVIDE
       CLKOUT1_DIVIDE => 8,
       CLKOUT1_PHASE  => 180.0,
-      CLKOUT2_DIVIDE => 4,    --!uncommment
+      CLKOUT2_DIVIDE => 4,    --!uncomment
       CLKOUT2_PHASE  => 0.0,  --!add
-      CLKOUT3_DIVIDE => 16,   --!uncommment
-      CLKOUT3_PHASE  => 0.0,  --!add      
+      CLKOUT3_DIVIDE => 16,   --!uncomment
+      CLKOUT3_PHASE  => 0.0,  --!add
       --CLKOUT4_DIVIDE => 5,
       BANDWIDTH => "OPTIMIZED" )
     port map (
@@ -110,8 +110,8 @@ begin
       clkfbout => sig_fbout,
       clkout0  => sig_xcm127,
       clkout1  => sig_xcm127b,
-      clkout2  => sig_xcm254,
-      clkout3  => sig_clk3,
+      clkout2  => sig_xcm254,--!uncomment
+      clkout3  => sig_clk3,  --!uncomment
       --clkout4  => sig_clk4,
       locked   => sta_xcm,
       clkfbin  => clk_fb );

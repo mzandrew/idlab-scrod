@@ -8,7 +8,9 @@
 --  20131002 oddr is separated out
 --  20131101 no more std_logic_arith
 --  20131126 hold "err" until runreset
---  20140406 ttup error study
+--  20150406 ttup error study
+--  20150406 fix busy 1 -> 0 -> 0 -> 1 sequence
+--  20150330 b2tt_enoctet fully rewritten
 --
 --  eout bit 9 is first transmitted, bit 0 is last transmitted
 --  ein  bit 9 is first received,    bit 0 is last received
@@ -105,10 +107,9 @@ entity b2tt_enoctet is
 end b2tt_enoctet;
 ------------------------------------------------------------------------
 architecture implementation of b2tt_enoctet is
-  signal sta_defer   : std_logic := '0';
   signal buf_payload : std_logic_vector (111 downto 0) := (others => '0');
-
-  signal sta_crc8  : std_logic_vector (7 downto 0) := x"00";
+  signal cnt_enoctet : std_logic_vector (3   downto 0) := (others => '0');
+  signal sta_crc8    : std_logic_vector (7   downto 0) := x"00";
   subtype byte_t is  std_logic_vector (7 downto 0);
 
   -- from crc8.vhd and comlib.vhd of
@@ -135,46 +136,47 @@ begin
   proc: process (clock)
   begin
     if clock'event and clock = '1' then
-      -- busy transition found in the packet
-      if obusy = '1' then
-        sta_defer <= '1';
-      elsif cntoctet = 0 then
-        sta_defer <= '0';
+      -- cnt_datoctet
+      if cntbit2 /= 2 then
+        -- nothing
+      elsif cntoctet = 15 then
+        cnt_enoctet <= (others => '0');
+      elsif obusy = '0' then
+        cnt_enoctet <= cnt_enoctet + 1;
       end if;
-
-      -- crc8 trial
-      --   this code doesn't care about sta_defer, but it will not be
-      --   sent anyway if sta_defer occurs
-      if cntoctet = 0 and obusy = '0' then
+      
+      -- buf_payload
+      if cntbit2 /= 2 then
+        -- nothing
+      elsif cnt_enoctet = 0 then
+        buf_payload <= payload;
+      elsif obusy = '0' then
+        buf_payload <= buf_payload(103 downto 0) & x"00";
+      end if;
+      
+      -- sta_crc8
+      --   this code doesn't care about obusy, but it will not be
+      --   sent anyway if obusy occurs
+      if cntbit2 /= 2 then
+        -- nothing
+      elsif cnt_enoctet = 0 then
         sta_crc8 <= (others => '0');
-      elsif cntbit2 = 0 and cntoctet /= 15 then
+      else
         sta_crc8 <= crc8_update(sta_crc8, buf_payload(111 downto 104));
       end if;
-      
-      -- data to encode
-      if (cntoctet = 0 and obusy = '0') or
-         ((cntoctet = 0 or cntoctet = 1) and sta_defer = '1') then
-        octet <= K28_1; -- comma
+
+      -- octet/isk (data to encode)
+      if cntbit2 /= 2 then
+        -- nothing
+      elsif cnt_enoctet = 0 then
+        octet <= K28_1;
         isk   <= '1';
-      elsif cntoctet = 15 and sta_defer = '0' then
-        --octet <= K28_3; -- idle
-        --isk   <= '1';
+      elsif cnt_enoctet = 15 then
         octet <= sta_crc8;
         isk   <= '0';
-      else
+      elsif obusy = '0' then
         octet <= buf_payload(111 downto 104);
         isk <= '0';
-      end if;
-      
-      -- fetch payload
-      if cntoctet = 0 then
-        buf_payload <= payload;
-      elsif obusy = '1' then
-        -- skip
-      elsif cntoctet = 1 and sta_defer = '1' then
-        -- skip
-      elsif cntbit2 = 4 then
-        buf_payload <= buf_payload(103 downto 0) & x"00";
       end if;
     end if;
   end process;
@@ -305,8 +307,8 @@ begin
   -- out (partially async)
   -- busy-begin: K28.5+ 1100000101
   -- busy-end:   K28.5- 0011111010
-  bit2   <= "11" when seq_busy = "01" else
-            "00" when seq_busy = "10" else
+  bit2   <= "11" when seq_busy = "01" and cnt_k285 = 0 else
+            "00" when seq_busy = "10" and cnt_k285 = 0 else
             seq_k285(7 downto 6) when cnt_k285 /= 0 else
             buf_10b(9 downto 8) when cntbit2 = 3 else -- async
             seq_10b(7 downto 6);

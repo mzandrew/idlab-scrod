@@ -8,7 +8,7 @@
 -- \   \   \/     Version    : 14.7
 --  \   \         Application: XILINX CORE Generator
 --  /   /         Filename   : s6_icon.vhd
--- /___/   /\     Timestamp  : Fri Mar 27 14:50:30 Hawaiian Standard Time 2015
+-- /___/   /\     Timestamp  : Tue Jun 16 12:01:05 Eastern Daylight Time 2015
 -- \   \  /  \
 --  \___\/\___\
 --
