@@ -248,6 +248,8 @@ entity b2tt_detrig is
     cntbit2    : in  std_logic_vector (2  downto 0);
     octet      : in  std_logic_vector (7  downto 0);
     isk        : in  std_logic;
+    tagset     : in  std_logic;
+    tagin      : in  std_logic_vector (31 downto 0);
     jtag       : out std_logic_vector (2  downto 0);
     jtagdbg    : out std_logic_vector (9  downto 0);
     trgout     : out std_logic;
@@ -265,6 +267,7 @@ architecture implementation of b2tt_detrig is
   signal buf_trgtim      : std_logic_vector (2  downto 0) := "111";
   signal cnt_trginterval : std_logic_vector (4  downto 0) := "11000";  -- 24
   signal cnt_trig        : std_logic_vector (31 downto 0) := (others => '1');
+  signal cnt_delta       : std_logic_vector (7  downto 0) := (others => '0');
 
   signal seq_tck         : std_logic_vector (3 downto 0) := "0000";
   signal sig_tck         : std_logic := '0';
@@ -351,12 +354,27 @@ begin
         if runreset = '1' then
           cnt_dbg2 <= cnt_dbg2 + 1;
         end if;
+      elsif tagset = '1' then
+        -- tagset is issued twice when mask is released,
+        -- to properly include cnt_delta
+        cnt_trig <= tagin + (x"000000" & cnt_delta);
       elsif sig_trgoctet = '1' and sig_trgtim = 1 then
         if cnt_trginterval + 1 >= 24 then
           cnt_trig <= cnt_trig + 1;
         end if;
       elsif cntbit2 = buf_trgtim then
         cnt_trig <= cnt_trig + 1;
+      end if;
+
+      -- cnt_delta
+      if tagset = '1' or mask = '1' then
+        cnt_delta <= (others => '0');
+      elsif sig_trgoctet = '1' and sig_trgtim = 1 then
+        if cnt_trginterval + 1 >= 24 then
+          cnt_delta <= cnt_delta + 1;
+        end if;
+      elsif cntbit2 = buf_trgtim then
+        cnt_delta <= cnt_delta + 1;
       end if;
       
       -- buf_trgtyp
@@ -643,6 +661,7 @@ entity b2tt_depacket is
     sigidle    : in  std_logic;
     payload    : in  std_logic_vector (76 downto 0);
     badver     : out std_logic;
+    clraddr    : out std_logic;
     myaddr     : out std_logic_vector (19 downto 0);
     frame      : out std_logic;
     frame3     : out std_logic;
@@ -755,9 +774,13 @@ begin
       if sig_payload = '1' and buf_ttpkt = TTPKT_RST and
           buf_adata(38) = '1' and (buf_myaddr = 0 or buf_addr = 0) then
         buf_myaddr <= buf_addr;
+        clraddr    <= '1';
       elsif sig_payload = '1' and buf_ttpkt = TTPKT_RST and
           buf_adata(35) = '1' then
         buf_myaddr <= (others => '0');
+        clraddr    <= '1';
+      else
+        clraddr    <= '0';
       end if;
 
       -- buf_clkfreq
@@ -824,10 +847,10 @@ begin
           divclk1 <= "11";
         end if;
       else
-        if cnt_divseq1 < (CLKDIV1 + 0) / 2 then
+        if cnt_divseq1 <= (CLKDIV1 + 0) / 2 then
           divclk1(1) <= '0';
         end if;
-        if cnt_divseq1 < (CLKDIV1 + 1) / 2 then
+        if cnt_divseq1 <= (CLKDIV1 + 1) / 2 then
           divclk1(0) <= '0';
         end if;
         
@@ -948,6 +971,8 @@ entity b2tt_detag is
     sigpayload : in  std_logic;
     payload    : in  std_logic_vector (76 downto 0);
     exprun     : out std_logic_vector (31 downto 0);
+    tagset     : out std_logic;
+    tagin      : out std_logic_vector (31 downto 0);
     dbg        : out std_logic_vector (31 downto 0);
     tagerr     : out std_logic );
 end b2tt_detag;
@@ -958,6 +983,7 @@ architecture implementation of b2tt_detag is
   signal buf_bdata    : std_logic_vector (63 downto 0) := (others => '0');
   signal buf_cnttrig  : std_logic_vector (31 downto 0) := (others => '1');
   signal buf_exprun   : std_logic_vector (31 downto 0) := x"87654321"; --dbg
+  signal seq_mask     : std_logic_vector (1  downto 0) := "00";
 begin
   
   -- in
@@ -977,6 +1003,13 @@ begin
         buf_cnttrig <= trgtag;
       end if;
 
+      -- tagset (twice)
+      if cntrevoclk = 1277 and seq_mask /= 0 and mask = '0' then
+        tagset <= '1';
+      else
+        tagset <= '0';
+      end if;
+
       -- tagerr / exprun
       -- [buf_data: (8-bit expno) (12-bit runno) (12-bit subno) (32-bit tag)]
       if runreset = '1' then
@@ -985,7 +1018,9 @@ begin
         dbg <= (others => '0');
       elsif sig_bcast = '1' and buf_ttpkt = TTPKT_TTAG then
         buf_exprun <= buf_bdata(63 downto 32);
-        if buf_bdata(31 downto 0) /= buf_cnttrig then
+        seq_mask <= seq_mask(0) & mask;
+        tagin <= buf_bdata(31 downto 0);
+        if buf_bdata(31 downto 0) /= buf_cnttrig and seq_mask = 0 then
           tagerr <= entagerr and (not mask);
           dbg(11) <= '1';
         else
@@ -1043,6 +1078,7 @@ entity b2tt_decode is
     
     -- exp- / run-number, my address
     exprun     : out std_logic_vector (31 downto 0);
+    clraddr    : out std_logic;
     myaddr     : out std_logic_vector (19 downto 0);
     
     -- reset out
@@ -1146,13 +1182,15 @@ architecture implementation of b2tt_decode is
   signal sta_trgtag    : std_logic_vector (31 downto 0) := (others => '0');
   signal sig_utime     : std_logic_vector (31 downto 0) := (others => '0');
   signal sig_ctime     : std_logic_vector (26 downto 0) := (others => '0');
-
+  
   signal sig_runreset  : std_logic := '0';
   signal sig_stareset  : std_logic := '0';
   
   signal sta_entagerr  : std_logic := '0';
 
   signal sta_trgmask   : std_logic := '0';
+  signal sig_tagset    : std_logic := '0';
+  signal buf_tagin     : std_logic_vector (31 downto 0) := (others => '0');
 
   signal cnt_octet     : std_logic_vector (4  downto 0) := (others => '0');
   signal cnt_datoctet  : std_logic_vector (3  downto 0) := (others => '0');
@@ -1224,6 +1262,8 @@ begin
                cntbit2    => cnt_bit2,
                octet      => buf_octet,
                isk        => buf_isk,
+               tagset     => sig_tagset,
+               tagin      => buf_tagin,
                jtag       => jtag,         -- out
                jtagdbg    => jtagdbg,      -- out
                trgout     => sig_trig,     -- out
@@ -1263,6 +1303,7 @@ begin
                sigidle    => sig_idle,
                payload    => buf_payload,
                badver     => badver,       -- out
+               clraddr    => clraddr,      -- out
                myaddr     => myaddr,       -- out
                frame      => frame,        -- out
                frame3     => frame3,       -- out
@@ -1302,6 +1343,8 @@ begin
                sigpayload => sig_payload,
                payload    => buf_payload,
                exprun     => exprun,       -- out
+               tagset     => sig_tagset,   -- out
+               tagin      => buf_tagin,    -- out
                dbg        => tagdbg,       -- out
                tagerr     => tagerr );     -- out
 

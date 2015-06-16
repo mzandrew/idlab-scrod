@@ -47,6 +47,9 @@
 --  20150112 0.35  timerr fix
 --  20150227 0.36  merging trgmask fixes
 --  20150310 0.37  clraddr, stareset
+--  20150428 0.38  b2tt encode fix, decode clraddr
+--  20150525 0.39  b2tt decode to no tagerr when mask is cleared
+--  20150528 0.40  DIVCLK fix
 --
 ------------------------------------------------------------------------
 
@@ -57,7 +60,7 @@ use ieee.numeric_std.all;
 
 entity b2tt is
   generic (
-    VERSION  : integer := 37;
+    VERSION  : integer := 40;
     PROTOCOL : integer := 29;
     DEFADDR  : std_logic_vector (19 downto 0) := x"00000";
     FLIPCLK  : std_logic := '0';  -- no more used
@@ -241,13 +244,14 @@ architecture implementation of b2tt is
   signal sig_txfill   : std_logic;
   
   -- unused signals defined for poor simulator
-  signal open_jtag    : std_logic_vector (2  downto 0);
-  signal open_jtagdbg : std_logic_vector (9  downto 0);
+  signal open_jtag    : std_logic_vector (2  downto 0) := (others => '0');
+  signal open_jtagdbg : std_logic_vector (9  downto 0) := (others => '0');
   signal open_clkfreq : std_logic_vector (26 downto 0) := (others => '0');
   signal open_stat    : std_logic_vector (1  downto 0) := (others => '0');
   signal open_drd     : std_logic_vector (95 downto 0) := (others => '0');
   signal open_dbg     : std_logic_vector (17 downto 0) := (others => '0');
   signal open_bit10   : std_logic_vector (9  downto 0) := (others => '0');
+  signal open_clraddr : std_logic := '0';
 
   -- signals for debug and chipscope
   signal buf_txcnt2   : std_logic_vector (2  downto 0) := (others => '0');
@@ -294,8 +298,8 @@ begin
         clock    => clk_i,       -- out
         invclock => clk_inv,     -- out
         dblclock => clk_dbl,     -- out
-        dblclockb => clk_dblinv, -- out
-        hlfclock => hlfclk,      -- out
+        dblclockb => clk_dblinv,     -- out
+        hlfclock => hlfclk,
         locked   => sta_dcm,     -- out
         stat     => open_stat ); -- out
   end generate;
@@ -364,6 +368,7 @@ begin
 
       -- exp- / run-number
       exprun     => exprun,       -- out
+      clraddr    => open_clraddr, -- out
       myaddr     => buf_myaddr,   -- out
       
       -- reset out

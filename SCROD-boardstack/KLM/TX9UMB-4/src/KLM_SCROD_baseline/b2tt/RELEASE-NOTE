@@ -65,3 +65,13 @@ b2tt firmware component
 * version 0.37 - 2015.03.10 Mikihiko Nakao
   - stareset signal was not properly implemented -> fixed
   - clraddr feature to fix incorrectly assigned address
+
+* version 0.38 - 2015.04.28 Mikihiko Nakao
+  - b2tt encode fix (mostly affecting ft[23]x firmware)
+  - clraddr from b2tt_decode (not used by b2tt.vhd)
+
+* version 0.39 - 2015.05.26 Mikihiko Nakao
+  - b2tt decode fix to avoid tagerr when mask is cleared
+
+* version 0.40 - 2015.05.28 Mikihiko Nakao
+  - b2tt divclk1 / divclk2 fix: clkdiv1=2 didn't work before

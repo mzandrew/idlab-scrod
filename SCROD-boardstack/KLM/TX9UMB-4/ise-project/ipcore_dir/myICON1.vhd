@@ -8,7 +8,7 @@
 -- \   \   \/     Version    : 14.7
 --  \   \         Application: XILINX CORE Generator
 --  /   /         Filename   : myICON1.vhd
--- /___/   /\     Timestamp  : Fri Mar 27 15:19:56 Hawaiian Standard Time 2015
+-- /___/   /\     Timestamp  : Tue Jun 16 12:32:18 Eastern Daylight Time 2015
 -- \   \  /  \
 --  \___\/\___\
 --
